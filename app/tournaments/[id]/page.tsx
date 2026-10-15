@@ -6,7 +6,7 @@ import { createClient } from '@/utils/supabase/client';
 import Link from 'next/link';
 import { getErrorMessage } from '@/utils/errors';
 import { ACTIVE_REGISTRATION_STATUSES } from '@/utils/types';
-import type { Announcement, Match, Profile, Registration, Team, Tournament } from '@/utils/types';
+import type { Announcement, Match, Profile, Registration, Stream, Team, Tournament } from '@/utils/types';
 import { formatDate, getTournamentStatus, statusLabels, statusStyles } from '@/utils/tournaments';
 import Bracket from './Bracket';
 import AnnouncementCard from '@/components/AnnouncementCard';
@@ -29,6 +29,7 @@ export default function TournamentDetailsPage() {
   // Team id -> team name, for the teams that appear in the bracket
   const [teamNames, setTeamNames] = useState<Record<string, string>>({});
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
+  const [liveStreams, setLiveStreams] = useState<Stream[]>([]);
   const [generating, setGenerating] = useState(false);
   // Increase this to make the effect below load everything again
   const [reloadCount, setReloadCount] = useState(0);
@@ -110,6 +111,15 @@ export default function TournamentDetailsPage() {
           .order('created_at', { ascending: false });
         if (annError) throw annError;
         setAnnouncements(annData || []);
+
+        // Streams of this tournament that are live right now (for the "Watch live" banner)
+        const { data: streamsData, error: streamsError } = await supabase
+          .from('streams')
+          .select('*')
+          .eq('tournament_id', id)
+          .eq('status', 'live');
+        if (streamsError) throw streamsError;
+        setLiveStreams(streamsData || []);
 
         // Teams I captain for this tournament's game (only captains can register)
         if (data.game_id) {
@@ -282,6 +292,18 @@ export default function TournamentDetailsPage() {
             <div className="bg-green-500/10 border border-green-500 text-green-300 px-4 py-3 rounded-lg">{message}</div>
           )}
 
+          {/* Watch live banner */}
+          {liveStreams.map((s) => (
+            <Link
+              key={s.id}
+              href={`/live/${s.id}`}
+              className="flex items-center justify-between gap-3 bg-red-600/15 border border-red-500 rounded-lg px-4 py-3 hover:bg-red-600/25 transition"
+            >
+              <span className="font-bold text-red-300">📺 Watch live: {s.title}</span>
+              <span className="text-red-300 text-sm">● LIVE →</span>
+            </Link>
+          ))}
+
           {/* Details */}
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
             {details.map((d) => (
@@ -372,6 +394,12 @@ export default function TournamentDetailsPage() {
                     Manage Matches
                   </Link>
                 )}
+                <Link
+                  href={`/tournaments/${id}/streams`}
+                  className="bg-[#1a1a2e] border border-red-500 text-red-300 px-6 py-2 rounded-lg font-bold hover:bg-red-600 hover:text-white transition"
+                >
+                  Manage Streams
+                </Link>
                 <Link
                   href={`/tournaments/${id}/registrations`}
                   className="bg-purple-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-purple-700 transition"

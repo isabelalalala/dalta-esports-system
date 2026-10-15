@@ -78,6 +78,13 @@ Enforced by a CHECK constraint on `profiles.role` (migration `202610161200_role_
   created_by, created_at, updated_at. Logged-in users read; only admins post, edit and delete.
   Shown on `/announcements`, the tournament page and the dashboard (`components/AnnouncementCard.tsx`).
   `/schedule` (Schedule & Results) lists live, upcoming and finished matches from `matches`.
+- `streams`: id, tournament_id, match_id (optional, set null when the match is deleted), title, facebook_url
+  (must be https facebook.com, checked in the database), status (`scheduled`/`live`/`ended`), created_by,
+  created_at, updated_at. Logged-in users read; admin/staff write. Configured on `/tournaments/[id]/streams`,
+  watched on `/live` and `/live/[id]` with Facebook's embedded player (no API key; videos must be Public).
+- `stream_views`: stream_id, user_id, viewed_on (date). One per person per stream per day; users insert their own,
+  only admin/staff read (viewership stats for Module 6).
+- `matches` is in the `supabase_realtime` publication: the watch page scoreboard updates without refreshing.
 
 Database functions: `get_my_role()`, `current_user_role()` (older alias), `search_players(game_id, search)`,
 `get_team_roster(team_id)` (name, IGN, in-game role), `delete_own_account()`, `admin_delete_user(target)`, `generate_bracket(tournament_id)`. Business rules (roster size, registration checks)
@@ -88,7 +95,7 @@ are enforced by triggers with readable error messages.
 2. Registration and Tournament Management: done. Player registration, team registration,
    profile and in-game details (IGN, game, role), tournament scheduling, brackets.
 3. Event Information and Announcements: done. Event info, announcements, match schedule updates.
-4. Live Streaming: staff configure Facebook Live URLs; audience watches embedded streams.
+4. Live Streaming: in progress. Staff configure Facebook Live URLs; audience watches embedded streams.
 5. Feedback and Sentiment Analysis: audience submits feedback and ratings; Gemini classifies sentiment.
 6. Administrative Reports: analytics and engagement reports with Chart.js.
 The business case also lists a "Database Module". It is not a separate module: each module adds its own

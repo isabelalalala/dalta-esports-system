@@ -132,3 +132,20 @@ export interface Announcement {
   // Only present when selected with `tournaments(...)`
   tournaments?: { id: string; name: string } | null;
 }
+
+export type StreamStatus = 'scheduled' | 'live' | 'ended';
+
+export interface Stream {
+  id: string;
+  tournament_id: string;
+  // Optional: the one match this stream shows
+  match_id: string | null;
+  title: string;
+  facebook_url: string;
+  status: StreamStatus;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+  // Only present when selected with `tournaments(...)`
+  tournaments?: { id: string; name: string; game: string } | null;
+}

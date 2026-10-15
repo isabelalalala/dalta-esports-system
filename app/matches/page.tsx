@@ -96,18 +96,23 @@ export default function MatchesOverviewPage() {
                     </p>
                   </div>
 
-                  {matchCount > 0 ? (
-                    <Link
-                      href={`/tournaments/${t.id}/matches`}
-                      className="bg-[#00d2ff] text-black px-4 py-2 rounded font-bold hover:bg-[#00b8e6] transition text-center"
-                    >
-                      Manage {matchCount} matches
+                  <div className="flex flex-wrap items-center gap-3">
+                    {matchCount > 0 ? (
+                      <Link
+                        href={`/tournaments/${t.id}/matches`}
+                        className="bg-[#00d2ff] text-black px-4 py-2 rounded font-bold hover:bg-[#00b8e6] transition text-center"
+                      >
+                        Manage {matchCount} matches
+                      </Link>
+                    ) : (
+                      <Link href={`/tournaments/${t.id}`} className="text-gray-400 text-sm hover:text-white">
+                        No bracket yet. Generate it on the tournament page →
+                      </Link>
+                    )}
+                    <Link href={`/tournaments/${t.id}/streams`} className="text-red-300 text-sm font-semibold hover:underline">
+                      Streams
                     </Link>
-                  ) : (
-                    <Link href={`/tournaments/${t.id}`} className="text-gray-400 text-sm hover:text-white">
-                      No bracket yet. Generate it on the tournament page →
-                    </Link>
-                  )}
+                  </div>
                 </li>
               );
             })}

@@ -182,6 +182,13 @@ export default function Dashboard() {
               </div>
             </Link>
 
+            <Link href="/live" style={{ textDecoration: 'none' }}>
+              <div style={{ background: '#1a1a2e', padding: '1.5rem', borderRadius: '12px', border: '1px solid #00d2ff', cursor: 'pointer' }}>
+                <h3 style={{ color: '#00d2ff', marginBottom: '1rem' }}>📺 Live Streams</h3>
+                <p style={{ color: '#aaa' }}>Watch matches live</p>
+              </div>
+            </Link>
+
             <Link href="/announcements" style={{ textDecoration: 'none' }}>
               <div style={{ background: '#1a1a2e', padding: '1.5rem', borderRadius: '12px', border: '1px solid #00d2ff', cursor: 'pointer' }}>
                 <h3 style={{ color: '#00d2ff', marginBottom: '1rem' }}>📢 Announcements</h3>
@@ -195,10 +202,12 @@ export default function Dashboard() {
 
         {profile?.role === 'spectator' && (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1.5rem' }}>
-            <div style={{ background: '#1a1a2e', padding: '1.5rem', borderRadius: '12px', border: '1px solid #4ecdc4' }}>
-              <h3 style={{ color: '#4ecdc4', marginBottom: '1rem' }}>📺 Live Tournaments</h3>
-              <p style={{ color: '#aaa' }}>Watch ongoing tournaments and matches</p>
-            </div>
+            <Link href="/live" style={{ textDecoration: 'none' }}>
+              <div style={{ background: '#1a1a2e', padding: '1.5rem', borderRadius: '12px', border: '1px solid #4ecdc4', cursor: 'pointer' }}>
+                <h3 style={{ color: '#4ecdc4', marginBottom: '1rem' }}>📺 Live Tournaments</h3>
+                <p style={{ color: '#aaa' }}>Watch ongoing tournaments and matches</p>
+              </div>
+            </Link>
 
             <Link href="/schedule" style={{ textDecoration: 'none' }}>
               <div style={{ background: '#1a1a2e', padding: '1.5rem', borderRadius: '12px', border: '1px solid #4ecdc4', cursor: 'pointer' }}>
@@ -244,6 +253,13 @@ export default function Dashboard() {
       <div style={{ background: '#1a1a2e', padding: '1.5rem', borderRadius: '12px', border: '1px solid #ffd93d', cursor: 'pointer' }}>
         <h3 style={{ color: '#ffd93d', marginBottom: '1rem' }}>🎮 Match Management</h3>
         <p style={{ color: '#aaa' }}>Schedule and manage matches</p>
+      </div>
+    </Link>
+
+    <Link href="/live" style={{ textDecoration: 'none' }}>
+      <div style={{ background: '#1a1a2e', padding: '1.5rem', borderRadius: '12px', border: '1px solid #ffd93d', cursor: 'pointer' }}>
+        <h3 style={{ color: '#ffd93d', marginBottom: '1rem' }}>📡 Live Streams</h3>
+        <p style={{ color: '#aaa' }}>Watch streams; configure them from each tournament</p>
       </div>
     </Link>
 

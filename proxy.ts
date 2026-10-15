@@ -8,12 +8,13 @@ const protectedRoutes = [
   /^\/teams(\/.*)?$/,
   /^\/profile(\/.*)?$/,
   /^\/tournaments\/create$/,
-  /^\/tournaments\/[^/]+\/(edit|registrations|matches)$/,
+  /^\/tournaments\/[^/]+\/(edit|registrations|matches|streams)$/,
   /^\/matches(\/.*)?$/,
   /^\/admin(\/.*)?$/,
   /^\/registrations(\/.*)?$/,
   /^\/announcements(\/.*)?$/,
   /^\/schedule(\/.*)?$/,
+  /^\/live(\/.*)?$/,
 ];
 
 export async function proxy(request: NextRequest) {

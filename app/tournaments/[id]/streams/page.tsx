@@ -1,0 +1,347 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import { useParams } from 'next/navigation';
+import Link from 'next/link';
+import { createClient } from '@/utils/supabase/client';
+import { getErrorMessage } from '@/utils/errors';
+import type { Match, Profile, Stream, StreamStatus, Tournament } from '@/utils/types';
+import { roundLabel } from '@/utils/tournaments';
+import { fetchTeamNames } from '@/utils/matches';
+import { streamStatusStyles, validateFacebookUrl } from '@/utils/streams';
+import FacebookPlayer from '@/components/FacebookPlayer';
+
+const inputClass =
+  'w-full rounded-lg border border-[#00d2ff]/40 bg-[#0a0a0c] px-4 py-3 text-white placeholder-gray-500 outline-none focus:border-[#00d2ff]';
+
+// "Configure stream" (use case, Tournament Staff): Facebook Live links for one tournament
+export default function ManageStreamsPage() {
+  const supabase = createClient();
+  const [tournament, setTournament] = useState<Tournament | null>(null);
+  const [streams, setStreams] = useState<Stream[]>([]);
+  // Match id -> "Semifinals: Team A vs Team B", for the match dropdown and labels
+  const [matchLabels, setMatchLabels] = useState<Record<string, string>>({});
+  const [profile, setProfile] = useState<Pick<Profile, 'id' | 'role'> | null>(null);
+  const [showForm, setShowForm] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  // Increase this to make the effect below load everything again
+  const [reloadCount, setReloadCount] = useState(0);
+
+  const params = useParams();
+  const id = params?.id as string;
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) return;
+
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('id, role')
+          .eq('id', session.user.id)
+          .single();
+        setProfile(profileData);
+
+        const { data: tournamentData, error: tournError } = await supabase
+          .from('tournaments')
+          .select('*')
+          .eq('id', id)
+          .single();
+        if (tournError) throw tournError;
+        setTournament(tournamentData);
+
+        const { data: streamsData, error: streamsError } = await supabase
+          .from('streams')
+          .select('*')
+          .eq('tournament_id', id)
+          .order('created_at', { ascending: false });
+        if (streamsError) throw streamsError;
+        setStreams(streamsData || []);
+
+        // Matches with both teams known, for linking a stream to one match
+        const { data: matchesData, error: matchesError } = await supabase
+          .from('matches')
+          .select('*')
+          .eq('tournament_id', id)
+          .order('round')
+          .order('match_number');
+        if (matchesError) throw matchesError;
+
+        const matches = (matchesData || []) as Match[];
+        const names = await fetchTeamNames(supabase, matches);
+        const roundCount = matches.reduce((max, m) => Math.max(max, m.round), 0);
+        const labels: Record<string, string> = {};
+        for (const m of matches) {
+          if (!m.team_a_id || !m.team_b_id) continue;  // byes and undecided matches
+          labels[m.id] = `${roundLabel(m.round, roundCount)} · Match ${m.match_number}: ${names[m.team_a_id]} vs ${names[m.team_b_id]}`;
+        }
+        setMatchLabels(labels);
+      } catch (err) {
+        setError(getErrorMessage(err, 'Failed to load streams'));
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (id) fetchData();
+  }, [id, supabase, reloadCount]);
+
+  // Go live / End stream / back to scheduled
+  const setStatus = async (stream: Stream, status: StreamStatus) => {
+    setError('');
+    try {
+      const { data, error: updateError } = await supabase
+        .from('streams')
+        .update({ status })
+        .eq('id', stream.id)
+        .select('id');
+      if (updateError) throw updateError;
+      // RLS blocks silently (no error, no rows)
+      if (!data || data.length === 0) throw new Error('Only admin and staff can change streams.');
+      setReloadCount((n) => n + 1);
+    } catch (err) {
+      setError(getErrorMessage(err, 'Failed to update the stream'));
+    }
+  };
+
+  const handleDelete = async (stream: Stream) => {
+    if (!confirm(`Delete the stream "${stream.title}"? Its viewing stats are deleted too.`)) return;
+    setError('');
+    try {
+      const { data, error: deleteError } = await supabase
+        .from('streams')
+        .delete()
+        .eq('id', stream.id)
+        .select('id');
+      if (deleteError) throw deleteError;
+      if (!data || data.length === 0) throw new Error('Only admin and staff can delete streams.');
+      setReloadCount((n) => n + 1);
+    } catch (err) {
+      setError(getErrorMessage(err, 'Failed to delete the stream'));
+    }
+  };
+
+  const afterSave = () => {
+    setShowForm(false);
+    setEditingId(null);
+    setReloadCount((n) => n + 1);
+  };
+
+  if (loading) return <div className="min-h-screen bg-[#0a0a0c] text-white p-10 text-center">Loading...</div>;
+  if (!tournament) {
+    return <div className="min-h-screen bg-[#0a0a0c] text-red-500 p-10 text-center">{error || 'Tournament not found.'}</div>;
+  }
+
+  // Hiding the page is only for convenience; the database refuses changes from other roles.
+  if (profile?.role !== 'admin' && profile?.role !== 'staff') {
+    return (
+      <div className="min-h-screen bg-[#0a0a0c] text-white p-10 text-center">
+        Only organizers can configure streams.{' '}
+        <Link href="/live" className="text-[#00d2ff] underline">Watch live streams</Link>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-[#0a0a0c] text-white px-4 py-10">
+      <div className="max-w-4xl mx-auto">
+        <Link href={`/tournaments/${id}`} className="inline-block text-[#00d2ff] hover:underline mb-6">
+          ← Back to Tournament
+        </Link>
+
+        <div className="flex flex-wrap justify-between items-center gap-4 mb-2">
+          <h1 className="text-4xl font-bold text-[#00d2ff]">{tournament.name}</h1>
+          {!showForm && (
+            <button
+              onClick={() => { setShowForm(true); setEditingId(null); }}
+              className="bg-[#00d2ff] text-black px-6 py-2 rounded-lg font-bold hover:bg-[#00b8e6] transition"
+            >
+              + Add stream
+            </button>
+          )}
+        </div>
+        <p className="text-gray-400 text-lg mb-8">Stream Configuration</p>
+
+        {error && (
+          <div className="mb-6 bg-red-500/10 border border-red-500 text-red-300 px-4 py-3 rounded-lg">{error}</div>
+        )}
+
+        {showForm && profile && (
+          <StreamForm
+            tournamentId={id}
+            userId={profile.id}
+            matchLabels={matchLabels}
+            onSaved={afterSave}
+            onCancel={() => setShowForm(false)}
+          />
+        )}
+
+        {streams.length === 0 ? (
+          <p className="text-gray-400 text-center py-12">No streams yet. Add the Facebook Live link of your broadcast.</p>
+        ) : (
+          <div className="space-y-4">
+            {streams.map((stream) =>
+              editingId === stream.id && profile ? (
+                <StreamForm
+                  key={stream.id}
+                  existing={stream}
+                  tournamentId={id}
+                  userId={profile.id}
+                  matchLabels={matchLabels}
+                  onSaved={afterSave}
+                  onCancel={() => setEditingId(null)}
+                />
+              ) : (
+                <div key={stream.id} className="bg-[#1a1a2e] border border-[#00d2ff]/30 rounded-lg p-4">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <h2 className="text-lg font-bold">{stream.title}</h2>
+                    <span className={`px-2 py-0.5 rounded-full border text-[10px] font-bold uppercase ${streamStatusStyles[stream.status]}`}>
+                      {stream.status === 'live' ? '● Live' : stream.status}
+                    </span>
+                  </div>
+                  {stream.match_id && (
+                    <p className="text-sm text-gray-400">{matchLabels[stream.match_id] ?? 'Linked match'}</p>
+                  )}
+                  <p className="text-sm text-gray-500 truncate">{stream.facebook_url}</p>
+
+                  <div className="mt-3 flex flex-wrap gap-3 text-sm font-semibold">
+                    {stream.status !== 'live' && (
+                      <button onClick={() => setStatus(stream, 'live')} className="bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 rounded">
+                        ● Go live
+                      </button>
+                    )}
+                    {stream.status === 'live' && (
+                      <button onClick={() => setStatus(stream, 'ended')} className="bg-gray-600 hover:bg-gray-700 text-white px-3 py-1.5 rounded">
+                        End stream
+                      </button>
+                    )}
+                    <Link href={`/live/${stream.id}`} className="text-[#00d2ff] hover:underline py-1.5">Watch page</Link>
+                    <button onClick={() => { setEditingId(stream.id); setShowForm(false); }} className="text-[#00d2ff] hover:underline">
+                      Edit
+                    </button>
+                    <button onClick={() => handleDelete(stream)} className="text-red-400 hover:text-red-300">
+                      Delete
+                    </button>
+                  </div>
+                </div>
+              )
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// Add a stream, or edit `existing`. Shows the link check and a preview player.
+function StreamForm({
+  existing,
+  tournamentId,
+  userId,
+  matchLabels,
+  onSaved,
+  onCancel,
+}: {
+  existing?: Stream;
+  tournamentId: string;
+  userId: string;
+  matchLabels: Record<string, string>;
+  onSaved: () => void;
+  onCancel: () => void;
+}) {
+  const supabase = createClient();
+  const [title, setTitle] = useState(existing?.title ?? '');
+  const [url, setUrl] = useState(existing?.facebook_url ?? '');
+  const [matchId, setMatchId] = useState(existing?.match_id ?? '');
+  const [status, setStatus] = useState<StreamStatus>(existing?.status ?? 'scheduled');
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
+
+  // "Live Stream Link Validated Status": checked as you type (the database checks it too)
+  const urlError = validateFacebookUrl(url);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (urlError) {
+      setError(urlError);
+      return;
+    }
+    setSaving(true);
+    setError('');
+
+    const fields = {
+      title: title.trim(),
+      facebook_url: url.trim(),
+      match_id: matchId || null,
+      status,
+    };
+
+    try {
+      const { data, error: saveError } = existing
+        ? await supabase.from('streams').update(fields).eq('id', existing.id).select('id')
+        : await supabase.from('streams').insert([{ ...fields, tournament_id: tournamentId, created_by: userId }]).select('id');
+      if (saveError) throw saveError;
+      if (!data || data.length === 0) throw new Error('Only admin and staff can configure streams.');
+      onSaved();
+    } catch (err) {
+      setError(getErrorMessage(err, 'Failed to save the stream'));
+      setSaving(false);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="mb-6 bg-[#1a1a2e] border border-[#00d2ff] rounded-xl p-6 space-y-4">
+      <h2 className="text-xl font-bold">{existing ? 'Edit stream' : 'Add stream'}</h2>
+      {error && <div className="bg-red-500/10 border border-red-500 text-red-300 px-4 py-3 rounded-lg">{error}</div>}
+
+      <input
+        type="text" value={title} onChange={(e) => setTitle(e.target.value)}
+        placeholder="Title, e.g. Main Stage – Day 1" className={inputClass} required
+      />
+
+      <div>
+        <input
+          type="url" value={url} onChange={(e) => setUrl(e.target.value)}
+          placeholder="https://www.facebook.com/yourpage/videos/123..." className={inputClass} required
+        />
+        {url && (
+          <p className={`mt-1 text-sm ${urlError ? 'text-red-300' : 'text-green-400'}`}>
+            {urlError || '✓ Valid Facebook link. Check the preview below plays.'}
+          </p>
+        )}
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <select value={matchId} onChange={(e) => setMatchId(e.target.value)} className={inputClass}>
+          <option value="">Whole tournament (no single match)</option>
+          {Object.entries(matchLabels).map(([mid, label]) => (
+            <option key={mid} value={mid}>{label}</option>
+          ))}
+        </select>
+        <select value={status} onChange={(e) => setStatus(e.target.value as StreamStatus)} className={inputClass}>
+          <option value="scheduled">Scheduled</option>
+          <option value="live">Live</option>
+          <option value="ended">Ended (replay)</option>
+        </select>
+      </div>
+
+      {/* Preview, so staff can see the video embeds before saving */}
+      {url && !urlError && <FacebookPlayer url={url} title="Preview" />}
+
+      <div className="flex gap-2">
+        <button
+          type="submit" disabled={saving}
+          className="bg-[#00d2ff] text-black px-6 py-2 rounded-lg font-bold hover:bg-[#00b8e6] transition disabled:opacity-50"
+        >
+          {saving ? 'Saving...' : 'Save stream'}
+        </button>
+        <button type="button" onClick={onCancel} className="text-gray-400 px-6 py-2 hover:text-white transition">
+          Cancel
+        </button>
+      </div>
+    </form>
+  );
+}
