@@ -28,15 +28,31 @@ Full title: "DALTA Esports: Tournament Management System with AI-Powered Feedbac
 | `admin`    | Organizing Committee / Administrator |
 | `staff`    | Tournament Staff / Game Administrator |
 | `player`   | Players |
-| `audience` | Audience / Spectator |
+| `spectator` | Audience / Spectator |
 
-TODO: confirm these match the values actually used in the database.
+Enforced by a CHECK constraint on `profiles.role` (migration `202610161200_role_security`).
+- Sign-up can only create `player` or `spectator`. The `handle_new_user()` trigger creates the profile.
+- Only an admin, or a change run in the SQL Editor, can change a role. Promote someone with:
+  `update public.profiles set role = 'admin' where email = '...';`
+- RLS policies check roles with `public.get_my_role()`.
 
 ## Current schema (public)
-- `profiles`: id (uuid, = auth.users.id), email, role, full_name, updated_at
-- `tournaments`: id, name, description, game, start_date, end_date, max_participants,
-  registration_deadline, status, created_by (uuid → profiles), created_at, updated_at
-- `tournament_registrations`: id, tournament_id, user_id, team_name (text), status, registered_at
+- `profiles`: id (uuid, = auth.users.id, deleted with the auth user), email, role, full_name, updated_at.
+  Created by the `handle_new_user()` trigger on sign-up.
+- `games`: id (text, e.g. `mlbb`), name, min_players, max_players. Edited only in the SQL Editor.
+- `tournaments`: id, name, description, game (text name, kept for older pages), game_id (→ games),
+  start_date, end_date, max_participants, registration_deadline, status (`upcoming`/`active`/`completed`/`cancelled`),
+  created_by (→ profiles, set null when the user is deleted), created_at, updated_at
+- `teams`: id, name, game_id (→ games), captain_id (→ profiles), created_at. UNIQUE (name, game_id)
+- `team_members`: id, team_id, user_id, role (`captain`/`player`), joined_at. Players join via `join_team(code)`.
+- `team_join_codes`: team_id, join_code. Only the captain can read it.
+- `tournament_registrations`: id, tournament_id, user_id (who registered), team_id (→ teams),
+  team_name (only on old rows), status, registered_at. UNIQUE (tournament_id, team_id)
+- `player_game_profiles`: id, user_id, game_id (→ games), ign, in_game_role, rank, created_at. UNIQUE (user_id, game_id)
+
+Database functions: `get_my_role()`, `current_user_role()` (older alias), `join_team(code)`,
+`get_team_roster(team_id)`, `delete_own_account()`. Business rules (roster size, registration checks)
+are enforced by triggers with readable error messages.
 
 ## Modules (from the business case)
 1. Account Management: done. Registration, login, role-based access.

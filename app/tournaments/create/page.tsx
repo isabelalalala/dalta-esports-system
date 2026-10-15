@@ -1,16 +1,18 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
 import Link from 'next/link';
 import { getErrorMessage } from '@/utils/errors';
+import type { Game } from '@/utils/types';
 
 export default function CreateTournamentPage() {
   const supabase = createClient();
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
-  const [game, setGame] = useState('');
+  const [gameId, setGameId] = useState('');
+  const [games, setGames] = useState<Game[]>([]);
   const [maxParticipants, setMaxParticipants] = useState('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
@@ -19,6 +21,15 @@ export default function CreateTournamentPage() {
   const [error, setError] = useState('');
 
   const router = useRouter();
+
+  // Load the supported games for the dropdown
+  useEffect(() => {
+    const fetchGames = async () => {
+      const { data } = await supabase.from('games').select('*').order('name');
+      setGames(data || []);
+    };
+    fetchGames();
+  }, [supabase]);
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,7 +48,9 @@ export default function CreateTournamentPage() {
         {
           name,
           description,
-          game,
+          // game_id links to the games table; game keeps the name for older pages
+          game_id: gameId,
+          game: games.find((g) => g.id === gameId)?.name ?? '',
           max_participants: Number(maxParticipants),
           start_date: startDate,
           end_date: endDate,
@@ -96,14 +109,17 @@ export default function CreateTournamentPage() {
             <label className="block text-sm font-semibold text-gray-300 mb-2">
               Game *
             </label>
-            <input
-              type="text"
-              value={game}
-              onChange={(e) => setGame(e.target.value)}
-              placeholder="e.g., DOTA 2, Mobile Legends, Valorant"
-              className="w-full rounded-lg border border-[#00d2ff]/40 bg-[#0a0a0c] px-4 py-3 text-white placeholder-gray-500 outline-none focus:border-[#00d2ff]"
+            <select
+              value={gameId}
+              onChange={(e) => setGameId(e.target.value)}
+              className="w-full rounded-lg border border-[#00d2ff]/40 bg-[#0a0a0c] px-4 py-3 text-white outline-none focus:border-[#00d2ff]"
               required
-            />
+            >
+              <option value="">-- Select Game --</option>
+              {games.map((g) => (
+                <option key={g.id} value={g.id}>{g.name}</option>
+              ))}
+            </select>
           </div>
 
           <div>

@@ -3,72 +3,108 @@
 import { useState, useEffect } from 'react';
 import { createClient } from '@/utils/supabase/client';
 import Link from 'next/link';
-import type { Team } from '@/utils/types';
+import { getErrorMessage } from '@/utils/errors';
+import type { Game, Team } from '@/utils/types';
 
 export default function TeamsPage() {
   const supabase = createClient();
   const [teams, setTeams] = useState<Team[]>([]);
+  const [games, setGames] = useState<Game[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
   const [showCreate, setShowCreate] = useState(false);
   const [newTeamName, setNewTeamName] = useState('');
-  const [game, setGame] = useState('');
+  const [gameId, setGameId] = useState('');
+  const [joinCode, setJoinCode] = useState('');
+  const [saving, setSaving] = useState(false);
   // Increase this to make the effect below load the teams again
   const [reloadCount, setReloadCount] = useState(0);
 
   useEffect(() => {
-    const fetchTeams = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
+    const fetchData = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) return;
+
+        const { data: gamesData, error: gamesError } = await supabase
+          .from('games')
+          .select('*')
+          .order('name');
+        if (gamesError) throw gamesError;
+        setGames(gamesData || []);
+
+        // Teams I'm a member of (as captain or player), with the game and member count
+        const { data: memberRows, error: teamsError } = await supabase
+          .from('team_members')
+          .select('teams(*, games(*), team_members(count))')
+          .eq('user_id', session.user.id);
+        if (teamsError) throw teamsError;
+        setTeams((memberRows || []).map((row) => row.teams as unknown as Team));
+      } catch (err) {
+        setError(getErrorMessage(err, 'Failed to load teams'));
+      } finally {
         setLoading(false);
-        return;
       }
-
-      const { data } = await supabase
-        .from('teams')
-        .select('*, team_members(count)')
-        .order('created_at', { ascending: false });
-
-      setTeams(data || []);
-      setLoading(false);
     };
 
-    fetchTeams();
+    fetchData();
   }, [supabase, reloadCount]);
 
   const handleCreateTeam = async (e: React.FormEvent) => {
     e.preventDefault();
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) return;
+    setSaving(true);
+    setError('');
 
-    // 1. Create Team
-    const { data: team, error } = await supabase
-      .from('teams')
-      .insert([{ name: newTeamName, game, captain_id: session.user.id }])
-      .select()
-      .single();
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
 
-    if (error) {
-      alert(error.message);
-      return;
+      // The database adds me as captain and creates the join code automatically.
+      const { error: insertError } = await supabase
+        .from('teams')
+        .insert([{ name: newTeamName.trim(), game_id: gameId, captain_id: session.user.id }]);
+      if (insertError) throw insertError;
+
+      setNewTeamName('');
+      setGameId('');
+      setShowCreate(false);
+      setReloadCount((n) => n + 1);
+    } catch (err) {
+      setError(getErrorMessage(err, 'Failed to create team'));
+    } finally {
+      setSaving(false);
     }
+  };
 
-    // 2. Add creator as captain in team_members
-    await supabase.from('team_members').insert([
-      { team_id: team.id, user_id: session.user.id, role: 'captain' }
-    ]);
+  const handleJoinTeam = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSaving(true);
+    setError('');
 
-    setNewTeamName('');
-    setGame('');
-    setShowCreate(false);
-    setReloadCount((n) => n + 1);
+    try {
+      // join_team checks the code, the roster size and one-team-per-game
+      const { error: joinError } = await supabase.rpc('join_team', { code: joinCode });
+      if (joinError) throw joinError;
+
+      setJoinCode('');
+      setReloadCount((n) => n + 1);
+    } catch (err) {
+      setError(getErrorMessage(err, 'Failed to join team'));
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
     <div className="min-h-screen bg-[#0a0a0c] text-white p-8">
       <div className="max-w-5xl mx-auto">
+        <Link href="/dashboard" className="text-[#00d2ff] hover:underline mb-6 inline-block">
+          ← Back to Dashboard
+        </Link>
+
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-4xl font-black italic uppercase tracking-tighter">My Teams</h1>
-          <button 
+          <button
             onClick={() => setShowCreate(!showCreate)}
             className="bg-[#00d2ff] text-black px-6 py-2 rounded font-bold hover:bg-[#00b8e6]"
           >
@@ -76,37 +112,74 @@ export default function TeamsPage() {
           </button>
         </div>
 
+        {error && (
+          <div className="mb-6 bg-red-500/10 border border-red-500 text-red-300 px-4 py-3 rounded">
+            {error}
+          </div>
+        )}
+
         {showCreate && (
           <form onSubmit={handleCreateTeam} className="mb-8 p-6 bg-[#1a1a2e] border border-[#00d2ff] rounded-lg">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <input 
-                type="text" placeholder="Team Name" 
+              <input
+                type="text" placeholder="Team Name"
                 value={newTeamName} onChange={(e) => setNewTeamName(e.target.value)}
                 className="bg-[#0a0a0c] border border-gray-700 p-3 rounded text-white outline-none focus:border-[#00d2ff]"
                 required
               />
-              <input 
-                type="text" placeholder="Game (e.g. DOTA 2)" 
-                value={game} onChange={(e) => setGame(e.target.value)}
+              <select
+                value={gameId} onChange={(e) => setGameId(e.target.value)}
                 className="bg-[#0a0a0c] border border-gray-700 p-3 rounded text-white outline-none focus:border-[#00d2ff]"
                 required
-              />
+              >
+                <option value="">-- Select Game --</option>
+                {games.map((g) => (
+                  <option key={g.id} value={g.id}>
+                    {g.name} (up to {g.max_players} {g.max_players === 1 ? 'player' : 'players'})
+                  </option>
+                ))}
+              </select>
             </div>
-            <button type="submit" className="mt-4 w-full bg-[#00d2ff] text-black py-3 rounded font-bold">
-              Confirm Creation
+            <button
+              type="submit" disabled={saving}
+              className="mt-4 w-full bg-[#00d2ff] text-black py-3 rounded font-bold disabled:opacity-50"
+            >
+              {saving ? 'Creating...' : 'Confirm Creation'}
             </button>
           </form>
         )}
 
+        {/* Join an existing team with the code the captain shares */}
+        <form onSubmit={handleJoinTeam} className="mb-8 flex gap-3">
+          <input
+            type="text" placeholder="Have a team code? Enter it here"
+            value={joinCode} onChange={(e) => setJoinCode(e.target.value)}
+            className="flex-1 bg-[#1a1a2e] border border-gray-700 p-3 rounded text-white uppercase outline-none focus:border-[#00d2ff]"
+            required
+          />
+          <button
+            type="submit" disabled={saving}
+            className="border border-[#00d2ff] text-[#00d2ff] px-6 rounded font-bold hover:bg-[#00d2ff] hover:text-black transition disabled:opacity-50"
+          >
+            Join Team
+          </button>
+        </form>
+
         {loading && <p className="text-gray-400 animate-pulse">Loading teams...</p>}
+
+        {!loading && teams.length === 0 && (
+          <p className="text-gray-400">You&apos;re not on any team yet. Create one or join with a code.</p>
+        )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {teams.map(team => (
             <div key={team.id} className="bg-[#111116] border border-[#00d2ff]/20 p-6 rounded-lg hover:border-[#00d2ff] transition">
               <h2 className="text-2xl font-bold text-[#00d2ff]">{team.name}</h2>
-              <p className="text-gray-400 mt-1 uppercase text-xs font-bold tracking-widest">{team.game}</p>
+              <p className="text-gray-400 mt-1 uppercase text-xs font-bold tracking-widest">{team.games?.name}</p>
               <div className="mt-4 flex justify-between items-center text-sm">
-                <span className="text-gray-500">Members: {team.team_members?.[0]?.count || 0}</span>
+                <span className="text-gray-500">
+                  Members: {team.team_members?.[0]?.count || 0} / {team.games?.max_players}
+                </span>
                 <Link href={`/teams/${team.id}`} className="text-[#00d2ff] hover:underline font-bold">
                   Manage Team →
                 </Link>

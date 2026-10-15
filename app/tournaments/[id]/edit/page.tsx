@@ -5,12 +5,14 @@ import { useRouter, useParams } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
 import Link from 'next/link';
 import { getErrorMessage } from '@/utils/errors';
+import type { Game } from '@/utils/types';
 
 export default function EditTournamentPage() {
   const supabase = createClient();
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
-  const [game, setGame] = useState('');
+  const [gameId, setGameId] = useState('');
+  const [games, setGames] = useState<Game[]>([]);
   const [maxParticipants, setMaxParticipants] = useState('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
@@ -27,6 +29,9 @@ export default function EditTournamentPage() {
   useEffect(() => {
     const fetchTournament = async () => {
       try {
+        const { data: gamesData } = await supabase.from('games').select('*').order('name');
+        setGames(gamesData || []);
+
         const { data, error: fetchError } = await supabase
           .from('tournaments')
           .select('*')
@@ -37,7 +42,8 @@ export default function EditTournamentPage() {
 
         setName(data.name);
         setDescription(data.description);
-        setGame(data.game);
+        // Older tournaments may have no game_id yet; the admin picks one here
+        setGameId(data.game_id ?? '');
         setMaxParticipants(data.max_participants);
         setStartDate(data.start_date);
         setEndDate(data.end_date);
@@ -64,7 +70,8 @@ export default function EditTournamentPage() {
         .update({
           name,
           description,
-          game,
+          game_id: gameId,
+          game: games.find((g) => g.id === gameId)?.name ?? '',
           max_participants: Number(maxParticipants),
           start_date: startDate,
           end_date: endDate,
@@ -129,13 +136,17 @@ export default function EditTournamentPage() {
             <label className="block text-sm font-semibold text-gray-300 mb-2">
               Game *
             </label>
-            <input
-              type="text"
-              value={game}
-              onChange={(e) => setGame(e.target.value)}
+            <select
+              value={gameId}
+              onChange={(e) => setGameId(e.target.value)}
               className="w-full rounded-lg border border-[#00d2ff]/40 bg-[#0a0a0c] px-4 py-3 text-white outline-none focus:border-[#00d2ff]"
               required
-            />
+            >
+              <option value="">-- Select Game --</option>
+              {games.map((g) => (
+                <option key={g.id} value={g.id}>{g.name}</option>
+              ))}
+            </select>
           </div>
 
           <div>

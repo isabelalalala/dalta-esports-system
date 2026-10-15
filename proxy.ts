@@ -5,6 +5,8 @@ import { NextResponse, type NextRequest } from 'next/server';
 // [^/]+ matches a tournament id, e.g. /tournaments/123/edit
 const protectedRoutes = [
   /^\/dashboard(\/.*)?$/,
+  /^\/teams(\/.*)?$/,
+  /^\/profile(\/.*)?$/,
   /^\/tournaments\/create$/,
   /^\/tournaments\/[^/]+\/(edit|registrations)$/,
 ];

@@ -40,21 +40,6 @@ export default function TournamentDetailsPage() {
 
         setProfile(profileData);
 
-        // after setProfile(profileData);
-
-const { data: teamsData, error: teamsError } = await supabase
-  .from('teams')
-  .select('id, name, game')
-  .eq('captain_id', session.user.id)   // only teams where user is captain
-  .order('created_at', { ascending: false });
-
-if (teamsError) {
-  console.log('Failed to load teams', teamsError.message);
-} else {
-  setTeams(teamsData || []);
-}
-
-
         const { data, error } = await supabase
           .from('tournaments')
           .select('*')
@@ -63,6 +48,19 @@ if (teamsError) {
 
         if (error) throw error;
         setTournament(data);
+
+        // Teams I captain for this tournament's game (only captains can register)
+        if (data.game_id) {
+          const { data: teamsData, error: teamsError } = await supabase
+            .from('teams')
+            .select('*, games(*), team_members(count)')
+            .eq('captain_id', session.user.id)
+            .eq('game_id', data.game_id)
+            .order('created_at', { ascending: false });
+
+          if (teamsError) throw teamsError;
+          setTeams(teamsData || []);
+        }
       } catch (err) {
         setError(getErrorMessage(err, 'Failed to load tournament'));
       } finally {
@@ -89,26 +87,17 @@ if (teamsError) {
       return;
     }
 
-    // Get selected team (for name)
-    const team = teams.find((t) => t.id === selectedTeamId);
-    if (!team) {
-      throw new Error('Selected team not found.');
-    }
-
-    // Register team for tournament
+    // The database checks the rules (deadline, game, team size, tournament full,
+    // already registered) and returns a readable error if one fails.
     const { error: regError } = await supabase
       .from('tournament_registrations')
-      .upsert(
-        [
-          {
-            tournament_id: id,
-            team_id: selectedTeamId,
-            team_name: team.name,          // still store name for convenience
-            user_id: session.session.user.id,
-          },
-        ],
-        { onConflict: 'tournament_id,team_id' }
-      );
+      .insert([
+        {
+          tournament_id: id,
+          team_id: selectedTeamId,
+          user_id: session.session.user.id,
+        },
+      ]);
 
     if (regError) throw regError;
 
@@ -215,9 +204,13 @@ if (teamsError) {
         Select Your Team
       </label>
 
-      {teams.length === 0 ? (
+      {!tournament.game_id ? (
         <div className="bg-red-500/10 border border-red-500 text-red-300 px-4 py-3 rounded">
-          You have no teams yet. Create one first on the{' '}
+          This tournament has no game set yet, so teams can&apos;t register. Ask an admin to edit it.
+        </div>
+      ) : teams.length === 0 ? (
+        <div className="bg-red-500/10 border border-red-500 text-red-300 px-4 py-3 rounded">
+          You don&apos;t captain a {tournament.game} team yet. Create one first on the{' '}
           <Link href="/teams" className="font-bold underline hover:text-white">Teams</Link> page.
         </div>
       ) : (
@@ -230,7 +223,7 @@ if (teamsError) {
           <option value="">-- Select Team --</option>
           {teams.map((team) => (
             <option key={team.id} value={team.id}>
-              {team.name} {team.game ? `(${team.game})` : ''}
+              {team.name} ({team.team_members?.[0]?.count || 0} / {team.games?.max_players} players)
             </option>
           ))}
         </select>

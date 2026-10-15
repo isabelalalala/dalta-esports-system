@@ -86,20 +86,36 @@ export default function Dashboard() {
       <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
           <h1 style={{ fontSize: '2rem', color: '#00d2ff' }}>DALTA ESPORTS Dashboard</h1>
-          <button
-            onClick={handleLogout}
-            style={{
-              padding: '0.75rem 1.5rem',
-              background: '#ff4444',
-              color: 'white',
-              border: 'none',
-              borderRadius: '8px',
-              cursor: 'pointer',
-              fontWeight: 'bold',
-            }}
-          >
-            Logout
-          </button>
+          {/* Shown for every role */}
+          <div style={{ display: 'flex', gap: '0.75rem' }}>
+            <Link
+              href="/profile"
+              style={{
+                padding: '0.75rem 1.5rem',
+                border: '1px solid #00d2ff',
+                color: '#00d2ff',
+                borderRadius: '8px',
+                fontWeight: 'bold',
+                textDecoration: 'none',
+              }}
+            >
+              My Profile
+            </Link>
+            <button
+              onClick={handleLogout}
+              style={{
+                padding: '0.75rem 1.5rem',
+                background: '#ff4444',
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
+                cursor: 'pointer',
+                fontWeight: 'bold',
+              }}
+            >
+              Logout
+            </button>
+          </div>
         </div>
 
         <div
@@ -114,9 +130,9 @@ export default function Dashboard() {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
             <div>
               <p style={{ fontSize: '1.1rem', marginBottom: '0.5rem' }}>
-                Welcome, <span style={{ color: '#00d2ff' }}>{user?.email}</span>
+                {/* Older accounts may not have a name yet, so fall back to the email */}
+                Welcome, <span style={{ color: '#00d2ff' }}>{profile?.full_name || user?.email}</span>
               </p>
-              <p style={{ color: '#aaa' }}>User ID: {user?.id}</p>
             </div>
 
             <div

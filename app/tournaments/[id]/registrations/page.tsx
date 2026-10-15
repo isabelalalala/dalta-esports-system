@@ -5,15 +5,7 @@ import { useParams } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
 import Link from 'next/link';
 import { getErrorMessage } from '@/utils/errors';
-import type { Tournament } from '@/utils/types';
-
-interface Registration {
-  id: string;
-  user_id: string;
-  team_name: string;
-  registered_at: string;
-  status: string;
-}
+import type { Registration, Tournament } from '@/utils/types';
 
 export default function RegistrationsPage() {
   const supabase = createClient();
@@ -39,10 +31,10 @@ export default function RegistrationsPage() {
         if (tournError) throw tournError;
         setTournament(tournamentData);
 
-        // Fetch registrations
+        // Fetch registrations with their team, the team's game and its member count
         const { data: regsData, error: regsError } = await supabase
           .from('tournament_registrations')
-          .select('*')
+          .select('*, teams(*, games(*), team_members(count))')
           .eq('tournament_id', id)
           .order('registered_at', { ascending: false });
 
@@ -126,7 +118,13 @@ export default function RegistrationsPage() {
                 <div key={reg.id} className="px-6 py-4 grid grid-cols-1 md:grid-cols-4 gap-4 items-center hover:bg-[#0a0a0c]/50 transition">
                   <div className="text-gray-400">{idx + 1}</div>
                   <div className="font-semibold text-white">
-                    {reg.team_name || 'Unnamed Team'}
+                    {/* Older registrations have no team, only the typed team_name */}
+                    {reg.teams?.name || reg.team_name || 'Unnamed Team'}
+                    {reg.teams && (
+                      <span className="block text-gray-500 text-sm font-normal">
+                        {reg.teams.team_members?.[0]?.count || 0} / {reg.teams.games?.max_players} players
+                      </span>
+                    )}
                   </div>
                   <div className="text-gray-400 text-sm">
                     {new Date(reg.registered_at).toLocaleDateString()}

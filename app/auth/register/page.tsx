@@ -7,13 +7,13 @@ import { useRouter } from 'next/navigation'
 
 export default function Register() {
   const supabase = createClient()
+  const [fullName, setFullName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [role, setRole] = useState('player')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
-  const [adminCode, setAdminCode] = useState('')
   const router = useRouter()
 
   const handleRegister = async (e: React.FormEvent) => {
@@ -27,25 +27,16 @@ export default function Register() {
     return
   }
 
-  // Only allow admin/staff with a special code
-  if ((role === 'admin' || role === 'staff') && !adminCode) {
-    setError('Admin/Staff registration requires an access code')
-    setLoading(false)
-    return
-  }
-
-  if ((role === 'admin' || role === 'staff') && adminCode !== 'DALTA2025') {
-    setError('Invalid access code')
-    setLoading(false)
-    return
-  }
-
   try {
     const { error } = await supabase.auth.signUp({
       email,
       password,
       options: {
+        // The database trigger handle_new_user() creates the profile from this data.
+        // It only accepts 'player'; any other role is saved as 'spectator'.
+        // Admin and staff roles are given by an administrator, never at sign-up.
         data: {
+          full_name: fullName.trim(),
           role,
         },
       },
@@ -91,6 +82,23 @@ export default function Register() {
             {error}
           </div>
         )}
+
+        <input
+          type="text"
+          placeholder="Full Name"
+          value={fullName}
+          onChange={(e) => setFullName(e.target.value)}
+          style={{
+            width: '100%',
+            padding: '0.75rem',
+            marginBottom: '1rem',
+            background: '#0a0a0c',
+            color: 'white',
+            border: '1px solid #00d2ff',
+            borderRadius: '8px',
+          }}
+          required
+        />
 
         <input
           type="email"
@@ -144,28 +152,6 @@ export default function Register() {
         />
 
         <label style={{ color: '#aaa', display: 'block', marginBottom: '0.5rem' }}>I am a:</label>
-        {(role === 'admin' || role === 'staff') && (
-  <>
-    <label style={{ color: '#aaa', display: 'block', marginBottom: '0.5rem' }}>Access Code</label>
-    <input
-      type="password"
-      placeholder="Enter access code"
-      value={adminCode}
-      onChange={(e) => setAdminCode(e.target.value)}
-      style={{
-        width: '100%',
-        padding: '0.75rem',
-        marginBottom: '1rem',
-        background: '#0a0a0c',
-        color: 'white',
-        border: '1px solid #ff6b6b',
-        borderRadius: '8px',
-      }}
-      required
-    />
-  </>
-)}
-
 <select
   value={role}
   onChange={(e) => setRole(e.target.value)}
@@ -181,8 +167,6 @@ export default function Register() {
 >
   <option value="player">Player</option>
   <option value="spectator">Audience / Spectator</option>
-  <option value="staff">Tournament Staff</option>
-  <option value="admin">Administrator</option>
 </select>
 
 
