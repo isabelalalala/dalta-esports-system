@@ -15,7 +15,7 @@ export default function TeamsPage() {
   const [showCreate, setShowCreate] = useState(false);
   const [newTeamName, setNewTeamName] = useState('');
   const [gameId, setGameId] = useState('');
-  const [joinCode, setJoinCode] = useState('');
+  const [description, setDescription] = useState('');
   const [saving, setSaving] = useState(false);
   // Increase this to make the effect below load the teams again
   const [reloadCount, setReloadCount] = useState(0);
@@ -59,37 +59,24 @@ export default function TeamsPage() {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) return;
 
-      // The database adds me as captain and creates the join code automatically.
+      // The database adds me as the captain member automatically.
       const { error: insertError } = await supabase
         .from('teams')
-        .insert([{ name: newTeamName.trim(), game_id: gameId, captain_id: session.user.id }]);
+        .insert([{
+          name: newTeamName.trim(),
+          game_id: gameId,
+          description: description.trim() || null,
+          captain_id: session.user.id,
+        }]);
       if (insertError) throw insertError;
 
       setNewTeamName('');
       setGameId('');
+      setDescription('');
       setShowCreate(false);
       setReloadCount((n) => n + 1);
     } catch (err) {
       setError(getErrorMessage(err, 'Failed to create team'));
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const handleJoinTeam = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSaving(true);
-    setError('');
-
-    try {
-      // join_team checks the code, the roster size and one-team-per-game
-      const { error: joinError } = await supabase.rpc('join_team', { code: joinCode });
-      if (joinError) throw joinError;
-
-      setJoinCode('');
-      setReloadCount((n) => n + 1);
-    } catch (err) {
-      setError(getErrorMessage(err, 'Failed to join team'));
     } finally {
       setSaving(false);
     }
@@ -140,6 +127,12 @@ export default function TeamsPage() {
                 ))}
               </select>
             </div>
+            <textarea
+              placeholder="Description (optional)"
+              value={description} onChange={(e) => setDescription(e.target.value)}
+              rows={3}
+              className="mt-4 w-full bg-[#0a0a0c] border border-gray-700 p-3 rounded text-white outline-none focus:border-[#00d2ff]"
+            />
             <button
               type="submit" disabled={saving}
               className="mt-4 w-full bg-[#00d2ff] text-black py-3 rounded font-bold disabled:opacity-50"
@@ -149,26 +142,10 @@ export default function TeamsPage() {
           </form>
         )}
 
-        {/* Join an existing team with the code the captain shares */}
-        <form onSubmit={handleJoinTeam} className="mb-8 flex gap-3">
-          <input
-            type="text" placeholder="Have a team code? Enter it here"
-            value={joinCode} onChange={(e) => setJoinCode(e.target.value)}
-            className="flex-1 bg-[#1a1a2e] border border-gray-700 p-3 rounded text-white uppercase outline-none focus:border-[#00d2ff]"
-            required
-          />
-          <button
-            type="submit" disabled={saving}
-            className="border border-[#00d2ff] text-[#00d2ff] px-6 rounded font-bold hover:bg-[#00d2ff] hover:text-black transition disabled:opacity-50"
-          >
-            Join Team
-          </button>
-        </form>
-
         {loading && <p className="text-gray-400 animate-pulse">Loading teams...</p>}
 
         {!loading && teams.length === 0 && (
-          <p className="text-gray-400">You&apos;re not on any team yet. Create one or join with a code.</p>
+          <p className="text-gray-400">You&apos;re not on any team yet. Create one, or ask a captain to add you. Captains can only add players who have a game profile for that game on their My Profile page.</p>
         )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -176,6 +153,7 @@ export default function TeamsPage() {
             <div key={team.id} className="bg-[#111116] border border-[#00d2ff]/20 p-6 rounded-lg hover:border-[#00d2ff] transition">
               <h2 className="text-2xl font-bold text-[#00d2ff]">{team.name}</h2>
               <p className="text-gray-400 mt-1 uppercase text-xs font-bold tracking-widest">{team.games?.name}</p>
+              {team.description && <p className="text-gray-300 mt-3 text-sm">{team.description}</p>}
               <div className="mt-4 flex justify-between items-center text-sm">
                 <span className="text-gray-500">
                   Members: {team.team_members?.[0]?.count || 0} / {team.games?.max_players}

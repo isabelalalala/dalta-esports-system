@@ -1,0 +1,119 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import { createClient } from '@/utils/supabase/client';
+import Link from 'next/link';
+import { getErrorMessage } from '@/utils/errors';
+import type { Profile, Tournament } from '@/utils/types';
+import { formatDate, getTournamentStatus, statusLabels, statusStyles } from '@/utils/tournaments';
+
+// Tournament with the number of matches in its bracket
+type TournamentWithMatches = Tournament & { matches: { count: number }[] };
+
+export default function MatchesOverviewPage() {
+  const supabase = createClient();
+  const [tournaments, setTournaments] = useState<TournamentWithMatches[]>([]);
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) return;
+
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', session.user.id)
+          .single();
+        setProfile(profileData);
+
+        const { data, error: tourError } = await supabase
+          .from('tournaments')
+          .select('*, matches(count)')
+          .order('start_date', { ascending: false });
+        if (tourError) throw tourError;
+        setTournaments(data || []);
+      } catch (err) {
+        setError(getErrorMessage(err, 'Failed to load tournaments'));
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [supabase]);
+
+  if (loading) return <div className="min-h-screen bg-[#0a0a0c] text-white p-10 text-center">Loading...</div>;
+
+  // Hiding the page is only for convenience; the database refuses changes from other roles.
+  if (profile?.role !== 'admin' && profile?.role !== 'staff') {
+    return (
+      <div className="min-h-screen bg-[#0a0a0c] text-white p-10 text-center">
+        Only organizers can manage matches.{' '}
+        <Link href="/dashboard" className="text-[#00d2ff] underline">Back to the dashboard</Link>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-[#0a0a0c] text-white px-4 py-10">
+      <div className="max-w-4xl mx-auto">
+        <Link href="/dashboard" className="inline-block text-[#00d2ff] hover:underline mb-6">
+          ← Back to Dashboard
+        </Link>
+
+        <h1 className="text-4xl font-bold text-[#00d2ff] mb-8">Match Management</h1>
+
+        {error && (
+          <div className="mb-6 bg-red-500/10 border border-red-500 text-red-300 px-4 py-3 rounded-lg">{error}</div>
+        )}
+
+        {tournaments.length === 0 ? (
+          <p className="text-gray-400">No tournaments yet.</p>
+        ) : (
+          <ul className="space-y-3">
+            {tournaments.map((t) => {
+              const matchCount = t.matches?.[0]?.count || 0;
+              const status = getTournamentStatus(t);
+
+              return (
+                <li
+                  key={t.id}
+                  className="bg-[#1a1a2e] border border-[#00d2ff]/30 rounded-lg p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+                >
+                  <div>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="font-bold text-lg">{t.name}</span>
+                      <span className={`px-2 py-0.5 rounded-full border text-[10px] font-bold uppercase ${statusStyles[status]}`}>
+                        {statusLabels[status]}
+                      </span>
+                    </div>
+                    <p className="text-gray-400 text-sm">
+                      {t.game} · {formatDate(t.start_date)} – {formatDate(t.end_date)}
+                    </p>
+                  </div>
+
+                  {matchCount > 0 ? (
+                    <Link
+                      href={`/tournaments/${t.id}/matches`}
+                      className="bg-[#00d2ff] text-black px-4 py-2 rounded font-bold hover:bg-[#00b8e6] transition text-center"
+                    >
+                      Manage {matchCount} matches
+                    </Link>
+                  ) : (
+                    <Link href={`/tournaments/${t.id}`} className="text-gray-400 text-sm hover:text-white">
+                      No bracket yet. Generate it on the tournament page →
+                    </Link>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </div>
+    </div>
+  );
+}

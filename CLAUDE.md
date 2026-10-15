@@ -40,18 +40,29 @@ Enforced by a CHECK constraint on `profiles.role` (migration `202610161200_role_
 - `profiles`: id (uuid, = auth.users.id, deleted with the auth user), email, role, full_name, updated_at.
   Created by the `handle_new_user()` trigger on sign-up.
 - `games`: id (text, e.g. `mlbb`), name, min_players, max_players. Edited only in the SQL Editor.
-- `tournaments`: id, name, description, game (text name, kept for older pages), game_id (→ games),
-  start_date, end_date, max_participants, registration_deadline, status (`upcoming`/`active`/`completed`/`cancelled`),
-  created_by (→ profiles, set null when the user is deleted), created_at, updated_at
-- `teams`: id, name, game_id (→ games), captain_id (→ profiles), created_at. UNIQUE (name, game_id)
-- `team_members`: id, team_id, user_id, role (`captain`/`player`), joined_at. Players join via `join_team(code)`.
-- `team_join_codes`: team_id, join_code. Only the captain can read it.
+- `tournaments`: id, name, description, rules, game (one of the 5 game names), game_id (→ games, required),
+  start_date, end_date, max_participants, registration_deadline (≤ start_date; end_date ≥ start_date),
+  status (only `upcoming` or `cancelled` is stored), created_by (→ profiles, set null when the user is deleted),
+  created_at, updated_at. The status shown in the app (upcoming / registration closed / ongoing / completed /
+  cancelled) is calculated from the dates by `getTournamentStatus()` in `utils/tournaments.ts`.
+- `teams`: id, name, description, game_id (→ games), captain_id (→ profiles), created_at. UNIQUE (name, game_id).
+  The captain can edit name and description; game and captain can't change.
+- `team_members`: id, team_id, user_id, role (`captain`/`player`), joined_at. The captain is added automatically;
+  the captain adds players found with `search_players()`. Added players need a game profile for the team's game.
 - `tournament_registrations`: id, tournament_id, user_id (who registered), team_id (→ teams),
-  team_name (only on old rows), status, registered_at. UNIQUE (tournament_id, team_id)
+  team_name (only on old rows), status (`pending`/`approved`/`rejected`/`cancelled`, default pending), registered_at.
+  UNIQUE (tournament_id, team_id). Only pending + approved count towards max_participants.
+  Admin/staff approve or reject; the captain can cancel or delete only while pending; only admin deletes others.
+  Tournaments: anyone reads, admin/staff create and edit, only admin deletes.
+- `matches`: id, tournament_id, round, match_number, team_a_id, team_b_id, scheduled_at, status
+  (`scheduled`/`live`/`completed`), score_a, score_b, winner_team_id, next_match_id, created_at, updated_at.
+  Single elimination: match k of round r feeds match ceil(k/2) of round r+1 (team A if k is odd, B if even).
+  A trigger moves the winner forward; results lock once the next match starts. Anyone reads; admin/staff write.
+  Teams in a bracket can't be deleted.
 - `player_game_profiles`: id, user_id, game_id (→ games), ign, in_game_role, rank, created_at. UNIQUE (user_id, game_id)
 
-Database functions: `get_my_role()`, `current_user_role()` (older alias), `join_team(code)`,
-`get_team_roster(team_id)`, `delete_own_account()`. Business rules (roster size, registration checks)
+Database functions: `get_my_role()`, `current_user_role()` (older alias), `search_players(game_id, search)`,
+`get_team_roster(team_id)` (name, IGN, in-game role), `delete_own_account()`. Business rules (roster size, registration checks)
 are enforced by triggers with readable error messages.
 
 ## Modules (from the business case)

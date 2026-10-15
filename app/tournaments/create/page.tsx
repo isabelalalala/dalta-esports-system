@@ -5,12 +5,14 @@ import { useRouter } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
 import Link from 'next/link';
 import { getErrorMessage } from '@/utils/errors';
+import { validateTournamentDates } from '@/utils/tournaments';
 import type { Game } from '@/utils/types';
 
 export default function CreateTournamentPage() {
   const supabase = createClient();
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
+  const [rules, setRules] = useState('');
   const [gameId, setGameId] = useState('');
   const [games, setGames] = useState<Game[]>([]);
   const [maxParticipants, setMaxParticipants] = useState('');
@@ -36,6 +38,14 @@ export default function CreateTournamentPage() {
     setLoading(true);
     setError('');
 
+    // Check the date order before saving (the database checks it too)
+    const dateError = validateTournamentDates(startDate, endDate, registrationDeadline);
+    if (dateError) {
+      setError(dateError);
+      setLoading(false);
+      return;
+    }
+
     try {
       const { data: { session } } = await supabase.auth.getSession();
 
@@ -48,6 +58,7 @@ export default function CreateTournamentPage() {
         {
           name,
           description,
+          rules: rules.trim() || null,
           // game_id links to the games table; game keeps the name for older pages
           game_id: gameId,
           game: games.find((g) => g.id === gameId)?.name ?? '',
@@ -132,6 +143,19 @@ export default function CreateTournamentPage() {
               placeholder="Tournament details..."
               rows={4}
               className="w-full rounded-lg border border-[#00d2ff]/40 bg-[#0a0a0c] px-4 py-3 text-white placeholder-gray-500 outline-none focus:border-[#00d2ff] resize-none"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-semibold text-gray-300 mb-2">
+              Rules
+            </label>
+            <textarea
+              value={rules}
+              onChange={(e) => setRules(e.target.value)}
+              rows={6}
+              placeholder="Format, match rules, check-in time, etc."
+              className="w-full rounded-lg border border-[#00d2ff]/40 bg-[#0a0a0c] px-4 py-3 text-white placeholder-gray-500 outline-none focus:border-[#00d2ff]"
             />
           </div>
 

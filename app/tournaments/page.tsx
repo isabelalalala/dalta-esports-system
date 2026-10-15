@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
 import Link from 'next/link';
 import { getErrorMessage } from '@/utils/errors';
+import { ACTIVE_REGISTRATION_STATUSES } from '@/utils/types';
+import { getTournamentStatus, statusLabels, statusStyles } from '@/utils/tournaments';
 import type { Profile, Tournament } from '@/utils/types';
 
 export default function TournamentsPage() {
@@ -33,13 +35,15 @@ export default function TournamentsPage() {
           .single();
         setProfile(profileData);
 
-        // Fetch tournaments AND count registrations automatically
+        // Fetch tournaments with a count of their registrations.
+        // Only pending + approved registrations count (the filter applies to the counted rows).
         const { data, error: tourError } = await supabase
           .from('tournaments')
           .select(`
             *,
             tournament_registrations (count)
           `)
+          .in('tournament_registrations.status', ACTIVE_REGISTRATION_STATUSES)
           .order('created_at', { ascending: false });
 
         if (tourError) throw tourError;
@@ -92,21 +96,22 @@ export default function TournamentsPage() {
         {/* Tournaments Grid */}
         {tournaments.length === 0 ? (
           <div className="text-center text-gray-500 py-20 border-2 border-dashed border-[#1a1a2e] rounded-xl">
-            <p>No active tournaments found.</p>
+            <p>No tournaments yet.</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {tournaments.map((tournament) => {
               // Extract the count from the joined table
               const registeredCount = tournament.tournament_registrations?.[0]?.count || 0;
-              
+              const status = getTournamentStatus(tournament);
+
               return (
                 <Link key={tournament.id} href={`/tournaments/${tournament.id}`}>
                   <div className="group bg-[#111116] border border-[#00d2ff]/30 rounded-lg overflow-hidden hover:border-[#00d2ff] transition-all duration-300 relative">
                     {/* Status Badge */}
                     <div className="absolute top-4 right-4">
-                      <span className="text-[10px] font-black px-2 py-1 rounded bg-[#00d2ff] text-black uppercase">
-                        {tournament.status || 'Upcoming'}
+                      <span className={`text-[10px] font-black px-2 py-1 rounded border uppercase ${statusStyles[status]}`}>
+                        {statusLabels[status]}
                       </span>
                     </div>
 

@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { createClient } from '@/utils/supabase/client'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import MyMatches from './MyMatches'
 import type { User } from '@supabase/supabase-js'
 import type { Profile } from '@/utils/types'
 
@@ -172,6 +173,8 @@ export default function Dashboard() {
             </div>
           </div>
         )}
+
+        {profile?.role === 'player' && user && <MyMatches userId={user.id} />}
 
         {profile?.role === 'spectator' && (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1.5rem' }}>
