@@ -187,6 +187,13 @@ export default function WatchStreamPage() {
             See the full bracket →
           </Link>
         </section>
+
+        <Link
+          href={`/feedback?tournament=${stream.tournament_id}`}
+          className="inline-block text-[#00d2ff] hover:underline"
+        >
+          💬 Enjoying the stream? Give feedback
+        </Link>
       </div>
     </div>
   );

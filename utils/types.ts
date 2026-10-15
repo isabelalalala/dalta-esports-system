@@ -149,3 +149,22 @@ export interface Stream {
   // Only present when selected with `tournaments(...)`
   tournaments?: { id: string; name: string; game: string } | null;
 }
+
+export type Sentiment = 'positive' | 'neutral' | 'negative';
+
+export interface Feedback {
+  id: string;
+  user_id: string | null;
+  // null = general feedback
+  tournament_id: string | null;
+  rating: number;
+  comment: string;
+  // Empty until an organizer runs the classification
+  sentiment: Sentiment | null;
+  sentiment_score: number | null;
+  topics: string[];
+  classified_at: string | null;
+  created_at: string;
+  // Only present when selected with `tournaments(...)`
+  tournaments?: { id: string; name: string } | null;
+}

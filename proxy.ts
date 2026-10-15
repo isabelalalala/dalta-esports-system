@@ -15,6 +15,7 @@ const protectedRoutes = [
   /^\/announcements(\/.*)?$/,
   /^\/schedule(\/.*)?$/,
   /^\/live(\/.*)?$/,
+  /^\/feedback(\/.*)?$/,
 ];
 
 export async function proxy(request: NextRequest) {

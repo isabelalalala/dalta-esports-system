@@ -326,6 +326,10 @@ export default function TournamentDetailsPage() {
             </div>
           )}
 
+          <Link href={`/feedback?tournament=${id}`} className="inline-block text-sm text-[#00d2ff] hover:underline">
+            💬 Give feedback about this tournament
+          </Link>
+
           {/* Rules */}
           <div>
             <h2 className="text-xl font-bold mb-2">Rules</h2>
