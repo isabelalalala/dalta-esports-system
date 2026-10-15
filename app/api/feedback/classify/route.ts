@@ -7,7 +7,7 @@ const BATCH_SIZE = 20;
 
 // "Classify sentiment" (use case, Organizing Committee).
 // Sends unclassified feedback to Gemini and saves the results AS THE LOGGED-IN ORGANIZER,
-// so the feedback RLS (only admin/staff may write sentiment) still applies. No service role key.
+// so the feedback RLS (only admins may write sentiment) still applies. No service role key.
 export async function POST() {
   const supabase = await createClient();
 
@@ -17,8 +17,8 @@ export async function POST() {
   }
 
   const { data: role } = await supabase.rpc('get_my_role');
-  if (role !== 'admin' && role !== 'staff') {
-    return NextResponse.json({ error: 'Only organizers can classify feedback.' }, { status: 403 });
+  if (role !== 'admin') {
+    return NextResponse.json({ error: 'Only admins can classify feedback.' }, { status: 403 });
   }
 
   // Oldest unclassified feedback first

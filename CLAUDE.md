@@ -59,7 +59,7 @@ Enforced by a CHECK constraint on `profiles.role` (migration `202610161200_role_
 - RLS policies check roles with `public.get_my_role()`.
 
 ## Current schema (public)
-All migrations are in `supabase/migrations/` and have been run, in filename order (202610151200 … 202610162200).
+All migrations are in `supabase/migrations/` and have been run, in filename order (202610151200 … 202610162300).
 Readers: "anyone" = also logged out; "logged-in" = any role; "admin/staff" = organizers only.
 
 **Accounts (Module 1)**
@@ -104,18 +104,36 @@ Readers: "anyone" = also logged out; "logged-in" = any role; "admin/staff" = org
   created_at, updated_at. Logged-in read; admin/staff write.
 - `stream_views`: id, stream_id, user_id, viewed_on (date), created_at. UNIQUE (stream_id, user_id, viewed_on):
   one row per person per stream per day, recorded when the watch page opens. Users insert their own;
-  only admin/staff read.
+  only admin/staff read. `viewed_on` is the Philippine date (`Asia/Manila`) since 202610162300; older rows are UTC.
+- Notes for reports: organizers' own visits are stored but left out of the reports. Views per match exist only when
+  the stream has a `match_id`. `streams.status` is set by hand by staff and doesn't depend on `matches.status`.
+- "Watching now" uses Supabase Realtime Presence, not a table: `/live/[id]` joins channel `viewers-<stream id>`
+  (key = user id; players and spectators only) and `/analytics/engagement` counts who is in it.
 
 **Feedback and sentiment (Module 5)**, DFD store D4 "Feedback DB"
 - `feedback`: id, user_id (set null when the account is deleted), tournament_id (empty = general; set null when the
   tournament is deleted), rating (1-5), comment (3-1000 chars), sentiment (`positive`/`neutral`/`negative`,
   empty until classified), sentiment_score (-1..1), topics (text[], max 3 short lowercase labels), classified_at,
-  created_at. Users insert their own (without sentiment) and read their own; admin/staff read all and write ONLY the
-  sentiment fields (trigger); admins delete.
+  created_at. Users insert their own (without sentiment) and read their own; admins read all and write ONLY the
+  sentiment fields (trigger); admins delete. Staff can't read feedback (since 202610162300); they only get counts
+  and average ratings through `report_engagement()`.
+- Notes for reports: a user can send any number of feedback rows (no unique constraint). `topics` mix praise and
+  complaints; "common concerns" = topics on negative feedback. Unclassified rows still have a rating.
+  Opening `/admin/feedback` classifies one batch automatically.
+
+**Administrative reports (Module 6)**, DFD store D5 "Analytics & Engagement DB"
+- `analytics_reports`: id, filters (jsonb, readable names: tournament, game, from, to), data (jsonb:
+  `{activity, sentiment, engagement}` exactly as the report functions return them), generated_by (set null when the
+  user is deleted), generated_at. Admins read, insert (as themselves) and delete; nobody updates.
+- Report functions take `(p_tournament_id, p_game_id, p_from, p_to)`; null = all, dates inclusive in Manila time.
+  They are security definer and check the role first: `report_activity()` and `report_sentiment()` (admin),
+  `report_engagement()` (admin/staff). Each returns one jsonb object; the shapes are typed in `utils/reports.ts`.
+  Byes don't count as matches; general feedback is left out when a tournament or game is chosen.
 
 **Database functions**: `get_my_role()`, `current_user_role()` (older alias of get_my_role), `search_players(game_id, search)`,
 `get_team_roster(team_id)` (name, IGN, in-game role), `generate_bracket(tournament_id)`, `delete_own_account()`,
-`admin_delete_user(target)`. Business rules (roster size, registration checks, match results) are enforced by
+`admin_delete_user(target)`, `report_activity/report_sentiment/report_engagement(...)` (Module 6).
+Business rules (roster size, registration checks, match results) are enforced by
 triggers with readable error messages.
 
 ## Pages and shared code
@@ -123,11 +141,16 @@ triggers with readable error messages.
 - Players: `/teams`, `/teams/[id]`, `/registrations` (My Registrations), dashboard "My Matches".
 - Tournaments: `/tournaments`, `/tournaments/create`, `/tournaments/[id]` (details, bracket, announcements,
   watch-live banner, Admin Panel), `/tournaments/[id]/edit`, `.../registrations`, `.../matches`, `.../streams`.
-- Organizers: `/matches` (Match Management overview), `/admin/users` (admin only), `/admin/feedback` (admin/staff).
+- Organizers: `/matches` (Match Management overview), `/admin/users` (admin only), `/admin/feedback` (admin only).
+- Reports: `/analytics` (admin: filters, Generate report = calculate + save, saved reports list; staff are sent
+  to engagement), `/analytics/reports/[id]` (a saved report: all three parts, Print / PDF via `window.print()`,
+  Download CSV), `/analytics/engagement` (admin/staff: live stats, watching now, CSV, print).
+  Report sections live in `app/analytics/` (ActivitySection, SentimentSection, EngagementSection, ReportParts).
 - Everyone logged in: `/announcements`, `/schedule`, `/live`, `/live/[id]`, `/feedback`.
-- API: POST `/api/feedback/classify` (admin/staff) sends up to 20 unclassified comments to Gemini in one request
+- API: POST `/api/feedback/classify` (admin only) sends up to 20 unclassified comments to Gemini in one request
   (`utils/gemini.ts`, server only) and saves the results as the logged-in organizer.
-- Shared: `components/` (AnnouncementCard, FacebookPlayer, StarRating); `utils/types.ts` (row types),
+- Shared: `components/` (AnnouncementCard, FacebookPlayer, StarRating, ReportChart (Chart.js), ReportFilters);
+  `utils/types.ts` (row types), `utils/reports.ts` (report types, chart colors, CSV export),
   `utils/tournaments.ts` (dates, status, round labels), `utils/matches.ts` (team names, round counts),
   `utils/streams.ts` (Facebook link check and embed URL), `utils/errors.ts` (`getErrorMessage`).
 - `proxy.ts` lists every page that requires login; add new protected pages there.
@@ -141,6 +164,8 @@ triggers with readable error messages.
 - Dates without a time (tournament dates) are stored as midnight UTC: use `toDateInput()` and `formatDate()`.
   Real moments (`created_at`, `scheduled_at`) are shown in the viewer's local time.
 - New UI uses Tailwind classes, not inline styles.
+- The Supabase API returns at most 1000 rows per request by default, and anything beyond that is cut off without
+  an error. Count or aggregate big tables (`stream_views`, `feedback`) in SQL instead of loading every row.
 
 ## Modules (from the business case)
 1. Account Management: done. Registration, login, role-based access, own and other-account actions.
@@ -149,31 +174,19 @@ triggers with readable error messages.
 3. Event Information and Announcements: done. Event info, announcements, match schedule updates.
 4. Live Streaming: done. Staff configure Facebook Live URLs; audience watches embedded streams;
    real-time scoreboard; viewership recorded in `stream_views`.
-5. Feedback and Sentiment Analysis: done. Audience and players submit feedback and ratings; organizers classify
+5. Feedback and Sentiment Analysis: done. Audience and players submit feedback and ratings; admins classify
    sentiment with Gemini on `/admin/feedback`.
-6. Administrative Reports: not started. Analytics and engagement reports with Chart.js.
+6. Administrative Reports: done. Admins generate a saved report (activity, sentiment, engagement) with Chart.js
+   charts, print/PDF and CSV; staff view engagement stats. Filters: tournament, game, date range.
 The business case also lists a "Database Module". It is not a separate module: each module adds its own
 tables and migrations (see Current schema).
 
-### Notes for Module 6 (Administrative Reports)
-- Use cases: the Organizing Committee **generates the analytics report**, extended by **view sentiment analysis**
-  (shown after the report). Tournament Staff **view engagement stats**. Both include Login.
-- DFD 6.0 reads these stores. All the data already exists:
-  - D2 "Tournament & Schedule": `tournaments`, `tournament_registrations`, `teams`, `team_members`, `matches`
-  - D3 "Streaming & Match Stat": `streams`, `stream_views`
-  - D4 "Feedback": `feedback`
-  - D1 "User Account": `profiles` (sign-ups over time, role counts)
-- D5 "Analytics & Engagement DB" has no table yet. Calculating the reports from the tables above when the page opens
-  is enough; only add a table if saved or exported report snapshots are needed.
-- RLS already allows admin/staff to read everything reports need: all profiles, all feedback and all stream_views.
-  Players and spectators get only their own rows, so report pages must be admin/staff only.
-- Chart.js is not installed yet: `npm install chart.js`. Use it directly in a client component; it doesn't need a
-  React wrapper. Remember to `destroy()` the chart when the component unmounts.
-- The `/admin/feedback` page already calculates sentiment counts, average rating and top topics. Reuse that logic
-  for the sentiment charts, or move it to `utils/` and use it in both places.
-- The dashboard's "📊 Analytics" card (admin/staff) links to `/analytics`, which doesn't exist yet.
+### Notes on reports (Module 6)
+- Chart colors are in `utils/reports.ts` and were checked for color-blind safety on the card color `#1a1a2e`.
+  Sentiment uses blue (positive) / gray (neutral) / red (negative); other charts use `categoryColors` in order.
 - Viewership is counted by the app, not by Facebook: one view per logged-in person per stream per day.
   Official Facebook viewer counts would need the Graph API (a Facebook App and page tokens). That isn't built.
+- Realtime Presence needs Realtime enabled for the project (it is, for `matches`); public channels must be allowed.
 
 After all 6 modules: restyle every page with Tailwind CSS. The home (`app/page.tsx`), login, register and dashboard pages
 still use inline styles; the rest already use Tailwind classes.

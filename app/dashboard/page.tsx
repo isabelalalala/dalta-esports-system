@@ -272,12 +272,15 @@ export default function Dashboard() {
       </div>
     </Link>
 
-    <Link href="/admin/feedback" style={{ textDecoration: 'none' }}>
-      <div style={{ background: '#1a1a2e', padding: '1.5rem', borderRadius: '12px', border: '1px solid #ffd93d', cursor: 'pointer' }}>
-        <h3 style={{ color: '#ffd93d', marginBottom: '1rem' }}>🧠 Feedback Analysis</h3>
-        <p style={{ color: '#aaa' }}>Sentiment of audience and player feedback</p>
-      </div>
-    </Link>
+    {/* Admin only: feedback and sentiment are for the Organizing Committee */}
+    {profile?.role === 'admin' && (
+      <Link href="/admin/feedback" style={{ textDecoration: 'none' }}>
+        <div style={{ background: '#1a1a2e', padding: '1.5rem', borderRadius: '12px', border: '1px solid #ffd93d', cursor: 'pointer' }}>
+          <h3 style={{ color: '#ffd93d', marginBottom: '1rem' }}>🧠 Feedback Analysis</h3>
+          <p style={{ color: '#aaa' }}>Sentiment of audience and player feedback</p>
+        </div>
+      </Link>
+    )}
 
     <Link href="/announcements" style={{ textDecoration: 'none' }}>
       <div style={{ background: '#1a1a2e', padding: '1.5rem', borderRadius: '12px', border: '1px solid #ffd93d', cursor: 'pointer' }}>
@@ -289,7 +292,7 @@ export default function Dashboard() {
     <Link href="/analytics" style={{ textDecoration: 'none' }}>
       <div style={{ background: '#1a1a2e', padding: '1.5rem', borderRadius: '12px', border: '1px solid #ffd93d', cursor: 'pointer' }}>
         <h3 style={{ color: '#ffd93d', marginBottom: '1rem' }}>📊 Analytics</h3>
-        <p style={{ color: '#aaa' }}>View reports and analytics</p>
+        <p style={{ color: '#aaa' }}>{profile?.role === 'admin' ? 'Generate activity, sentiment and engagement reports' : 'Viewership and audience engagement stats'}</p>
       </div>
     </Link>
   </div>

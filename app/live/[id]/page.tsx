@@ -58,7 +58,36 @@ export default function WatchStreamPage() {
     if (id) fetchStream();
   }, [id, supabase]);
 
-  // 2. The scoreboard, kept up to date with Supabase Realtime.
+  // 2. "Watching now" for the Engagement Stats page (Supabase Realtime Presence):
+  //    this page joins the stream's presence channel while it is open, and leaves it on close.
+  //    Organizers aren't counted, the same as in the view counts. Nothing is saved in a table.
+  useEffect(() => {
+    if (!id) return;
+    let channel: ReturnType<typeof supabase.channel> | null = null;
+    // Set when the page closes, in case that happens before join() has finished
+    let closed = false;
+
+    const join = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+      const { data: myRole } = await supabase.rpc('get_my_role');
+      if (closed || myRole === 'admin' || myRole === 'staff') return;
+
+      // The key is the user id, so several tabs of one person count once
+      channel = supabase.channel(`viewers-${id}`, { config: { presence: { key: session.user.id } } });
+      channel.subscribe((status) => {
+        if (status === 'SUBSCRIBED') channel?.track({ watching_since: new Date().toISOString() });
+      });
+    };
+    join();
+
+    return () => {
+      closed = true;
+      if (channel) supabase.removeChannel(channel);
+    };
+  }, [id, supabase]);
+
+  // 3. The scoreboard, kept up to date with Supabase Realtime.
   //    A stream linked to a match shows that match; otherwise the tournament's live matches.
   const tournamentId = stream?.tournament_id;
   const matchId = stream?.match_id;

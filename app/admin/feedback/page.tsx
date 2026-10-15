@@ -53,7 +53,7 @@ export default function FeedbackAnalysisPage() {
           .eq('id', session.user.id)
           .single();
         setRole(profileData?.role ?? '');
-        if (profileData?.role !== 'admin' && profileData?.role !== 'staff') return;
+        if (profileData?.role !== 'admin') return;
 
         // On the first load, classify one batch of new feedback automatically
         if (reloadCount === 0) {
@@ -110,10 +110,10 @@ export default function FeedbackAnalysisPage() {
   if (loading) return <div className="min-h-screen bg-[#0a0a0c] text-white p-10 text-center">Loading...</div>;
 
   // Hiding the page is only for convenience; RLS returns only their own feedback to other roles.
-  if (role !== 'admin' && role !== 'staff') {
+  if (role !== 'admin') {
     return (
       <div className="min-h-screen bg-[#0a0a0c] text-white p-10 text-center">
-        Only organizers can view the feedback analysis.{' '}
+        Only admins can view the feedback analysis.{' '}
         <Link href="/feedback" className="text-[#00d2ff] underline">Send feedback instead</Link>
       </div>
     );
