@@ -6,9 +6,10 @@ import { createClient } from '@/utils/supabase/client';
 import Link from 'next/link';
 import { getErrorMessage } from '@/utils/errors';
 import { ACTIVE_REGISTRATION_STATUSES } from '@/utils/types';
-import type { Match, Profile, Registration, Team, Tournament } from '@/utils/types';
+import type { Announcement, Match, Profile, Registration, Team, Tournament } from '@/utils/types';
 import { formatDate, getTournamentStatus, statusLabels, statusStyles } from '@/utils/tournaments';
 import Bracket from './Bracket';
+import AnnouncementCard from '@/components/AnnouncementCard';
 
 export default function TournamentDetailsPage() {
   const supabase = createClient();
@@ -27,6 +28,7 @@ export default function TournamentDetailsPage() {
   const [matches, setMatches] = useState<Match[]>([]);
   // Team id -> team name, for the teams that appear in the bracket
   const [teamNames, setTeamNames] = useState<Record<string, string>>({});
+  const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [generating, setGenerating] = useState(false);
   // Increase this to make the effect below load everything again
   const [reloadCount, setReloadCount] = useState(0);
@@ -98,6 +100,16 @@ export default function TournamentDetailsPage() {
           if (namesError) throw namesError;
           setTeamNames(Object.fromEntries((namesData || []).map((t) => [t.id, t.name])));
         }
+
+        // Announcements for this tournament, pinned first
+        const { data: annData, error: annError } = await supabase
+          .from('announcements')
+          .select('*')
+          .eq('tournament_id', id)
+          .order('pinned', { ascending: false })
+          .order('created_at', { ascending: false });
+        if (annError) throw annError;
+        setAnnouncements(annData || []);
 
         // Teams I captain for this tournament's game (only captains can register)
         if (data.game_id) {
@@ -279,6 +291,18 @@ export default function TournamentDetailsPage() {
               </div>
             ))}
           </div>
+
+          {/* Announcements for this tournament */}
+          {announcements.length > 0 && (
+            <div>
+              <h2 className="text-xl font-bold mb-3">Announcements</h2>
+              <div className="space-y-3">
+                {announcements.map((a) => (
+                  <AnnouncementCard key={a.id} announcement={a} showTournament={false} />
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Rules */}
           <div>

@@ -5,6 +5,7 @@ import { createClient } from '@/utils/supabase/client'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import MyMatches from './MyMatches'
+import LatestAnnouncements from './LatestAnnouncements'
 import type { User } from '@supabase/supabase-js'
 import type { Profile } from '@/utils/types'
 
@@ -173,6 +174,20 @@ export default function Dashboard() {
                 <p style={{ color: '#aaa' }}>View your tournament registrations</p>
               </div>
             </Link>
+
+            <Link href="/schedule" style={{ textDecoration: 'none' }}>
+              <div style={{ background: '#1a1a2e', padding: '1.5rem', borderRadius: '12px', border: '1px solid #00d2ff', cursor: 'pointer' }}>
+                <h3 style={{ color: '#00d2ff', marginBottom: '1rem' }}>📅 Schedule &amp; Results</h3>
+                <p style={{ color: '#aaa' }}>Upcoming matches and latest results</p>
+              </div>
+            </Link>
+
+            <Link href="/announcements" style={{ textDecoration: 'none' }}>
+              <div style={{ background: '#1a1a2e', padding: '1.5rem', borderRadius: '12px', border: '1px solid #00d2ff', cursor: 'pointer' }}>
+                <h3 style={{ color: '#00d2ff', marginBottom: '1rem' }}>📢 Announcements</h3>
+                <p style={{ color: '#aaa' }}>News and updates from the organizers</p>
+              </div>
+            </Link>
           </div>
         )}
 
@@ -185,10 +200,19 @@ export default function Dashboard() {
               <p style={{ color: '#aaa' }}>Watch ongoing tournaments and matches</p>
             </div>
 
-            <div style={{ background: '#1a1a2e', padding: '1.5rem', borderRadius: '12px', border: '1px solid #4ecdc4' }}>
-              <h3 style={{ color: '#4ecdc4', marginBottom: '1rem' }}>🏆 Standings</h3>
-              <p style={{ color: '#aaa' }}>View tournament standings and results</p>
-            </div>
+            <Link href="/schedule" style={{ textDecoration: 'none' }}>
+              <div style={{ background: '#1a1a2e', padding: '1.5rem', borderRadius: '12px', border: '1px solid #4ecdc4', cursor: 'pointer' }}>
+                <h3 style={{ color: '#4ecdc4', marginBottom: '1rem' }}>📅 Schedule &amp; Results</h3>
+                <p style={{ color: '#aaa' }}>Upcoming matches, results and brackets</p>
+              </div>
+            </Link>
+
+            <Link href="/announcements" style={{ textDecoration: 'none' }}>
+              <div style={{ background: '#1a1a2e', padding: '1.5rem', borderRadius: '12px', border: '1px solid #4ecdc4', cursor: 'pointer' }}>
+                <h3 style={{ color: '#4ecdc4', marginBottom: '1rem' }}>📢 Announcements</h3>
+                <p style={{ color: '#aaa' }}>News and updates from the organizers</p>
+              </div>
+            </Link>
 
             <div style={{ background: '#1a1a2e', padding: '1.5rem', borderRadius: '12px', border: '1px solid #4ecdc4' }}>
               <h3 style={{ color: '#4ecdc4', marginBottom: '1rem' }}>💬 Feedback</h3>
@@ -223,6 +247,13 @@ export default function Dashboard() {
       </div>
     </Link>
 
+    <Link href="/announcements" style={{ textDecoration: 'none' }}>
+      <div style={{ background: '#1a1a2e', padding: '1.5rem', borderRadius: '12px', border: '1px solid #ffd93d', cursor: 'pointer' }}>
+        <h3 style={{ color: '#ffd93d', marginBottom: '1rem' }}>📢 Announcements</h3>
+        <p style={{ color: '#aaa' }}>{profile?.role === 'admin' ? 'Post and manage announcements' : 'Read the latest announcements'}</p>
+      </div>
+    </Link>
+
     <Link href="/analytics" style={{ textDecoration: 'none' }}>
       <div style={{ background: '#1a1a2e', padding: '1.5rem', borderRadius: '12px', border: '1px solid #ffd93d', cursor: 'pointer' }}>
         <h3 style={{ color: '#ffd93d', marginBottom: '1rem' }}>📊 Analytics</h3>
@@ -231,6 +262,9 @@ export default function Dashboard() {
     </Link>
   </div>
 )}
+
+        {/* Shown for every role */}
+        <LatestAnnouncements />
 
       </div>
     </div>

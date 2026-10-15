@@ -74,6 +74,10 @@ Enforced by a CHECK constraint on `profiles.role` (migration `202610161200_role_
   A trigger moves the winner forward; results lock once the next match starts. Anyone reads; admin/staff write.
   Teams in a bracket can't be deleted.
 - `player_game_profiles`: id, user_id, game_id (→ games), ign, in_game_role, rank, created_at. UNIQUE (user_id, game_id)
+- `announcements`: id, title, body, tournament_id (empty = general; deleted with the tournament), pinned,
+  created_by, created_at, updated_at. Logged-in users read; only admins post, edit and delete.
+  Shown on `/announcements`, the tournament page and the dashboard (`components/AnnouncementCard.tsx`).
+  `/schedule` (Schedule & Results) lists live, upcoming and finished matches from `matches`.
 
 Database functions: `get_my_role()`, `current_user_role()` (older alias), `search_players(game_id, search)`,
 `get_team_roster(team_id)` (name, IGN, in-game role), `delete_own_account()`, `admin_delete_user(target)`, `generate_bracket(tournament_id)`. Business rules (roster size, registration checks)
@@ -81,13 +85,16 @@ are enforced by triggers with readable error messages.
 
 ## Modules (from the business case)
 1. Account Management: done. Registration, login, role-based access.
-2. Registration and Tournament Management: in progress. Player registration, team registration,
+2. Registration and Tournament Management: done. Player registration, team registration,
    profile and in-game details (IGN, game, role), tournament scheduling, brackets.
-3. Event Information and Announcements: event info, announcements, match schedule updates.
+3. Event Information and Announcements: done. Event info, announcements, match schedule updates.
 4. Live Streaming: staff configure Facebook Live URLs; audience watches embedded streams.
 5. Feedback and Sentiment Analysis: audience submits feedback and ratings; Gemini classifies sentiment.
 6. Administrative Reports: analytics and engagement reports with Chart.js.
-7. Database: supporting tables for all of the above.
+The business case also lists a "Database Module". It is not a separate module: each module adds its own
+tables and migrations (see Current schema).
+
+After all 6 modules: restyle every page with Tailwind CSS (many pages still use inline styles).
 
 Supported games: MLBB, Valorant, Tekken 8, League of Legends, CODM.
 

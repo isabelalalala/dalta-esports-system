@@ -118,3 +118,17 @@ export interface Match {
   created_at: string;
   updated_at: string;
 }
+
+export interface Announcement {
+  id: string;
+  title: string;
+  body: string;
+  // null = general announcement
+  tournament_id: string | null;
+  pinned: boolean;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+  // Only present when selected with `tournaments(...)`
+  tournaments?: { id: string; name: string } | null;
+}
