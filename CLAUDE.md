@@ -22,6 +22,18 @@ Full title: "DALTA Esports: Tournament Management System with AI-Powered Feedbac
 - Every new table must enable RLS and include its policies in the same migration.
 - Security is enforced by RLS first. Hiding buttons in the UI is only for convenience.
 
+## Auth pages and Supabase settings
+- `/auth/login`, `/auth/register`, `/auth/forgot-password`, `/auth/reset-password`.
+- `/auth/callback` (route handler) turns email links into a session, then redirects to `?next=` (app paths only).
+- Admin "Add account" on `/admin/users` signs people up with `utils/supabase/signup-client.ts`. This is a separate
+  client that doesn't save a session, so the admin stays logged in. It's the only place not using the clients above.
+- Supabase dashboard → Authentication → URL Configuration: Site URL = the app URL; Redirect URLs include
+  `http://localhost:3000/**` and the Railway domain `/**`.
+- Reset links work only in the browser that requested them. To make them work on any device, change the
+  "Reset Password" email template link to
+  `{{ .SiteURL }}/auth/callback?token_hash={{ .TokenHash }}&type=recovery&next=/auth/reset-password`.
+- Supabase's built-in email sender allows only a few emails per hour; set up custom SMTP for demos.
+
 ## Roles (stored in `profiles.role`)
 | role value | Actor in the documents |
 |------------|------------------------|
@@ -32,12 +44,14 @@ Full title: "DALTA Esports: Tournament Management System with AI-Powered Feedbac
 
 Enforced by a CHECK constraint on `profiles.role` (migration `202610161200_role_security`).
 - Sign-up can only create `player` or `spectator`. The `handle_new_user()` trigger creates the profile.
-- Only an admin, or a change run in the SQL Editor, can change a role. Promote someone with:
+- Only an admin, or a change run in the SQL Editor, can change a role. New organizers register normally,
+  then an admin promotes them on `/admin/users`. Only the very first admin needs the SQL Editor:
   `update public.profiles set role = 'admin' where email = '...';`
+- The last admin can't be demoted. Admins delete other users with `admin_delete_user(target)`.
 - RLS policies check roles with `public.get_my_role()`.
 
 ## Current schema (public)
-- `profiles`: id (uuid, = auth.users.id, deleted with the auth user), email, role, full_name, updated_at.
+- `profiles`: id (uuid, = auth.users.id, deleted with the auth user), email, role, full_name, updated_at, created_at (join date).
   Created by the `handle_new_user()` trigger on sign-up.
 - `games`: id (text, e.g. `mlbb`), name, min_players, max_players. Edited only in the SQL Editor.
 - `tournaments`: id, name, description, rules, game (one of the 5 game names), game_id (→ games, required),
@@ -62,7 +76,7 @@ Enforced by a CHECK constraint on `profiles.role` (migration `202610161200_role_
 - `player_game_profiles`: id, user_id, game_id (→ games), ign, in_game_role, rank, created_at. UNIQUE (user_id, game_id)
 
 Database functions: `get_my_role()`, `current_user_role()` (older alias), `search_players(game_id, search)`,
-`get_team_roster(team_id)` (name, IGN, in-game role), `delete_own_account()`. Business rules (roster size, registration checks)
+`get_team_roster(team_id)` (name, IGN, in-game role), `delete_own_account()`, `admin_delete_user(target)`, `generate_bracket(tournament_id)`. Business rules (roster size, registration checks)
 are enforced by triggers with readable error messages.
 
 ## Modules (from the business case)

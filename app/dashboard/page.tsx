@@ -167,10 +167,12 @@ export default function Dashboard() {
               </div>
             </Link>
 
-            <div style={{ background: '#1a1a2e', padding: '1.5rem', borderRadius: '12px', border: '1px solid #00d2ff' }}>
-              <h3 style={{ color: '#00d2ff', marginBottom: '1rem' }}>🏆 My Registrations</h3>
-              <p style={{ color: '#aaa' }}>View your tournament registrations</p>
-            </div>
+            <Link href="/registrations" style={{ textDecoration: 'none' }}>
+              <div style={{ background: '#1a1a2e', padding: '1.5rem', borderRadius: '12px', border: '1px solid #00d2ff', cursor: 'pointer' }}>
+                <h3 style={{ color: '#00d2ff', marginBottom: '1rem' }}>🏆 My Registrations</h3>
+                <p style={{ color: '#aaa' }}>View your tournament registrations</p>
+              </div>
+            </Link>
           </div>
         )}
 
@@ -204,12 +206,15 @@ export default function Dashboard() {
       </div>
     </Link>
 
-    <Link href="/players" style={{ textDecoration: 'none' }}>
-      <div style={{ background: '#1a1a2e', padding: '1.5rem', borderRadius: '12px', border: '1px solid #ffd93d', cursor: 'pointer' }}>
-        <h3 style={{ color: '#ffd93d', marginBottom: '1rem' }}>👥 Manage Players</h3>
-        <p style={{ color: '#aaa' }}>View and manage player registrations</p>
-      </div>
-    </Link>
+    {/* Admin only: staff share this section but can't manage users */}
+    {profile?.role === 'admin' && (
+      <Link href="/admin/users" style={{ textDecoration: 'none' }}>
+        <div style={{ background: '#1a1a2e', padding: '1.5rem', borderRadius: '12px', border: '1px solid #ffd93d', cursor: 'pointer' }}>
+          <h3 style={{ color: '#ffd93d', marginBottom: '1rem' }}>👥 Manage Users</h3>
+          <p style={{ color: '#aaa' }}>Change roles, edit names and delete accounts</p>
+        </div>
+      </Link>
+    )}
 
     <Link href="/matches" style={{ textDecoration: 'none' }}>
       <div style={{ background: '#1a1a2e', padding: '1.5rem', borderRadius: '12px', border: '1px solid #ffd93d', cursor: 'pointer' }}>

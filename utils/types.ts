@@ -6,6 +6,7 @@ export interface Profile {
   role: string;
   full_name: string | null;
   updated_at: string;
+  created_at: string;
 }
 
 export interface Game {

@@ -323,6 +323,8 @@ export default function ProfilePage() {
           </div>
         )}
 
+        <ChangePassword email={profile.email} />
+
         {/* Danger zone */}
         <div className="border border-red-500 rounded-xl p-6">
           <h2 className="text-xl font-bold text-red-400">Delete my account</h2>
@@ -371,5 +373,81 @@ export default function ProfilePage() {
         </div>
       </div>
     </div>
+  );
+}
+
+// Change password. The current password is checked first by signing in again,
+// so someone using an unattended logged-in computer can't change it.
+function ChangePassword({ email }: { email: string }) {
+  const supabase = createClient();
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
+  const [message, setMessage] = useState('');
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setMessage('');
+
+    if (newPassword.length < 8) {
+      setError('The new password must be at least 8 characters.');
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      setError('The new passwords do not match.');
+      return;
+    }
+
+    setSaving(true);
+    try {
+      const { error: signInError } = await supabase.auth.signInWithPassword({ email, password: currentPassword });
+      if (signInError) throw new Error('Your current password is incorrect.');
+
+      const { error: updateError } = await supabase.auth.updateUser({ password: newPassword });
+      if (updateError) throw updateError;
+
+      setMessage('Password changed.');
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+    } catch (err) {
+      setError(getErrorMessage(err, 'Could not change the password'));
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="bg-[#1a1a2e] border border-[#00d2ff] rounded-xl p-6 space-y-4">
+      <h2 className="text-xl font-bold">Change Password</h2>
+      {error && <div className="bg-red-500/10 border border-red-500 text-red-300 px-4 py-3 rounded-lg">{error}</div>}
+      {message && <div className="bg-green-500/10 border border-green-500 text-green-300 px-4 py-3 rounded-lg">{message}</div>}
+      <input
+        type="password" placeholder="Current password"
+        value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)}
+        className={inputClass} autoComplete="current-password" required
+      />
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <input
+          type="password" placeholder="New password (8+ characters)"
+          value={newPassword} onChange={(e) => setNewPassword(e.target.value)}
+          className={inputClass} autoComplete="new-password" required
+        />
+        <input
+          type="password" placeholder="Confirm new password"
+          value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)}
+          className={inputClass} autoComplete="new-password" required
+        />
+      </div>
+      <button
+        type="submit" disabled={saving}
+        className="bg-[#00d2ff] text-black px-6 py-2 rounded-lg font-bold hover:bg-[#00b8e6] transition disabled:opacity-50"
+      >
+        {saving ? 'Saving...' : 'Change Password'}
+      </button>
+    </form>
   );
 }
