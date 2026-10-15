@@ -26,7 +26,7 @@ export default function Bracket({
   return (
     <div>
       {champion && (
-        <div className="mb-4 bg-yellow-500/10 border border-yellow-500 text-yellow-300 px-4 py-3 rounded-lg text-center font-bold">
+        <div className="mb-4 bg-yellow-500/10 border border-yellow-500 text-yellow-300 px-4 py-3 text-center font-bold">
           🏆 Champion: {champion}
         </div>
       )}
@@ -71,8 +71,8 @@ function MatchBox({ match, teamNames, timeZone }: { match: Match; teamNames: Rec
 
   return (
     <div
-      className={`bg-[#0a0a0c] rounded-lg border text-sm overflow-hidden ${
-        match.status === 'live' ? 'border-green-500' : 'border-[#00d2ff]/30'
+      className={`bg-sitebg border text-sm overflow-hidden ${
+        match.status === 'live' ? 'border-green-500' : 'border-brownlight'
       }`}
     >
       {rows.map(({ teamId, score }, i) => {
@@ -83,8 +83,8 @@ function MatchBox({ match, teamNames, timeZone }: { match: Match; teamNames: Rec
         return (
           <div
             key={i}
-            className={`flex justify-between items-center gap-2 px-3 py-2 ${i === 0 ? 'border-b border-[#00d2ff]/15' : ''} ${
-              won ? 'text-[#00d2ff] font-bold' : lost ? 'text-gray-500' : 'text-white'
+            className={`flex justify-between items-center gap-2 px-3 py-2 ${i === 0 ? 'border-b border-brown' : ''} ${
+              won ? 'text-gold font-bold' : lost ? 'text-gray-500' : 'text-white'
             } ${teamId === null ? 'italic text-gray-500' : ''}`}
           >
             <span className="truncate">{name}</span>
@@ -92,7 +92,7 @@ function MatchBox({ match, teamNames, timeZone }: { match: Match; teamNames: Rec
           </div>
         );
       })}
-      <div className="px-3 py-1 bg-[#1a1a2e] text-[11px] text-gray-400 flex justify-between gap-2">
+      <div className="px-3 py-1 bg-sitecard text-[11px] text-gray-400 flex justify-between gap-2">
         <span>{bye ? 'Advances automatically' : formatDateTime(match.scheduled_at, timeZone)}</span>
         {match.status === 'live' && <span className="text-green-400 font-bold">LIVE</span>}
       </div>

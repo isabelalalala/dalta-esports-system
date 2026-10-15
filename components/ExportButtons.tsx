@@ -46,7 +46,7 @@ export default function ExportButtons({ type, label, params = {} }: Props) {
   };
 
   const buttonClass =
-    'border border-[#00d2ff] text-[#00d2ff] px-3 py-1.5 rounded-lg text-sm font-bold hover:bg-[#00d2ff]/10 disabled:opacity-50';
+    'border border-gold text-gold px-3 py-1.5 text-sm font-bold hover:bg-gold/10 disabled:opacity-50';
 
   return (
     <div className="inline-flex flex-col gap-1 print:hidden">

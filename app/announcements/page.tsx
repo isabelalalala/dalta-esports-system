@@ -8,7 +8,7 @@ import type { Announcement, Tournament } from '@/utils/types';
 import AnnouncementCard from '@/components/AnnouncementCard';
 
 const inputClass =
-  'w-full rounded-lg border border-[#00d2ff]/40 bg-[#0a0a0c] px-4 py-3 text-white placeholder-gray-500 outline-none focus:border-[#00d2ff]';
+  'w-full border border-brownlight bg-sitebg px-4 py-3 text-white placeholder-gray-500 outline-none focus:border-gold';
 
 type TournamentOption = Pick<Tournament, 'id' | 'name'>;
 
@@ -91,7 +91,7 @@ export default function AnnouncementsPage() {
     setReloadCount((n) => n + 1);
   };
 
-  if (loading) return <div className="min-h-screen bg-[#0a0a0c] text-white p-10 text-center">Loading...</div>;
+  if (loading) return <div className="min-h-screen bg-sitebg text-white p-10 text-center">Loading...</div>;
 
   const visible = announcements.filter((a) => {
     if (filter === 'all') return true;
@@ -100,19 +100,19 @@ export default function AnnouncementsPage() {
   });
 
   return (
-    <div className="min-h-screen bg-[#0a0a0c] text-white px-4 py-10">
+    <div className="min-h-screen bg-sitebg text-white px-4 py-10">
       <div className="max-w-3xl mx-auto">
-        <Link href="/dashboard" className="inline-block text-[#00d2ff] hover:underline mb-6">
+        <Link href="/dashboard" className="inline-block text-gold hover:underline mb-6">
           ← Back to Dashboard
         </Link>
 
         <div className="flex flex-wrap justify-between items-center gap-4 mb-6">
-          <h1 className="text-4xl font-bold text-[#00d2ff]">Announcements</h1>
+          <h1 className="font-pixel text-xl sm:text-2xl leading-relaxed text-gold">Announcements</h1>
           {/* Admin only; the database refuses posts from other roles too */}
           {isAdmin && !showForm && (
             <button
               onClick={() => { setShowForm(true); setEditingId(null); }}
-              className="bg-[#00d2ff] text-black px-6 py-2 rounded-lg font-bold hover:bg-[#00b8e6] transition"
+              className="bg-gold text-black px-6 py-2 font-bold hover:bg-golddark transition"
             >
               + New announcement
             </button>
@@ -120,7 +120,7 @@ export default function AnnouncementsPage() {
         </div>
 
         {error && (
-          <div className="mb-6 bg-red-500/10 border border-red-500 text-red-300 px-4 py-3 rounded-lg">{error}</div>
+          <div className="mb-6 bg-red-500/10 border border-red-500 text-red-300 px-4 py-3">{error}</div>
         )}
 
         {isAdmin && showForm && (
@@ -161,7 +161,7 @@ export default function AnnouncementsPage() {
                   actions={
                     isAdmin ? (
                       <>
-                        <button onClick={() => { setEditingId(a.id); setShowForm(false); }} className="text-[#00d2ff] hover:underline">
+                        <button onClick={() => { setEditingId(a.id); setShowForm(false); }} className="text-gold hover:underline">
                           Edit
                         </button>
                         <button onClick={() => handleDelete(a)} className="text-red-400 hover:text-red-300">
@@ -229,9 +229,9 @@ function AnnouncementForm({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="mb-6 bg-[#1a1a2e] border border-[#00d2ff] rounded-xl p-6 space-y-4">
+    <form onSubmit={handleSubmit} className="mb-6 bg-sitecard border-2 border-gold shadow-[6px_6px_0_var(--color-brown)] p-6 space-y-4">
       <h2 className="text-xl font-bold">{existing ? 'Edit announcement' : 'New announcement'}</h2>
-      {error && <div className="bg-red-500/10 border border-red-500 text-red-300 px-4 py-3 rounded-lg">{error}</div>}
+      {error && <div className="bg-red-500/10 border border-red-500 text-red-300 px-4 py-3">{error}</div>}
 
       <input
         type="text" value={title} onChange={(e) => setTitle(e.target.value)}
@@ -257,7 +257,7 @@ function AnnouncementForm({
       <div className="flex gap-2">
         <button
           type="submit" disabled={saving}
-          className="bg-[#00d2ff] text-black px-6 py-2 rounded-lg font-bold hover:bg-[#00b8e6] transition disabled:opacity-50"
+          className="bg-gold text-black px-6 py-2 font-bold hover:bg-golddark transition disabled:opacity-50"
         >
           {saving ? 'Saving...' : existing ? 'Save changes' : 'Post'}
         </button>

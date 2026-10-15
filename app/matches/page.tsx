@@ -47,32 +47,32 @@ export default function MatchesOverviewPage() {
     fetchData();
   }, [supabase]);
 
-  if (loading) return <div className="min-h-screen bg-[#0a0a0c] text-white p-10 text-center">Loading...</div>;
+  if (loading) return <div className="min-h-screen bg-sitebg text-white p-10 text-center">Loading...</div>;
 
   // Hiding the page is only for convenience; the database refuses changes from other roles.
   if (profile?.role !== 'admin' && profile?.role !== 'staff') {
     return (
-      <div className="min-h-screen bg-[#0a0a0c] text-white p-10 text-center">
+      <div className="min-h-screen bg-sitebg text-white p-10 text-center">
         Only organizers can manage matches.{' '}
-        <Link href="/dashboard" className="text-[#00d2ff] underline">Back to the dashboard</Link>
+        <Link href="/dashboard" className="text-gold underline">Back to the dashboard</Link>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0a0c] text-white px-4 py-10">
+    <div className="min-h-screen bg-sitebg text-white px-4 py-10">
       <div className="max-w-4xl mx-auto">
-        <Link href="/dashboard" className="inline-block text-[#00d2ff] hover:underline mb-6">
+        <Link href="/dashboard" className="inline-block text-gold hover:underline mb-6">
           ← Back to Dashboard
         </Link>
 
-        <h1 className="text-4xl font-bold text-[#00d2ff] mb-4">Match Management</h1>
+        <h1 className="font-pixel text-xl sm:text-2xl leading-relaxed text-gold mb-4">Match Management</h1>
         <div className="mb-8">
           <ExportButtons type="rosters" label="All team rosters" />
         </div>
 
         {error && (
-          <div className="mb-6 bg-red-500/10 border border-red-500 text-red-300 px-4 py-3 rounded-lg">{error}</div>
+          <div className="mb-6 bg-red-500/10 border border-red-500 text-red-300 px-4 py-3">{error}</div>
         )}
 
         {tournaments.length === 0 ? (
@@ -86,7 +86,7 @@ export default function MatchesOverviewPage() {
               return (
                 <li
                   key={t.id}
-                  className="bg-[#1a1a2e] border border-[#00d2ff]/30 rounded-lg p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+                  className="bg-sitecard border border-brownlight p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
                 >
                   <div>
                     <div className="flex items-center gap-2 flex-wrap">
@@ -104,7 +104,7 @@ export default function MatchesOverviewPage() {
                     {matchCount > 0 ? (
                       <Link
                         href={`/tournaments/${t.id}/matches`}
-                        className="bg-[#00d2ff] text-black px-4 py-2 rounded font-bold hover:bg-[#00b8e6] transition text-center"
+                        className="bg-gold text-black px-4 py-2 font-bold hover:bg-golddark transition text-center"
                       >
                         Manage {matchCount} matches
                       </Link>

@@ -7,7 +7,7 @@ import type { Profile } from '@/utils/types';
 import { SCHOOL_SUGGESTIONS, verificationLabels, verificationStyles } from '@/utils/verification';
 
 const inputClass =
-  'w-full rounded-lg border border-[#00d2ff]/40 bg-[#0a0a0c] px-4 py-3 text-white placeholder-gray-500 outline-none focus:border-[#00d2ff]';
+  'w-full border border-brownlight bg-sitebg px-4 py-3 text-white placeholder-gray-500 outline-none focus:border-gold';
 
 interface Props {
   profile: Profile;
@@ -58,7 +58,7 @@ export default function StudentDetails({ profile, onSaved }: Props) {
   };
 
   return (
-    <form onSubmit={handleSave} className="bg-[#1a1a2e] border border-[#00d2ff] rounded-xl p-6 space-y-4">
+    <form onSubmit={handleSave} className="bg-sitecard border-2 border-gold shadow-[6px_6px_0_var(--color-brown)] p-6 space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h2 className="text-xl font-bold">Student details</h2>
         <span className={`px-3 py-1 rounded-full border text-xs font-bold uppercase ${verificationStyles[status]}`}>
@@ -71,12 +71,12 @@ export default function StudentDetails({ profile, onSaved }: Props) {
       </p>
 
       {status === 'rejected' && profile.verification_note && (
-        <div className="bg-red-500/10 border border-red-500 text-red-300 px-4 py-3 rounded-lg text-sm">
+        <div className="bg-red-500/10 border border-red-500 text-red-300 px-4 py-3 text-sm">
           Not accepted: {profile.verification_note} Fix your details and save them to be reviewed again.
         </div>
       )}
-      {error && <div className="bg-red-500/10 border border-red-500 text-red-300 px-4 py-3 rounded-lg">{error}</div>}
-      {message && <div className="bg-green-500/10 border border-green-500 text-green-300 px-4 py-3 rounded-lg">{message}</div>}
+      {error && <div className="bg-red-500/10 border border-red-500 text-red-300 px-4 py-3">{error}</div>}
+      {message && <div className="bg-green-500/10 border border-green-500 text-green-300 px-4 py-3">{message}</div>}
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <label className="block text-sm font-semibold text-gray-300">
@@ -102,7 +102,7 @@ export default function StudentDetails({ profile, onSaved }: Props) {
       <button
         type="submit"
         disabled={saving || !changed}
-        className="bg-[#00d2ff] text-black px-6 py-2 rounded-lg font-bold hover:bg-[#00b8e6] transition disabled:opacity-50"
+        className="bg-gold text-black px-6 py-2 font-bold hover:bg-golddark transition disabled:opacity-50"
       >
         {saving ? 'Saving...' : status === 'unsubmitted' ? 'Submit for verification' : 'Save changes'}
       </button>

@@ -76,7 +76,7 @@ export default function NotificationBell({ userId }: { userId: string }) {
     <div className="relative">
       <button
         onClick={() => setOpen((o) => !o)}
-        className="relative p-2 rounded-lg hover:bg-[#00d2ff]/10 text-xl leading-none"
+        className="relative p-2 hover:bg-gold/10 text-xl leading-none"
         aria-label={unread > 0 ? `Notifications, ${unread} unread` : 'Notifications'}
         aria-expanded={open}
       >
@@ -93,10 +93,10 @@ export default function NotificationBell({ userId }: { userId: string }) {
           {/* Clicking anywhere outside closes the list */}
           <button className="fixed inset-0 z-40 cursor-default" onClick={() => setOpen(false)} aria-label="Close notifications" />
 
-          <div className="absolute right-0 mt-2 z-50 w-[22rem] max-w-[calc(100vw-2rem)] bg-[#1a1a2e] border border-[#00d2ff]/40 rounded-xl shadow-[0_0_30px_rgba(0,210,255,0.15)] overflow-hidden">
-            <div className="flex items-center justify-between px-4 py-3 border-b border-[#00d2ff]/20">
+          <div className="absolute right-0 mt-2 z-50 w-[22rem] max-w-[calc(100vw-2rem)] bg-sitecard border border-brownlight shadow-[6px_6px_0_var(--color-brown)] overflow-hidden">
+            <div className="flex items-center justify-between px-4 py-3 border-b border-brown">
               <span className="font-bold text-white">Notifications</span>
-              <button onClick={handleMarkAll} disabled={unread === 0} className="text-xs text-[#00d2ff] hover:underline disabled:opacity-40 disabled:no-underline">
+              <button onClick={handleMarkAll} disabled={unread === 0} className="text-xs text-gold hover:underline disabled:opacity-40 disabled:no-underline">
                 Mark all as read
               </button>
             </div>
@@ -104,18 +104,18 @@ export default function NotificationBell({ userId }: { userId: string }) {
             {items.length === 0 ? (
               <p className="px-4 py-8 text-center text-sm text-gray-400">No notifications yet.</p>
             ) : (
-              <ul className="max-h-96 overflow-y-auto divide-y divide-[#00d2ff]/10">
+              <ul className="max-h-96 overflow-y-auto divide-y divide-brown">
                 {items.map((n) => (
                   <li key={n.id}>
                     <button
                       onClick={() => handleClick(n)}
-                      className={`w-full text-left px-4 py-3 flex gap-3 hover:bg-[#00d2ff]/5 ${n.is_read ? 'opacity-60' : ''}`}
+                      className={`w-full text-left px-4 py-3 flex gap-3 hover:bg-gold/5 ${n.is_read ? 'opacity-60' : ''}`}
                     >
                       <span className="text-lg leading-none mt-0.5">{notificationIcons[n.type]}</span>
                       <span className="flex-1 min-w-0">
                         <span className="flex items-center gap-2">
                           <span className="font-semibold text-white text-sm">{n.title}</span>
-                          {!n.is_read && <span className="w-2 h-2 rounded-full bg-[#00d2ff] shrink-0" aria-label="unread" />}
+                          {!n.is_read && <span className="w-2 h-2 rounded-full bg-gold shrink-0" aria-label="unread" />}
                         </span>
                         <span className="block text-sm text-gray-300 line-clamp-2">{n.message}</span>
                         <span className="block text-xs text-gray-500 mt-0.5">{timeAgo(n.created_at)}</span>
@@ -129,7 +129,7 @@ export default function NotificationBell({ userId }: { userId: string }) {
             <Link
               href="/notifications"
               onClick={() => setOpen(false)}
-              className="block text-center text-sm text-[#00d2ff] py-3 border-t border-[#00d2ff]/20 hover:bg-[#00d2ff]/5"
+              className="block text-center text-sm text-gold py-3 border-t border-brown hover:bg-gold/5"
             >
               See all →
             </Link>

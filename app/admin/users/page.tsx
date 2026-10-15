@@ -18,7 +18,7 @@ const roleLabels: Record<string, string> = {
 };
 
 const inputClass =
-  'rounded border border-[#00d2ff]/40 bg-[#0a0a0c] px-3 py-2 text-white outline-none focus:border-[#00d2ff] disabled:opacity-50';
+  'border border-brownlight bg-sitebg px-3 py-2 text-white outline-none focus:border-gold disabled:opacity-50';
 
 export default function ManageUsersPage() {
   const supabase = createClient();
@@ -56,14 +56,14 @@ export default function ManageUsersPage() {
     fetchData();
   }, [supabase, reloadCount]);
 
-  if (loading) return <div className="min-h-screen bg-[#0a0a0c] text-white p-10 text-center">Loading...</div>;
+  if (loading) return <div className="min-h-screen bg-sitebg text-white p-10 text-center">Loading...</div>;
 
   // Hiding the page is only for convenience; the database refuses these changes from non-admins.
   if (me?.role !== 'admin') {
     return (
-      <div className="min-h-screen bg-[#0a0a0c] text-white p-10 text-center">
+      <div className="min-h-screen bg-sitebg text-white p-10 text-center">
         Only administrators can manage users.{' '}
-        <Link href="/dashboard" className="text-[#00d2ff] underline">Back to the dashboard</Link>
+        <Link href="/dashboard" className="text-gold underline">Back to the dashboard</Link>
       </div>
     );
   }
@@ -78,13 +78,13 @@ export default function ManageUsersPage() {
   });
 
   return (
-    <div className="min-h-screen bg-[#0a0a0c] text-white px-4 py-10">
+    <div className="min-h-screen bg-sitebg text-white px-4 py-10">
       <div className="max-w-6xl mx-auto">
-        <Link href="/dashboard" className="inline-block text-[#00d2ff] hover:underline mb-6">
+        <Link href="/dashboard" className="inline-block text-gold hover:underline mb-6">
           ← Back to Dashboard
         </Link>
 
-        <h1 className="text-4xl font-bold text-[#00d2ff]">Manage Users</h1>
+        <h1 className="font-pixel text-xl sm:text-2xl leading-relaxed text-gold">Manage Users</h1>
         <p className="text-gray-400 mt-2 mb-4">
           New organizers register as a normal account first, then you change their role here.
         </p>
@@ -93,7 +93,7 @@ export default function ManageUsersPage() {
         </div>
 
         {error && (
-          <div className="mb-6 bg-red-500/10 border border-red-500 text-red-300 px-4 py-3 rounded-lg">{error}</div>
+          <div className="mb-6 bg-red-500/10 border border-red-500 text-red-300 px-4 py-3">{error}</div>
         )}
 
         <AddAccountForm onCreated={() => setReloadCount((n) => n + 1)} />
@@ -118,9 +118,9 @@ export default function ManageUsersPage() {
           Showing {visibleUsers.length} of {users.length} users
         </p>
 
-        <div className="bg-[#1a1a2e] border border-[#00d2ff] rounded-xl overflow-hidden">
+        <div className="bg-sitecard border-2 border-gold shadow-[6px_6px_0_var(--color-brown)] overflow-hidden">
           {/* Header (hidden on phones, where each user is a stacked card) */}
-          <div className="hidden md:grid grid-cols-12 gap-4 bg-[#00d2ff] text-black font-bold px-6 py-3">
+          <div className="hidden md:grid grid-cols-12 gap-4 bg-gold text-black font-bold px-6 py-3">
             <div className="col-span-4">Name / Email</div>
             <div className="col-span-3">Role</div>
             <div className="col-span-2">Joined</div>
@@ -130,7 +130,7 @@ export default function ManageUsersPage() {
           {visibleUsers.length === 0 ? (
             <p className="px-6 py-8 text-center text-gray-400">No users match.</p>
           ) : (
-            <div className="divide-y divide-[#00d2ff]/20">
+            <div className="divide-y divide-brown">
               {visibleUsers.map((user) => (
                 // updated_at in the key resets the row's form after every save
                 <UserRow
@@ -218,7 +218,7 @@ function UserRow({ user, isMe, onChanged }: { user: Profile; isMe: boolean; onCh
               type="text" value={fullName} onChange={(e) => setFullName(e.target.value)}
               placeholder="Full name" className={`${inputClass} flex-1 min-w-0`} autoFocus
             />
-            <button type="submit" disabled={busy} className="text-[#00d2ff] font-semibold text-sm disabled:opacity-50">
+            <button type="submit" disabled={busy} className="text-gold font-semibold text-sm disabled:opacity-50">
               Save
             </button>
             <button
@@ -269,7 +269,7 @@ function UserRow({ user, isMe, onChanged }: { user: Profile; isMe: boolean; onCh
       {/* Actions */}
       <div className="md:col-span-3 flex md:justify-end gap-3 text-sm font-semibold">
         {!editingName && (
-          <button onClick={() => setEditingName(true)} disabled={busy} className="text-[#00d2ff] hover:underline disabled:opacity-50">
+          <button onClick={() => setEditingName(true)} disabled={busy} className="text-gold hover:underline disabled:opacity-50">
             Edit name
           </button>
         )}
@@ -358,11 +358,11 @@ function AddAccountForm({ onCreated }: { onCreated: () => void }) {
     return (
       <div className="mb-6">
         {message && (
-          <div className="mb-3 bg-green-500/10 border border-green-500 text-green-300 px-4 py-3 rounded-lg">{message}</div>
+          <div className="mb-3 bg-green-500/10 border border-green-500 text-green-300 px-4 py-3">{message}</div>
         )}
         <button
           onClick={() => setOpen(true)}
-          className="bg-[#00d2ff] text-black px-6 py-2 rounded-lg font-bold hover:bg-[#00b8e6] transition"
+          className="bg-gold text-black px-6 py-2 font-bold hover:bg-golddark transition"
         >
           + Add account
         </button>
@@ -371,11 +371,11 @@ function AddAccountForm({ onCreated }: { onCreated: () => void }) {
   }
 
   return (
-    <form onSubmit={handleCreate} className="mb-6 bg-[#1a1a2e] border border-[#00d2ff] rounded-xl p-6 space-y-4">
+    <form onSubmit={handleCreate} className="mb-6 bg-sitecard border-2 border-gold shadow-[6px_6px_0_var(--color-brown)] p-6 space-y-4">
       <h2 className="text-xl font-bold">Add account</h2>
 
-      {error && <div className="bg-red-500/10 border border-red-500 text-red-300 px-4 py-3 rounded-lg">{error}</div>}
-      {message && <div className="bg-green-500/10 border border-green-500 text-green-300 px-4 py-3 rounded-lg">{message}</div>}
+      {error && <div className="bg-red-500/10 border border-red-500 text-red-300 px-4 py-3">{error}</div>}
+      {message && <div className="bg-green-500/10 border border-green-500 text-green-300 px-4 py-3">{message}</div>}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <input
@@ -404,7 +404,7 @@ function AddAccountForm({ onCreated }: { onCreated: () => void }) {
       <div className="flex gap-2">
         <button
           type="submit" disabled={saving}
-          className="bg-[#00d2ff] text-black px-6 py-2 rounded-lg font-bold hover:bg-[#00b8e6] transition disabled:opacity-50"
+          className="bg-gold text-black px-6 py-2 font-bold hover:bg-golddark transition disabled:opacity-50"
         >
           {saving ? 'Creating...' : 'Create account'}
         </button>

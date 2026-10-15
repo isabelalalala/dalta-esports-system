@@ -106,9 +106,9 @@ export default function MatchPage() {
     };
   }, [supabase, id]);
 
-  if (loading) return <div className="min-h-screen bg-[#0a0a0c] text-white p-10 text-center">Loading...</div>;
+  if (loading) return <div className="min-h-screen bg-sitebg text-white p-10 text-center">Loading...</div>;
   if (!match || !tournament) {
-    return <div className="min-h-screen bg-[#0a0a0c] text-red-400 p-10 text-center">{error || 'Match not found.'}</div>;
+    return <div className="min-h-screen bg-sitebg text-red-400 p-10 text-center">{error || 'Match not found.'}</div>;
   }
 
   const teamA = teams.find((t) => t.id === match.team_a_id) ?? null;
@@ -119,18 +119,18 @@ export default function MatchPage() {
 
   const teamClass = (teamId: string | undefined) =>
     match.status === 'completed'
-      ? match.winner_team_id === teamId ? 'text-[#00d2ff]' : 'text-gray-500'
+      ? match.winner_team_id === teamId ? 'text-gold' : 'text-gray-500'
       : 'text-white';
 
   return (
-    <div className="min-h-screen bg-[#0a0a0c] text-white px-4 py-10">
+    <div className="min-h-screen bg-sitebg text-white px-4 py-10">
       <div className="max-w-3xl mx-auto space-y-6">
-        <Link href={`/tournaments/${tournament.id}`} className="inline-block text-[#00d2ff] hover:underline">
+        <Link href={`/tournaments/${tournament.id}`} className="inline-block text-gold hover:underline">
           ← {tournament.name}
         </Link>
 
         {/* Match header */}
-        <div className="bg-[#1a1a2e] border border-[#00d2ff] rounded-xl p-6 space-y-4">
+        <div className="bg-sitecard border-2 border-gold shadow-[6px_6px_0_var(--color-brown)] p-6 space-y-4">
           <p className="text-xs uppercase font-bold text-gray-400 tracking-widest">
             {tournament.game} · {roundLabel(match.round, roundCount)} · Match {match.match_number}
           </p>
@@ -149,14 +149,14 @@ export default function MatchPage() {
               <span className="bg-green-500/20 text-green-400 border border-green-500/50 px-2 py-0.5 rounded-full font-bold text-xs">LIVE</span>
             )}
             {match.status === 'completed' && winnerName && (
-              <span className="text-[#00d2ff] font-semibold">
+              <span className="text-gold font-semibold">
                 {winnerName} won{match.is_forfeit ? ' by forfeit' : ''}
               </span>
             )}
           </div>
           {/* The public match page works without logging in, so it's the one to share */}
           <div className="flex flex-wrap justify-center items-center gap-3 pt-2">
-            <Link href={`/t/${tournament.id}/match/${match.id}`} className="text-sm text-[#00d2ff] hover:underline">Public page ↗</Link>
+            <Link href={`/t/${tournament.id}/match/${match.id}`} className="text-sm text-gold hover:underline">Public page ↗</Link>
             <ShareButton
               path={`/t/${tournament.id}/match/${match.id}`}
               title={`${teamA?.name ?? 'TBD'} vs ${teamB?.name ?? 'TBD'}`}
@@ -166,7 +166,7 @@ export default function MatchPage() {
           </div>
         </div>
 
-        {error && <div className="bg-red-500/10 border border-red-500 text-red-300 px-4 py-3 rounded-lg">{error}</div>}
+        {error && <div className="bg-red-500/10 border border-red-500 text-red-300 px-4 py-3">{error}</div>}
 
         <CheckinSection
           match={match}
@@ -194,7 +194,7 @@ export default function MatchPage() {
         {isStaff && (
           <p className="text-sm text-gray-400">
             To change the time, status or score directly, use{' '}
-            <Link href={`/tournaments/${tournament.id}/matches`} className="text-[#00d2ff] underline">Manage Matches</Link>.
+            <Link href={`/tournaments/${tournament.id}/matches`} className="text-gold underline">Manage Matches</Link>.
           </p>
         )}
       </div>

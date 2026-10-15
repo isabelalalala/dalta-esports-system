@@ -19,7 +19,7 @@ export default function EngagementSection({ report, liveCounts }: Props) {
 
   return (
     <section className="space-y-4">
-      <h2 className="text-2xl font-bold text-[#00d2ff] print:text-black">Viewership &amp; Audience Engagement</h2>
+      <h2 className="text-2xl font-bold text-gold print:text-black">Viewership &amp; Audience Engagement</h2>
       <p className="text-sm text-gray-400 print:text-gray-600">
         A view = one logged-in person opening a stream on one day. Organizers&apos; own visits are not counted.
       </p>

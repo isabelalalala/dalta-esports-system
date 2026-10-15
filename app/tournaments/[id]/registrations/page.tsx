@@ -112,7 +112,7 @@ export default function RegistrationsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#0a0a0c] text-white flex items-center justify-center">
+      <div className="min-h-screen bg-sitebg text-white flex items-center justify-center">
         <p>Loading registrations...</p>
       </div>
     );
@@ -122,15 +122,15 @@ export default function RegistrationsPage() {
   const activeCount = registrations.filter((r) => ACTIVE_REGISTRATION_STATUSES.includes(r.status)).length;
 
   return (
-    <div className="min-h-screen bg-[#0a0a0c] text-white px-4 py-10">
+    <div className="min-h-screen bg-sitebg text-white px-4 py-10">
       <div className="max-w-6xl mx-auto">
-        <Link href={`/tournaments/${id}`} className="inline-block text-[#00d2ff] hover:underline mb-6">
+        <Link href={`/tournaments/${id}`} className="inline-block text-gold hover:underline mb-6">
           ← Back to Tournament
         </Link>
 
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-4xl font-bold text-[#00d2ff]">{tournament?.name}</h1>
+            <h1 className="font-pixel text-xl sm:text-2xl leading-relaxed text-gold">{tournament?.name}</h1>
             <p className="text-gray-400 text-lg mt-2">Tournament Registrations</p>
           </div>
         </div>
@@ -142,19 +142,19 @@ export default function RegistrationsPage() {
         </div>
 
         {error && (
-          <div className="mb-6 bg-red-500/10 border border-red-500 text-red-400 px-4 py-3 rounded-lg">
+          <div className="mb-6 bg-red-500/10 border border-red-500 text-red-400 px-4 py-3">
             {error}
           </div>
         )}
 
         {registrations.length === 0 ? (
-          <div className="text-center bg-[#1a1a2e] border border-[#00d2ff]/20 rounded-xl p-12">
+          <div className="text-center bg-sitecard border border-brown p-12">
             <p className="text-gray-400">No registrations yet.</p>
           </div>
         ) : (
-          <div className="bg-[#1a1a2e] border border-[#00d2ff] rounded-xl overflow-hidden">
+          <div className="bg-sitecard border-2 border-gold shadow-[6px_6px_0_var(--color-brown)] overflow-hidden">
             {/* Header */}
-            <div className="bg-[#00d2ff] text-black font-bold px-6 py-4 hidden md:grid grid-cols-12 gap-4">
+            <div className="bg-gold text-black font-bold px-6 py-4 hidden md:grid grid-cols-12 gap-4">
               <div className="col-span-3">Team</div>
               <div className="col-span-3">Captain</div>
               <div className="col-span-2">Status</div>
@@ -163,13 +163,13 @@ export default function RegistrationsPage() {
             </div>
 
             {/* Rows */}
-            <div className="divide-y divide-[#00d2ff]/20">
+            <div className="divide-y divide-brown">
               {registrations.map((reg) => {
                 const captain = reg.teams?.captain;
                 const busy = busyId === reg.id;
 
                 return (
-                  <div key={reg.id} className="px-6 py-4 grid grid-cols-1 md:grid-cols-12 gap-4 items-center hover:bg-[#0a0a0c]/50 transition">
+                  <div key={reg.id} className="px-6 py-4 grid grid-cols-1 md:grid-cols-12 gap-4 items-center hover:bg-sitebg/50 transition">
                     <div className="md:col-span-3 font-semibold text-white">
                       {/* Older registrations have no team, only the typed team_name */}
                       {reg.teams?.name || reg.team_name || 'Unnamed Team'}
@@ -196,7 +196,7 @@ export default function RegistrationsPage() {
                         <button
                           onClick={() => handleSetStatus(reg.id, 'approved')}
                           disabled={busy}
-                          className="bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded-lg text-sm font-semibold transition disabled:opacity-50"
+                          className="bg-green-600 hover:bg-green-700 text-white px-3 py-2 text-sm font-semibold transition disabled:opacity-50"
                         >
                           Approve
                         </button>
@@ -205,7 +205,7 @@ export default function RegistrationsPage() {
                         <button
                           onClick={() => handleSetStatus(reg.id, 'rejected')}
                           disabled={busy}
-                          className="bg-yellow-600 hover:bg-yellow-700 text-white px-3 py-2 rounded-lg text-sm font-semibold transition disabled:opacity-50"
+                          className="bg-yellow-600 hover:bg-yellow-700 text-white px-3 py-2 text-sm font-semibold transition disabled:opacity-50"
                         >
                           Reject
                         </button>
@@ -213,7 +213,7 @@ export default function RegistrationsPage() {
                       <button
                         onClick={() => handleDelete(reg.id)}
                         disabled={busy}
-                        className="bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded-lg text-sm font-semibold transition disabled:opacity-50"
+                        className="bg-red-600 hover:bg-red-700 text-white px-3 py-2 text-sm font-semibold transition disabled:opacity-50"
                       >
                         Remove
                       </button>
@@ -224,9 +224,9 @@ export default function RegistrationsPage() {
             </div>
 
             {/* Footer */}
-            <div className="bg-[#0a0a0c] px-6 py-4 border-t border-[#00d2ff]/20">
+            <div className="bg-sitebg px-6 py-4 border-t border-brown">
               <p className="text-gray-400">
-                Participants (pending + approved): <span className="text-[#00d2ff] font-bold">{activeCount}</span> /{' '}
+                Participants (pending + approved): <span className="text-gold font-bold">{activeCount}</span> /{' '}
                 <span className="text-gray-300">{tournament?.max_participants || '∞'}</span>
                 <span className="ml-4 text-gray-500 text-sm">{registrations.length} registrations in total</span>
               </p>

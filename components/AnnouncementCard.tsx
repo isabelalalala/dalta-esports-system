@@ -21,7 +21,7 @@ export default function AnnouncementCard({
 
   return (
     <article
-      className={`bg-[#1a1a2e] border rounded-lg p-4 ${a.pinned ? 'border-yellow-500/60' : 'border-[#00d2ff]/30'}`}
+      className={`bg-sitecard border p-4 ${a.pinned ? 'border-yellow-500/60' : 'border-brownlight'}`}
     >
       <div className="flex flex-wrap items-center gap-2 mb-1">
         {a.pinned && (
@@ -32,7 +32,7 @@ export default function AnnouncementCard({
         {showTournament && a.tournaments && (
           <Link
             href={`/tournaments/${a.tournaments.id}`}
-            className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-[#00d2ff]/15 text-[#00d2ff] border border-[#00d2ff]/50 hover:bg-[#00d2ff]/25"
+            className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-gold/15 text-gold border border-brownlight hover:bg-gold/25"
           >
             {a.tournaments.name}
           </Link>

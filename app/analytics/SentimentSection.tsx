@@ -24,10 +24,10 @@ export default function SentimentSection({ report }: { report: SentimentReport }
 
   return (
     <section className="space-y-4">
-      <h2 className="text-2xl font-bold text-[#00d2ff] print:text-black">Sentiment Analysis Report</h2>
+      <h2 className="text-2xl font-bold text-gold print:text-black">Sentiment Analysis Report</h2>
 
       {t.pending > 0 && (
-        <div className="bg-yellow-500/10 border border-yellow-500 text-yellow-200 px-4 py-3 rounded-lg print:hidden">
+        <div className="bg-yellow-500/10 border border-yellow-500 text-yellow-200 px-4 py-3 print:hidden">
           {t.pending} feedback {t.pending === 1 ? 'is' : 'are'} not classified yet, so they only count towards the
           rating.{' '}
           <Link href="/admin/feedback" className="underline">Classify them on Feedback Analysis</Link>, then generate again.

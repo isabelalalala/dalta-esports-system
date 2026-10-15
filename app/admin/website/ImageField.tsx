@@ -44,7 +44,7 @@ export default function ImageField({ label, value, onChange, folder, required = 
         <div className="relative w-32 h-20 border border-gray-700 bg-black overflow-hidden grid place-items-center">
           {url ? <Image src={url} alt="" fill unoptimized className="object-cover" /> : <span className="text-xs text-gray-500">No image</span>}
         </div>
-        <label className="cursor-pointer border border-[#00d2ff] text-[#00d2ff] px-3 py-1.5 rounded text-sm font-bold hover:bg-[#00d2ff]/10">
+        <label className="cursor-pointer border border-gold text-gold px-3 py-1.5 text-sm font-bold hover:bg-gold/10">
           {uploading ? 'Uploading...' : url ? 'Replace' : 'Upload'}
           <input
             type="file"

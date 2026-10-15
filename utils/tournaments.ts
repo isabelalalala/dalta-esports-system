@@ -17,7 +17,7 @@ export const statusLabels: Record<TournamentDisplayStatus, string> = {
 };
 
 export const statusStyles: Record<TournamentDisplayStatus, string> = {
-  upcoming: 'bg-[#00d2ff]/15 text-[#00d2ff] border-[#00d2ff]/50',
+  upcoming: 'bg-gold/15 text-gold border-gold/50',
   registration_closed: 'bg-yellow-500/15 text-yellow-300 border-yellow-500/50',
   ongoing: 'bg-green-500/15 text-green-300 border-green-500/50',
   completed: 'bg-gray-500/15 text-gray-300 border-gray-500/50',

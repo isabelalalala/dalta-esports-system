@@ -46,7 +46,7 @@ interface Props {
 }
 
 const inputClass =
-  'w-full rounded border border-[#00d2ff]/40 bg-[#0a0a0c] px-3 py-2 text-white outline-none focus:border-[#00d2ff]';
+  'w-full border border-brownlight bg-sitebg px-3 py-2 text-white outline-none focus:border-gold';
 
 const str = (v: unknown) => (v === null || v === undefined ? '' : String(v));
 
@@ -231,7 +231,7 @@ export default function ListEditor({
     if (f.type === 'checkbox') {
       return (
         <label key={f.name} className="flex items-center gap-2 text-sm text-gray-300">
-          <input type="checkbox" checked={!!value} onChange={(e) => set(e.target.checked)} className="accent-[#00d2ff]" />
+          <input type="checkbox" checked={!!value} onChange={(e) => set(e.target.checked)} className="accent-gold" />
           {f.label}
         </label>
       );
@@ -261,17 +261,17 @@ export default function ListEditor({
 
   return (
     <div className="space-y-4">
-      {error && <div className="bg-red-500/10 border border-red-500 text-red-300 px-4 py-3 rounded-lg">{error}</div>}
-      {message && <div className="bg-green-500/10 border border-green-500 text-green-300 px-4 py-3 rounded-lg">{message}</div>}
+      {error && <div className="bg-red-500/10 border border-red-500 text-red-300 px-4 py-3">{error}</div>}
+      {message && <div className="bg-green-500/10 border border-green-500 text-green-300 px-4 py-3">{message}</div>}
 
       {newRow && (
         <button onClick={handleAdd} disabled={busy || !!editingId}
-          className="bg-[#00d2ff] text-black px-4 py-2 rounded-lg font-bold hover:bg-[#00b8e6] disabled:opacity-50">
+          className="bg-gold text-black px-4 py-2 font-bold hover:bg-golddark disabled:opacity-50">
           + Add
         </button>
       )}
       {addWithImage && (
-        <label className={`inline-block cursor-pointer bg-[#00d2ff] text-black px-4 py-2 rounded-lg font-bold hover:bg-[#00b8e6] ${busy ? 'opacity-50' : ''}`}>
+        <label className={`inline-block cursor-pointer bg-gold text-black px-4 py-2 font-bold hover:bg-golddark ${busy ? 'opacity-50' : ''}`}>
           + Add photo
           <input type="file" accept="image/png,image/jpeg,image/webp,image/gif" className="hidden" disabled={busy}
             onChange={(e) => { handleAddWithImage(e.target.files?.[0]); e.target.value = ''; }} />
@@ -288,7 +288,7 @@ export default function ListEditor({
             const thumb = imageFields.length ? siteImageUrl(str(row[imageFields[0]]) || null) : null;
             const href = viewHref?.(row);
             return (
-              <li key={id} className={`bg-[#1a1a2e] border rounded-lg p-4 ${editing ? 'border-[#00d2ff]' : 'border-[#00d2ff]/20'}`}>
+              <li key={id} className={`bg-sitecard border p-4 ${editing ? 'border-gold' : 'border-brown'}`}>
                 <div className="flex flex-wrap items-center gap-3">
                   {imageFields.length > 0 && (
                     <div className="relative w-16 h-12 bg-black border border-gray-700 overflow-hidden shrink-0">
@@ -307,13 +307,13 @@ export default function ListEditor({
                   )}
                   <div className="flex items-center gap-1 text-sm">
                     <button onClick={() => move(index, -1)} disabled={busy || index === 0} aria-label="Move up"
-                      className="px-2 py-1 border border-gray-600 rounded disabled:opacity-30">▲</button>
+                      className="px-2 py-1 border border-gray-600 disabled:opacity-30">▲</button>
                     <button onClick={() => move(index, 1)} disabled={busy || index === rows.length - 1} aria-label="Move down"
-                      className="px-2 py-1 border border-gray-600 rounded disabled:opacity-30">▼</button>
+                      className="px-2 py-1 border border-gray-600 disabled:opacity-30">▼</button>
                   </div>
                   {!editing && (
                     <div className="flex flex-wrap gap-3 text-sm font-semibold">
-                      <button onClick={() => startEdit(row)} disabled={busy || !!editingId} className="text-[#00d2ff] hover:underline disabled:opacity-40">Edit</button>
+                      <button onClick={() => startEdit(row)} disabled={busy || !!editingId} className="text-gold hover:underline disabled:opacity-40">Edit</button>
                       {hasPublish && (
                         <button onClick={() => togglePublish(row)} disabled={busy} className="text-yellow-300 hover:underline disabled:opacity-40">
                           {row.is_published ? 'Unpublish' : 'Publish'}
@@ -334,7 +334,7 @@ export default function ListEditor({
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">{fields.map(renderField)}</div>
                     <div className="flex gap-3">
                       <button onClick={() => handleSave(row)} disabled={busy}
-                        className="bg-[#00d2ff] text-black px-5 py-2 rounded-lg font-bold hover:bg-[#00b8e6] disabled:opacity-50">
+                        className="bg-gold text-black px-5 py-2 font-bold hover:bg-golddark disabled:opacity-50">
                         {busy ? 'Saving...' : 'Save'}
                       </button>
                       <button onClick={cancelEdit} disabled={busy} className="text-gray-400 hover:text-white">Cancel</button>

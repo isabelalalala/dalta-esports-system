@@ -26,6 +26,6 @@ export function facebookEmbedUrl(url: string) {
 // Badge colors for stream status
 export const streamStatusStyles: Record<StreamStatus, string> = {
   live: 'bg-red-500/15 text-red-300 border-red-500/50',
-  scheduled: 'bg-[#00d2ff]/15 text-[#00d2ff] border-[#00d2ff]/50',
+  scheduled: 'bg-gold/15 text-gold border-gold/50',
   ended: 'bg-gray-500/15 text-gray-400 border-gray-500/50',
 };

@@ -49,7 +49,7 @@ export default function ReportChart({ type, title, labels, series, stacked = fal
           const color = s.color ?? categoryColors[i % categoryColors.length];
           if (type === 'doughnut') {
             // A gap in the card color between slices keeps them apart
-            return { label: s.label, data: s.data, backgroundColor: s.colors, borderColor: '#1a1a2e', borderWidth: 2 };
+            return { label: s.label, data: s.data, backgroundColor: s.colors, borderColor: '#1f1714', borderWidth: 2 };
           }
           if (type === 'line') {
             return {
@@ -61,7 +61,7 @@ export default function ReportChart({ type, title, labels, series, stacked = fal
             label: s.label, data: s.data, backgroundColor: color,
             borderRadius: 4, maxBarThickness: 36,
             // Thin gap between stacked parts and neighbouring bars
-            borderColor: '#1a1a2e', borderWidth: stacked ? 1 : 0,
+            borderColor: '#1f1714', borderWidth: stacked ? 1 : 0,
           };
         }),
       },

@@ -8,11 +8,11 @@ import { formatDate } from '@/utils/tournaments';
 // update PRIVACY_NOTICE_VERSION in utils/privacy.ts.
 export default function PrivacyNoticePage() {
   return (
-    <div className="min-h-screen bg-[#0a0a0c] text-gray-300 px-4 py-10">
+    <div className="min-h-screen bg-sitebg text-gray-300 px-4 py-10">
       <article className="max-w-3xl mx-auto space-y-8 leading-relaxed">
         <header>
-          <Link href="/" className="inline-block text-[#00d2ff] hover:underline mb-6">← Home</Link>
-          <h1 className="text-4xl font-bold text-[#00d2ff]">Privacy Notice</h1>
+          <Link href="/" className="inline-block text-gold hover:underline mb-6">← Home</Link>
+          <h1 className="font-pixel text-xl sm:text-2xl leading-relaxed text-gold">Privacy Notice</h1>
           <p className="text-sm text-gray-500 mt-2">Last updated {formatDate(PRIVACY_NOTICE_VERSION)}</p>
           <p className="mt-4">
             DALTA Esports respects your privacy. This notice explains what personal data the DALTA Esports
@@ -30,7 +30,7 @@ export default function PrivacyNoticePage() {
           </p>
           <p>
             Questions or requests: <strong className="text-white">{PRIVACY_CONTACT_PERSON}</strong>,{' '}
-            <a href={`mailto:${PRIVACY_CONTACT_EMAIL}`} className="text-[#00d2ff] underline">{PRIVACY_CONTACT_EMAIL}</a>.
+            <a href={`mailto:${PRIVACY_CONTACT_EMAIL}`} className="text-gold underline">{PRIVACY_CONTACT_EMAIL}</a>.
           </p>
         </Section>
 
@@ -145,7 +145,7 @@ export default function PrivacyNoticePage() {
             <li><strong className="text-white">Be informed</strong> about how your data is used (this notice).</li>
             <li><strong className="text-white">Access</strong> your data and get a copy of it.</li>
             <li><strong className="text-white">Correct</strong> wrong data. You can change your name, player
-              details and password on your <Link href="/profile" className="text-[#00d2ff] underline">Profile</Link>.</li>
+              details and password on your <Link href="/profile" className="text-gold underline">Profile</Link>.</li>
             <li><strong className="text-white">Object or withdraw consent</strong> and have your data
               <strong className="text-white"> erased</strong>: delete your account on your Profile under
               &quot;Delete my account&quot;. A team captain with players must remove them or delete the team first.</li>
@@ -156,7 +156,7 @@ export default function PrivacyNoticePage() {
           </ul>
           <p>
             For anything you can&apos;t do yourself, email{' '}
-            <a href={`mailto:${PRIVACY_CONTACT_EMAIL}`} className="text-[#00d2ff] underline">{PRIVACY_CONTACT_EMAIL}</a>.
+            <a href={`mailto:${PRIVACY_CONTACT_EMAIL}`} className="text-gold underline">{PRIVACY_CONTACT_EMAIL}</a>.
             We will reply within 15 working days.
           </p>
         </Section>

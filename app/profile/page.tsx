@@ -10,7 +10,7 @@ import VerifiedBadge from '@/components/VerifiedBadge';
 import StudentDetails from './StudentDetails';
 
 const inputClass =
-  'w-full rounded-lg border border-[#00d2ff]/40 bg-[#0a0a0c] px-4 py-3 text-white placeholder-gray-500 outline-none focus:border-[#00d2ff]';
+  'w-full border border-brownlight bg-sitebg px-4 py-3 text-white placeholder-gray-500 outline-none focus:border-gold';
 
 export default function ProfilePage() {
   const supabase = createClient();
@@ -176,30 +176,30 @@ export default function ProfilePage() {
   };
 
   if (loading) {
-    return <div className="min-h-screen bg-[#0a0a0c] text-white p-10 text-center">Loading...</div>;
+    return <div className="min-h-screen bg-sitebg text-white p-10 text-center">Loading...</div>;
   }
   if (!profile) {
-    return <div className="min-h-screen bg-[#0a0a0c] text-red-500 p-10 text-center">{error || 'Profile not found.'}</div>;
+    return <div className="min-h-screen bg-sitebg text-red-500 p-10 text-center">{error || 'Profile not found.'}</div>;
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0a0c] text-white px-4 py-10">
+    <div className="min-h-screen bg-sitebg text-white px-4 py-10">
       <div className="max-w-3xl mx-auto space-y-8">
-        <Link href="/dashboard" className="text-[#00d2ff] hover:underline inline-block">
+        <Link href="/dashboard" className="text-gold hover:underline inline-block">
           ← Back to Dashboard
         </Link>
 
-        <h1 className="text-4xl font-bold text-[#00d2ff]">My Profile</h1>
+        <h1 className="font-pixel text-xl sm:text-2xl leading-relaxed text-gold">My Profile</h1>
 
         {error && (
-          <div className="bg-red-500/10 border border-red-500 text-red-300 px-4 py-3 rounded-lg">{error}</div>
+          <div className="bg-red-500/10 border border-red-500 text-red-300 px-4 py-3">{error}</div>
         )}
         {message && (
-          <div className="bg-green-500/10 border border-green-500 text-green-300 px-4 py-3 rounded-lg">{message}</div>
+          <div className="bg-green-500/10 border border-green-500 text-green-300 px-4 py-3">{message}</div>
         )}
 
         {/* Account details */}
-        <form onSubmit={handleSaveName} className="bg-[#1a1a2e] border border-[#00d2ff] rounded-xl p-6 space-y-4">
+        <form onSubmit={handleSaveName} className="bg-sitecard border-2 border-gold shadow-[6px_6px_0_var(--color-brown)] p-6 space-y-4">
           <h2 className="text-xl font-bold">Account</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
             <div>
@@ -216,7 +216,7 @@ export default function ProfilePage() {
                 {profile.privacy_consent_at
                   ? `You agreed to the Privacy Notice on ${new Date(profile.privacy_consent_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}. `
                   : 'You haven\'t agreed to the Privacy Notice yet. '}
-                <Link href="/privacy" className="text-[#00d2ff] underline">Read the Privacy Notice</Link>
+                <Link href="/privacy" className="text-gold underline">Read the Privacy Notice</Link>
               </span>
             </div>
           </div>
@@ -233,7 +233,7 @@ export default function ProfilePage() {
           <button
             type="submit"
             disabled={saving}
-            className="bg-[#00d2ff] text-black px-6 py-2 rounded-lg font-bold hover:bg-[#00b8e6] transition disabled:opacity-50"
+            className="bg-gold text-black px-6 py-2 font-bold hover:bg-golddark transition disabled:opacity-50"
           >
             Save Name
           </button>
@@ -246,7 +246,7 @@ export default function ProfilePage() {
 
         {/* In-game profiles, players only (the database also enforces this) */}
         {profile.role === 'player' && (
-          <div className="bg-[#1a1a2e] border border-[#00d2ff] rounded-xl p-6">
+          <div className="bg-sitecard border-2 border-gold shadow-[6px_6px_0_var(--color-brown)] p-6">
             <h2 className="text-xl font-bold mb-1">Game Profiles</h2>
             <p className="text-gray-400 text-sm mb-6">Your in-game name, role and rank for each game you play.</p>
 
@@ -259,9 +259,9 @@ export default function ProfilePage() {
                     <form
                       key={game.id}
                       onSubmit={handleSaveGameProfile}
-                      className="bg-[#0a0a0c] border border-[#00d2ff] rounded-lg p-4 space-y-3"
+                      className="bg-sitebg border border-gold p-4 space-y-3"
                     >
-                      <h3 className="font-bold text-[#00d2ff]">{game.name}</h3>
+                      <h3 className="font-bold text-gold">{game.name}</h3>
                       <input
                         type="text" placeholder="IGN (in-game name) *"
                         value={ign} onChange={(e) => setIgn(e.target.value)}
@@ -282,7 +282,7 @@ export default function ProfilePage() {
                       <div className="flex gap-2">
                         <button
                           type="submit" disabled={saving}
-                          className="bg-[#00d2ff] text-black px-6 py-2 rounded font-bold hover:bg-[#00b8e6] transition disabled:opacity-50"
+                          className="bg-gold text-black px-6 py-2 font-bold hover:bg-golddark transition disabled:opacity-50"
                         >
                           Save
                         </button>
@@ -300,10 +300,10 @@ export default function ProfilePage() {
                 return (
                   <div
                     key={game.id}
-                    className="bg-[#0a0a0c] border border-[#00d2ff]/20 rounded-lg p-4 flex justify-between items-center gap-4"
+                    className="bg-sitebg border border-brown p-4 flex justify-between items-center gap-4"
                   >
                     <div>
-                      <h3 className="font-bold text-[#00d2ff]">{game.name}</h3>
+                      <h3 className="font-bold text-gold">{game.name}</h3>
                       {gp ? (
                         <p className="text-sm text-gray-300">
                           {gp.ign}
@@ -318,7 +318,7 @@ export default function ProfilePage() {
                       <button
                         onClick={() => startEditing(game.id)}
                         disabled={saving}
-                        className="text-[#00d2ff] hover:underline disabled:opacity-50"
+                        className="text-gold hover:underline disabled:opacity-50"
                       >
                         {gp ? 'Edit' : '+ Add'}
                       </button>
@@ -342,7 +342,7 @@ export default function ProfilePage() {
         <ChangePassword email={profile.email} />
 
         {/* Danger zone */}
-        <div className="border border-red-500 rounded-xl p-6">
+        <div className="border border-red-500 p-6">
           <h2 className="text-xl font-bold text-red-400">Delete my account</h2>
           <p className="text-gray-400 text-sm mt-1">
             This permanently deletes your account, profile and game profiles. It can&apos;t be undone.
@@ -351,7 +351,7 @@ export default function ProfilePage() {
           {!showDelete ? (
             <button
               onClick={() => setShowDelete(true)}
-              className="mt-4 border border-red-500 text-red-400 hover:bg-red-500 hover:text-white px-6 py-2 rounded-lg font-bold transition"
+              className="mt-4 border border-red-500 text-red-400 hover:bg-red-500 hover:text-white px-6 py-2 font-bold transition"
             >
               Delete my account
             </button>
@@ -370,7 +370,7 @@ export default function ProfilePage() {
                 <button
                   onClick={handleDeleteAccount}
                   disabled={deleteText !== 'DELETE' || saving}
-                  className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg font-bold transition disabled:opacity-50"
+                  className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 font-bold transition disabled:opacity-50"
                 >
                   {saving ? 'Deleting...' : 'Permanently delete'}
                 </button>
@@ -437,10 +437,10 @@ function ChangePassword({ email }: { email: string }) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="bg-[#1a1a2e] border border-[#00d2ff] rounded-xl p-6 space-y-4">
+    <form onSubmit={handleSubmit} className="bg-sitecard border-2 border-gold shadow-[6px_6px_0_var(--color-brown)] p-6 space-y-4">
       <h2 className="text-xl font-bold">Change Password</h2>
-      {error && <div className="bg-red-500/10 border border-red-500 text-red-300 px-4 py-3 rounded-lg">{error}</div>}
-      {message && <div className="bg-green-500/10 border border-green-500 text-green-300 px-4 py-3 rounded-lg">{message}</div>}
+      {error && <div className="bg-red-500/10 border border-red-500 text-red-300 px-4 py-3">{error}</div>}
+      {message && <div className="bg-green-500/10 border border-green-500 text-green-300 px-4 py-3">{message}</div>}
       <input
         type="password" placeholder="Current password"
         value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)}
@@ -460,7 +460,7 @@ function ChangePassword({ email }: { email: string }) {
       </div>
       <button
         type="submit" disabled={saving}
-        className="bg-[#00d2ff] text-black px-6 py-2 rounded-lg font-bold hover:bg-[#00b8e6] transition disabled:opacity-50"
+        className="bg-gold text-black px-6 py-2 font-bold hover:bg-golddark transition disabled:opacity-50"
       >
         {saving ? 'Saving...' : 'Change Password'}
       </button>

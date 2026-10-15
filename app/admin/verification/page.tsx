@@ -8,7 +8,7 @@ import type { Profile, VerificationStatus } from '@/utils/types';
 import { verificationLabels } from '@/utils/verification';
 
 const inputClass =
-  'rounded-lg border border-[#00d2ff]/40 bg-[#0a0a0c] px-4 py-2 text-white outline-none focus:border-[#00d2ff]';
+  'border border-brownlight bg-sitebg px-4 py-2 text-white outline-none focus:border-gold';
 
 // The lists an organizer can switch between ('unsubmitted' players have nothing to review)
 const TABS: VerificationStatus[] = ['pending', 'rejected', 'verified'];
@@ -81,14 +81,14 @@ export default function VerificationPage() {
     }
   };
 
-  if (loading) return <div className="min-h-screen bg-[#0a0a0c] text-white p-10 text-center">Loading...</div>;
+  if (loading) return <div className="min-h-screen bg-sitebg text-white p-10 text-center">Loading...</div>;
 
   // Hiding the page is only for convenience; RLS and review_student_verification() also check the role.
   if (role !== 'admin' && role !== 'staff') {
     return (
-      <div className="min-h-screen bg-[#0a0a0c] text-white p-10 text-center">
+      <div className="min-h-screen bg-sitebg text-white p-10 text-center">
         Only organizers can verify students.{' '}
-        <Link href="/dashboard" className="text-[#00d2ff] underline">Back to Dashboard</Link>
+        <Link href="/dashboard" className="text-gold underline">Back to Dashboard</Link>
       </div>
     );
   }
@@ -100,21 +100,21 @@ export default function VerificationPage() {
   );
 
   return (
-    <div className="min-h-screen bg-[#0a0a0c] text-white px-4 py-10">
+    <div className="min-h-screen bg-sitebg text-white px-4 py-10">
       <div className="max-w-5xl mx-auto space-y-6">
         <div>
-          <Link href="/dashboard" className="inline-block text-[#00d2ff] hover:underline mb-6">
+          <Link href="/dashboard" className="inline-block text-gold hover:underline mb-6">
             ← Back to Dashboard
           </Link>
-          <h1 className="text-4xl font-bold text-[#00d2ff]">Student Verification</h1>
+          <h1 className="font-pixel text-xl sm:text-2xl leading-relaxed text-gold">Student Verification</h1>
           <p className="text-gray-400 text-sm mt-2">
             Check each player&apos;s details against school records or their school ID before verifying.
             Only verified students can join tournaments marked &quot;Verified students only&quot;.
           </p>
         </div>
 
-        {error && <div className="bg-red-500/10 border border-red-500 text-red-300 px-4 py-3 rounded-lg">{error}</div>}
-        {message && <div className="bg-green-500/10 border border-green-500 text-green-300 px-4 py-3 rounded-lg">{message}</div>}
+        {error && <div className="bg-red-500/10 border border-red-500 text-red-300 px-4 py-3">{error}</div>}
+        {message && <div className="bg-green-500/10 border border-green-500 text-green-300 px-4 py-3">{message}</div>}
 
         <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
           <div className="flex gap-2">
@@ -122,9 +122,9 @@ export default function VerificationPage() {
               <button
                 key={t}
                 onClick={() => { setTab(t); setRejectingId(null); setMessage(''); }}
-                className={`px-4 py-2 rounded-lg font-bold border ${tab === t
-                  ? 'bg-[#00d2ff] text-black border-[#00d2ff]'
-                  : 'border-[#00d2ff]/40 text-gray-300 hover:bg-[#00d2ff]/10'}`}
+                className={`px-4 py-2 font-bold border ${tab === t
+                  ? 'bg-gold text-black border-gold'
+                  : 'border-brownlight text-gray-300 hover:bg-gold/10'}`}
               >
                 {verificationLabels[t]}
               </button>
@@ -147,7 +147,7 @@ export default function VerificationPage() {
             {visible.map((p) => {
               const busy = busyId === p.id;
               return (
-                <li key={p.id} className="bg-[#1a1a2e] border border-[#00d2ff]/20 rounded-lg p-4 space-y-3">
+                <li key={p.id} className="bg-sitecard border border-brown p-4 space-y-3">
                   <div className="flex flex-wrap justify-between gap-4">
                     <div>
                       <p className="font-bold">{p.full_name || <span className="italic text-gray-500">No name</span>}</p>
@@ -184,7 +184,7 @@ export default function VerificationPage() {
                         required
                       />
                       <button type="submit" disabled={busy}
-                        className="bg-red-500 text-white px-4 py-2 rounded-lg font-bold hover:bg-red-600 disabled:opacity-50">
+                        className="bg-red-500 text-white px-4 py-2 font-bold hover:bg-red-600 disabled:opacity-50">
                         {tab === 'verified' ? 'Revoke' : 'Reject'}
                       </button>
                       <button type="button" onClick={() => { setRejectingId(null); setReason(''); }}
@@ -196,13 +196,13 @@ export default function VerificationPage() {
                     <div className="flex gap-3 text-sm font-semibold">
                       {tab !== 'verified' && (
                         <button onClick={() => review(p, true)} disabled={busy}
-                          className="bg-[#00d2ff] text-black px-4 py-2 rounded-lg hover:bg-[#00b8e6] disabled:opacity-50">
+                          className="bg-gold text-black px-4 py-2 hover:bg-golddark disabled:opacity-50">
                           Verify
                         </button>
                       )}
                       {tab !== 'rejected' && (
                         <button onClick={() => { setRejectingId(p.id); setReason(''); }} disabled={busy}
-                          className="border border-red-500 text-red-300 px-4 py-2 rounded-lg hover:bg-red-500/10 disabled:opacity-50">
+                          className="border border-red-500 text-red-300 px-4 py-2 hover:bg-red-500/10 disabled:opacity-50">
                           {tab === 'verified' ? 'Revoke verification' : 'Reject'}
                         </button>
                       )}

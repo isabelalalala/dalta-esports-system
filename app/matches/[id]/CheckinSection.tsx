@@ -79,7 +79,7 @@ export default function CheckinSection({ match, windowMinutes, teamA, teamB, che
   };
 
   return (
-    <section className="bg-[#1a1a2e] border border-[#00d2ff]/40 rounded-xl p-6 space-y-4">
+    <section className="bg-sitecard border border-brownlight p-6 space-y-4">
       <h2 className="text-xl font-bold">Check-in</h2>
 
       {state === 'off' && <p className="text-gray-400 text-sm">This tournament doesn&apos;t use check-in.</p>}
@@ -94,14 +94,14 @@ export default function CheckinSection({ match, windowMinutes, teamA, teamB, che
         </p>
       )}
 
-      {error && <div className="bg-red-500/10 border border-red-500 text-red-300 px-4 py-3 rounded-lg">{error}</div>}
+      {error && <div className="bg-red-500/10 border border-red-500 text-red-300 px-4 py-3">{error}</div>}
 
       {state !== 'off' && (
         <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {[teamA, teamB].map((team, i) => {
             const row = checkedIn(team?.id);
             return (
-              <li key={i} className={`rounded-lg border p-3 ${row ? 'border-green-500/60 bg-green-500/10' : 'border-gray-700'}`}>
+              <li key={i} className={`border p-3 ${row ? 'border-green-500/60 bg-green-500/10' : 'border-gray-700'}`}>
                 <p className="font-semibold">{team?.name ?? <span className="italic text-gray-500">TBD</span>}</p>
                 <p className={`text-sm ${row ? 'text-green-300' : 'text-gray-400'}`}>
                   {row
@@ -119,7 +119,7 @@ export default function CheckinSection({ match, windowMinutes, teamA, teamB, che
         <button
           onClick={handleCheckIn}
           disabled={busy}
-          className="bg-[#00d2ff] text-black px-6 py-2 rounded-lg font-bold hover:bg-[#00b8e6] disabled:opacity-50"
+          className="bg-gold text-black px-6 py-2 font-bold hover:bg-golddark disabled:opacity-50"
         >
           {busy ? 'Checking in...' : 'Check in my team'}
         </button>
@@ -135,7 +135,7 @@ export default function CheckinSection({ match, windowMinutes, teamA, teamB, che
             <select
               value={chosenWinner}
               onChange={(e) => setForfeitWinner(e.target.value)}
-              className="rounded-lg border border-[#00d2ff]/40 bg-[#0a0a0c] px-3 py-2 text-white"
+              className="border border-brownlight bg-sitebg px-3 py-2 text-white"
               aria-label="Forfeit winner"
             >
               <option value="">Choose the winner</option>
@@ -146,7 +146,7 @@ export default function CheckinSection({ match, windowMinutes, teamA, teamB, che
             <button
               onClick={handleForfeit}
               disabled={busy || !chosenWinner}
-              className="border border-yellow-500 text-yellow-300 px-4 py-2 rounded-lg font-bold hover:bg-yellow-500/10 disabled:opacity-50"
+              className="border border-yellow-500 text-yellow-300 px-4 py-2 font-bold hover:bg-yellow-500/10 disabled:opacity-50"
             >
               Declare forfeit
             </button>

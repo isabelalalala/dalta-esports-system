@@ -9,7 +9,7 @@ import type { PendingTeamInvite, PlayerSearchResult, RosterMember, Team } from '
 import VerifiedBadge from '@/components/VerifiedBadge';
 
 const inputClass =
-  'w-full bg-[#0a0a0c] border border-gray-700 p-3 rounded text-white outline-none focus:border-[#00d2ff]';
+  'w-full bg-sitebg border border-gray-700 p-3 text-white outline-none focus:border-gold';
 
 export default function ManageTeamPage() {
   const supabase = createClient();
@@ -234,10 +234,10 @@ export default function ManageTeamPage() {
     }
   };
 
-  if (loading) return <div className="min-h-screen bg-[#0a0a0c] text-white p-10 text-center">Loading...</div>;
+  if (loading) return <div className="min-h-screen bg-sitebg text-white p-10 text-center">Loading...</div>;
   if (!team) {
     return (
-      <div className="min-h-screen bg-[#0a0a0c] text-red-500 p-10 text-center">
+      <div className="min-h-screen bg-sitebg text-red-500 p-10 text-center">
         {error || 'Team not found.'}
       </div>
     );
@@ -252,13 +252,13 @@ export default function ManageTeamPage() {
   const isSolo = maxPlayers <= 1;
 
   return (
-    <div className="min-h-screen bg-[#0a0a0c] text-white p-8">
+    <div className="min-h-screen bg-sitebg text-white p-8">
       <div className="max-w-3xl mx-auto">
-        <Link href="/teams" className="text-[#00d2ff] hover:underline mb-6 inline-block">
+        <Link href="/teams" className="text-gold hover:underline mb-6 inline-block">
           ← Back to My Teams
         </Link>
 
-        <div className="bg-[#1a1a2e] border border-[#00d2ff] p-8 rounded-xl">
+        <div className="bg-sitecard border-2 border-gold shadow-[6px_6px_0_var(--color-brown)] p-8">
           {editing ? (
             <form onSubmit={handleSaveTeam} className="space-y-3">
               <input
@@ -272,7 +272,7 @@ export default function ManageTeamPage() {
               <div className="flex gap-2">
                 <button
                   type="submit" disabled={busy}
-                  className="bg-[#00d2ff] text-black px-6 py-2 rounded font-bold hover:bg-[#00b8e6] transition disabled:opacity-50"
+                  className="bg-gold text-black px-6 py-2 font-bold hover:bg-golddark transition disabled:opacity-50"
                 >
                   Save
                 </button>
@@ -287,12 +287,12 @@ export default function ManageTeamPage() {
           ) : (
             <div className="flex justify-between items-start gap-4">
               <div>
-                <h1 className="text-4xl font-bold text-[#00d2ff]">{team.name}</h1>
+                <h1 className="font-pixel text-xl sm:text-2xl leading-relaxed text-gold">{team.name}</h1>
                 <p className="text-gray-400 mt-1 uppercase text-xs font-bold tracking-widest">{team.games?.name}</p>
                 {team.description && <p className="text-gray-300 mt-4">{team.description}</p>}
               </div>
               {isCaptain && (
-                <button onClick={startEditing} className="text-[#00d2ff] hover:underline font-semibold text-sm">
+                <button onClick={startEditing} className="text-gold hover:underline font-semibold text-sm">
                   Edit
                 </button>
               )}
@@ -300,12 +300,12 @@ export default function ManageTeamPage() {
           )}
 
           {error && (
-            <div className="mt-6 bg-red-500/10 border border-red-500 text-red-300 px-4 py-3 rounded">
+            <div className="mt-6 bg-red-500/10 border border-red-500 text-red-300 px-4 py-3">
               {error}
             </div>
           )}
           {message && (
-            <div className="mt-6 bg-green-500/10 border border-green-500 text-green-300 px-4 py-3 rounded">
+            <div className="mt-6 bg-green-500/10 border border-green-500 text-green-300 px-4 py-3">
               {message}
             </div>
           )}
@@ -323,7 +323,7 @@ export default function ManageTeamPage() {
             </p>
           )}
 
-          <ul className="mt-4 divide-y divide-[#00d2ff]/20">
+          <ul className="mt-4 divide-y divide-brown">
             {roster.map((member) => (
               <li key={member.user_id} className="py-3 flex justify-between items-center gap-4">
                 <div>
@@ -360,7 +360,7 @@ export default function ManageTeamPage() {
 
           {/* Invite players (captain only; the database also enforces this) */}
           {isCaptain && (
-            <div className="mt-8 bg-[#0a0a0c] border border-[#00d2ff]/30 p-4 rounded-lg">
+            <div className="mt-8 bg-sitebg border border-brownlight p-4">
               <h3 className="font-bold mb-1">Invite a player</h3>
               {isSolo ? (
                 <p className="text-gray-400 text-sm">{team.games?.name} teams have one player, so there&apos;s no one to invite.</p>
@@ -379,7 +379,7 @@ export default function ManageTeamPage() {
                     />
                     <button
                       type="submit" disabled={busy}
-                      className="bg-[#00d2ff] text-black px-6 rounded font-bold hover:bg-[#00b8e6] transition disabled:opacity-50"
+                      className="bg-gold text-black px-6 font-bold hover:bg-golddark transition disabled:opacity-50"
                     >
                       Search
                     </button>
@@ -390,7 +390,7 @@ export default function ManageTeamPage() {
                   )}
 
                   {results && results.length > 0 && (
-                    <ul className="mt-3 divide-y divide-[#00d2ff]/20">
+                    <ul className="mt-3 divide-y divide-brown">
                       {results.map((player) => (
                         <li key={player.user_id} className="py-2 flex justify-between items-center gap-4">
                           <div>
@@ -408,7 +408,7 @@ export default function ManageTeamPage() {
                             <button
                               onClick={() => handleInvite(player)}
                               disabled={busy}
-                              className="text-[#00d2ff] hover:underline font-semibold text-sm disabled:opacity-50"
+                              className="text-gold hover:underline font-semibold text-sm disabled:opacity-50"
                             >
                               Invite
                             </button>
@@ -423,7 +423,7 @@ export default function ManageTeamPage() {
               {pendingInvites.length > 0 && (
                 <div className="mt-6">
                   <h4 className="font-semibold text-sm text-gray-300 mb-2">Waiting for an answer</h4>
-                  <ul className="divide-y divide-[#00d2ff]/20">
+                  <ul className="divide-y divide-brown">
                     {pendingInvites.map((invite) => (
                       <li key={invite.invite_id} className="py-2 flex justify-between items-center gap-4">
                         <div>
@@ -451,7 +451,7 @@ export default function ManageTeamPage() {
                 <button
                   onClick={handleDeleteTeam}
                   disabled={busy}
-                  className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg font-bold transition disabled:opacity-50"
+                  className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 font-bold transition disabled:opacity-50"
                 >
                   Delete Team
                 </button>
@@ -463,7 +463,7 @@ export default function ManageTeamPage() {
               <button
                 onClick={() => removeMember(userId, 'Leave this team?')}
                 disabled={busy}
-                className="border border-red-500 text-red-400 hover:bg-red-500 hover:text-white px-6 py-2 rounded-lg font-bold transition disabled:opacity-50"
+                className="border border-red-500 text-red-400 hover:bg-red-500 hover:text-white px-6 py-2 font-bold transition disabled:opacity-50"
               >
                 Leave Team
               </button>

@@ -85,8 +85,8 @@ export default function MyMatches({ userId }: { userId: string }) {
   }, [supabase, userId]);
 
   return (
-    <div className="mt-8 bg-[#1a1a2e] border border-[#00d2ff] rounded-xl p-6">
-      <h2 className="text-xl font-bold text-[#00d2ff] mb-4">⚔️ My Matches</h2>
+    <div className="mt-8 bg-sitecard border-2 border-gold shadow-[6px_6px_0_var(--color-brown)] p-6">
+      <h2 className="text-xl font-bold text-gold mb-4">⚔️ My Matches</h2>
 
       {loading ? (
         <p className="text-gray-400">Loading...</p>
@@ -97,7 +97,7 @@ export default function MyMatches({ userId }: { userId: string }) {
           {myTeamIds.length === 0 ? 'You are not on a team yet.' : 'No upcoming matches.'}
         </p>
       ) : (
-        <ul className="divide-y divide-[#00d2ff]/20">
+        <ul className="divide-y divide-brown">
           {matches.map((m) => {
             // Which side is mine decides who the opponent is
             const mineIsA = m.team_a_id !== null && myTeamIds.includes(m.team_a_id);
@@ -126,7 +126,7 @@ export default function MyMatches({ userId }: { userId: string }) {
                 </div>
                 <div className="text-sm sm:text-right">
                   <p className="text-gray-300">{formatDateTime(m.scheduled_at)}</p>
-                  <Link href={`/matches/${m.id}`} className="text-[#00d2ff] hover:underline font-semibold">
+                  <Link href={`/matches/${m.id}`} className="text-gold hover:underline font-semibold">
                     Match page (check-in, result) →
                   </Link>
                 </div>

@@ -9,7 +9,7 @@ import { refreshSite } from './actions';
 import ImageField from './ImageField';
 
 const inputClass =
-  'w-full rounded border border-[#00d2ff]/40 bg-[#0a0a0c] px-3 py-2 text-white outline-none focus:border-[#00d2ff]';
+  'w-full border border-brownlight bg-sitebg px-3 py-2 text-white outline-none focus:border-gold';
 
 // The image keys in site_content (the texts come from SITE_CONTENT_FIELDS)
 const IMAGE_KEYS = [
@@ -87,10 +87,10 @@ export default function SiteTextEditor() {
 
   return (
     <div className="space-y-6">
-      {error && <div className="bg-red-500/10 border border-red-500 text-red-300 px-4 py-3 rounded-lg">{error}</div>}
-      {message && <div className="bg-green-500/10 border border-green-500 text-green-300 px-4 py-3 rounded-lg">{message}</div>}
+      {error && <div className="bg-red-500/10 border border-red-500 text-red-300 px-4 py-3">{error}</div>}
+      {message && <div className="bg-green-500/10 border border-green-500 text-green-300 px-4 py-3">{message}</div>}
 
-      <section className="bg-[#1a1a2e] border border-[#00d2ff]/20 rounded-lg p-4 grid grid-cols-1 sm:grid-cols-2 gap-6">
+      <section className="bg-sitecard border border-brown p-4 grid grid-cols-1 sm:grid-cols-2 gap-6">
         {IMAGE_KEYS.map(({ key, label }) => (
           <ImageField
             key={key}
@@ -103,8 +103,8 @@ export default function SiteTextEditor() {
       </section>
 
       {groups.map((group) => (
-        <section key={group} className="bg-[#1a1a2e] border border-[#00d2ff]/20 rounded-lg p-4 space-y-4">
-          <h3 className="font-bold text-[#00d2ff]">{group}</h3>
+        <section key={group} className="bg-sitecard border border-brown p-4 space-y-4">
+          <h3 className="font-bold text-gold">{group}</h3>
           {SITE_CONTENT_FIELDS.filter((f) => f.group === group).map((f) => (
             <label key={f.key} className="block text-sm font-semibold text-gray-300">
               {f.label}
@@ -123,9 +123,9 @@ export default function SiteTextEditor() {
       ))}
 
       {/* Stays visible while scrolling through the long form */}
-      <div className="sticky bottom-0 bg-[#0a0a0c]/95 border-t border-[#00d2ff]/30 py-3 flex items-center gap-4">
+      <div className="sticky bottom-0 bg-sitebg/95 border-t border-brownlight py-3 flex items-center gap-4">
         <button onClick={handleSave} disabled={busy || changedKeys.length === 0}
-          className="bg-[#00d2ff] text-black px-6 py-2 rounded-lg font-bold hover:bg-[#00b8e6] disabled:opacity-50">
+          className="bg-gold text-black px-6 py-2 font-bold hover:bg-golddark disabled:opacity-50">
           {busy ? 'Saving...' : `Save changes${changedKeys.length ? ` (${changedKeys.length})` : ''}`}
         </button>
         {changedKeys.length > 0 && (

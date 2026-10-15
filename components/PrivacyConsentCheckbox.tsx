@@ -15,12 +15,12 @@ export default function PrivacyConsentCheckbox({ checked, onChange }: Props) {
           type="checkbox"
           checked={checked}
           onChange={(e) => onChange(e.target.checked)}
-          className="mt-1 h-4 w-4 shrink-0 accent-[#00d2ff]"
+          className="mt-1 h-4 w-4 shrink-0 accent-gold"
           required
         />
         <span>
           I agree to the collection and processing of my personal data as described in the{' '}
-          <Link href="/privacy" target="_blank" className="text-[#00d2ff] underline">
+          <Link href="/privacy" target="_blank" className="text-gold underline">
             Privacy Notice
           </Link>
           .

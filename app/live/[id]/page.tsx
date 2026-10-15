@@ -132,23 +132,23 @@ export default function WatchStreamPage() {
     };
   }, [supabase, tournamentId, matchId]);
 
-  if (loading) return <div className="min-h-screen bg-[#0a0a0c] text-white p-10 text-center">Loading...</div>;
+  if (loading) return <div className="min-h-screen bg-sitebg text-white p-10 text-center">Loading...</div>;
   if (!stream) {
-    return <div className="min-h-screen bg-[#0a0a0c] text-red-500 p-10 text-center">{error || 'Stream not found.'}</div>;
+    return <div className="min-h-screen bg-sitebg text-red-500 p-10 text-center">{error || 'Stream not found.'}</div>;
   }
 
   const name = (teamId: string | null) => (teamId ? teamNames[teamId] ?? 'Unknown team' : 'TBD');
 
   return (
-    <div className="min-h-screen bg-[#0a0a0c] text-white px-4 py-10">
+    <div className="min-h-screen bg-sitebg text-white px-4 py-10">
       <div className="max-w-5xl mx-auto space-y-6">
-        <Link href="/live" className="inline-block text-[#00d2ff] hover:underline">
+        <Link href="/live" className="inline-block text-gold hover:underline">
           ← All streams
         </Link>
 
         <div>
           <div className="flex flex-wrap items-center gap-2">
-            <h1 className="text-3xl font-bold text-[#00d2ff]">{stream.title}</h1>
+            <h1 className="text-3xl font-bold text-gold">{stream.title}</h1>
             <span className={`px-2 py-0.5 rounded-full border text-[10px] font-bold uppercase ${streamStatusStyles[stream.status]}`}>
               {stream.status === 'live' ? '● Live' : stream.status === 'ended' ? 'Replay' : 'Scheduled'}
             </span>
@@ -161,10 +161,10 @@ export default function WatchStreamPage() {
           </p>
         </div>
 
-        {error && <div className="bg-red-500/10 border border-red-500 text-red-300 px-4 py-3 rounded-lg">{error}</div>}
+        {error && <div className="bg-red-500/10 border border-red-500 text-red-300 px-4 py-3">{error}</div>}
 
         {stream.status === 'scheduled' && (
-          <p className="bg-[#1a1a2e] border border-[#00d2ff]/30 rounded-lg px-4 py-3 text-gray-300">
+          <p className="bg-sitecard border border-brownlight px-4 py-3 text-gray-300">
             This stream hasn&apos;t started yet. The video plays once the broadcast is live on Facebook.
           </p>
         )}
@@ -172,7 +172,7 @@ export default function WatchStreamPage() {
         <FacebookPlayer url={stream.facebook_url} title={stream.title} />
 
         {/* Scoreboard */}
-        <section className="bg-[#1a1a2e] border border-[#00d2ff]/30 rounded-xl p-6">
+        <section className="bg-sitecard border border-brownlight p-6">
           <div className="flex justify-between items-center mb-3">
             <h2 className="text-xl font-bold">{matchId ? 'Match' : 'Live matches'}</h2>
             <span className={`text-xs ${realtimeOn ? 'text-green-400' : 'text-gray-500'}`}>
@@ -185,11 +185,11 @@ export default function WatchStreamPage() {
               {matchId ? 'This match is no longer in the bracket.' : 'No match is being played right now.'}
             </p>
           ) : (
-            <ul className="divide-y divide-[#00d2ff]/15">
+            <ul className="divide-y divide-brown">
               {matches.map((m) => {
                 const teamClass = (teamId: string | null) =>
                   m.status === 'completed'
-                    ? m.winner_team_id === teamId ? 'text-[#00d2ff] font-bold' : 'text-gray-500'
+                    ? m.winner_team_id === teamId ? 'text-gold font-bold' : 'text-gray-500'
                     : 'text-white font-semibold';
 
                 return (
@@ -212,14 +212,14 @@ export default function WatchStreamPage() {
             </ul>
           )}
 
-          <Link href={`/tournaments/${stream.tournament_id}`} className="inline-block mt-4 text-sm text-[#00d2ff] hover:underline">
+          <Link href={`/tournaments/${stream.tournament_id}`} className="inline-block mt-4 text-sm text-gold hover:underline">
             See the full bracket →
           </Link>
         </section>
 
         <Link
           href={`/feedback?tournament=${stream.tournament_id}`}
-          className="inline-block text-[#00d2ff] hover:underline"
+          className="inline-block text-gold hover:underline"
         >
           💬 Enjoying the stream? Give feedback
         </Link>

@@ -55,8 +55,8 @@ function daysAgo(days: number) {
 }
 
 const inputClass =
-  'rounded-lg border border-[#00d2ff]/40 bg-[#0a0a0c] px-3 py-2 text-white outline-none focus:border-[#00d2ff]';
-const presetClass = 'px-3 py-1 rounded-full border border-[#00d2ff]/40 text-sm text-gray-300 hover:bg-[#00d2ff]/10';
+  'border border-brownlight bg-sitebg px-3 py-2 text-white outline-none focus:border-gold';
+const presetClass = 'px-3 py-1 rounded-full border border-brownlight text-sm text-gray-300 hover:bg-gold/10';
 
 interface Props {
   value: Filters;
@@ -79,7 +79,7 @@ export default function ReportFilters({ value, onChange, options }: Props) {
   };
 
   return (
-    <div className="bg-[#1a1a2e] border border-[#00d2ff]/30 rounded-lg p-4 space-y-3 print:hidden">
+    <div className="bg-sitecard border border-brownlight p-4 space-y-3 print:hidden">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
         <label className="flex flex-col gap-1 text-xs uppercase font-bold text-gray-400">
           Game

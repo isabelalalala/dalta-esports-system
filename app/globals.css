@@ -1,18 +1,11 @@
 @import "tailwindcss";
 
-/* DALTA brand colors, e.g. bg-cyan, text-darkbg, border-darkcard.
-   Single names like --color-red don't remove Tailwind's red-500 etc. */
+/* DALTA theme (the logo's yellow and brown on a dark background), used by every page.
+   e.g. bg-sitebg, bg-sitecard, text-gold, border-brownlight, hover:bg-golddark.
+   Change a color here and the whole app follows. */
 @theme {
-  --color-cyan: #00d2ff;
-  --color-darkbg: #0a0a0c;
-  --color-darkcard: #1a1a2e;
-  --color-red: #ff4444;
-  --color-green: #6bcf7f;
-  --color-yellow: #ffd93d;
-  --color-teal: #4ecdc4;
-
-  /* Public website (wireframe style on a dark background): the logo's yellow and brown */
   --color-gold: #fccb35;
+  --color-golddark: #e0b22a;  /* hover on gold buttons */
   --color-brown: #5c241c;
   --color-brownlight: #a0522d;
   --color-sitebg: #120d0b;
@@ -41,8 +34,8 @@
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
+  background: var(--color-sitebg);
+  color: #e5e7eb;
   font-family: Arial, Helvetica, sans-serif;
 }
 

@@ -101,29 +101,29 @@ export default function AnalyticsPage() {
   };
 
   if (loading || role === 'staff') {
-    return <div className="min-h-screen bg-[#0a0a0c] text-white p-10 text-center">Loading...</div>;
+    return <div className="min-h-screen bg-sitebg text-white p-10 text-center">Loading...</div>;
   }
 
   // Hiding the page is only for convenience; RLS and the report functions also refuse other roles.
   if (role !== 'admin') {
     return (
-      <div className="min-h-screen bg-[#0a0a0c] text-white p-10 text-center">
+      <div className="min-h-screen bg-sitebg text-white p-10 text-center">
         Only organizers can view reports.{' '}
-        <Link href="/dashboard" className="text-[#00d2ff] underline">Back to Dashboard</Link>
+        <Link href="/dashboard" className="text-gold underline">Back to Dashboard</Link>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0a0c] text-white px-4 py-10">
+    <div className="min-h-screen bg-sitebg text-white px-4 py-10">
       <div className="max-w-5xl mx-auto space-y-6">
         <div>
-          <Link href="/dashboard" className="inline-block text-[#00d2ff] hover:underline mb-6">
+          <Link href="/dashboard" className="inline-block text-gold hover:underline mb-6">
             ← Back to Dashboard
           </Link>
           <div className="flex flex-wrap justify-between items-center gap-4">
-            <h1 className="text-4xl font-bold text-[#00d2ff]">Analytics &amp; Reports</h1>
-            <Link href="/analytics/engagement" className="border border-[#00d2ff] text-[#00d2ff] px-4 py-2 rounded-lg font-bold hover:bg-[#00d2ff]/10">
+            <h1 className="font-pixel text-xl sm:text-2xl leading-relaxed text-gold">Analytics &amp; Reports</h1>
+            <Link href="/analytics/engagement" className="border border-gold text-gold px-4 py-2 font-bold hover:bg-gold/10">
               Live engagement stats →
             </Link>
           </div>
@@ -134,7 +134,7 @@ export default function AnalyticsPage() {
         </div>
 
         {(error || optionsError) && (
-          <div className="bg-red-500/10 border border-red-500 text-red-300 px-4 py-3 rounded-lg">{error || optionsError}</div>
+          <div className="bg-red-500/10 border border-red-500 text-red-300 px-4 py-3">{error || optionsError}</div>
         )}
 
         <ReportFilters value={filters} onChange={setFilters} options={options} />
@@ -142,19 +142,19 @@ export default function AnalyticsPage() {
         <button
           onClick={handleGenerate}
           disabled={generating}
-          className="w-full bg-[#00d2ff] text-black px-6 py-3 rounded-lg font-bold hover:bg-[#00b8e6] transition disabled:opacity-50"
+          className="w-full bg-gold text-black px-6 py-3 font-bold hover:bg-golddark transition disabled:opacity-50"
         >
           {generating ? 'Generating...' : 'Generate report'}
         </button>
 
         <div>
-          <h2 className="text-2xl font-bold text-[#00d2ff] mb-3">Saved reports</h2>
+          <h2 className="text-2xl font-bold text-gold mb-3">Saved reports</h2>
           {reports.length === 0 ? (
             <p className="text-gray-400 text-center py-8">No reports generated yet.</p>
           ) : (
             <ul className="space-y-2">
               {reports.map((r) => (
-                <li key={r.id} className="bg-[#1a1a2e] border border-[#00d2ff]/20 rounded-lg p-4 flex flex-wrap items-center gap-3">
+                <li key={r.id} className="bg-sitecard border border-brown p-4 flex flex-wrap items-center gap-3">
                   <Link href={`/analytics/reports/${r.id}`} className="flex-1 min-w-0 hover:underline">
                     <p className="font-bold">{describeFilters(r.filters)}</p>
                     <p className="text-xs text-gray-400">

@@ -9,7 +9,7 @@ import StarRating from '@/components/StarRating';
 import ExportButtons from '@/components/ExportButtons';
 
 const inputClass =
-  'rounded-lg border border-[#00d2ff]/40 bg-[#0a0a0c] px-4 py-2 text-white outline-none focus:border-[#00d2ff]';
+  'border border-brownlight bg-sitebg px-4 py-2 text-white outline-none focus:border-gold';
 
 const sentimentStyles: Record<Sentiment, string> = {
   positive: 'bg-green-500/15 text-green-300 border-green-500/50',
@@ -108,14 +108,14 @@ export default function FeedbackAnalysisPage() {
     }
   };
 
-  if (loading) return <div className="min-h-screen bg-[#0a0a0c] text-white p-10 text-center">Loading...</div>;
+  if (loading) return <div className="min-h-screen bg-sitebg text-white p-10 text-center">Loading...</div>;
 
   // Hiding the page is only for convenience; RLS returns only their own feedback to other roles.
   if (role !== 'admin') {
     return (
-      <div className="min-h-screen bg-[#0a0a0c] text-white p-10 text-center">
+      <div className="min-h-screen bg-sitebg text-white p-10 text-center">
         Only admins can view the feedback analysis.{' '}
-        <Link href="/feedback" className="text-[#00d2ff] underline">Send feedback instead</Link>
+        <Link href="/feedback" className="text-gold underline">Send feedback instead</Link>
       </div>
     );
   }
@@ -148,18 +148,18 @@ export default function FeedbackAnalysisPage() {
   const topTopics = [...topicCounts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 8);
 
   return (
-    <div className="min-h-screen bg-[#0a0a0c] text-white px-4 py-10">
+    <div className="min-h-screen bg-sitebg text-white px-4 py-10">
       <div className="max-w-5xl mx-auto space-y-6">
         <div>
-          <Link href="/dashboard" className="inline-block text-[#00d2ff] hover:underline mb-6">
+          <Link href="/dashboard" className="inline-block text-gold hover:underline mb-6">
             ← Back to Dashboard
           </Link>
           <div className="flex flex-wrap justify-between items-center gap-4">
-            <h1 className="text-4xl font-bold text-[#00d2ff]">Feedback Analysis</h1>
+            <h1 className="font-pixel text-xl sm:text-2xl leading-relaxed text-gold">Feedback Analysis</h1>
             <button
               onClick={handleClassify}
               disabled={classifying || pendingCount === 0}
-              className="bg-[#00d2ff] text-black px-6 py-2 rounded-lg font-bold hover:bg-[#00b8e6] transition disabled:opacity-50"
+              className="bg-gold text-black px-6 py-2 font-bold hover:bg-golddark transition disabled:opacity-50"
             >
               {classifying ? 'Classifying...' : `Classify now (${pendingCount} pending)`}
             </button>
@@ -175,8 +175,8 @@ export default function FeedbackAnalysisPage() {
           </div>
         </div>
 
-        {error && <div className="bg-red-500/10 border border-red-500 text-red-300 px-4 py-3 rounded-lg">{error}</div>}
-        {message && <div className="bg-green-500/10 border border-green-500 text-green-300 px-4 py-3 rounded-lg">{message}</div>}
+        {error && <div className="bg-red-500/10 border border-red-500 text-red-300 px-4 py-3">{error}</div>}
+        {message && <div className="bg-green-500/10 border border-green-500 text-green-300 px-4 py-3">{message}</div>}
 
         <div className="flex flex-col sm:flex-row gap-3">
           <select value={tournamentFilter} onChange={(e) => setTournamentFilter(e.target.value)} className={`${inputClass} flex-1`}>
@@ -197,16 +197,16 @@ export default function FeedbackAnalysisPage() {
 
         {/* Summary */}
         <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-          <div className="bg-[#1a1a2e] border border-[#00d2ff]/30 rounded-lg p-4">
+          <div className="bg-sitecard border border-brownlight p-4">
             <p className="text-xs uppercase font-bold text-gray-400">Feedback</p>
             <p className="text-2xl font-bold">{inTournament.length}</p>
           </div>
-          <div className="bg-[#1a1a2e] border border-[#00d2ff]/30 rounded-lg p-4">
+          <div className="bg-sitecard border border-brownlight p-4">
             <p className="text-xs uppercase font-bold text-gray-400">Avg rating</p>
             <p className="text-2xl font-bold">{averageRating ? averageRating.toFixed(1) : '–'} <span className="text-yellow-400 text-lg">★</span></p>
           </div>
           {(['positive', 'neutral', 'negative'] as Sentiment[]).map((s) => (
-            <div key={s} className={`border rounded-lg p-4 ${sentimentStyles[s]}`}>
+            <div key={s} className={`border p-4 ${sentimentStyles[s]}`}>
               <p className="text-xs uppercase font-bold">{s}</p>
               <p className="text-2xl font-bold">{countOf(s)} <span className="text-sm font-normal">({percentOf(s)}%)</span></p>
             </div>
@@ -214,11 +214,11 @@ export default function FeedbackAnalysisPage() {
         </div>
 
         {topTopics.length > 0 && (
-          <div className="bg-[#1a1a2e] border border-[#00d2ff]/30 rounded-lg p-4">
+          <div className="bg-sitecard border border-brownlight p-4">
             <p className="text-xs uppercase font-bold text-gray-400 mb-2">Most mentioned topics</p>
             <div className="flex flex-wrap gap-2">
               {topTopics.map(([topic, count]) => (
-                <span key={topic} className="px-3 py-1 rounded-full bg-[#00d2ff]/10 border border-[#00d2ff]/40 text-sm">
+                <span key={topic} className="px-3 py-1 rounded-full bg-gold/10 border border-brownlight text-sm">
                   {topic} <span className="text-gray-400">×{count}</span>
                 </span>
               ))}
@@ -232,7 +232,7 @@ export default function FeedbackAnalysisPage() {
         ) : (
           <ul className="space-y-3">
             {visible.map((f) => (
-              <li key={f.id} className="bg-[#1a1a2e] border border-[#00d2ff]/20 rounded-lg p-4">
+              <li key={f.id} className="bg-sitecard border border-brown p-4">
                 <div className="flex flex-wrap items-center gap-2 mb-2">
                   <StarRating value={f.rating} size="sm" />
                   {f.sentiment ? (
@@ -252,7 +252,7 @@ export default function FeedbackAnalysisPage() {
                 {f.topics.length > 0 && (
                   <div className="mt-2 flex flex-wrap gap-1">
                     {f.topics.map((t) => (
-                      <span key={t} className="text-xs px-2 py-0.5 rounded bg-[#0a0a0c] text-gray-400 border border-gray-700">{t}</span>
+                      <span key={t} className="text-xs px-2 py-0.5 bg-sitebg text-gray-400 border border-gray-700">{t}</span>
                     ))}
                   </div>
                 )}

@@ -18,7 +18,7 @@ export default function ActivitySection({ report }: { report: ActivityReport }) 
 
   return (
     <section className="space-y-4">
-      <h2 className="text-2xl font-bold text-[#00d2ff] print:text-black">Tournament Activity &amp; System Report</h2>
+      <h2 className="text-2xl font-bold text-gold print:text-black">Tournament Activity &amp; System Report</h2>
 
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
         <StatTile label="New users" value={t.users} />

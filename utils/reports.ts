@@ -170,7 +170,7 @@ export function describeFilters(f: SavedReport['filters']) {
 }
 
 // ---------------------------------------------------------------------------
-// Chart colors (checked for color-blind safety on the dark card background #1a1a2e)
+// Chart colors (checked for color-blind safety on the card background #1f1714)
 // ---------------------------------------------------------------------------
 
 // Sentiment is a scale from bad to good: red ↔ neutral gray ↔ blue.
@@ -188,7 +188,7 @@ export const categoryColors = ['#3987e5', '#d95926', '#199e70', '#c98500', '#d55
 
 // Text and grid colors for charts on the dark background
 export const chartText = '#9ca3af';
-export const chartGrid = '#2c2c3e';
+export const chartGrid = '#3a2b25';
 
 // ---------------------------------------------------------------------------
 // CSV export

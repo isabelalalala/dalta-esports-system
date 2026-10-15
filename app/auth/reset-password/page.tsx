@@ -50,9 +50,9 @@ export default function ResetPasswordPage() {
   };
 
   return (
-    <div className="min-h-screen grid place-items-center bg-[#0a0a0c] px-4">
-      <div className="w-full max-w-md bg-[#1a1a2e] rounded-xl p-8 shadow-[0_0_30px_rgba(0,210,255,0.1)]">
-        <h1 className="text-[#00d2ff] text-2xl font-bold text-center mb-6">Choose a new password</h1>
+    <div className="min-h-screen grid place-items-center bg-sitebg px-4">
+      <div className="w-full max-w-md bg-sitecard p-8 shadow-[6px_6px_0_var(--color-brown)]">
+        <h1 className="text-gold text-2xl font-bold text-center mb-6">Choose a new password</h1>
 
         {hasSession === null ? (
           <p className="text-gray-400 text-center">Checking your link...</p>
@@ -62,28 +62,28 @@ export default function ResetPasswordPage() {
               This reset link is invalid or has expired. Links only work once, for a limited time,
               and in the browser where you requested them.
             </p>
-            <Link href="/auth/forgot-password" className="text-[#00d2ff] font-semibold">
+            <Link href="/auth/forgot-password" className="text-gold font-semibold">
               Request a new link
             </Link>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
-            {error && <div className="bg-[#ff4444] text-white px-3 py-2 rounded-lg">{error}</div>}
+            {error && <div className="bg-[#ff4444] text-white px-3 py-2">{error}</div>}
             <input
               type="password" placeholder="New password (8+ characters)"
               value={password} onChange={(e) => setPassword(e.target.value)}
-              className="w-full p-3 bg-[#0a0a0c] text-white border border-[#00d2ff] rounded-lg"
+              className="w-full p-3 bg-sitebg text-white border border-gold"
               autoComplete="new-password" required
             />
             <input
               type="password" placeholder="Confirm new password"
               value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)}
-              className="w-full p-3 bg-[#0a0a0c] text-white border border-[#00d2ff] rounded-lg"
+              className="w-full p-3 bg-sitebg text-white border border-gold"
               autoComplete="new-password" required
             />
             <button
               type="submit" disabled={saving}
-              className="w-full p-3 bg-[#00d2ff] text-black font-bold rounded-lg disabled:opacity-60"
+              className="w-full p-3 bg-gold text-black font-bold disabled:opacity-60"
             >
               {saving ? 'Saving...' : 'Save new password'}
             </button>

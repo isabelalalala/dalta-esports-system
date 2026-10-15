@@ -9,7 +9,7 @@ import { ACTION_GROUPS, describeActivity, type ActivityLog } from '@/utils/activ
 const PAGE_SIZE = 50;
 
 const inputClass =
-  'rounded-lg border border-[#00d2ff]/40 bg-[#0a0a0c] px-3 py-2 text-white outline-none focus:border-[#00d2ff]';
+  'border border-brownlight bg-sitebg px-3 py-2 text-white outline-none focus:border-gold';
 
 // action: '' = all, 'group:<label>' = a whole group, otherwise one action.
 // actor: '' = everyone, 'none' = no user (SQL Editor or a deleted account), otherwise a user id.
@@ -108,14 +108,14 @@ export default function ActivityLogPage() {
     }
   };
 
-  if (loading) return <div className="min-h-screen bg-[#0a0a0c] text-white p-10 text-center">Loading...</div>;
+  if (loading) return <div className="min-h-screen bg-sitebg text-white p-10 text-center">Loading...</div>;
 
   // Hiding the page is only for convenience; RLS returns nothing to other roles.
   if (role !== 'admin') {
     return (
-      <div className="min-h-screen bg-[#0a0a0c] text-white p-10 text-center">
+      <div className="min-h-screen bg-sitebg text-white p-10 text-center">
         Only admins can view the activity log.{' '}
-        <Link href="/dashboard" className="text-[#00d2ff] underline">Back to Dashboard</Link>
+        <Link href="/dashboard" className="text-gold underline">Back to Dashboard</Link>
       </div>
     );
   }
@@ -123,20 +123,20 @@ export default function ActivityLogPage() {
   const sortedActors = [...actors].sort((a, b) => (a.actor_name || '').localeCompare(b.actor_name || ''));
 
   return (
-    <div className="min-h-screen bg-[#0a0a0c] text-white px-4 py-10">
+    <div className="min-h-screen bg-sitebg text-white px-4 py-10">
       <div className="max-w-5xl mx-auto space-y-6">
         <div>
-          <Link href="/dashboard" className="inline-block text-[#00d2ff] hover:underline mb-6">
+          <Link href="/dashboard" className="inline-block text-gold hover:underline mb-6">
             ← Back to Dashboard
           </Link>
-          <h1 className="text-4xl font-bold text-[#00d2ff]">Activity Log</h1>
+          <h1 className="font-pixel text-xl sm:text-2xl leading-relaxed text-gold">Activity Log</h1>
           <p className="text-gray-400 text-sm mt-2">
             Recorded automatically by the database. Entries can&apos;t be edited or deleted, and are kept for one year.
           </p>
         </div>
 
         {/* Filters */}
-        <div className="bg-[#1a1a2e] border border-[#00d2ff]/30 rounded-lg p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+        <div className="bg-sitecard border border-brownlight p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
           <label className="flex flex-col gap-1 text-xs uppercase font-bold text-gray-400">
             Action
             <select value={filters.action} onChange={(e) => setFilters({ ...filters, action: e.target.value })} className={inputClass}>
@@ -170,18 +170,18 @@ export default function ActivityLogPage() {
             <input type="date" value={filters.to} onChange={(e) => setFilters({ ...filters, to: e.target.value })} className={inputClass} />
           </label>
           {(filters.action || filters.actor || filters.from || filters.to) && (
-            <button onClick={() => setFilters(emptyFilters)} className="text-sm text-[#00d2ff] hover:underline justify-self-start">
+            <button onClick={() => setFilters(emptyFilters)} className="text-sm text-gold hover:underline justify-self-start">
               Clear filters
             </button>
           )}
         </div>
 
-        {error && <div className="bg-red-500/10 border border-red-500 text-red-300 px-4 py-3 rounded-lg">{error}</div>}
+        {error && <div className="bg-red-500/10 border border-red-500 text-red-300 px-4 py-3">{error}</div>}
 
         {logs.length === 0 ? (
           <p className="text-gray-400 text-center py-12">No activity matches these filters.</p>
         ) : (
-          <ul className="bg-[#1a1a2e] border border-[#00d2ff]/20 rounded-lg divide-y divide-[#00d2ff]/10">
+          <ul className="bg-sitecard border border-brown divide-y divide-brown">
             {logs.map((log) => {
               // Link to the tournament involved, unless it was deleted
               const tournamentId =
@@ -194,7 +194,7 @@ export default function ActivityLogPage() {
                   </time>
                   <p className="flex-1 text-gray-200">{describeActivity(log)}</p>
                   {showLink && (
-                    <Link href={`/tournaments/${tournamentId}`} className="text-xs text-[#00d2ff] hover:underline shrink-0">
+                    <Link href={`/tournaments/${tournamentId}`} className="text-xs text-gold hover:underline shrink-0">
                       View tournament
                     </Link>
                   )}
@@ -209,7 +209,7 @@ export default function ActivityLogPage() {
             <button
               onClick={handleLoadMore}
               disabled={loadingMore}
-              className="border border-[#00d2ff] text-[#00d2ff] px-6 py-2 rounded-lg font-bold hover:bg-[#00d2ff]/10 disabled:opacity-50"
+              className="border border-gold text-gold px-6 py-2 font-bold hover:bg-gold/10 disabled:opacity-50"
             >
               {loadingMore ? 'Loading...' : 'Load more'}
             </button>

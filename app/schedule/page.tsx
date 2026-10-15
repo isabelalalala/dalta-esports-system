@@ -83,7 +83,7 @@ export default function SchedulePage() {
   const renderMatch = (m: ScheduleMatch, showScore: boolean) => {
     const teamClass = (teamId: string | null) =>
       m.status === 'completed'
-        ? m.winner_team_id === teamId ? 'text-[#00d2ff] font-bold' : 'text-gray-500'
+        ? m.winner_team_id === teamId ? 'text-gold font-bold' : 'text-gray-500'
         : teamId ? 'text-white font-semibold' : 'italic text-gray-500';
 
     return (
@@ -119,29 +119,29 @@ export default function SchedulePage() {
   };
 
   const section = (title: string, list: ScheduleMatch[], emptyText: string, showScore: boolean) => (
-    <section className="bg-[#1a1a2e] border border-[#00d2ff]/30 rounded-xl p-6">
+    <section className="bg-sitecard border border-brownlight p-6">
       <h2 className="text-xl font-bold mb-2">{title}</h2>
       {list.length === 0 ? (
         <p className="text-gray-500">{emptyText}</p>
       ) : (
-        <ul className="divide-y divide-[#00d2ff]/15">{list.map((m) => renderMatch(m, showScore))}</ul>
+        <ul className="divide-y divide-brown">{list.map((m) => renderMatch(m, showScore))}</ul>
       )}
     </section>
   );
 
   return (
-    <div className="min-h-screen bg-[#0a0a0c] text-white px-4 py-10">
+    <div className="min-h-screen bg-sitebg text-white px-4 py-10">
       <div className="max-w-3xl mx-auto space-y-6">
-        <Link href="/dashboard" className="inline-block text-[#00d2ff] hover:underline">
+        <Link href="/dashboard" className="inline-block text-gold hover:underline">
           ← Back to Dashboard
         </Link>
 
-        <h1 className="text-4xl font-bold text-[#00d2ff]">Schedule &amp; Results</h1>
+        <h1 className="font-pixel text-xl sm:text-2xl leading-relaxed text-gold">Schedule &amp; Results</h1>
 
         <select
           value={filter}
           onChange={(e) => { setLoading(true); setFilter(e.target.value); }}
-          className="w-full rounded-lg border border-[#00d2ff]/40 bg-[#0a0a0c] px-4 py-3 text-white outline-none focus:border-[#00d2ff]"
+          className="w-full border border-brownlight bg-sitebg px-4 py-3 text-white outline-none focus:border-gold"
         >
           <option value="all">All tournaments</option>
           {tournaments.map((t) => (
@@ -149,7 +149,7 @@ export default function SchedulePage() {
           ))}
         </select>
 
-        {error && <div className="bg-red-500/10 border border-red-500 text-red-300 px-4 py-3 rounded-lg">{error}</div>}
+        {error && <div className="bg-red-500/10 border border-red-500 text-red-300 px-4 py-3">{error}</div>}
 
         {loading ? (
           <p className="text-gray-400 text-center py-12">Loading...</p>

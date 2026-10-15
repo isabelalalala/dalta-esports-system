@@ -4,7 +4,7 @@ import { Suspense } from 'react';
 // request time. With Cache Components enabled, that needs a Suspense boundary.
 export default function LoginLayout({ children }: LayoutProps<'/auth/login'>) {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-[#0a0a0c]" />}>
+    <Suspense fallback={<div className="min-h-screen bg-sitebg" />}>
       {children}
     </Suspense>
   );

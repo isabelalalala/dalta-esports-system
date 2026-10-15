@@ -50,15 +50,15 @@ export default function NeedsAttention() {
   if (!loaded) return null;
 
   return (
-    <section className="bg-[#1a1a2e] border border-[#ffd93d] rounded-xl p-6 mt-8 space-y-3">
-      <h2 className="text-xl font-bold text-[#ffd93d]">⚠️ Needs attention {items.length > 0 && `(${items.length})`}</h2>
+    <section className="bg-sitecard border-2 border-gold shadow-[6px_6px_0_var(--color-brown)] p-6 mt-8 space-y-3">
+      <h2 className="text-xl font-bold text-gold">⚠️ Needs attention {items.length > 0 && `(${items.length})`}</h2>
       {error && <p className="text-red-300 text-sm">{error}</p>}
       {!error && items.length === 0 && <p className="text-gray-400 text-sm">Nothing needs attention right now.</p>}
       {items.length > 0 && (
-        <ul className="divide-y divide-[#ffd93d]/15">
+        <ul className="divide-y divide-brown">
           {items.map((item) => (
             <li key={`${item.kind}-${item.match_id}`}>
-              <Link href={`/matches/${item.match_id}`} className="py-3 flex flex-col sm:flex-row sm:items-center gap-2 hover:bg-white/5 rounded px-2 -mx-2">
+              <Link href={`/matches/${item.match_id}`} className="py-3 flex flex-col sm:flex-row sm:items-center gap-2 hover:bg-white/5 px-2 -mx-2">
                 <span className={`shrink-0 px-2 py-0.5 rounded-full border text-[11px] font-bold uppercase ${kindStyles[item.kind] ?? 'border-gray-500 text-gray-300'}`}>
                   {kindLabels[item.kind] ?? item.kind}
                 </span>

@@ -42,12 +42,12 @@ export default function SavedReportPage() {
     if (id) load();
   }, [supabase, id]);
 
-  if (loading) return <div className="min-h-screen bg-[#0a0a0c] text-white p-10 text-center">Loading...</div>;
+  if (loading) return <div className="min-h-screen bg-sitebg text-white p-10 text-center">Loading...</div>;
   if (!report) {
     return (
-      <div className="min-h-screen bg-[#0a0a0c] text-red-400 p-10 text-center">
+      <div className="min-h-screen bg-sitebg text-red-400 p-10 text-center">
         {error}{' '}
-        <Link href="/dashboard" className="text-[#00d2ff] underline">Back to Dashboard</Link>
+        <Link href="/dashboard" className="text-gold underline">Back to Dashboard</Link>
       </div>
     );
   }
@@ -70,24 +70,24 @@ export default function SavedReportPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0a0a0c] text-white px-4 py-10 print:bg-white print:text-black print:p-0">
+    <div className="min-h-screen bg-sitebg text-white px-4 py-10 print:bg-white print:text-black print:p-0">
       <div className="max-w-6xl mx-auto space-y-10">
         <div>
-          <Link href="/analytics" className="inline-block text-[#00d2ff] hover:underline mb-6 print:hidden">
+          <Link href="/analytics" className="inline-block text-gold hover:underline mb-6 print:hidden">
             ← Back to Analytics
           </Link>
           <div className="flex flex-wrap justify-between items-center gap-4">
             <div>
-              <h1 className="text-4xl font-bold text-[#00d2ff] print:text-black">DALTA Esports Analytics Report</h1>
+              <h1 className="font-pixel text-xl sm:text-2xl leading-relaxed text-gold print:text-black">DALTA Esports Analytics Report</h1>
               <p className="text-gray-400 mt-1 print:text-gray-700">
                 {describeFilters(report.filters)} · Generated {generatedAt}
               </p>
             </div>
             <div className="flex gap-2 print:hidden">
-              <button onClick={handleCsv} className="border border-[#00d2ff] text-[#00d2ff] px-4 py-2 rounded-lg font-bold hover:bg-[#00d2ff]/10">
+              <button onClick={handleCsv} className="border border-gold text-gold px-4 py-2 font-bold hover:bg-gold/10">
                 Download CSV
               </button>
-              <button onClick={() => window.print()} className="bg-[#00d2ff] text-black px-4 py-2 rounded-lg font-bold hover:bg-[#00b8e6]">
+              <button onClick={() => window.print()} className="bg-gold text-black px-4 py-2 font-bold hover:bg-golddark">
                 Print / PDF
               </button>
             </div>

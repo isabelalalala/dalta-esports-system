@@ -12,7 +12,7 @@ import { streamStatusStyles, validateFacebookUrl } from '@/utils/streams';
 import FacebookPlayer from '@/components/FacebookPlayer';
 
 const inputClass =
-  'w-full rounded-lg border border-[#00d2ff]/40 bg-[#0a0a0c] px-4 py-3 text-white placeholder-gray-500 outline-none focus:border-[#00d2ff]';
+  'w-full border border-brownlight bg-sitebg px-4 py-3 text-white placeholder-gray-500 outline-none focus:border-gold';
 
 // "Configure stream" (use case, Tournament Staff): Facebook Live links for one tournament
 export default function ManageStreamsPage() {
@@ -130,34 +130,34 @@ export default function ManageStreamsPage() {
     setReloadCount((n) => n + 1);
   };
 
-  if (loading) return <div className="min-h-screen bg-[#0a0a0c] text-white p-10 text-center">Loading...</div>;
+  if (loading) return <div className="min-h-screen bg-sitebg text-white p-10 text-center">Loading...</div>;
   if (!tournament) {
-    return <div className="min-h-screen bg-[#0a0a0c] text-red-500 p-10 text-center">{error || 'Tournament not found.'}</div>;
+    return <div className="min-h-screen bg-sitebg text-red-500 p-10 text-center">{error || 'Tournament not found.'}</div>;
   }
 
   // Hiding the page is only for convenience; the database refuses changes from other roles.
   if (profile?.role !== 'admin' && profile?.role !== 'staff') {
     return (
-      <div className="min-h-screen bg-[#0a0a0c] text-white p-10 text-center">
+      <div className="min-h-screen bg-sitebg text-white p-10 text-center">
         Only organizers can configure streams.{' '}
-        <Link href="/live" className="text-[#00d2ff] underline">Watch live streams</Link>
+        <Link href="/live" className="text-gold underline">Watch live streams</Link>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0a0c] text-white px-4 py-10">
+    <div className="min-h-screen bg-sitebg text-white px-4 py-10">
       <div className="max-w-4xl mx-auto">
-        <Link href={`/tournaments/${id}`} className="inline-block text-[#00d2ff] hover:underline mb-6">
+        <Link href={`/tournaments/${id}`} className="inline-block text-gold hover:underline mb-6">
           ← Back to Tournament
         </Link>
 
         <div className="flex flex-wrap justify-between items-center gap-4 mb-2">
-          <h1 className="text-4xl font-bold text-[#00d2ff]">{tournament.name}</h1>
+          <h1 className="font-pixel text-xl sm:text-2xl leading-relaxed text-gold">{tournament.name}</h1>
           {!showForm && (
             <button
               onClick={() => { setShowForm(true); setEditingId(null); }}
-              className="bg-[#00d2ff] text-black px-6 py-2 rounded-lg font-bold hover:bg-[#00b8e6] transition"
+              className="bg-gold text-black px-6 py-2 font-bold hover:bg-golddark transition"
             >
               + Add stream
             </button>
@@ -166,7 +166,7 @@ export default function ManageStreamsPage() {
         <p className="text-gray-400 text-lg mb-8">Stream Configuration</p>
 
         {error && (
-          <div className="mb-6 bg-red-500/10 border border-red-500 text-red-300 px-4 py-3 rounded-lg">{error}</div>
+          <div className="mb-6 bg-red-500/10 border border-red-500 text-red-300 px-4 py-3">{error}</div>
         )}
 
         {showForm && profile && (
@@ -195,7 +195,7 @@ export default function ManageStreamsPage() {
                   onCancel={() => setEditingId(null)}
                 />
               ) : (
-                <div key={stream.id} className="bg-[#1a1a2e] border border-[#00d2ff]/30 rounded-lg p-4">
+                <div key={stream.id} className="bg-sitecard border border-brownlight p-4">
                   <div className="flex flex-wrap items-center gap-2">
                     <h2 className="text-lg font-bold">{stream.title}</h2>
                     <span className={`px-2 py-0.5 rounded-full border text-[10px] font-bold uppercase ${streamStatusStyles[stream.status]}`}>
@@ -209,17 +209,17 @@ export default function ManageStreamsPage() {
 
                   <div className="mt-3 flex flex-wrap gap-3 text-sm font-semibold">
                     {stream.status !== 'live' && (
-                      <button onClick={() => setStatus(stream, 'live')} className="bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 rounded">
+                      <button onClick={() => setStatus(stream, 'live')} className="bg-red-600 hover:bg-red-700 text-white px-3 py-1.5">
                         ● Go live
                       </button>
                     )}
                     {stream.status === 'live' && (
-                      <button onClick={() => setStatus(stream, 'ended')} className="bg-gray-600 hover:bg-gray-700 text-white px-3 py-1.5 rounded">
+                      <button onClick={() => setStatus(stream, 'ended')} className="bg-gray-600 hover:bg-gray-700 text-white px-3 py-1.5">
                         End stream
                       </button>
                     )}
-                    <Link href={`/live/${stream.id}`} className="text-[#00d2ff] hover:underline py-1.5">Watch page</Link>
-                    <button onClick={() => { setEditingId(stream.id); setShowForm(false); }} className="text-[#00d2ff] hover:underline">
+                    <Link href={`/live/${stream.id}`} className="text-gold hover:underline py-1.5">Watch page</Link>
+                    <button onClick={() => { setEditingId(stream.id); setShowForm(false); }} className="text-gold hover:underline">
                       Edit
                     </button>
                     <button onClick={() => handleDelete(stream)} className="text-red-400 hover:text-red-300">
@@ -293,9 +293,9 @@ function StreamForm({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="mb-6 bg-[#1a1a2e] border border-[#00d2ff] rounded-xl p-6 space-y-4">
+    <form onSubmit={handleSubmit} className="mb-6 bg-sitecard border-2 border-gold shadow-[6px_6px_0_var(--color-brown)] p-6 space-y-4">
       <h2 className="text-xl font-bold">{existing ? 'Edit stream' : 'Add stream'}</h2>
-      {error && <div className="bg-red-500/10 border border-red-500 text-red-300 px-4 py-3 rounded-lg">{error}</div>}
+      {error && <div className="bg-red-500/10 border border-red-500 text-red-300 px-4 py-3">{error}</div>}
 
       <input
         type="text" value={title} onChange={(e) => setTitle(e.target.value)}
@@ -334,7 +334,7 @@ function StreamForm({
       <div className="flex gap-2">
         <button
           type="submit" disabled={saving}
-          className="bg-[#00d2ff] text-black px-6 py-2 rounded-lg font-bold hover:bg-[#00b8e6] transition disabled:opacity-50"
+          className="bg-gold text-black px-6 py-2 font-bold hover:bg-golddark transition disabled:opacity-50"
         >
           {saving ? 'Saving...' : 'Save stream'}
         </button>

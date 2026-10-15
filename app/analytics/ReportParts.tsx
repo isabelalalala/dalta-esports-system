@@ -5,7 +5,7 @@ import type { ReactNode } from 'react';
 // A headline number, e.g. "Views 128"
 export function StatTile({ label, value, note }: { label: string; value: ReactNode; note?: string }) {
   return (
-    <div className="bg-[#1a1a2e] border border-[#00d2ff]/30 rounded-lg p-4 print:border-gray-400 print:bg-white">
+    <div className="bg-sitecard border border-brownlight p-4 print:border-gray-400 print:bg-white">
       <p className="text-xs uppercase font-bold text-gray-400 print:text-gray-600">{label}</p>
       <p className="text-2xl font-bold">{value}</p>
       {note && <p className="text-xs text-gray-500 mt-1">{note}</p>}
@@ -16,8 +16,8 @@ export function StatTile({ label, value, note }: { label: string; value: ReactNo
 // A titled card around a chart or table. break-inside-avoid keeps it on one printed page.
 export function ReportCard({ title, note, children }: { title: string; note?: string; children: ReactNode }) {
   return (
-    <div className="bg-[#1a1a2e] border border-[#00d2ff]/30 rounded-lg p-4 break-inside-avoid print:border-gray-400 print:bg-white">
-      <h3 className="font-bold text-[#00d2ff] print:text-black">{title}</h3>
+    <div className="bg-sitecard border border-brownlight p-4 break-inside-avoid print:border-gray-400 print:bg-white">
+      <h3 className="font-bold text-gold print:text-black">{title}</h3>
       {note && <p className="text-xs text-gray-400 mb-2 print:text-gray-600">{note}</p>}
       <div className="mt-2">{children}</div>
     </div>

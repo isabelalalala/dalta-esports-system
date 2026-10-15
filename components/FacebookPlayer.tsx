@@ -5,7 +5,7 @@ import { facebookEmbedUrl } from '@/utils/streams';
 export default function FacebookPlayer({ url, title }: { url: string; title: string }) {
   return (
     <div>
-      <div className="relative w-full aspect-video bg-black rounded-lg overflow-hidden">
+      <div className="relative w-full aspect-video bg-black overflow-hidden">
         <iframe
           src={facebookEmbedUrl(url)}
           title={title}
@@ -16,7 +16,7 @@ export default function FacebookPlayer({ url, title }: { url: string; title: str
       </div>
       <p className="mt-2 text-sm text-gray-400">
         Video not showing? It must be set to Public on Facebook, and some ad blockers hide it.{' '}
-        <a href={url} target="_blank" rel="noopener noreferrer" className="text-[#00d2ff] underline">
+        <a href={url} target="_blank" rel="noopener noreferrer" className="text-gold underline">
           Open on Facebook
         </a>
       </p>

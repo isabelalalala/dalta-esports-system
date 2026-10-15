@@ -115,29 +115,29 @@ export default function EditTournamentPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#0a0a0c] text-white flex items-center justify-center">
+      <div className="min-h-screen bg-sitebg text-white flex items-center justify-center">
         <p>Loading tournament...</p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0a0c] text-white px-4 py-10">
+    <div className="min-h-screen bg-sitebg text-white px-4 py-10">
       <div className="max-w-3xl mx-auto">
-        <Link href={`/tournaments/${id}`} className="inline-block text-[#00d2ff] hover:underline mb-6">
+        <Link href={`/tournaments/${id}`} className="inline-block text-gold hover:underline mb-6">
           ← Back to Tournament
         </Link>
 
-        <h1 className="text-4xl font-bold text-[#00d2ff] mb-8 text-center">
+        <h1 className="font-pixel text-xl sm:text-2xl leading-relaxed text-gold mb-8 text-center">
           Edit Tournament
         </h1>
 
         <form
           onSubmit={handleUpdate}
-          className="bg-[#1a1a2e] border border-[#00d2ff] rounded-xl p-8 shadow-xl space-y-5"
+          className="bg-sitecard border-2 border-gold shadow-[6px_6px_0_var(--color-brown)] p-8 shadow-xl space-y-5"
         >
           {error && (
-            <div className="bg-red-500/10 border border-red-500 text-red-400 px-4 py-3 rounded-lg">
+            <div className="bg-red-500/10 border border-red-500 text-red-400 px-4 py-3">
               {error}
             </div>
           )}
@@ -150,7 +150,7 @@ export default function EditTournamentPage() {
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full rounded-lg border border-[#00d2ff]/40 bg-[#0a0a0c] px-4 py-3 text-white outline-none focus:border-[#00d2ff]"
+              className="w-full border border-brownlight bg-sitebg px-4 py-3 text-white outline-none focus:border-gold"
               required
             />
           </div>
@@ -162,7 +162,7 @@ export default function EditTournamentPage() {
             <select
               value={gameId}
               onChange={(e) => setGameId(e.target.value)}
-              className="w-full rounded-lg border border-[#00d2ff]/40 bg-[#0a0a0c] px-4 py-3 text-white outline-none focus:border-[#00d2ff]"
+              className="w-full border border-brownlight bg-sitebg px-4 py-3 text-white outline-none focus:border-gold"
               required
             >
               <option value="">-- Select Game --</option>
@@ -180,7 +180,7 @@ export default function EditTournamentPage() {
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={4}
-              className="w-full rounded-lg border border-[#00d2ff]/40 bg-[#0a0a0c] px-4 py-3 text-white outline-none focus:border-[#00d2ff] resize-none"
+              className="w-full border border-brownlight bg-sitebg px-4 py-3 text-white outline-none focus:border-gold resize-none"
             />
           </div>
 
@@ -193,7 +193,7 @@ export default function EditTournamentPage() {
               onChange={(e) => setRules(e.target.value)}
               rows={6}
               placeholder="Format, match rules, check-in time, etc."
-              className="w-full rounded-lg border border-[#00d2ff]/40 bg-[#0a0a0c] px-4 py-3 text-white placeholder-gray-500 outline-none focus:border-[#00d2ff]"
+              className="w-full border border-brownlight bg-sitebg px-4 py-3 text-white placeholder-gray-500 outline-none focus:border-gold"
             />
           </div>
 
@@ -206,7 +206,7 @@ export default function EditTournamentPage() {
               min="1"
               value={maxParticipants}
               onChange={(e) => setMaxParticipants(e.target.value)}
-              className="w-full rounded-lg border border-[#00d2ff]/40 bg-[#0a0a0c] px-4 py-3 text-white outline-none focus:border-[#00d2ff]"
+              className="w-full border border-brownlight bg-sitebg px-4 py-3 text-white outline-none focus:border-gold"
               required
             />
           </div>
@@ -216,7 +216,7 @@ export default function EditTournamentPage() {
               type="checkbox"
               checked={requiresVerification}
               onChange={(e) => setRequiresVerification(e.target.checked)}
-              className="mt-1 h-4 w-4 accent-[#00d2ff]"
+              className="mt-1 h-4 w-4 accent-gold"
             />
             <span>
               <span className="font-semibold">Only verified students can register</span>
@@ -232,7 +232,7 @@ export default function EditTournamentPage() {
               max="240"
               value={checkinMinutes}
               onChange={(e) => setCheckinMinutes(e.target.value)}
-              className="mt-2 w-full rounded-lg border border-[#00d2ff]/40 bg-[#0a0a0c] px-4 py-3 text-white outline-none focus:border-[#00d2ff]"
+              className="mt-2 w-full border border-brownlight bg-sitebg px-4 py-3 text-white outline-none focus:border-gold"
               required
             />
           </label>
@@ -246,7 +246,7 @@ export default function EditTournamentPage() {
                 type="date"
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
-                className="w-full rounded-lg border border-[#00d2ff]/40 bg-[#0a0a0c] px-4 py-3 text-white outline-none focus:border-[#00d2ff]"
+                className="w-full border border-brownlight bg-sitebg px-4 py-3 text-white outline-none focus:border-gold"
                 required
               />
             </div>
@@ -259,7 +259,7 @@ export default function EditTournamentPage() {
                 type="date"
                 value={endDate}
                 onChange={(e) => setEndDate(e.target.value)}
-                className="w-full rounded-lg border border-[#00d2ff]/40 bg-[#0a0a0c] px-4 py-3 text-white outline-none focus:border-[#00d2ff]"
+                className="w-full border border-brownlight bg-sitebg px-4 py-3 text-white outline-none focus:border-gold"
                 required
               />
             </div>
@@ -272,14 +272,14 @@ export default function EditTournamentPage() {
                 type="date"
                 value={registrationDeadline}
                 onChange={(e) => setRegistrationDeadline(e.target.value)}
-                className="w-full rounded-lg border border-[#00d2ff]/40 bg-[#0a0a0c] px-4 py-3 text-white outline-none focus:border-[#00d2ff]"
+                className="w-full border border-brownlight bg-sitebg px-4 py-3 text-white outline-none focus:border-gold"
                 required
               />
             </div>
           </div>
 
           {/* Upcoming / registration closed / ongoing / completed follow the dates automatically */}
-          <label className="flex items-start gap-3 rounded-lg border border-red-500/40 p-4 cursor-pointer">
+          <label className="flex items-start gap-3 border border-red-500/40 p-4 cursor-pointer">
             <input
               type="checkbox"
               checked={cancelled}
@@ -298,14 +298,14 @@ export default function EditTournamentPage() {
             <button
               type="submit"
               disabled={saving}
-              className="bg-[#00d2ff] text-black font-bold px-6 py-3 rounded-lg hover:bg-[#00b8e6] transition disabled:opacity-50"
+              className="bg-gold text-black font-bold px-6 py-3 hover:bg-golddark transition disabled:opacity-50"
             >
               {saving ? 'Saving...' : 'Save Changes'}
             </button>
 
             <Link
               href={`/tournaments/${id}`}
-              className="border border-gray-500 text-gray-300 font-bold px-6 py-3 rounded-lg hover:bg-gray-800 transition text-center"
+              className="border border-gray-500 text-gray-300 font-bold px-6 py-3 hover:bg-gray-800 transition text-center"
             >
               Cancel
             </Link>

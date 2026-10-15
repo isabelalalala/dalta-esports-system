@@ -88,22 +88,22 @@ export default function CreateTournamentPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0a0a0c] text-white px-4 py-10">
+    <div className="min-h-screen bg-sitebg text-white px-4 py-10">
       <div className="max-w-3xl mx-auto">
-        <Link href="/tournaments" className="inline-block text-[#00d2ff] hover:underline mb-6">
+        <Link href="/tournaments" className="inline-block text-gold hover:underline mb-6">
           ← Back to Tournaments
         </Link>
 
-        <h1 className="text-4xl font-bold text-[#00d2ff] mb-8 text-center">
+        <h1 className="font-pixel text-xl sm:text-2xl leading-relaxed text-gold mb-8 text-center">
           Create Tournament
         </h1>
 
         <form
           onSubmit={handleCreate}
-          className="bg-[#1a1a2e] border border-[#00d2ff] rounded-xl p-8 shadow-xl space-y-5"
+          className="bg-sitecard border-2 border-gold shadow-[6px_6px_0_var(--color-brown)] p-8 shadow-xl space-y-5"
         >
           {error && (
-            <div className="bg-red-500/10 border border-red-500 text-red-400 px-4 py-3 rounded-lg">
+            <div className="bg-red-500/10 border border-red-500 text-red-400 px-4 py-3">
               {error}
             </div>
           )}
@@ -117,7 +117,7 @@ export default function CreateTournamentPage() {
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="e.g., Valorant Championship 2025"
-              className="w-full rounded-lg border border-[#00d2ff]/40 bg-[#0a0a0c] px-4 py-3 text-white placeholder-gray-500 outline-none focus:border-[#00d2ff]"
+              className="w-full border border-brownlight bg-sitebg px-4 py-3 text-white placeholder-gray-500 outline-none focus:border-gold"
               required
             />
           </div>
@@ -129,7 +129,7 @@ export default function CreateTournamentPage() {
             <select
               value={gameId}
               onChange={(e) => setGameId(e.target.value)}
-              className="w-full rounded-lg border border-[#00d2ff]/40 bg-[#0a0a0c] px-4 py-3 text-white outline-none focus:border-[#00d2ff]"
+              className="w-full border border-brownlight bg-sitebg px-4 py-3 text-white outline-none focus:border-gold"
               required
             >
               <option value="">-- Select Game --</option>
@@ -148,7 +148,7 @@ export default function CreateTournamentPage() {
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Tournament details..."
               rows={4}
-              className="w-full rounded-lg border border-[#00d2ff]/40 bg-[#0a0a0c] px-4 py-3 text-white placeholder-gray-500 outline-none focus:border-[#00d2ff] resize-none"
+              className="w-full border border-brownlight bg-sitebg px-4 py-3 text-white placeholder-gray-500 outline-none focus:border-gold resize-none"
             />
           </div>
 
@@ -161,7 +161,7 @@ export default function CreateTournamentPage() {
               onChange={(e) => setRules(e.target.value)}
               rows={6}
               placeholder="Format, match rules, check-in time, etc."
-              className="w-full rounded-lg border border-[#00d2ff]/40 bg-[#0a0a0c] px-4 py-3 text-white placeholder-gray-500 outline-none focus:border-[#00d2ff]"
+              className="w-full border border-brownlight bg-sitebg px-4 py-3 text-white placeholder-gray-500 outline-none focus:border-gold"
             />
           </div>
 
@@ -175,7 +175,7 @@ export default function CreateTournamentPage() {
               value={maxParticipants}
               onChange={(e) => setMaxParticipants(e.target.value)}
               placeholder="e.g., 16"
-              className="w-full rounded-lg border border-[#00d2ff]/40 bg-[#0a0a0c] px-4 py-3 text-white placeholder-gray-500 outline-none focus:border-[#00d2ff]"
+              className="w-full border border-brownlight bg-sitebg px-4 py-3 text-white placeholder-gray-500 outline-none focus:border-gold"
               required
             />
           </div>
@@ -185,7 +185,7 @@ export default function CreateTournamentPage() {
               type="checkbox"
               checked={requiresVerification}
               onChange={(e) => setRequiresVerification(e.target.checked)}
-              className="mt-1 h-4 w-4 accent-[#00d2ff]"
+              className="mt-1 h-4 w-4 accent-gold"
             />
             <span>
               <span className="font-semibold">Only verified students can register</span>
@@ -201,7 +201,7 @@ export default function CreateTournamentPage() {
               max="240"
               value={checkinMinutes}
               onChange={(e) => setCheckinMinutes(e.target.value)}
-              className="mt-2 w-full rounded-lg border border-[#00d2ff]/40 bg-[#0a0a0c] px-4 py-3 text-white outline-none focus:border-[#00d2ff]"
+              className="mt-2 w-full border border-brownlight bg-sitebg px-4 py-3 text-white outline-none focus:border-gold"
               required
             />
           </label>
@@ -215,7 +215,7 @@ export default function CreateTournamentPage() {
                 type="date"
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
-                className="w-full rounded-lg border border-[#00d2ff]/40 bg-[#0a0a0c] px-4 py-3 text-white outline-none focus:border-[#00d2ff]"
+                className="w-full border border-brownlight bg-sitebg px-4 py-3 text-white outline-none focus:border-gold"
                 required
               />
             </div>
@@ -228,7 +228,7 @@ export default function CreateTournamentPage() {
                 type="date"
                 value={endDate}
                 onChange={(e) => setEndDate(e.target.value)}
-                className="w-full rounded-lg border border-[#00d2ff]/40 bg-[#0a0a0c] px-4 py-3 text-white outline-none focus:border-[#00d2ff]"
+                className="w-full border border-brownlight bg-sitebg px-4 py-3 text-white outline-none focus:border-gold"
                 required
               />
             </div>
@@ -241,7 +241,7 @@ export default function CreateTournamentPage() {
                 type="date"
                 value={registrationDeadline}
                 onChange={(e) => setRegistrationDeadline(e.target.value)}
-                className="w-full rounded-lg border border-[#00d2ff]/40 bg-[#0a0a0c] px-4 py-3 text-white outline-none focus:border-[#00d2ff]"
+                className="w-full border border-brownlight bg-sitebg px-4 py-3 text-white outline-none focus:border-gold"
                 required
               />
             </div>
@@ -251,14 +251,14 @@ export default function CreateTournamentPage() {
             <button
               type="submit"
               disabled={loading}
-              className="bg-[#00d2ff] text-black font-bold px-6 py-3 rounded-lg hover:bg-[#00b8e6] transition disabled:opacity-50 disabled:cursor-not-allowed"
+              className="bg-gold text-black font-bold px-6 py-3 hover:bg-golddark transition disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? 'Creating...' : 'Create Tournament'}
             </button>
 
             <Link
               href="/tournaments"
-              className="border border-gray-500 text-gray-300 font-bold px-6 py-3 rounded-lg hover:bg-gray-800 transition text-center"
+              className="border border-gray-500 text-gray-300 font-bold px-6 py-3 hover:bg-gray-800 transition text-center"
             >
               Cancel
             </Link>

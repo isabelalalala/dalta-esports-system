@@ -47,12 +47,12 @@ export default function WebsiteAdminPage() {
     load();
   }, [supabase]);
 
-  if (loading) return <div className="min-h-screen bg-[#0a0a0c] text-white p-10 text-center">Loading...</div>;
+  if (loading) return <div className="min-h-screen bg-sitebg text-white p-10 text-center">Loading...</div>;
   if (role !== 'admin') {
     return (
-      <div className="min-h-screen bg-[#0a0a0c] text-white p-10 text-center">
+      <div className="min-h-screen bg-sitebg text-white p-10 text-center">
         Only admins can edit the website.{' '}
-        <Link href="/dashboard" className="text-[#00d2ff] underline">Back to Dashboard</Link>
+        <Link href="/dashboard" className="text-gold underline">Back to Dashboard</Link>
       </div>
     );
   }
@@ -60,13 +60,13 @@ export default function WebsiteAdminPage() {
   const gameName = (id: unknown) => games.find((g) => g.value === id)?.label ?? str(id);
 
   return (
-    <div className="min-h-screen bg-[#0a0a0c] text-white px-4 py-10">
+    <div className="min-h-screen bg-sitebg text-white px-4 py-10">
       <div className="max-w-5xl mx-auto space-y-6">
         <div>
-          <Link href="/dashboard" className="inline-block text-[#00d2ff] hover:underline mb-6">← Back to Dashboard</Link>
+          <Link href="/dashboard" className="inline-block text-gold hover:underline mb-6">← Back to Dashboard</Link>
           <div className="flex flex-wrap justify-between items-center gap-4">
-            <h1 className="text-4xl font-bold text-[#00d2ff]">Website</h1>
-            <Link href="/" target="_blank" className="border border-[#00d2ff] text-[#00d2ff] px-4 py-2 rounded-lg font-bold hover:bg-[#00d2ff]/10">
+            <h1 className="font-pixel text-xl sm:text-2xl leading-relaxed text-gold">Website</h1>
+            <Link href="/" target="_blank" className="border border-gold text-gold px-4 py-2 font-bold hover:bg-gold/10">
               View website ↗
             </Link>
           </div>
@@ -78,8 +78,8 @@ export default function WebsiteAdminPage() {
         <div className="flex flex-wrap gap-2" role="tablist">
           {TABS.map((t) => (
             <button key={t} role="tab" aria-selected={tab === t} onClick={() => setTab(t)}
-              className={`px-4 py-2 rounded-lg font-bold border ${tab === t
-                ? 'bg-[#00d2ff] text-black border-[#00d2ff]' : 'border-[#00d2ff]/40 text-gray-300 hover:bg-[#00d2ff]/10'}`}>
+              className={`px-4 py-2 font-bold border ${tab === t
+                ? 'bg-gold text-black border-gold' : 'border-brownlight text-gray-300 hover:bg-gold/10'}`}>
               {t}
             </button>
           ))}

@@ -10,7 +10,7 @@ import { formatDateTime, fromDateTimeInput, isBye, roundLabel, toDateTimeInput }
 import ExportButtons from '@/components/ExportButtons';
 
 const inputClass =
-  'w-full rounded border border-[#00d2ff]/40 bg-[#0a0a0c] px-3 py-2 text-white outline-none focus:border-[#00d2ff] disabled:opacity-50';
+  'w-full border border-brownlight bg-sitebg px-3 py-2 text-white outline-none focus:border-gold disabled:opacity-50';
 
 export default function MatchManagementPage() {
   const supabase = createClient();
@@ -95,17 +95,17 @@ export default function MatchManagementPage() {
     if (id) fetchData();
   }, [id, supabase, reloadCount]);
 
-  if (loading) return <div className="min-h-screen bg-[#0a0a0c] text-white p-10 text-center">Loading...</div>;
+  if (loading) return <div className="min-h-screen bg-sitebg text-white p-10 text-center">Loading...</div>;
   if (!tournament) {
-    return <div className="min-h-screen bg-[#0a0a0c] text-red-500 p-10 text-center">{error || 'Tournament not found.'}</div>;
+    return <div className="min-h-screen bg-sitebg text-red-500 p-10 text-center">{error || 'Tournament not found.'}</div>;
   }
 
   // Hiding the page is only for convenience; the database refuses changes from other roles.
   if (profile?.role !== 'admin' && profile?.role !== 'staff') {
     return (
-      <div className="min-h-screen bg-[#0a0a0c] text-white p-10 text-center">
+      <div className="min-h-screen bg-sitebg text-white p-10 text-center">
         Only organizers can manage matches.{' '}
-        <Link href={`/tournaments/${id}`} className="text-[#00d2ff] underline">Back to the tournament</Link>
+        <Link href={`/tournaments/${id}`} className="text-gold underline">Back to the tournament</Link>
       </div>
     );
   }
@@ -114,24 +114,24 @@ export default function MatchManagementPage() {
   const rounds = Array.from({ length: roundCount }, (_, i) => i + 1);
 
   return (
-    <div className="min-h-screen bg-[#0a0a0c] text-white px-4 py-10">
+    <div className="min-h-screen bg-sitebg text-white px-4 py-10">
       <div className="max-w-5xl mx-auto">
-        <Link href={`/tournaments/${id}`} className="inline-block text-[#00d2ff] hover:underline mb-6">
+        <Link href={`/tournaments/${id}`} className="inline-block text-gold hover:underline mb-6">
           ← Back to Tournament
         </Link>
 
-        <h1 className="text-4xl font-bold text-[#00d2ff]">{tournament.name}</h1>
+        <h1 className="font-pixel text-xl sm:text-2xl leading-relaxed text-gold">{tournament.name}</h1>
         <p className="text-gray-400 text-lg mt-2 mb-4">Match Management</p>
         <div className="mb-8">
           <ExportButtons type="matches" label="Schedule & results" params={{ tournament: id }} />
         </div>
 
         {error && (
-          <div className="mb-6 bg-red-500/10 border border-red-500 text-red-300 px-4 py-3 rounded-lg">{error}</div>
+          <div className="mb-6 bg-red-500/10 border border-red-500 text-red-300 px-4 py-3">{error}</div>
         )}
 
         {matches.length === 0 ? (
-          <div className="text-center bg-[#1a1a2e] border border-[#00d2ff]/20 rounded-xl p-12 text-gray-400">
+          <div className="text-center bg-sitecard border border-brown p-12 text-gray-400">
             No bracket yet. Generate it from the Admin Panel on the tournament page.
           </div>
         ) : (
@@ -191,7 +191,7 @@ function MatchCard({
   if (isBye(match)) {
     const team = match.team_a_id ?? match.team_b_id;
     return (
-      <div className="bg-[#1a1a2e] border border-[#00d2ff]/20 rounded-lg p-4 text-gray-400">
+      <div className="bg-sitecard border border-brown p-4 text-gray-400">
         <p className="text-xs uppercase font-bold mb-1">Match {match.match_number} · Bye</p>
         <p>
           <span className="text-white font-semibold">{team ? teamNames[team] : 'Unknown team'}</span> advances automatically.
@@ -241,10 +241,10 @@ function MatchCard({
   };
 
   const statusColor =
-    match.status === 'live' ? 'border-green-500' : match.status === 'completed' ? 'border-gray-600' : 'border-[#00d2ff]/40';
+    match.status === 'live' ? 'border-green-500' : match.status === 'completed' ? 'border-gray-600' : 'border-brownlight';
 
   return (
-    <form onSubmit={handleSave} className={`bg-[#1a1a2e] border rounded-lg p-4 space-y-3 ${statusColor}`}>
+    <form onSubmit={handleSave} className={`bg-sitecard border p-4 space-y-3 ${statusColor}`}>
       <div className="flex justify-between items-center gap-2">
         <p className="text-xs uppercase font-bold text-gray-400">
           Match {match.match_number}
@@ -256,19 +256,19 @@ function MatchCard({
         {checkinCount !== null && bothTeamsKnown && match.status !== 'completed' ? (
           <span className={checkinCount === 2 ? 'text-green-300' : 'text-gray-400'}>Check-in: {checkinCount} / 2</span>
         ) : <span />}
-        <Link href={`/matches/${match.id}`} className="text-[#00d2ff] hover:underline font-semibold">Open match →</Link>
+        <Link href={`/matches/${match.id}`} className="text-gold hover:underline font-semibold">Open match →</Link>
       </div>
 
       {/* Teams and scores */}
       <div className="grid grid-cols-[1fr_5rem] gap-2 items-center">
-        <span className={`font-semibold truncate ${match.winner_team_id === match.team_a_id && match.team_a_id ? 'text-[#00d2ff]' : ''}`}>
+        <span className={`font-semibold truncate ${match.winner_team_id === match.team_a_id && match.team_a_id ? 'text-gold' : ''}`}>
           {nameA}
         </span>
         <input
           type="number" min="0" value={scoreA} onChange={(e) => setScoreA(e.target.value)}
           placeholder="Score" disabled={!bothTeamsKnown} className={inputClass} aria-label={`Score for ${nameA}`}
         />
-        <span className={`font-semibold truncate ${match.winner_team_id === match.team_b_id && match.team_b_id ? 'text-[#00d2ff]' : ''}`}>
+        <span className={`font-semibold truncate ${match.winner_team_id === match.team_b_id && match.team_b_id ? 'text-gold' : ''}`}>
           {nameB}
         </span>
         <input
@@ -317,7 +317,7 @@ function MatchCard({
 
       <button
         type="submit" disabled={saving}
-        className="bg-[#00d2ff] text-black px-4 py-2 rounded font-bold hover:bg-[#00b8e6] transition disabled:opacity-50"
+        className="bg-gold text-black px-4 py-2 font-bold hover:bg-golddark transition disabled:opacity-50"
       >
         {saving ? 'Saving...' : 'Save'}
       </button>

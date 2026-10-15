@@ -12,7 +12,7 @@ const MAX_PROOF_BYTES = 5 * 1024 * 1024;
 const PROOF_TYPES: Record<string, string> = { 'image/png': 'png', 'image/jpeg': 'jpg', 'image/webp': 'webp' };
 
 const inputClass =
-  'rounded-lg border border-[#00d2ff]/40 bg-[#0a0a0c] px-3 py-2 text-white outline-none focus:border-[#00d2ff]';
+  'border border-brownlight bg-sitebg px-3 py-2 text-white outline-none focus:border-gold';
 
 const statusLabels: Record<ResultStatus, string> = {
   pending: 'Waiting for the other captain',
@@ -26,7 +26,7 @@ const statusStyles: Record<ResultStatus, string> = {
   pending: 'border-gray-500/60 text-gray-300',
   confirmed: 'border-green-500/60 text-green-300',
   disputed: 'border-red-500/60 text-red-300',
-  approved: 'border-[#00d2ff]/60 text-[#00d2ff]',
+  approved: 'border-brownlight text-gold',
   overridden: 'border-yellow-500/60 text-yellow-300',
   rejected: 'border-red-500/60 text-red-300',
 };
@@ -160,17 +160,17 @@ export default function ResultSection({ match, teamA, teamB, submissions, isStaf
   if (!open && history.length === 0 && !canSubmit && !isStaff) return null;
 
   return (
-    <section className="bg-[#1a1a2e] border border-[#00d2ff]/40 rounded-xl p-6 space-y-4">
+    <section className="bg-sitecard border border-brownlight p-6 space-y-4">
       <h2 className="text-xl font-bold">Result</h2>
 
-      {error && <div className="bg-red-500/10 border border-red-500 text-red-300 px-4 py-3 rounded-lg">{error}</div>}
+      {error && <div className="bg-red-500/10 border border-red-500 text-red-300 px-4 py-3">{error}</div>}
 
       {/* The open submission */}
       {open && (
         <div className="space-y-3">
           <div className="flex flex-wrap items-center gap-3">
             <p className="text-lg font-semibold">
-              {teamA?.name} <span className="tabular-nums text-[#00d2ff]">{open.score_a} - {open.score_b}</span> {teamB?.name}
+              {teamA?.name} <span className="tabular-nums text-gold">{open.score_a} - {open.score_b}</span> {teamB?.name}
             </p>
             <span className={`px-2 py-0.5 rounded-full border text-[11px] font-bold uppercase ${statusStyles[open.status]}`}>
               {statusLabels[open.status]}
@@ -189,7 +189,7 @@ export default function ResultSection({ match, teamA, teamB, submissions, isStaf
                 width={800}
                 height={450}
                 unoptimized
-                className="w-full max-h-96 object-contain rounded-lg border border-gray-700 bg-black"
+                className="w-full max-h-96 object-contain border border-gray-700 bg-black"
               />
             </a>
           )}
@@ -200,13 +200,13 @@ export default function ResultSection({ match, teamA, teamB, submissions, isStaf
               <p className="text-sm text-gray-300">Is this the correct result?</p>
               <div className="flex flex-col sm:flex-row gap-2">
                 <button onClick={() => respond(true)} disabled={busy}
-                  className="bg-[#00d2ff] text-black px-4 py-2 rounded-lg font-bold hover:bg-[#00b8e6] disabled:opacity-50">
+                  className="bg-gold text-black px-4 py-2 font-bold hover:bg-golddark disabled:opacity-50">
                   Confirm
                 </button>
                 <input value={reason} onChange={(e) => setReason(e.target.value)} maxLength={500}
                   placeholder="If it's wrong: what happened?" className={`${inputClass} flex-1`} />
                 <button onClick={() => respond(false)} disabled={busy}
-                  className="border border-red-500 text-red-300 px-4 py-2 rounded-lg font-bold hover:bg-red-500/10 disabled:opacity-50">
+                  className="border border-red-500 text-red-300 px-4 py-2 font-bold hover:bg-red-500/10 disabled:opacity-50">
                   Dispute
                 </button>
               </div>
@@ -221,7 +221,7 @@ export default function ResultSection({ match, teamA, teamB, submissions, isStaf
             <div className="border-t border-gray-700 pt-4 space-y-3">
               <p className="text-sm font-semibold text-yellow-300">Staff review</p>
               <button onClick={() => review('approve')} disabled={busy}
-                className="bg-[#00d2ff] text-black px-4 py-2 rounded-lg font-bold hover:bg-[#00b8e6] disabled:opacity-50">
+                className="bg-gold text-black px-4 py-2 font-bold hover:bg-golddark disabled:opacity-50">
                 Approve {open.score_a} - {open.score_b}
               </button>
               <div className="flex flex-wrap items-center gap-2">
@@ -232,7 +232,7 @@ export default function ResultSection({ match, teamA, teamB, submissions, isStaf
                 <input type="number" min="0" value={overrideB} onChange={(e) => setOverrideB(e.target.value)}
                   className={`${inputClass} w-20`} aria-label={`Score for ${teamB?.name}`} placeholder={teamB?.name} />
                 <button onClick={() => review('override')} disabled={busy}
-                  className="border border-yellow-500 text-yellow-300 px-4 py-2 rounded-lg font-bold hover:bg-yellow-500/10 disabled:opacity-50">
+                  className="border border-yellow-500 text-yellow-300 px-4 py-2 font-bold hover:bg-yellow-500/10 disabled:opacity-50">
                   Apply this score
                 </button>
               </div>
@@ -240,7 +240,7 @@ export default function ResultSection({ match, teamA, teamB, submissions, isStaf
                 <input value={note} onChange={(e) => setNote(e.target.value)} maxLength={500}
                   placeholder="Note (required to reject, e.g. screenshot unreadable)" className={`${inputClass} flex-1`} />
                 <button onClick={() => review('reject')} disabled={busy}
-                  className="border border-red-500 text-red-300 px-4 py-2 rounded-lg font-bold hover:bg-red-500/10 disabled:opacity-50">
+                  className="border border-red-500 text-red-300 px-4 py-2 font-bold hover:bg-red-500/10 disabled:opacity-50">
                   Reject
                 </button>
               </div>
@@ -266,11 +266,11 @@ export default function ResultSection({ match, teamA, teamB, submissions, isStaf
             type="file"
             accept="image/png,image/jpeg,image/webp"
             onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-            className="block text-sm text-gray-300 file:mr-3 file:rounded file:border-0 file:bg-[#00d2ff] file:px-3 file:py-1 file:font-bold file:text-black"
+            className="block text-sm text-gray-300 file:mr-3 file:rounded file:border-0 file:bg-gold file:px-3 file:py-1 file:font-bold file:text-black"
             required
           />
           <button type="submit" disabled={busy}
-            className="bg-[#00d2ff] text-black px-6 py-2 rounded-lg font-bold hover:bg-[#00b8e6] disabled:opacity-50">
+            className="bg-gold text-black px-6 py-2 font-bold hover:bg-golddark disabled:opacity-50">
             {busy ? 'Submitting...' : 'Submit result'}
           </button>
         </form>

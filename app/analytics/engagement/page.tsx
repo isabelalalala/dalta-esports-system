@@ -78,35 +78,35 @@ export default function EngagementPage() {
     downloadCsv(`engagement-${new Date().toISOString().slice(0, 10)}.csv`, buildCsv(engagementCsv(report)));
   };
 
-  if (loading) return <div className="min-h-screen bg-[#0a0a0c] text-white p-10 text-center">Loading...</div>;
+  if (loading) return <div className="min-h-screen bg-sitebg text-white p-10 text-center">Loading...</div>;
 
   // Hiding the page is only for convenience; report_engagement() also refuses other roles.
   if (role !== 'admin' && role !== 'staff') {
     return (
-      <div className="min-h-screen bg-[#0a0a0c] text-white p-10 text-center">
+      <div className="min-h-screen bg-sitebg text-white p-10 text-center">
         Only organizers can view engagement stats.{' '}
-        <Link href="/dashboard" className="text-[#00d2ff] underline">Back to Dashboard</Link>
+        <Link href="/dashboard" className="text-gold underline">Back to Dashboard</Link>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0a0c] text-white px-4 py-10 print:bg-white print:text-black print:p-0">
+    <div className="min-h-screen bg-sitebg text-white px-4 py-10 print:bg-white print:text-black print:p-0">
       <div className="max-w-6xl mx-auto space-y-6">
         <div>
-          <Link href={role === 'admin' ? '/analytics' : '/dashboard'} className="inline-block text-[#00d2ff] hover:underline mb-6 print:hidden">
+          <Link href={role === 'admin' ? '/analytics' : '/dashboard'} className="inline-block text-gold hover:underline mb-6 print:hidden">
             ← Back to {role === 'admin' ? 'Analytics' : 'Dashboard'}
           </Link>
           <div className="flex flex-wrap justify-between items-center gap-4">
-            <h1 className="text-4xl font-bold text-[#00d2ff] print:text-black">Engagement Stats</h1>
+            <h1 className="font-pixel text-xl sm:text-2xl leading-relaxed text-gold print:text-black">Engagement Stats</h1>
             <div className="flex flex-wrap gap-2 print:hidden">
-              <button onClick={() => setReloadCount((n) => n + 1)} className="border border-[#00d2ff] text-[#00d2ff] px-4 py-2 rounded-lg font-bold hover:bg-[#00d2ff]/10">
+              <button onClick={() => setReloadCount((n) => n + 1)} className="border border-gold text-gold px-4 py-2 font-bold hover:bg-gold/10">
                 Refresh
               </button>
-              <button onClick={handleCsv} disabled={!report} className="border border-[#00d2ff] text-[#00d2ff] px-4 py-2 rounded-lg font-bold hover:bg-[#00d2ff]/10 disabled:opacity-50">
+              <button onClick={handleCsv} disabled={!report} className="border border-gold text-gold px-4 py-2 font-bold hover:bg-gold/10 disabled:opacity-50">
                 Download CSV
               </button>
-              <button onClick={() => window.print()} disabled={!report} className="bg-[#00d2ff] text-black px-4 py-2 rounded-lg font-bold hover:bg-[#00b8e6] disabled:opacity-50">
+              <button onClick={() => window.print()} disabled={!report} className="bg-gold text-black px-4 py-2 font-bold hover:bg-golddark disabled:opacity-50">
                 Print / PDF
               </button>
             </div>
@@ -119,7 +119,7 @@ export default function EngagementPage() {
         <ReportFilters value={filters} onChange={setFilters} options={options} />
 
         {(error || optionsError || filterError) && (
-          <div className="bg-red-500/10 border border-red-500 text-red-300 px-4 py-3 rounded-lg">
+          <div className="bg-red-500/10 border border-red-500 text-red-300 px-4 py-3">
             {filterError || error || optionsError}
           </div>
         )}

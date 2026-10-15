@@ -54,14 +54,14 @@ export default function TeamInvites({ onAnswered }: { onAnswered?: () => void })
   if (invites.length === 0 && !error && !message) return null;
 
   return (
-    <section className="bg-[#1a1a2e] border border-[#00d2ff] rounded-xl p-6 mb-8 space-y-4">
-      <h2 className="text-xl font-bold text-[#00d2ff]">✉️ Team invites</h2>
+    <section className="bg-sitecard border-2 border-gold shadow-[6px_6px_0_var(--color-brown)] p-6 mb-8 space-y-4">
+      <h2 className="text-xl font-bold text-gold">✉️ Team invites</h2>
 
-      {error && <div className="bg-red-500/10 border border-red-500 text-red-300 px-4 py-3 rounded-lg">{error}</div>}
-      {message && <div className="bg-green-500/10 border border-green-500 text-green-300 px-4 py-3 rounded-lg">{message}</div>}
+      {error && <div className="bg-red-500/10 border border-red-500 text-red-300 px-4 py-3">{error}</div>}
+      {message && <div className="bg-green-500/10 border border-green-500 text-green-300 px-4 py-3">{message}</div>}
 
       {invites.length > 0 && (
-        <ul className="divide-y divide-[#00d2ff]/20">
+        <ul className="divide-y divide-brown">
           {invites.map((invite) => {
             const busy = busyId === invite.invite_id;
             return (
@@ -78,14 +78,14 @@ export default function TeamInvites({ onAnswered }: { onAnswered?: () => void })
                   <button
                     onClick={() => respond(invite, true)}
                     disabled={busy}
-                    className="bg-[#00d2ff] text-black px-4 py-2 rounded-lg font-bold hover:bg-[#00b8e6] disabled:opacity-50"
+                    className="bg-gold text-black px-4 py-2 font-bold hover:bg-golddark disabled:opacity-50"
                   >
                     Accept
                   </button>
                   <button
                     onClick={() => respond(invite, false)}
                     disabled={busy}
-                    className="border border-red-500 text-red-300 px-4 py-2 rounded-lg font-bold hover:bg-red-500/10 disabled:opacity-50"
+                    className="border border-red-500 text-red-300 px-4 py-2 font-bold hover:bg-red-500/10 disabled:opacity-50"
                   >
                     Decline
                   </button>

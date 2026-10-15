@@ -7,7 +7,7 @@ import { createClient } from '@/utils/supabase/client'
 import { getErrorMessage } from '@/utils/errors'
 import { confirmEmailRedirect, isEmailNotConfirmed } from '@/utils/auth'
 
-const inputClass = 'w-full p-3 bg-[#0a0a0c] text-white border border-[#00d2ff] rounded-lg'
+const inputClass = 'w-full p-3 bg-sitebg text-white border border-gold'
 
 export default function Login() {
   const supabase = createClient()
@@ -65,23 +65,23 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen grid place-items-center bg-[#0a0a0c] px-4">
+    <div className="min-h-screen grid place-items-center bg-sitebg px-4">
       <form
         onSubmit={handleLogin}
-        className="w-full max-w-md bg-[#1a1a2e] rounded-xl p-8 shadow-[0_0_30px_rgba(0,210,255,0.1)] space-y-4"
+        className="w-full max-w-md bg-sitecard p-8 shadow-[6px_6px_0_var(--color-brown)] space-y-4"
       >
-        <h1 className="text-[#00d2ff] text-2xl font-bold text-center mb-4">Login</h1>
+        <h1 className="text-gold text-2xl font-bold text-center mb-4">Login</h1>
 
         {confirmed && !notConfirmed && !error && (
-          <div className="bg-green-500/10 border border-green-500 text-green-300 px-3 py-2 rounded-lg">
+          <div className="bg-green-500/10 border border-green-500 text-green-300 px-3 py-2">
             Thanks for confirming your email. You can log in now.
           </div>
         )}
 
-        {error && <div className="bg-[#ff4444] text-white px-3 py-2 rounded-lg">{error}</div>}
+        {error && <div className="bg-[#ff4444] text-white px-3 py-2">{error}</div>}
 
         {notConfirmed && (
-          <div className="bg-yellow-500/10 border border-yellow-500 text-yellow-200 px-3 py-2 rounded-lg space-y-2">
+          <div className="bg-yellow-500/10 border border-yellow-500 text-yellow-200 px-3 py-2 space-y-2">
             <p>
               Please confirm your email first. Open the link we sent to{' '}
               <span className="font-semibold">{email.trim()}</span> when you registered.
@@ -101,16 +101,16 @@ export default function Login() {
         <button
           type="submit"
           disabled={loading}
-          className="w-full p-3 bg-[#00d2ff] text-black font-bold rounded-lg disabled:opacity-60 disabled:cursor-not-allowed"
+          className="w-full p-3 bg-gold text-black font-bold disabled:opacity-60 disabled:cursor-not-allowed"
         >
           {loading ? 'Signing in...' : 'Sign In'}
         </button>
 
         <p className="text-center">
-          <Link href="/auth/forgot-password" className="text-[#00d2ff]">Forgot password?</Link>
+          <Link href="/auth/forgot-password" className="text-gold">Forgot password?</Link>
         </p>
         <p className="text-center text-gray-300">
-          Don&apos;t have an account? <Link href="/auth/register" className="text-[#00d2ff]">Register</Link>
+          Don&apos;t have an account? <Link href="/auth/register" className="text-gold">Register</Link>
         </p>
       </form>
     </div>

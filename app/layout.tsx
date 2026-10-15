@@ -1,9 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Press_Start_2P } from "next/font/google";
-import { Suspense } from "react";
 import "./globals.css";
 import Footer from "@/components/Footer";
-import AppHeader from "@/components/AppHeader";
+import SiteHeader from "@/components/site/SiteHeader";
 import { SITE_URL } from "@/utils/site-url";
 
 const geistSans = Geist({
@@ -43,10 +42,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`${geistSans.variable} ${geistMono.variable} ${pressStart.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-        {/* AppHeader reads the URL (usePathname), which needs a Suspense boundary */}
-        <Suspense fallback={null}>
-          <AppHeader />
-        </Suspense>
+        {/* The same header on every page, logged in or not */}
+        <SiteHeader />
         {children}
         <Footer />
       </body>

@@ -9,7 +9,7 @@ import type { Feedback, Tournament } from '@/utils/types';
 import StarRating from '@/components/StarRating';
 
 const inputClass =
-  'w-full rounded-lg border border-[#00d2ff]/40 bg-[#0a0a0c] px-4 py-3 text-white placeholder-gray-500 outline-none focus:border-[#00d2ff]';
+  'w-full border border-brownlight bg-sitebg px-4 py-3 text-white placeholder-gray-500 outline-none focus:border-gold';
 
 // "Submit feedback & ratings" (use case, Audience / Spectator; players too)
 export default function FeedbackPage() {
@@ -99,22 +99,22 @@ export default function FeedbackPage() {
     }
   };
 
-  if (loading) return <div className="min-h-screen bg-[#0a0a0c] text-white p-10 text-center">Loading...</div>;
+  if (loading) return <div className="min-h-screen bg-sitebg text-white p-10 text-center">Loading...</div>;
 
   return (
-    <div className="min-h-screen bg-[#0a0a0c] text-white px-4 py-10">
+    <div className="min-h-screen bg-sitebg text-white px-4 py-10">
       <div className="max-w-2xl mx-auto space-y-8">
         <div>
-          <Link href="/dashboard" className="inline-block text-[#00d2ff] hover:underline mb-6">
+          <Link href="/dashboard" className="inline-block text-gold hover:underline mb-6">
             ← Back to Dashboard
           </Link>
-          <h1 className="text-4xl font-bold text-[#00d2ff]">Feedback</h1>
+          <h1 className="font-pixel text-xl sm:text-2xl leading-relaxed text-gold">Feedback</h1>
           <p className="text-gray-400 mt-2">Tell us how the tournament, matches or streams went.</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="bg-[#1a1a2e] border border-[#00d2ff] rounded-xl p-6 space-y-4">
-          {error && <div className="bg-red-500/10 border border-red-500 text-red-300 px-4 py-3 rounded-lg">{error}</div>}
-          {message && <div className="bg-green-500/10 border border-green-500 text-green-300 px-4 py-3 rounded-lg">{message}</div>}
+        <form onSubmit={handleSubmit} className="bg-sitecard border-2 border-gold shadow-[6px_6px_0_var(--color-brown)] p-6 space-y-4">
+          {error && <div className="bg-red-500/10 border border-red-500 text-red-300 px-4 py-3">{error}</div>}
+          {message && <div className="bg-green-500/10 border border-green-500 text-green-300 px-4 py-3">{message}</div>}
 
           <label className="block">
             <span className="block text-sm font-semibold text-gray-300 mb-2">About</span>
@@ -148,7 +148,7 @@ export default function FeedbackPage() {
           <button
             type="submit"
             disabled={saving}
-            className="bg-[#00d2ff] text-black px-6 py-3 rounded-lg font-bold hover:bg-[#00b8e6] transition disabled:opacity-50"
+            className="bg-gold text-black px-6 py-3 font-bold hover:bg-golddark transition disabled:opacity-50"
           >
             {saving ? 'Sending...' : 'Send feedback'}
           </button>
@@ -161,7 +161,7 @@ export default function FeedbackPage() {
           ) : (
             <ul className="space-y-3">
               {myFeedback.map((f) => (
-                <li key={f.id} className="bg-[#1a1a2e] border border-[#00d2ff]/20 rounded-lg p-4">
+                <li key={f.id} className="bg-sitecard border border-brown p-4">
                   <div className="flex flex-wrap justify-between gap-2 mb-1">
                     <StarRating value={f.rating} size="sm" />
                     <span className="text-xs text-gray-500">

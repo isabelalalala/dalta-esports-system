@@ -33,9 +33,9 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div className="min-h-screen grid place-items-center bg-[#0a0a0c] px-4">
-      <div className="w-full max-w-md bg-[#1a1a2e] rounded-xl p-8 shadow-[0_0_30px_rgba(0,210,255,0.1)]">
-        <h1 className="text-[#00d2ff] text-2xl font-bold text-center mb-6">Forgot password</h1>
+    <div className="min-h-screen grid place-items-center bg-sitebg px-4">
+      <div className="w-full max-w-md bg-sitecard p-8 shadow-[6px_6px_0_var(--color-brown)]">
+        <h1 className="text-gold text-2xl font-bold text-center mb-6">Forgot password</h1>
 
         {sent ? (
           // Same message whether or not the email has an account, so nobody can
@@ -47,19 +47,19 @@ export default function ForgotPasswordPage() {
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
             <p className="text-gray-400 text-sm">Enter your email and we&apos;ll send you a link to choose a new password.</p>
-            {error && <div className="bg-[#ff4444] text-white px-3 py-2 rounded-lg">{error}</div>}
+            {error && <div className="bg-[#ff4444] text-white px-3 py-2">{error}</div>}
             <input
               type="email"
               placeholder="Email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full p-3 bg-[#0a0a0c] text-white border border-[#00d2ff] rounded-lg"
+              className="w-full p-3 bg-sitebg text-white border border-gold"
               required
             />
             <button
               type="submit"
               disabled={loading}
-              className="w-full p-3 bg-[#00d2ff] text-black font-bold rounded-lg disabled:opacity-60"
+              className="w-full p-3 bg-gold text-black font-bold disabled:opacity-60"
             >
               {loading ? 'Sending...' : 'Send reset link'}
             </button>
@@ -67,7 +67,7 @@ export default function ForgotPasswordPage() {
         )}
 
         <p className="text-center mt-6">
-          <Link href="/auth/login" className="text-[#00d2ff]">Back to login</Link>
+          <Link href="/auth/login" className="text-gold">Back to login</Link>
         </p>
       </div>
     </div>

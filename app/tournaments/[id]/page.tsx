@@ -252,10 +252,10 @@ export default function TournamentDetailsPage() {
     }
   };
 
-  if (loading) return <div className="min-h-screen bg-[#0a0a0c] text-white p-10 text-center">Loading...</div>;
+  if (loading) return <div className="min-h-screen bg-sitebg text-white p-10 text-center">Loading...</div>;
   if (!tournament) {
     return (
-      <div className="min-h-screen bg-[#0a0a0c] text-red-500 p-10 text-center">
+      <div className="min-h-screen bg-sitebg text-red-500 p-10 text-center">
         {error || 'Tournament not found.'}
       </div>
     );
@@ -287,17 +287,17 @@ export default function TournamentDetailsPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#0a0a0c] text-white p-6">
+    <div className="min-h-screen bg-sitebg text-white p-6">
       <div className="max-w-4xl mx-auto">
-        <Link href="/tournaments" className="text-[#00d2ff] hover:underline mb-6 inline-block">
+        <Link href="/tournaments" className="text-gold hover:underline mb-6 inline-block">
           ← Back to Tournaments
         </Link>
 
-        <div className="bg-[#1a1a2e] border border-[#00d2ff] p-8 rounded-xl shadow-lg space-y-8">
+        <div className="bg-sitecard border-2 border-gold shadow-[6px_6px_0_var(--color-brown)] p-8 shadow-lg space-y-8">
           {/* Title and status */}
           <div>
             <div className="flex flex-wrap items-center gap-3 mb-4">
-              <h1 className="text-4xl font-bold text-[#00d2ff]">{tournament.name}</h1>
+              <h1 className="font-pixel text-xl sm:text-2xl leading-relaxed text-gold">{tournament.name}</h1>
               <span className={`px-3 py-1 rounded-full border text-xs font-bold uppercase ${statusStyles[status]}`}>
                 {statusLabels[status]}
               </span>
@@ -312,17 +312,17 @@ export default function TournamentDetailsPage() {
             )}
             {/* The public page works without logging in, so it's the one to share */}
             <div className="mt-4 flex flex-wrap items-center gap-3">
-              <Link href={`/t/${tournament.id}`} className="text-sm text-[#00d2ff] hover:underline">Public page ↗</Link>
+              <Link href={`/t/${tournament.id}`} className="text-sm text-gold hover:underline">Public page ↗</Link>
               <ShareButton path={`/t/${tournament.id}`} title={tournament.name} text={`${tournament.name} (${tournament.game}) on DALTA Esports`} />
               <CalendarLinks kind="tournament" id={tournament.id} />
             </div>
           </div>
 
           {error && (
-            <div className="bg-red-500/10 border border-red-500 text-red-300 px-4 py-3 rounded-lg">{error}</div>
+            <div className="bg-red-500/10 border border-red-500 text-red-300 px-4 py-3">{error}</div>
           )}
           {message && (
-            <div className="bg-green-500/10 border border-green-500 text-green-300 px-4 py-3 rounded-lg">{message}</div>
+            <div className="bg-green-500/10 border border-green-500 text-green-300 px-4 py-3">{message}</div>
           )}
 
           {/* Watch live banner */}
@@ -330,7 +330,7 @@ export default function TournamentDetailsPage() {
             <Link
               key={s.id}
               href={`/live/${s.id}`}
-              className="flex items-center justify-between gap-3 bg-red-600/15 border border-red-500 rounded-lg px-4 py-3 hover:bg-red-600/25 transition"
+              className="flex items-center justify-between gap-3 bg-red-600/15 border border-red-500 px-4 py-3 hover:bg-red-600/25 transition"
             >
               <span className="font-bold text-red-300">📺 Watch live: {s.title}</span>
               <span className="text-red-300 text-sm">● LIVE →</span>
@@ -340,7 +340,7 @@ export default function TournamentDetailsPage() {
           {/* Details */}
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
             {details.map((d) => (
-              <div key={d.label} className="bg-[#0a0a0c] p-4 rounded-lg border border-[#00d2ff]/20">
+              <div key={d.label} className="bg-sitebg p-4 border border-brown">
                 <span className="text-gray-400 block text-xs uppercase font-bold">{d.label}</span>
                 <span className="text-lg font-semibold">{d.value}</span>
               </div>
@@ -359,7 +359,7 @@ export default function TournamentDetailsPage() {
             </div>
           )}
 
-          <Link href={`/feedback?tournament=${id}`} className="inline-block text-sm text-[#00d2ff] hover:underline">
+          <Link href={`/feedback?tournament=${id}`} className="inline-block text-sm text-gold hover:underline">
             💬 Give feedback about this tournament
           </Link>
 
@@ -367,7 +367,7 @@ export default function TournamentDetailsPage() {
           <div>
             <h2 className="text-xl font-bold mb-2">Rules</h2>
             {tournament.rules ? (
-              <p className="text-gray-300 whitespace-pre-wrap bg-[#0a0a0c] p-4 rounded-lg border border-[#00d2ff]/20">
+              <p className="text-gray-300 whitespace-pre-wrap bg-sitebg p-4 border border-brown">
                 {tournament.rules}
               </p>
             ) : (
@@ -389,7 +389,7 @@ export default function TournamentDetailsPage() {
             {approvedTeams.length === 0 ? (
               <p className="text-gray-500">No approved teams yet.</p>
             ) : (
-              <ul className="divide-y divide-[#00d2ff]/20 bg-[#0a0a0c] rounded-lg border border-[#00d2ff]/20">
+              <ul className="divide-y divide-brown bg-sitebg border border-brown">
                 {approvedTeams.map((reg) => (
                   <li key={reg.id} className="px-4 py-3 flex justify-between items-center">
                     <span className="font-semibold">
@@ -409,7 +409,7 @@ export default function TournamentDetailsPage() {
 
           {/* ADMIN / STAFF CONTROLS (the database also enforces these permissions) */}
           {isOrganizer ? (
-            <div className="bg-yellow-600/10 border border-yellow-600 p-4 rounded-lg">
+            <div className="bg-yellow-600/10 border border-yellow-600 p-4">
               <p className="text-yellow-400 font-semibold mb-1">Admin Panel</p>
               <p className="text-gray-400 text-sm mb-4">
                 {matches.length > 0
@@ -419,34 +419,34 @@ export default function TournamentDetailsPage() {
               <div className="flex gap-3 flex-wrap">
                 <Link
                   href={`/tournaments/${id}/edit`}
-                  className="bg-[#00d2ff] text-black px-6 py-2 rounded-lg font-bold hover:bg-[#00b8e6] transition"
+                  className="bg-gold text-black px-6 py-2 font-bold hover:bg-golddark transition"
                 >
                   Edit Tournament
                 </Link>
                 {matches.length > 0 && (
                   <Link
                     href={`/tournaments/${id}/matches`}
-                    className="bg-[#1a1a2e] border border-[#00d2ff] text-[#00d2ff] px-6 py-2 rounded-lg font-bold hover:bg-[#00d2ff] hover:text-black transition"
+                    className="bg-sitecard border-2 border-gold shadow-[6px_6px_0_var(--color-brown)] text-gold px-6 py-2 font-bold hover:bg-gold hover:text-black transition"
                   >
                     Manage Matches
                   </Link>
                 )}
                 <Link
                   href={`/tournaments/${id}/streams`}
-                  className="bg-[#1a1a2e] border border-red-500 text-red-300 px-6 py-2 rounded-lg font-bold hover:bg-red-600 hover:text-white transition"
+                  className="bg-sitecard border border-red-500 text-red-300 px-6 py-2 font-bold hover:bg-red-600 hover:text-white transition"
                 >
                   Manage Streams
                 </Link>
                 <Link
                   href={`/tournaments/${id}/registrations`}
-                  className="bg-purple-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-purple-700 transition"
+                  className="bg-purple-600 text-white px-6 py-2 font-bold hover:bg-purple-700 transition"
                 >
                   View Registrations
                 </Link>
                 <button
                   onClick={handleGenerateBracket}
                   disabled={generating}
-                  className="bg-green-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-green-700 transition disabled:opacity-50"
+                  className="bg-green-600 text-white px-6 py-2 font-bold hover:bg-green-700 transition disabled:opacity-50"
                 >
                   {generating ? 'Generating...' : matches.length > 0 ? 'Regenerate Bracket' : 'Generate Bracket'}
                 </button>
@@ -454,7 +454,7 @@ export default function TournamentDetailsPage() {
                   <button
                     onClick={handleDelete}
                     disabled={deleting}
-                    className="bg-red-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-red-700 transition disabled:opacity-50"
+                    className="bg-red-600 text-white px-6 py-2 font-bold hover:bg-red-700 transition disabled:opacity-50"
                   >
                     {deleting ? 'Deleting...' : 'Delete Tournament'}
                   </button>
@@ -463,26 +463,26 @@ export default function TournamentDetailsPage() {
             </div>
           ) : closedReason ? (
             /* Registration not possible: say why instead of showing the form */
-            <div className="bg-[#0a0a0c] border border-gray-600 text-gray-300 px-4 py-3 rounded-lg text-center">
+            <div className="bg-sitebg border border-gray-600 text-gray-300 px-4 py-3 text-center">
               {closedReason}
             </div>
           ) : !showForm ? (
             <button
               onClick={() => setShowForm(true)}
-              className="w-full bg-[#00d2ff] text-black font-bold py-3 rounded-lg hover:bg-[#00b8e6] transition"
+              className="w-full bg-gold text-black font-bold py-3 hover:bg-golddark transition"
             >
               Register Team for Tournament
             </button>
           ) : (
             /* PLAYER REGISTRATION */
-            <form onSubmit={handleRegister} className="p-6 bg-[#0a0a0c] rounded-lg border border-[#00d2ff] space-y-4">
+            <form onSubmit={handleRegister} className="p-6 bg-sitebg border border-gold space-y-4">
               <div>
-                <label className="block text-[#00d2ff] mb-2 font-semibold">
+                <label className="block text-gold mb-2 font-semibold">
                   Select Your Team
                 </label>
 
                 {teams.length === 0 ? (
-                  <div className="bg-red-500/10 border border-red-500 text-red-300 px-4 py-3 rounded">
+                  <div className="bg-red-500/10 border border-red-500 text-red-300 px-4 py-3">
                     You don&apos;t captain a {tournament.game} team yet. Create one first on the{' '}
                     <Link href="/teams" className="font-bold underline hover:text-white">Teams</Link> page.
                   </div>
@@ -490,7 +490,7 @@ export default function TournamentDetailsPage() {
                   <select
                     value={selectedTeamId}
                     onChange={(e) => setSelectedTeamId(e.target.value)}
-                    className="w-full bg-[#1a1a2e] border border-[#00d2ff]/50 rounded p-3 text-white outline-none focus:border-[#00d2ff]"
+                    className="w-full bg-sitecard border border-brownlight p-3 text-white outline-none focus:border-gold"
                     required
                   >
                     <option value="">-- Select Team --</option>
@@ -504,7 +504,7 @@ export default function TournamentDetailsPage() {
               </div>
 
               {blockingMembers.length > 0 && (
-                <div className="bg-yellow-500/10 border border-yellow-500 text-yellow-200 px-4 py-3 rounded space-y-2">
+                <div className="bg-yellow-500/10 border border-yellow-500 text-yellow-200 px-4 py-3 space-y-2">
                   <p>
                     This tournament only accepts verified students. These members need to submit their student details
                     on their Profile and be verified by an organizer first:
@@ -525,7 +525,7 @@ export default function TournamentDetailsPage() {
                 <button
                   type="submit"
                   disabled={registering || teams.length === 0 || blockingMembers.length > 0}
-                  className="bg-[#00d2ff] text-black px-6 py-2 rounded font-bold hover:bg-[#00b8e6] transition disabled:opacity-50"
+                  className="bg-gold text-black px-6 py-2 font-bold hover:bg-golddark transition disabled:opacity-50"
                 >
                   {registering ? 'Processing...' : 'Confirm Registration'}
                 </button>

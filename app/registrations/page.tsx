@@ -86,25 +86,25 @@ export default function MyRegistrationsPage() {
     }
   };
 
-  if (loading) return <div className="min-h-screen bg-[#0a0a0c] text-white p-10 text-center">Loading...</div>;
+  if (loading) return <div className="min-h-screen bg-sitebg text-white p-10 text-center">Loading...</div>;
 
   return (
-    <div className="min-h-screen bg-[#0a0a0c] text-white px-4 py-10">
+    <div className="min-h-screen bg-sitebg text-white px-4 py-10">
       <div className="max-w-4xl mx-auto">
-        <Link href="/dashboard" className="inline-block text-[#00d2ff] hover:underline mb-6">
+        <Link href="/dashboard" className="inline-block text-gold hover:underline mb-6">
           ← Back to Dashboard
         </Link>
 
-        <h1 className="text-4xl font-bold text-[#00d2ff] mb-8">My Registrations</h1>
+        <h1 className="font-pixel text-xl sm:text-2xl leading-relaxed text-gold mb-8">My Registrations</h1>
 
         {error && (
-          <div className="mb-6 bg-red-500/10 border border-red-500 text-red-300 px-4 py-3 rounded-lg">{error}</div>
+          <div className="mb-6 bg-red-500/10 border border-red-500 text-red-300 px-4 py-3">{error}</div>
         )}
 
         {registrations.length === 0 ? (
-          <div className="text-center bg-[#1a1a2e] border border-[#00d2ff]/20 rounded-xl p-12 text-gray-400">
+          <div className="text-center bg-sitecard border border-brown p-12 text-gray-400">
             Your teams haven&apos;t registered for any tournament yet.{' '}
-            <Link href="/tournaments" className="text-[#00d2ff] underline">Browse tournaments</Link>
+            <Link href="/tournaments" className="text-gold underline">Browse tournaments</Link>
           </div>
         ) : (
           <ul className="space-y-3">
@@ -114,11 +114,11 @@ export default function MyRegistrationsPage() {
               return (
                 <li
                   key={reg.id}
-                  className="bg-[#1a1a2e] border border-[#00d2ff]/30 rounded-lg p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+                  className="bg-sitecard border border-brownlight p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
                 >
                   <div className="min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <Link href={`/tournaments/${reg.tournament_id}`} className="font-bold text-lg hover:text-[#00d2ff]">
+                      <Link href={`/tournaments/${reg.tournament_id}`} className="font-bold text-lg hover:text-gold">
                         {reg.tournaments?.name}
                       </Link>
                       <span className={`px-2 py-0.5 rounded-full border text-[10px] font-bold uppercase ${statusStyles[reg.status]}`}>
@@ -139,7 +139,7 @@ export default function MyRegistrationsPage() {
                     <button
                       onClick={() => handleWithdraw(reg)}
                       disabled={busyId === reg.id}
-                      className="border border-red-500 text-red-400 hover:bg-red-500 hover:text-white px-4 py-2 rounded-lg font-semibold transition disabled:opacity-50"
+                      className="border border-red-500 text-red-400 hover:bg-red-500 hover:text-white px-4 py-2 font-semibold transition disabled:opacity-50"
                     >
                       {busyId === reg.id ? 'Withdrawing...' : 'Withdraw'}
                     </button>

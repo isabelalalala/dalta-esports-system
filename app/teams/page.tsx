@@ -84,17 +84,17 @@ export default function TeamsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0a0a0c] text-white p-8">
+    <div className="min-h-screen bg-sitebg text-white p-8">
       <div className="max-w-5xl mx-auto">
-        <Link href="/dashboard" className="text-[#00d2ff] hover:underline mb-6 inline-block">
+        <Link href="/dashboard" className="text-gold hover:underline mb-6 inline-block">
           ← Back to Dashboard
         </Link>
 
         <div className="flex justify-between items-center mb-8">
-          <h1 className="text-4xl font-black italic uppercase tracking-tighter">My Teams</h1>
+          <h1 className="font-pixel text-xl sm:text-2xl leading-relaxed text-gold">My Teams</h1>
           <button
             onClick={() => setShowCreate(!showCreate)}
-            className="bg-[#00d2ff] text-black px-6 py-2 rounded font-bold hover:bg-[#00b8e6]"
+            className="bg-gold text-black px-6 py-2 font-bold hover:bg-golddark"
           >
             {showCreate ? 'Cancel' : '+ Create Team'}
           </button>
@@ -104,23 +104,23 @@ export default function TeamsPage() {
         <TeamInvites onAnswered={() => setReloadCount((n) => n + 1)} />
 
         {error && (
-          <div className="mb-6 bg-red-500/10 border border-red-500 text-red-300 px-4 py-3 rounded">
+          <div className="mb-6 bg-red-500/10 border border-red-500 text-red-300 px-4 py-3">
             {error}
           </div>
         )}
 
         {showCreate && (
-          <form onSubmit={handleCreateTeam} className="mb-8 p-6 bg-[#1a1a2e] border border-[#00d2ff] rounded-lg">
+          <form onSubmit={handleCreateTeam} className="mb-8 p-6 bg-sitecard border-2 border-gold shadow-[6px_6px_0_var(--color-brown)]">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <input
                 type="text" placeholder="Team Name"
                 value={newTeamName} onChange={(e) => setNewTeamName(e.target.value)}
-                className="bg-[#0a0a0c] border border-gray-700 p-3 rounded text-white outline-none focus:border-[#00d2ff]"
+                className="bg-sitebg border border-gray-700 p-3 text-white outline-none focus:border-gold"
                 required
               />
               <select
                 value={gameId} onChange={(e) => setGameId(e.target.value)}
-                className="bg-[#0a0a0c] border border-gray-700 p-3 rounded text-white outline-none focus:border-[#00d2ff]"
+                className="bg-sitebg border border-gray-700 p-3 text-white outline-none focus:border-gold"
                 required
               >
                 <option value="">-- Select Game --</option>
@@ -135,11 +135,11 @@ export default function TeamsPage() {
               placeholder="Description (optional)"
               value={description} onChange={(e) => setDescription(e.target.value)}
               rows={3}
-              className="mt-4 w-full bg-[#0a0a0c] border border-gray-700 p-3 rounded text-white outline-none focus:border-[#00d2ff]"
+              className="mt-4 w-full bg-sitebg border border-gray-700 p-3 text-white outline-none focus:border-gold"
             />
             <button
               type="submit" disabled={saving}
-              className="mt-4 w-full bg-[#00d2ff] text-black py-3 rounded font-bold disabled:opacity-50"
+              className="mt-4 w-full bg-gold text-black py-3 font-bold disabled:opacity-50"
             >
               {saving ? 'Creating...' : 'Confirm Creation'}
             </button>
@@ -154,15 +154,15 @@ export default function TeamsPage() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {teams.map(team => (
-            <div key={team.id} className="bg-[#111116] border border-[#00d2ff]/20 p-6 rounded-lg hover:border-[#00d2ff] transition">
-              <h2 className="text-2xl font-bold text-[#00d2ff]">{team.name}</h2>
+            <div key={team.id} className="bg-[#111116] border border-brown p-6 hover:border-gold transition">
+              <h2 className="text-2xl font-bold text-gold">{team.name}</h2>
               <p className="text-gray-400 mt-1 uppercase text-xs font-bold tracking-widest">{team.games?.name}</p>
               {team.description && <p className="text-gray-300 mt-3 text-sm">{team.description}</p>}
               <div className="mt-4 flex justify-between items-center text-sm">
                 <span className="text-gray-500">
                   Members: {team.team_members?.[0]?.count || 0} / {team.games?.max_players}
                 </span>
-                <Link href={`/teams/${team.id}`} className="text-[#00d2ff] hover:underline font-bold">
+                <Link href={`/teams/${team.id}`} className="text-gold hover:underline font-bold">
                   Manage Team →
                 </Link>
               </div>
