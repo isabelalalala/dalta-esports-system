@@ -8,6 +8,8 @@ import { getErrorMessage } from '@/utils/errors';
 import type { Match, MatchCheckin, MatchResultSubmission, MatchTeam } from '@/utils/types';
 import { formatDateTime, roundLabel } from '@/utils/tournaments';
 import CheckinSection from './CheckinSection';
+import ShareButton from '@/components/ShareButton';
+import CalendarLinks from '@/components/CalendarLinks';
 import ResultSection from './ResultSection';
 
 interface MatchTournament {
@@ -151,6 +153,16 @@ export default function MatchPage() {
                 {winnerName} won{match.is_forfeit ? ' by forfeit' : ''}
               </span>
             )}
+          </div>
+          {/* The public match page works without logging in, so it's the one to share */}
+          <div className="flex flex-wrap justify-center items-center gap-3 pt-2">
+            <Link href={`/t/${tournament.id}/match/${match.id}`} className="text-sm text-[#00d2ff] hover:underline">Public page ↗</Link>
+            <ShareButton
+              path={`/t/${tournament.id}/match/${match.id}`}
+              title={`${teamA?.name ?? 'TBD'} vs ${teamB?.name ?? 'TBD'}`}
+              text={`${roundLabel(match.round, roundCount)}, ${tournament.name}`}
+            />
+            {match.scheduled_at && match.status !== 'completed' && <CalendarLinks kind="match" id={match.id} />}
           </div>
         </div>
 

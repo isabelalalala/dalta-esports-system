@@ -95,6 +95,8 @@ export default function PrivacyNoticePage() {
             <li>Your own feedback is visible to you and to administrators, not to other users.</li>
             <li>Result screenshots are visible only to the members of the two teams in that match and to tournament
               staff.</li>
+            <li>Organizers may download lists (registrations, team rosters, schedules and results) to run tournaments.
+              Every download is recorded in the activity log.</li>
             <li>The activity log is visible to administrators only. It helps keep tournaments fair and lets us see
               who made a change.</li>
           </ul>

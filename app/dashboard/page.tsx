@@ -271,6 +271,16 @@ export default function Dashboard() {
       </Link>
     )}
 
+    {/* Admin only: edit the public website */}
+    {profile?.role === 'admin' && (
+      <Link href="/admin/website" style={{ textDecoration: 'none' }}>
+        <div style={{ background: '#1a1a2e', padding: '1.5rem', borderRadius: '12px', border: '1px solid #ffd93d', cursor: 'pointer' }}>
+          <h3 style={{ color: '#ffd93d', marginBottom: '1rem' }}>🌐 Website</h3>
+          <p style={{ color: '#aaa' }}>Edit the public pages, photos, officers and teams</p>
+        </div>
+      </Link>
+    )}
+
     {/* Admin only: the activity log is readable by admins only (RLS) */}
     {profile?.role === 'admin' && (
       <Link href="/admin/activity" style={{ textDecoration: 'none' }}>

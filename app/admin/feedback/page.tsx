@@ -6,6 +6,7 @@ import { createClient } from '@/utils/supabase/client';
 import { getErrorMessage } from '@/utils/errors';
 import type { Feedback, Sentiment, Tournament } from '@/utils/types';
 import StarRating from '@/components/StarRating';
+import ExportButtons from '@/components/ExportButtons';
 
 const inputClass =
   'rounded-lg border border-[#00d2ff]/40 bg-[#0a0a0c] px-4 py-2 text-white outline-none focus:border-[#00d2ff]';
@@ -164,6 +165,14 @@ export default function FeedbackAnalysisPage() {
             </button>
           </div>
           <p className="text-gray-400 text-sm mt-2">Sentiment is classified by Google Gemini.</p>
+          {/* Uses the tournament filter below; exports don't include who wrote the feedback */}
+          <div className="mt-3">
+            <ExportButtons
+              type="feedback"
+              label="Feedback"
+              params={{ tournament: tournamentFilter === 'all' ? null : tournamentFilter }}
+            />
+          </div>
         </div>
 
         {error && <div className="bg-red-500/10 border border-red-500 text-red-300 px-4 py-3 rounded-lg">{error}</div>}

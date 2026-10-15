@@ -12,6 +12,8 @@ export interface ActivityLog {
   details: {
     actor_name?: string;
     tournament_name?: string;
+    export_format?: string;
+    filter?: string | null;
     tournament_id?: string | null;
     game?: string;
     team_name?: string;
@@ -36,6 +38,8 @@ export interface ActivityLog {
     forfeit?: boolean;
     rounds?: number;
     teams?: number;
+    // Exports: how many rows the file had
+    rows?: number;
   };
   created_at: string;
 }
@@ -92,6 +96,16 @@ export const ACTION_GROUPS: { label: string; actions: { value: string; label: st
     ],
   },
   {
+    label: 'Exports',
+    actions: [
+      { value: 'export.registrations', label: 'Registrations exported' },
+      { value: 'export.rosters', label: 'Rosters exported' },
+      { value: 'export.matches', label: 'Schedule & results exported' },
+      { value: 'export.feedback', label: 'Feedback exported' },
+      { value: 'export.users', label: 'User list exported' },
+    ],
+  },
+  {
     label: 'Streams',
     actions: [
       { value: 'stream.added', label: 'Stream added' },
@@ -116,6 +130,14 @@ const fieldLabels: Record<string, string> = {
   title: 'title',
   facebook_url: 'Facebook link',
   match_id: 'match',
+};
+
+const exportLabels: Record<string, string> = {
+  registrations: 'registrations',
+  rosters: 'team rosters',
+  matches: 'the schedule and results',
+  feedback: 'feedback',
+  users: 'the user list',
 };
 
 const roleLabels: Record<string, string> = {
@@ -208,6 +230,12 @@ export function describeActivity(log: ActivityLog): string {
       return `${actor} removed the stream "${d.title}"${forTournament}`;
 
     default:
+      if (log.action.startsWith('export.')) {
+        const what = exportLabels[log.action.slice('export.'.length)] ?? 'data';
+        const scope = d.tournament_name ? ` of ${d.tournament_name}` : d.filter ? ` (${d.filter})` : '';
+        const format = d.export_format === 'csv' ? 'CSV' : 'Excel';
+        return `${actor} exported ${what}${scope} (${format}, ${d.rows ?? 0} rows)`;
+      }
       return `${actor}: ${log.action}`;
   }
 }

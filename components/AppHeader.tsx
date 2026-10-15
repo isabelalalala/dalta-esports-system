@@ -2,12 +2,21 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
 import NotificationBell from './NotificationBell';
 
-// Slim bar at the top of every page while logged in (added in app/layout.tsx).
-// Logged-out visitors don't see it. Hidden when printing reports.
+// The public website has its own header (app/(site)/layout.tsx)
+const SITE_PATHS = ['/about', '/campaigns', '/events', '/divisions', '/community', '/search', '/t'];
+
+function isSitePage(path: string) {
+  return path === '/' || SITE_PATHS.some((p) => path === p || path.startsWith(p + '/'));
+}
+
+// Slim bar at the top of every app page while logged in (added in app/layout.tsx).
+// Logged-out visitors and the public website don't show it. Hidden when printing reports.
 export default function AppHeader() {
+  const pathname = usePathname();
   const [userId, setUserId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -21,7 +30,7 @@ export default function AppHeader() {
     return () => listener.subscription.unsubscribe();
   }, []);
 
-  if (!userId) return null;
+  if (!userId || isSitePage(pathname)) return null;
 
   return (
     <header className="bg-[#0a0a0c] border-b border-[#00d2ff]/20 px-4 py-2 print:hidden">

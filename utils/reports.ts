@@ -4,6 +4,7 @@
 import type { createClient } from '@/utils/supabase/client';
 import type { Sentiment, StreamStatus, Tournament } from '@/utils/types';
 import { getTournamentStatus, roundLabel, statusLabels, toDateInput } from '@/utils/tournaments';
+import { csvCell } from '@/utils/csv';
 
 type SupabaseClient = ReturnType<typeof createClient>;
 
@@ -199,16 +200,6 @@ export interface CsvSection {
   title: string;
   columns: string[];
   rows: CsvValue[][];
-}
-
-// One CSV value. Quotes values with commas, quotes or line breaks.
-// Text starting with = + - @ is prefixed with ' so Excel doesn't run it as a formula
-// (feedback comments are typed by users).
-function csvCell(value: CsvValue) {
-  if (value === null || value === undefined) return '';
-  let text = String(value);
-  if (typeof value === 'string' && /^[=+\-@]/.test(text)) text = `'${text}`;
-  return /[",\r\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
 }
 
 // Several tables in one CSV file: a title line, the header, the rows, then a blank line

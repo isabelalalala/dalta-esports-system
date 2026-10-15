@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { getErrorMessage } from '@/utils/errors';
 import { ACTIVE_REGISTRATION_STATUSES } from '@/utils/types';
 import type { Registration, RegistrationStatus, Team, Tournament } from '@/utils/types';
+import ExportButtons from '@/components/ExportButtons';
 
 const statusStyles: Record<RegistrationStatus, string> = {
   pending: 'bg-yellow-500/15 text-yellow-300 border-yellow-500/50',
@@ -132,6 +133,12 @@ export default function RegistrationsPage() {
             <h1 className="text-4xl font-bold text-[#00d2ff]">{tournament?.name}</h1>
             <p className="text-gray-400 text-lg mt-2">Tournament Registrations</p>
           </div>
+        </div>
+
+        {/* Downloads (built on the server, which checks the role and logs each export) */}
+        <div className="flex flex-wrap gap-x-6 gap-y-3 mb-6">
+          <ExportButtons type="registrations" label="Registrations" params={{ tournament: id }} />
+          <ExportButtons type="rosters" label="Team rosters" params={{ tournament: id }} />
         </div>
 
         {error && (

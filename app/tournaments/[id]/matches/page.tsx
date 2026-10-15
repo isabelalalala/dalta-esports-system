@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { getErrorMessage } from '@/utils/errors';
 import type { Match, MatchStatus, Profile, Tournament } from '@/utils/types';
 import { formatDateTime, fromDateTimeInput, isBye, roundLabel, toDateTimeInput } from '@/utils/tournaments';
+import ExportButtons from '@/components/ExportButtons';
 
 const inputClass =
   'w-full rounded border border-[#00d2ff]/40 bg-[#0a0a0c] px-3 py-2 text-white outline-none focus:border-[#00d2ff] disabled:opacity-50';
@@ -120,7 +121,10 @@ export default function MatchManagementPage() {
         </Link>
 
         <h1 className="text-4xl font-bold text-[#00d2ff]">{tournament.name}</h1>
-        <p className="text-gray-400 text-lg mt-2 mb-8">Match Management</p>
+        <p className="text-gray-400 text-lg mt-2 mb-4">Match Management</p>
+        <div className="mb-8">
+          <ExportButtons type="matches" label="Schedule & results" params={{ tournament: id }} />
+        </div>
 
         {error && (
           <div className="mb-6 bg-red-500/10 border border-red-500 text-red-300 px-4 py-3 rounded-lg">{error}</div>

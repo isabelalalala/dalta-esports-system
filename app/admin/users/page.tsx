@@ -6,6 +6,7 @@ import { createSignupClient } from '@/utils/supabase/signup-client';
 import Link from 'next/link';
 import { getErrorMessage } from '@/utils/errors';
 import type { Profile } from '@/utils/types';
+import ExportButtons from '@/components/ExportButtons';
 
 const ROLES = ['admin', 'staff', 'player', 'spectator'] as const;
 
@@ -84,9 +85,12 @@ export default function ManageUsersPage() {
         </Link>
 
         <h1 className="text-4xl font-bold text-[#00d2ff]">Manage Users</h1>
-        <p className="text-gray-400 mt-2 mb-6">
+        <p className="text-gray-400 mt-2 mb-4">
           New organizers register as a normal account first, then you change their role here.
         </p>
+        <div className="mb-6">
+          <ExportButtons type="users" label="User list" />
+        </div>
 
         {error && (
           <div className="mb-6 bg-red-500/10 border border-red-500 text-red-300 px-4 py-3 rounded-lg">{error}</div>

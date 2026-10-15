@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import type { Match } from '@/utils/types';
 import { formatDateTime, isBye, roundLabel } from '@/utils/tournaments';
 
@@ -6,9 +7,15 @@ import { formatDateTime, isBye, roundLabel } from '@/utils/tournaments';
 export default function Bracket({
   matches,
   teamNames,
+  timeZone,
+  matchHref,
 }: {
   matches: Match[];
   teamNames: Record<string, string>;
+  // Set on server-rendered pages ('Asia/Manila'); otherwise the viewer's time zone
+  timeZone?: string;
+  // Makes each match a link (the public match page)
+  matchHref?: (match: Match) => string;
 }) {
   const roundCount = matches.reduce((max, m) => Math.max(max, m.round), 0);
   const rounds = Array.from({ length: roundCount }, (_, i) => i + 1);
@@ -36,7 +43,13 @@ export default function Bracket({
                 {matches
                   .filter((m) => m.round === round)
                   .map((match) => (
-                    <MatchBox key={match.id} match={match} teamNames={teamNames} />
+                    matchHref && !isBye(match) ? (
+                      <Link key={match.id} href={matchHref(match)} className="block hover:opacity-80">
+                        <MatchBox match={match} teamNames={teamNames} timeZone={timeZone} />
+                      </Link>
+                    ) : (
+                      <MatchBox key={match.id} match={match} teamNames={teamNames} timeZone={timeZone} />
+                    )
                   ))}
               </div>
             </div>
@@ -47,7 +60,7 @@ export default function Bracket({
   );
 }
 
-function MatchBox({ match, teamNames }: { match: Match; teamNames: Record<string, string> }) {
+function MatchBox({ match, teamNames, timeZone }: { match: Match; teamNames: Record<string, string>; timeZone?: string }) {
   const bye = isBye(match);
 
   // One row per team: name, score, and whether it won
@@ -80,7 +93,7 @@ function MatchBox({ match, teamNames }: { match: Match; teamNames: Record<string
         );
       })}
       <div className="px-3 py-1 bg-[#1a1a2e] text-[11px] text-gray-400 flex justify-between gap-2">
-        <span>{bye ? 'Advances automatically' : formatDateTime(match.scheduled_at)}</span>
+        <span>{bye ? 'Advances automatically' : formatDateTime(match.scheduled_at, timeZone)}</span>
         {match.status === 'live' && <span className="text-green-400 font-bold">LIVE</span>}
       </div>
     </div>

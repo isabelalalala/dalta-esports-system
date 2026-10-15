@@ -11,6 +11,8 @@ import { formatDate, getTournamentStatus, statusLabels, statusStyles } from '@/u
 import Bracket from './Bracket';
 import AnnouncementCard from '@/components/AnnouncementCard';
 import VerifiedBadge from '@/components/VerifiedBadge';
+import ShareButton from '@/components/ShareButton';
+import CalendarLinks from '@/components/CalendarLinks';
 
 export default function TournamentDetailsPage() {
   const supabase = createClient();
@@ -308,6 +310,12 @@ export default function TournamentDetailsPage() {
             {tournament.description && (
               <p className="text-gray-300 text-lg whitespace-pre-wrap">{tournament.description}</p>
             )}
+            {/* The public page works without logging in, so it's the one to share */}
+            <div className="mt-4 flex flex-wrap items-center gap-3">
+              <Link href={`/t/${tournament.id}`} className="text-sm text-[#00d2ff] hover:underline">Public page ↗</Link>
+              <ShareButton path={`/t/${tournament.id}`} title={tournament.name} text={`${tournament.name} (${tournament.game}) on DALTA Esports`} />
+              <CalendarLinks kind="tournament" id={tournament.id} />
+            </div>
           </div>
 
           {error && (

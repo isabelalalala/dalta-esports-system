@@ -28,6 +28,8 @@ Full title: "DALTA Esports: Tournament Management System with AI-Powered Feedbac
 - `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`: Supabase (safe for the browser).
 - `GEMINI_API_KEY`: server only, never `NEXT_PUBLIC_`. Free key from Google AI Studio.
 - `GEMINI_MODEL`: optional, default `gemini-3.5-flash-lite`.
+- `NEXT_PUBLIC_SITE_URL`: the app's public address, e.g. `https://<app>.up.railway.app` (no trailing slash). Used
+  for link previews (metadataBase), shared links and calendar files. Defaults to http://localhost:3000.
 - All of them live in `.env.local` (git-ignored) and must also be set in Railway when deploying.
 
 ## Auth pages and Supabase settings
@@ -69,7 +71,7 @@ Enforced by a CHECK constraint on `profiles.role` (migration `202610161200_role_
 - RLS policies check roles with `public.get_my_role()`.
 
 ## Current schema (public)
-All migrations are in `supabase/migrations/` and have been run, in filename order (202610151200 … 202610171500).
+All migrations are in `supabase/migrations/` and have been run, in filename order (202610151200 … 202610171800).
 Readers: "anyone" = also logged out; "logged-in" = any role; "admin/staff" = organizers only.
 
 **Accounts (Module 1)**
@@ -202,12 +204,35 @@ Readers: "anyone" = also logged out; "logged-in" = any role; "admin/staff" = org
 - Email notifications aren't built. Resend would need an API key (server only), a verified domain (DNS), a
   Database Webhook or Edge Function on inserts, a per-user opt-out, and a line in the Privacy Notice.
 
+**Public website (editable by admins)**
+- `site_content` (key, value, updated_by, updated_at): every text on the site; the editable keys, labels and
+  fallbacks are `SITE_CONTENT_FIELDS` in `utils/site.ts` (+ `logo_path`, `about_image_path`). Anyone reads.
+- `hero_images` (carousel), `campaigns`, `events` (+ optional tournament_id), `game_divisions` (one per game),
+  `officers` (category `core_officer`/`division_head`/`coach`/`committee`, optional game_id),
+  `official_teams` + `official_team_players` (the org's showcase teams, NOT the players' app teams; one captain
+  per team). All have display_order; is_published decides visibility (players follow their team).
+  Anyone (also logged out) reads published rows; admins read all and are the only writers.
+- `games` is now readable by logged-out visitors too (division names).
+- Storage: public bucket `site-images` (PNG/JPEG/WebP/GIF, 5 MB); admins upload/replace/delete.
+- Public pages live in `app/(site)/` (layout = site header, side nav, search). They are server components that
+  read through the cached functions in `utils/site-data.ts` (`'use cache'`, `cacheLife('minutes')`, tag `site`)
+  with `createPublicClient()` from `utils/supabase/public.ts` (no login: cached code can't read cookies). That is
+  the fourth Supabase client and it is read-only. After admin edits, call the server action `refreshSite()`
+  (`app/admin/website/actions.ts`, admin-checked, `updateTag('site')`) so the change shows immediately.
+- `/admin/website` (admin): tabs Site text (`SiteTextEditor`), Carousel, Campaigns, Events, Divisions, Officers,
+  Official teams (+ players). Lists use the generic `ListEditor` (add, edit, ▲▼ order, publish, delete, images);
+  images go through `utils/site-images.ts` (`<folder>/<random>.<ext>`), and replaced/removed files are deleted.
+- Wireframe style on a dark background: theme colors `gold`, `brown`, `brownlight`, `sitebg`, `sitecard` and
+  `font-pixel` (Press Start 2P) in `app/globals.css`. Logo: `public/daltaesportslogo.jpg` unless one is uploaded.
+- `components/Footer.tsx` is the site footer on every page (texts and social links from `site_content`).
+  `components/AppHeader.tsx` hides itself on the public pages (they have their own header).
+
 **Database functions**: `get_my_role()`, `current_user_role()` (older alias of get_my_role), `search_players(game_id, search)`,
 `get_team_roster(team_id)` (name, IGN, in-game role, is_verified), `generate_bracket(tournament_id)`, `delete_own_account()`,
 `admin_delete_user(target)`, `report_activity/report_sentiment/report_engagement(...)` (Module 6), `give_privacy_consent(version)`, `review_student_verification(...)`, `activity_log_actors()` (admin filter list),
 `purge_old_activity_logs()`, `purge_old_notifications()` (SQL Editor only), `respond_to_team_invite()`,
 `transfer_team_captaincy()`, `get_my_team_invites()`, `get_team_invites()`, `check_in_match()`, `declare_forfeit()`,
-`get_needs_attention()`, `send_checkin_open_notifications()` (pg_cron only), `submit_match_result()`,
+`get_needs_attention()`, `log_export()`, `get_public_tournament()`, `get_public_calendar()`, `send_checkin_open_notifications()` (pg_cron only), `submit_match_result()`,
 `respond_to_match_result()`, `review_match_result()`.
 Business rules (roster size, registration checks, match results) are enforced by
 triggers with readable error messages.
@@ -218,15 +243,34 @@ triggers with readable error messages.
 - Tournaments: `/tournaments`, `/tournaments/create`, `/tournaments/[id]` (details, bracket, announcements,
   watch-live banner, Admin Panel), `/tournaments/[id]/edit`, `.../registrations`, `.../matches`, `.../streams`.
 - Organizers: `/matches` (Match Management overview), `/admin/users` (admin only), `/admin/feedback` (admin only),
-  `/admin/verification` (admin/staff: pending / rejected / verified students), `/admin/activity` (admin only:
+  `/admin/verification` (admin/staff: pending / rejected / verified students), `/admin/website` (admin only: public site editor), `/admin/activity` (admin only:
   activity log, 50 per page, filters by action, user and date).
 - Reports: `/analytics` (admin: filters, Generate report = calculate + save, saved reports list; staff are sent
   to engagement), `/analytics/reports/[id]` (a saved report: all three parts, Print / PDF via `window.print()`,
   Download CSV), `/analytics/engagement` (admin/staff: live stats, watching now, CSV, print).
   Report sections live in `app/analytics/` (ActivitySection, SentimentSection, EngagementSection, ReportParts).
-- Public: `/`, `/privacy`. Footer on every page: `components/Footer.tsx`; while logged in, `components/AppHeader.tsx`
+- Public website (`app/(site)/`): `/` (home), `/about`, `/divisions`, `/divisions/[game]` (official teams),
+  `/divisions/[game]/[team]`, `/events`, `/events/[id]`, `/campaigns`, `/campaigns/[id]`, `/community`,
+  `/search?q=` (tournaments, events, campaigns). Shared pieces in `components/site/`. Pages that read params or
+  searchParams put that part inside `<Suspense>`. Also public: `/privacy`.
+- Public tournament pages: `/t/[id]` (info, rules, team names, bracket, schedule, results, live stream) and
+  `/t/[id]/match/[matchId]`. Data from `get_public_tournament(id)` (`utils/public-tournament.ts`, team NAMES only;
+  teams, registrations and streams stay closed to logged-out users). Not cached (scores must be current);
+  `LiveRefresher` refreshes on match changes (Realtime) and every minute. Server-rendered times use
+  `formatDateTime(value, 'Asia/Manila')` because the server clock is UTC. Link previews: `generateMetadata` +
+  `opengraph-image.tsx` (drawn by `utils/og-card.tsx` with `next/og`).
+- Calendar files: `/calendar/match|tournament|team/[id]` (route handler, `utils/ics.ts`, no library):
+  Asia/Manila VTIMEZONE, fixed UID per match + SEQUENCE from updated_at (re-import updates), 1-hour events,
+  `webcal://` subscribe links (`components/CalendarLinks.tsx`). Data from `get_public_calendar()`.
+- `components/ShareButton.tsx`: native share sheet when available, Copy link, Share on Facebook. Footer on every page: `components/Footer.tsx`; while logged in, `components/AppHeader.tsx`
   (DALTA Esports link + `NotificationBell`) at the top. Both are in `app/layout.tsx`.
 - Everyone logged in: `/notifications`, `/privacy/consent`, `/announcements`, `/schedule`, `/live`, `/live/[id]`, `/feedback`.
+- Exports: GET `/api/exports/[type]?format=xlsx|csv&tournament=&game=` (`utils/exports.ts`, server only).
+  Types: registrations, rosters, matches (admin/staff), feedback (admin, anonymous), users (admin). Reads with the
+  user's own session (RLS) after a role check, pages through 1000-row limits, logs via `log_export()` (action
+  `export.<type>`) BEFORE sending; no log, no file. Excel via `write-excel-file` (text cells are always strings,
+  so nothing becomes a formula); CSV via `utils/csv.ts`. Times in Philippine time (UTC+8, no DST).
+  Buttons: `components/ExportButtons.tsx`.
 - API: POST `/api/feedback/classify` (admin only) sends up to 20 unclassified comments to Gemini in one request
   (`utils/gemini.ts`, server only) and saves the results as the logged-in organizer.
 - Shared: `components/` (AnnouncementCard, FacebookPlayer, StarRating, VerifiedBadge, PrivacyConsentCheckbox, TeamInvites, ReportChart (Chart.js), ReportFilters);

@@ -111,14 +111,17 @@ export function fromDateTimeInput(value: string) {
   return value ? new Date(value).toISOString() : null;
 }
 
-// Readable date and time such as "Oct 19, 2026, 2:30 PM" in the viewer's time zone
-export function formatDateTime(value: string | null | undefined) {
+// Readable date and time such as "Oct 19, 2026, 2:30 PM" in the viewer's time zone.
+// Pages rendered on the server (public pages) pass timeZone 'Asia/Manila', because the
+// server's own clock is UTC.
+export function formatDateTime(value: string | null | undefined, timeZone?: string) {
   if (!value) return 'Time TBD';
-  return new Date(value).toLocaleString(undefined, {
+  return new Date(value).toLocaleString(timeZone ? 'en-PH' : undefined, {
     month: 'short',
     day: 'numeric',
     year: 'numeric',
     hour: 'numeric',
     minute: '2-digit',
+    timeZone,
   });
 }

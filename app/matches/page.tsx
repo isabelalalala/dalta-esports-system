@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { getErrorMessage } from '@/utils/errors';
 import type { Profile, Tournament } from '@/utils/types';
 import { formatDate, getTournamentStatus, statusLabels, statusStyles } from '@/utils/tournaments';
+import ExportButtons from '@/components/ExportButtons';
 
 // Tournament with the number of matches in its bracket
 type TournamentWithMatches = Tournament & { matches: { count: number }[] };
@@ -65,7 +66,10 @@ export default function MatchesOverviewPage() {
           ← Back to Dashboard
         </Link>
 
-        <h1 className="text-4xl font-bold text-[#00d2ff] mb-8">Match Management</h1>
+        <h1 className="text-4xl font-bold text-[#00d2ff] mb-4">Match Management</h1>
+        <div className="mb-8">
+          <ExportButtons type="rosters" label="All team rosters" />
+        </div>
 
         {error && (
           <div className="mb-6 bg-red-500/10 border border-red-500 text-red-300 px-4 py-3 rounded-lg">{error}</div>

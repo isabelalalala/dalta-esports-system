@@ -10,6 +10,15 @@
   --color-green: #6bcf7f;
   --color-yellow: #ffd93d;
   --color-teal: #4ecdc4;
+
+  /* Public website (wireframe style on a dark background): the logo's yellow and brown */
+  --color-gold: #fccb35;
+  --color-brown: #5c241c;
+  --color-brownlight: #a0522d;
+  --color-sitebg: #120d0b;
+  --color-sitecard: #1f1714;
+  /* Pixel/retro font for website headings (loaded in app/layout.tsx) */
+  --font-pixel: var(--font-press-start);
 }
 
 :root {
