@@ -91,7 +91,9 @@ export default function SchedulePage() {
         <div className="min-w-0">
           <p>
             <span className={teamClass(m.team_a_id)}>{name(m.team_a_id)}</span>
-            {showScore ? (
+            {showScore && m.is_forfeit ? (
+              <span className="mx-2 text-yellow-300 text-sm">forfeit</span>
+            ) : showScore ? (
               <span className="mx-2 tabular-nums text-white">{m.score_a ?? '-'} : {m.score_b ?? '-'}</span>
             ) : (
               <span className="mx-2 text-gray-400">vs</span>

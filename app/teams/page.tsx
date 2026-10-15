@@ -5,6 +5,7 @@ import { createClient } from '@/utils/supabase/client';
 import Link from 'next/link';
 import { getErrorMessage } from '@/utils/errors';
 import type { Game, Team } from '@/utils/types';
+import TeamInvites from '@/components/TeamInvites';
 
 export default function TeamsPage() {
   const supabase = createClient();
@@ -98,6 +99,9 @@ export default function TeamsPage() {
             {showCreate ? 'Cancel' : '+ Create Team'}
           </button>
         </div>
+
+        {/* Open invites; accepting adds the new team to the list below */}
+        <TeamInvites onAnswered={() => setReloadCount((n) => n + 1)} />
 
         {error && (
           <div className="mb-6 bg-red-500/10 border border-red-500 text-red-300 px-4 py-3 rounded">

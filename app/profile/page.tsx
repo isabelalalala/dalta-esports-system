@@ -6,6 +6,8 @@ import { createClient } from '@/utils/supabase/client';
 import Link from 'next/link';
 import { getErrorMessage } from '@/utils/errors';
 import type { Game, PlayerGameProfile, Profile } from '@/utils/types';
+import VerifiedBadge from '@/components/VerifiedBadge';
+import StudentDetails from './StudentDetails';
 
 const inputClass =
   'w-full rounded-lg border border-[#00d2ff]/40 bg-[#0a0a0c] px-4 py-3 text-white placeholder-gray-500 outline-none focus:border-[#00d2ff]';
@@ -206,7 +208,16 @@ export default function ProfilePage() {
             </div>
             <div>
               <span className="block text-gray-400">Role</span>
-              <span className="capitalize">{profile.role}</span>
+              <span className="capitalize">{profile.role}</span> <VerifiedBadge verified={profile.is_verified} />
+            </div>
+            <div className="md:col-span-2">
+              <span className="block text-gray-400">Privacy</span>
+              <span>
+                {profile.privacy_consent_at
+                  ? `You agreed to the Privacy Notice on ${new Date(profile.privacy_consent_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}. `
+                  : 'You haven\'t agreed to the Privacy Notice yet. '}
+                <Link href="/privacy" className="text-[#00d2ff] underline">Read the Privacy Notice</Link>
+              </span>
             </div>
           </div>
           <div>
@@ -227,6 +238,11 @@ export default function ProfilePage() {
             Save Name
           </button>
         </form>
+
+        {/* Student verification, players only (the database also enforces this) */}
+        {profile.role === 'player' && (
+          <StudentDetails profile={profile} onSaved={() => setReloadCount((n) => n + 1)} />
+        )}
 
         {/* In-game profiles, players only (the database also enforces this) */}
         {profile.role === 'player' && (

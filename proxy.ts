@@ -17,6 +17,9 @@ const protectedRoutes = [
   /^\/live(\/.*)?$/,
   /^\/feedback(\/.*)?$/,
   /^\/analytics(\/.*)?$/,
+  /^\/notifications$/,
+  // /privacy itself is public; only the consent form needs a login
+  /^\/privacy\/consent$/,
 ];
 
 export async function proxy(request: NextRequest) {

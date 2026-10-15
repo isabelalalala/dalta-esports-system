@@ -16,6 +16,10 @@ export default function CreateTournamentPage() {
   const [gameId, setGameId] = useState('');
   const [games, setGames] = useState<Game[]>([]);
   const [maxParticipants, setMaxParticipants] = useState('');
+  // School tournaments: on by default
+  // Minutes before each match that check-in opens (0 = off)
+  const [checkinMinutes, setCheckinMinutes] = useState('30');
+  const [requiresVerification, setRequiresVerification] = useState(true);
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [registrationDeadline, setRegistrationDeadline] = useState('');
@@ -63,6 +67,8 @@ export default function CreateTournamentPage() {
           game_id: gameId,
           game: games.find((g) => g.id === gameId)?.name ?? '',
           max_participants: Number(maxParticipants),
+          requires_verification: requiresVerification,
+          checkin_window_minutes: Number(checkinMinutes),
           start_date: startDate,
           end_date: endDate,
           registration_deadline: registrationDeadline,
@@ -173,6 +179,32 @@ export default function CreateTournamentPage() {
               required
             />
           </div>
+
+          <label className="flex items-start gap-3 text-sm text-gray-300 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={requiresVerification}
+              onChange={(e) => setRequiresVerification(e.target.checked)}
+              className="mt-1 h-4 w-4 accent-[#00d2ff]"
+            />
+            <span>
+              <span className="font-semibold">Only verified students can register</span>
+              <span className="block text-gray-500">Every team member must have their student details verified first.</span>
+            </span>
+          </label>
+
+          <label className="block text-sm font-semibold text-gray-300">
+            Check-in window (minutes before each match, 0 = no check-in)
+            <input
+              type="number"
+              min="0"
+              max="240"
+              value={checkinMinutes}
+              onChange={(e) => setCheckinMinutes(e.target.value)}
+              className="mt-2 w-full rounded-lg border border-[#00d2ff]/40 bg-[#0a0a0c] px-4 py-3 text-white outline-none focus:border-[#00d2ff]"
+              required
+            />
+          </label>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>

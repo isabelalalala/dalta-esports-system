@@ -41,6 +41,16 @@ Full title: "DALTA Esports: Tournament Management System with AI-Powered Feedbac
   "Reset Password" email template link to
   `{{ .SiteURL }}/auth/callback?token_hash={{ .TokenHash }}&type=recovery&next=/auth/reset-password`.
 - Supabase's built-in email sender allows only a few emails per hour; set up custom SMTP for demos.
+- Email confirmation: keep Authentication → Sign In / Providers → Email → "Confirm email" ON, and set the minimum
+  password length to 8 (the app checks 8 too). Register works either way: no session after `signUp()` = show
+  "Check your email"; a session = go to the dashboard. The confirmation link goes through `/auth/callback` to
+  `/auth/login?confirmed=1`. Login shows a "confirm your email first" message with a resend button
+  (`utils/auth.ts`).
+- Data Privacy Act (RA 10173): `/privacy` is the public Privacy Notice; its version, contact email and contact person
+  are in `utils/privacy.ts` (the contact is still a placeholder). Register requires the consent checkbox
+  (`components/PrivacyConsentCheckbox.tsx`). The dashboard sends users without consent to the current version
+  to `/privacy/consent`. Changing `PRIVACY_NOTICE_VERSION` asks everyone to agree again.
+  Keep the notice in sync when a feature changes what data is collected or who can see it.
 
 ## Roles (stored in `profiles.role`)
 | role value | Actor in the documents |
@@ -59,18 +69,27 @@ Enforced by a CHECK constraint on `profiles.role` (migration `202610161200_role_
 - RLS policies check roles with `public.get_my_role()`.
 
 ## Current schema (public)
-All migrations are in `supabase/migrations/` and have been run, in filename order (202610151200 … 202610162300).
+All migrations are in `supabase/migrations/` and have been run, in filename order (202610151200 … 202610171500).
 Readers: "anyone" = also logged out; "logged-in" = any role; "admin/staff" = organizers only.
 
 **Accounts (Module 1)**
 - `profiles`: id (uuid, = auth.users.id, deleted with the auth user), email, role, full_name, created_at (join date),
-  updated_at. Created by the `handle_new_user()` trigger on sign-up. Read: own row; admin/staff read all.
+  updated_at, privacy_consent_at, privacy_consent_version (null = not agreed yet; set at sign-up or only through
+  `give_privacy_consent(version)`, never edited directly, not even by admins).
+  Student verification (players): student_id, school, course_year (the player edits them on `/profile`),
+  verification_status (`unsubmitted`/`pending`/`verified`/`rejected`), is_verified (generated from the status),
+  verification_note (reason shown to the player), submitted_at, reviewed_by, reviewed_at. Saving complete details
+  sets `pending`; changing them later resets to `pending` (trigger). Only admin/staff change the status, through
+  `review_student_verification(user, approve, note)` (rejecting or revoking needs a reason). One account per
+  student ID per school (unique index). Other users only see `is_verified` (roster, player search). Created by the `handle_new_user()` trigger on sign-up. Read: own row; admin/staff read all.
   Update: own row (role, id and email are protected by a trigger); admins update any.
 
 **Registration and tournaments (Module 2)**
 - `games`: id (text, e.g. `mlbb`), name, min_players, max_players. Logged-in read. Edited only in the SQL Editor.
 - `tournaments`: id, name, description, rules, game (one of the 5 game names), game_id (→ games, required),
   start_date, end_date, max_participants, registration_deadline (≤ start_date; end_date ≥ start_date),
+  requires_verification (default true; tournaments made before 202610171000 were set to false: every team member
+  must be verified to register, to be approved, and to be added to a registered team),
   status (only `upcoming` or `cancelled` is stored), created_by (→ profiles, set null when the user is deleted),
   created_at, updated_at. Anyone reads; admin/staff create and edit; only admin deletes.
   The status shown in the app (upcoming / registration closed / ongoing / completed / cancelled) is calculated
@@ -80,7 +99,15 @@ Readers: "anyone" = also logged out; "logged-in" = any role; "admin/staff" = org
 - `teams`: id, name, description, game_id (→ games), captain_id (→ profiles), created_at. UNIQUE (name, game_id).
   The captain can edit name and description; game and captain can't change. Teams in a bracket can't be deleted.
 - `team_members`: id, team_id, user_id, role (`captain`/`player`), joined_at. The captain is added automatically;
-  the captain adds players found with `search_players()`. Added players need a game profile for the team's game.
+  other players join only by accepting an invite (no insert policy). Members leave and the captain removes players
+  (delete policy), except while the team is registered (pending/approved) for a tournament that hasn't ended
+  (roster lock trigger; admin/staff are exempt). `transfer_team_captaincy(team, user)` hands over the team.
+- `team_invites`: id, team_id, invited_user_id, invited_by, status (`pending`/`accepted`/`declined`/`cancelled`),
+  created_at, responded_at. One pending invite per team+player. The captain inserts (trigger checks game profile,
+  other team for the same game, roster size, solo games) and cancels; the player answers with
+  `respond_to_team_invite(invite, accept)`, which adds them to `team_members` and cancels their other open invites
+  for that game. Names for the UI come from `get_my_team_invites()` and `get_team_invites(team)`.
+  Roster sizes are in `games` (MLBB/Valorant/LoL/CODM 5–6 incl. captain, Tekken 8 1–1 = no invites).
 - `tournament_registrations`: id, tournament_id, user_id (who registered), team_id (→ teams),
   team_name (only on old rows), status (`pending`/`approved`/`rejected`/`cancelled`, default pending), registered_at.
   UNIQUE (tournament_id, team_id). Only pending + approved count towards max_participants.
@@ -92,6 +119,26 @@ Readers: "anyone" = also logged out; "logged-in" = any role; "admin/staff" = org
   A trigger moves the winner forward; results lock once the next match starts. Byes = round-1 matches with one
   team, already completed. Anyone reads; admin/staff write. Built by `generate_bracket(tournament_id)`.
   In the `supabase_realtime` publication (live scoreboards).
+  is_forfeit (set only by `declare_forfeit(match, winner)`, admin/staff, after scheduled_at; any other result
+  change clears it), checkin_notified_at.
+- Check-in: `tournaments.checkin_window_minutes` (default 30, 0 = off). Opens that many minutes before
+  scheduled_at, closes at scheduled_at (database clock). `match_checkins` (match_id, team_id, checked_in_by,
+  checked_in_at; one per team; logged-in read; in Realtime) is written only by `check_in_match(match)` (captain of
+  either team, window open, match scheduled). Changing scheduled_at clears the check-ins.
+  pg_cron job `dalta-checkin-open-notifications` runs `send_checkin_open_notifications()` every 5 minutes.
+  `get_needs_attention()` (admin/staff) lists matches needing an organizer: `no_checkin`, `result_disputed`,
+  `result_confirmed`, `result_pending`. `/matches/[id]` is the match page (check-in, forfeit, results);
+  the dashboard "Needs attention" box (admin/staff) links to it.
+- Results: `match_result_submissions` (match_id, team_id = submitting team, submitted_by, score_a, score_b,
+  proof_path, status `pending`/`confirmed`/`disputed`/`approved`/`overridden`/`rejected`, dispute_reason,
+  responded_by/at, review_note, final_score_a/b, reviewed_by/at, created_at). One open (pending/confirmed/disputed)
+  per match. Readable by the two teams' members and staff (`can_view_match_results()`); in Realtime. Written only by
+  `submit_match_result()` (either captain, match live or past its time, screenshot already uploaded),
+  `respond_to_match_result()` (the OTHER captain; dispute needs a reason) and `review_match_result()` (admin/staff:
+  approve / override with own score / reject with a note). Approve and override complete the match (winner advances).
+- Storage: private bucket `match-proofs` (PNG/JPEG/WebP, 5 MB), paths `<match id>/<random>.<ext>`. Captains of the
+  match upload; the two teams and staff read (signed URLs); no update/delete from the app. Deleting a match or
+  tournament does NOT delete its files (remove them in Supabase Storage if needed).
 
 **Event information (Module 3)**
 - `announcements`: id, title, body, tournament_id (empty = general; deleted with the tournament), pinned,
@@ -130,27 +177,62 @@ Readers: "anyone" = also logged out; "logged-in" = any role; "admin/staff" = org
   `report_engagement()` (admin/staff). Each returns one jsonb object; the shapes are typed in `utils/reports.ts`.
   Byes don't count as matches; general feedback is left out when a tournament or game is chosen.
 
+**Activity log (audit)**
+- `activity_logs`: id, actor_id (→ profiles, set null when deleted; null = SQL Editor or self-deleted account),
+  action (e.g. `registration.approved`), entity_type, entity_id, details (jsonb: names as they were, incl.
+  actor_name; never emails or student IDs), created_at. Only admins read; no insert/update/delete policies.
+- Written only by AFTER triggers through `log_activity()` (not callable from the app): tournaments, registrations,
+  matches (results + one `bracket.generated` entry when the final is inserted), profiles (role, student review,
+  deletion), announcements, streams. Changes made by other triggers or FK cascades (`pg_trigger_depth() > 1`)
+  aren't logged, except account deletion. When adding a new loggable action, add its label and sentence to
+  `utils/activity.ts` (`ACTION_GROUPS`, `describeActivity()`).
+- Kept 1 year (Privacy Notice): run `select public.purge_old_activity_logs();` in the SQL Editor; the app can't.
+
+**Notifications**
+- `notifications`: id, user_id (→ profiles, deleted with the user), type (CHECK list; `team_invite` is reserved for
+  team invites), title, message, link (app path only), is_read, created_at. Users read their own and may update
+  ONLY `is_read` (column grant); no insert/delete from the app. In the `supabase_realtime` publication.
+- Created only by AFTER triggers through `notify_users()` (not callable from the app; skips the person who caused
+  it): registration approved/rejected → captain; match time set/changed or match live → members of both teams;
+  announcement → everyone (general) or members of teams registered for that tournament; team invite → the player;
+  invite accepted/declined, member left → the captain; removed from a team → the player; made captain → the new
+  captain; student verified/rejected/revoked → the player. (`team_added` is no longer sent.) Message texts are saved, so times are in PH time.
+  New types need the CHECK list and `notificationIcons` in `utils/notifications.ts`.
+- Cleanup: `select public.purge_old_notifications();` in the SQL Editor (read ones older than 90 days).
+- Email notifications aren't built. Resend would need an API key (server only), a verified domain (DNS), a
+  Database Webhook or Edge Function on inserts, a per-user opt-out, and a line in the Privacy Notice.
+
 **Database functions**: `get_my_role()`, `current_user_role()` (older alias of get_my_role), `search_players(game_id, search)`,
-`get_team_roster(team_id)` (name, IGN, in-game role), `generate_bracket(tournament_id)`, `delete_own_account()`,
-`admin_delete_user(target)`, `report_activity/report_sentiment/report_engagement(...)` (Module 6).
+`get_team_roster(team_id)` (name, IGN, in-game role, is_verified), `generate_bracket(tournament_id)`, `delete_own_account()`,
+`admin_delete_user(target)`, `report_activity/report_sentiment/report_engagement(...)` (Module 6), `give_privacy_consent(version)`, `review_student_verification(...)`, `activity_log_actors()` (admin filter list),
+`purge_old_activity_logs()`, `purge_old_notifications()` (SQL Editor only), `respond_to_team_invite()`,
+`transfer_team_captaincy()`, `get_my_team_invites()`, `get_team_invites()`, `check_in_match()`, `declare_forfeit()`,
+`get_needs_attention()`, `send_checkin_open_notifications()` (pg_cron only), `submit_match_result()`,
+`respond_to_match_result()`, `review_match_result()`.
 Business rules (roster size, registration checks, match results) are enforced by
 triggers with readable error messages.
 
 ## Pages and shared code
 - Auth: `/auth/*` (see above). Account: `/profile` (name, game profiles, password, delete account).
-- Players: `/teams`, `/teams/[id]`, `/registrations` (My Registrations), dashboard "My Matches".
+- Players: `/teams`, `/teams/[id]`, `/registrations` (My Registrations), dashboard "My Matches", `/matches/[id]`.
 - Tournaments: `/tournaments`, `/tournaments/create`, `/tournaments/[id]` (details, bracket, announcements,
   watch-live banner, Admin Panel), `/tournaments/[id]/edit`, `.../registrations`, `.../matches`, `.../streams`.
-- Organizers: `/matches` (Match Management overview), `/admin/users` (admin only), `/admin/feedback` (admin only).
+- Organizers: `/matches` (Match Management overview), `/admin/users` (admin only), `/admin/feedback` (admin only),
+  `/admin/verification` (admin/staff: pending / rejected / verified students), `/admin/activity` (admin only:
+  activity log, 50 per page, filters by action, user and date).
 - Reports: `/analytics` (admin: filters, Generate report = calculate + save, saved reports list; staff are sent
   to engagement), `/analytics/reports/[id]` (a saved report: all three parts, Print / PDF via `window.print()`,
   Download CSV), `/analytics/engagement` (admin/staff: live stats, watching now, CSV, print).
   Report sections live in `app/analytics/` (ActivitySection, SentimentSection, EngagementSection, ReportParts).
-- Everyone logged in: `/announcements`, `/schedule`, `/live`, `/live/[id]`, `/feedback`.
+- Public: `/`, `/privacy`. Footer on every page: `components/Footer.tsx`; while logged in, `components/AppHeader.tsx`
+  (DALTA Esports link + `NotificationBell`) at the top. Both are in `app/layout.tsx`.
+- Everyone logged in: `/notifications`, `/privacy/consent`, `/announcements`, `/schedule`, `/live`, `/live/[id]`, `/feedback`.
 - API: POST `/api/feedback/classify` (admin only) sends up to 20 unclassified comments to Gemini in one request
   (`utils/gemini.ts`, server only) and saves the results as the logged-in organizer.
-- Shared: `components/` (AnnouncementCard, FacebookPlayer, StarRating, ReportChart (Chart.js), ReportFilters);
+- Shared: `components/` (AnnouncementCard, FacebookPlayer, StarRating, VerifiedBadge, PrivacyConsentCheckbox, TeamInvites, ReportChart (Chart.js), ReportFilters);
   `utils/types.ts` (row types), `utils/reports.ts` (report types, chart colors, CSV export),
+  `utils/verification.ts` (status labels, school suggestions), `utils/activity.ts` (activity log sentences),
+  `utils/notifications.ts` (notification types, icons, read/unread), `utils/checkin.ts` (check-in window),
   `utils/tournaments.ts` (dates, status, round labels), `utils/matches.ts` (team names, round counts),
   `utils/streams.ts` (Facebook link check and embed URL), `utils/errors.ts` (`getErrorMessage`).
 - `proxy.ts` lists every page that requires login; add new protected pages there.
@@ -188,7 +270,7 @@ tables and migrations (see Current schema).
   Official Facebook viewer counts would need the Graph API (a Facebook App and page tokens). That isn't built.
 - Realtime Presence needs Realtime enabled for the project (it is, for `matches`); public channels must be allowed.
 
-After all 6 modules: restyle every page with Tailwind CSS. The home (`app/page.tsx`), login, register and dashboard pages
+After all 6 modules: restyle every page with Tailwind CSS. The home (`app/page.tsx`), dashboard and `/tournaments` pages
 still use inline styles; the rest already use Tailwind classes.
 
 Supported games: MLBB, Valorant, Tekken 8, League of Legends, CODM.

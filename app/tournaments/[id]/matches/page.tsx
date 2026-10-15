@@ -17,6 +17,8 @@ export default function MatchManagementPage() {
   const [matches, setMatches] = useState<Match[]>([]);
   // Team id -> team name, for the teams that appear in the bracket
   const [teamNames, setTeamNames] = useState<Record<string, string>>({});
+  // Match id -> how many teams checked in
+  const [checkinCounts, setCheckinCounts] = useState<Record<string, number>>({});
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -69,6 +71,18 @@ export default function MatchManagementPage() {
             .in('id', [...teamIds]);
           if (teamsError) throw teamsError;
           setTeamNames(Object.fromEntries((teamsData || []).map((t) => [t.id, t.name])));
+        }
+
+        const matchIds = (matchesData || []).map((m) => m.id);
+        if (matchIds.length > 0) {
+          const { data: checkinsData, error: checkinsError } = await supabase
+            .from('match_checkins')
+            .select('match_id')
+            .in('match_id', matchIds);
+          if (checkinsError) throw checkinsError;
+          const counts: Record<string, number> = {};
+          for (const c of checkinsData || []) counts[c.match_id] = (counts[c.match_id] || 0) + 1;
+          setCheckinCounts(counts);
         }
       } catch (err) {
         setError(getErrorMessage(err, 'Failed to load matches'));
@@ -130,6 +144,7 @@ export default function MatchManagementPage() {
                         key={`${match.id}-${match.updated_at}`}
                         match={match}
                         teamNames={teamNames}
+                        checkinCount={tournament.checkin_window_minutes > 0 ? checkinCounts[match.id] ?? 0 : null}
                         onSaved={() => setReloadCount((n) => n + 1)}
                       />
                     ))}
@@ -147,10 +162,13 @@ export default function MatchManagementPage() {
 function MatchCard({
   match,
   teamNames,
+  checkinCount,
   onSaved,
 }: {
   match: Match;
   teamNames: Record<string, string>;
+  // Teams checked in (0-2), or null when the tournament has no check-in
+  checkinCount: number | null;
   onSaved: () => void;
 }) {
   const supabase = createClient();
@@ -223,9 +241,18 @@ function MatchCard({
 
   return (
     <form onSubmit={handleSave} className={`bg-[#1a1a2e] border rounded-lg p-4 space-y-3 ${statusColor}`}>
-      <div className="flex justify-between items-center">
-        <p className="text-xs uppercase font-bold text-gray-400">Match {match.match_number}</p>
+      <div className="flex justify-between items-center gap-2">
+        <p className="text-xs uppercase font-bold text-gray-400">
+          Match {match.match_number}
+          {match.is_forfeit && <span className="ml-2 text-yellow-300">Forfeit</span>}
+        </p>
         <p className="text-xs text-gray-400">{formatDateTime(match.scheduled_at)}</p>
+      </div>
+      <div className="flex justify-between items-center gap-2 text-xs">
+        {checkinCount !== null && bothTeamsKnown && match.status !== 'completed' ? (
+          <span className={checkinCount === 2 ? 'text-green-300' : 'text-gray-400'}>Check-in: {checkinCount} / 2</span>
+        ) : <span />}
+        <Link href={`/matches/${match.id}`} className="text-[#00d2ff] hover:underline font-semibold">Open match →</Link>
       </div>
 
       {/* Teams and scores */}

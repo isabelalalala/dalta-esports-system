@@ -124,7 +124,12 @@ export default function MyMatches({ userId }: { userId: string }) {
                     · {roundLabel(m.round, roundCounts[m.tournament_id] || m.round)}
                   </p>
                 </div>
-                <p className="text-sm text-gray-300 sm:text-right">{formatDateTime(m.scheduled_at)}</p>
+                <div className="text-sm sm:text-right">
+                  <p className="text-gray-300">{formatDateTime(m.scheduled_at)}</p>
+                  <Link href={`/matches/${m.id}`} className="text-[#00d2ff] hover:underline font-semibold">
+                    Match page (check-in, result) →
+                  </Link>
+                </div>
               </li>
             );
           })}

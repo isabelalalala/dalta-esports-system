@@ -6,8 +6,11 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import MyMatches from './MyMatches'
 import LatestAnnouncements from './LatestAnnouncements'
+import TeamInvites from '@/components/TeamInvites'
+import NeedsAttention from './NeedsAttention'
 import type { User } from '@supabase/supabase-js'
 import type { Profile } from '@/utils/types'
+import { PRIVACY_NOTICE_VERSION } from '@/utils/privacy'
 
 export default function Dashboard() {
   const supabase = createClient()
@@ -32,6 +35,13 @@ export default function Dashboard() {
         .select('*')
         .eq('id', data.session.user.id)
         .single()
+
+      // Data Privacy Act: users who haven't agreed to the current Privacy Notice
+      // (older or admin-added accounts, or the notice changed) are asked first.
+      if (profileData && (!profileData.privacy_consent_at || profileData.privacy_consent_version !== PRIVACY_NOTICE_VERSION)) {
+        router.replace('/privacy/consent')
+        return
+      }
 
       setProfile(profileData)
       setLoading(false)
@@ -152,6 +162,9 @@ export default function Dashboard() {
           </div>
         </div>
 
+        {/* Open team invites (shows nothing when there are none) */}
+        {profile?.role === 'player' && <TeamInvites />}
+
         {profile?.role === 'player' && (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1.5rem' }}>
             <Link href="/tournaments" style={{ textDecoration: 'none' }}>
@@ -258,10 +271,27 @@ export default function Dashboard() {
       </Link>
     )}
 
+    {/* Admin only: the activity log is readable by admins only (RLS) */}
+    {profile?.role === 'admin' && (
+      <Link href="/admin/activity" style={{ textDecoration: 'none' }}>
+        <div style={{ background: '#1a1a2e', padding: '1.5rem', borderRadius: '12px', border: '1px solid #ffd93d', cursor: 'pointer' }}>
+          <h3 style={{ color: '#ffd93d', marginBottom: '1rem' }}>🕵️ Activity Log</h3>
+          <p style={{ color: '#aaa' }}>Who did what, and when</p>
+        </div>
+      </Link>
+    )}
+
     <Link href="/matches" style={{ textDecoration: 'none' }}>
       <div style={{ background: '#1a1a2e', padding: '1.5rem', borderRadius: '12px', border: '1px solid #ffd93d', cursor: 'pointer' }}>
         <h3 style={{ color: '#ffd93d', marginBottom: '1rem' }}>🎮 Match Management</h3>
         <p style={{ color: '#aaa' }}>Schedule and manage matches</p>
+      </div>
+    </Link>
+
+    <Link href="/admin/verification" style={{ textDecoration: 'none' }}>
+      <div style={{ background: '#1a1a2e', padding: '1.5rem', borderRadius: '12px', border: '1px solid #ffd93d', cursor: 'pointer' }}>
+        <h3 style={{ color: '#ffd93d', marginBottom: '1rem' }}>🎓 Student Verification</h3>
+        <p style={{ color: '#aaa' }}>Verify players&apos; student details</p>
       </div>
     </Link>
 
@@ -297,6 +327,8 @@ export default function Dashboard() {
     </Link>
   </div>
 )}
+
+        {(profile?.role === 'admin' || profile?.role === 'staff') && <NeedsAttention />}
 
         {/* Shown for every role */}
         <LatestAnnouncements />

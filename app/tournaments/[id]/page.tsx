@@ -6,10 +6,11 @@ import { createClient } from '@/utils/supabase/client';
 import Link from 'next/link';
 import { getErrorMessage } from '@/utils/errors';
 import { ACTIVE_REGISTRATION_STATUSES } from '@/utils/types';
-import type { Announcement, Match, Profile, Registration, Stream, Team, Tournament } from '@/utils/types';
+import type { Announcement, Match, Profile, Registration, RosterMember, Stream, Team, Tournament } from '@/utils/types';
 import { formatDate, getTournamentStatus, statusLabels, statusStyles } from '@/utils/tournaments';
 import Bracket from './Bracket';
 import AnnouncementCard from '@/components/AnnouncementCard';
+import VerifiedBadge from '@/components/VerifiedBadge';
 
 export default function TournamentDetailsPage() {
   const supabase = createClient();
@@ -23,6 +24,9 @@ export default function TournamentDetailsPage() {
   const [showForm, setShowForm] = useState(false);
   const [teams, setTeams] = useState<Team[]>([]);
   const [selectedTeamId, setSelectedTeamId] = useState('');
+  // Members of the selected team who aren't verified students yet (for tournaments that require it).
+  // teamId says which team the list belongs to, so an old list is never shown for another team.
+  const [unverified, setUnverified] = useState<{ teamId: string; members: RosterMember[] } | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [matches, setMatches] = useState<Match[]>([]);
@@ -143,6 +147,19 @@ export default function TournamentDetailsPage() {
     if (id) fetchData();
   }, [id, router, supabase, reloadCount]);
 
+  // When the captain picks a team, list the members who still need verification.
+  // Only a convenience: the database refuses the registration anyway.
+  const requiresVerification = tournament?.requires_verification ?? false;
+  useEffect(() => {
+    if (!selectedTeamId || !requiresVerification) return;
+    const check = async () => {
+      const { data, error: rosterError } = await supabase.rpc('get_team_roster', { p_team_id: selectedTeamId });
+      if (rosterError) return;
+      setUnverified({ teamId: selectedTeamId, members: (data as RosterMember[]).filter((m) => !m.is_verified) });
+    };
+    check();
+  }, [selectedTeamId, requiresVerification, supabase]);
+
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedTeamId) return;
@@ -246,6 +263,9 @@ export default function TournamentDetailsPage() {
   const status = getTournamentStatus(tournament);
   const approvedTeams = registrations.filter((r) => r.status === 'approved');
   const isFull = tournament.max_participants != null && registrations.length >= tournament.max_participants;
+  // Selected team's members who must be verified before it can register
+  const blockingMembers =
+    tournament.requires_verification && selectedTeamId && unverified?.teamId === selectedTeamId ? unverified.members : [];
   const roundCount = matches.reduce((max, m) => Math.max(max, m.round), 0);
 
   // Why the register form is hidden ('' = registration is open)
@@ -279,6 +299,11 @@ export default function TournamentDetailsPage() {
               <span className={`px-3 py-1 rounded-full border text-xs font-bold uppercase ${statusStyles[status]}`}>
                 {statusLabels[status]}
               </span>
+              {tournament.requires_verification && (
+                <span className="px-3 py-1 rounded-full border border-[#3987e5]/60 bg-[#3987e5]/15 text-[#8fbcf2] text-xs font-bold uppercase">
+                  ✓ Verified students only
+                </span>
+              )}
             </div>
             {tournament.description && (
               <p className="text-gray-300 text-lg whitespace-pre-wrap">{tournament.description}</p>
@@ -470,10 +495,28 @@ export default function TournamentDetailsPage() {
                 )}
               </div>
 
+              {blockingMembers.length > 0 && (
+                <div className="bg-yellow-500/10 border border-yellow-500 text-yellow-200 px-4 py-3 rounded space-y-2">
+                  <p>
+                    This tournament only accepts verified students. These members need to submit their student details
+                    on their Profile and be verified by an organizer first:
+                  </p>
+                  <ul className="space-y-1">
+                    {blockingMembers.map((m) => (
+                      <li key={m.user_id} className="flex items-center gap-2">
+                        <span className="font-semibold">{m.ign || m.full_name || 'Unnamed player'}</span>
+                        {m.ign && m.full_name && <span className="text-yellow-200/70">({m.full_name})</span>}
+                        <VerifiedBadge verified={false} showUnverified />
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
               <div className="flex gap-2">
                 <button
                   type="submit"
-                  disabled={registering || teams.length === 0}
+                  disabled={registering || teams.length === 0 || blockingMembers.length > 0}
                   className="bg-[#00d2ff] text-black px-6 py-2 rounded font-bold hover:bg-[#00b8e6] transition disabled:opacity-50"
                 >
                   {registering ? 'Processing...' : 'Confirm Registration'}

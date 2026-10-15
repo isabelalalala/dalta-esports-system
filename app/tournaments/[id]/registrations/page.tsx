@@ -6,7 +6,7 @@ import { createClient } from '@/utils/supabase/client';
 import Link from 'next/link';
 import { getErrorMessage } from '@/utils/errors';
 import { ACTIVE_REGISTRATION_STATUSES } from '@/utils/types';
-import type { Registration, RegistrationStatus, Tournament } from '@/utils/types';
+import type { Registration, RegistrationStatus, Team, Tournament } from '@/utils/types';
 
 const statusStyles: Record<RegistrationStatus, string> = {
   pending: 'bg-yellow-500/15 text-yellow-300 border-yellow-500/50',
@@ -40,9 +40,10 @@ export default function RegistrationsPage() {
 
         // Registrations with their team, the team's game, member count and captain.
         // The captain's name is only readable by admin/staff (profiles RLS).
+        // members: each member's verification, for the "x / y verified" count.
         const { data: regsData, error: regsError } = await supabase
           .from('tournament_registrations')
-          .select('*, teams(*, games(*), team_members(count), captain:profiles(full_name, email))')
+          .select('*, teams(*, games(*), team_members(count), captain:profiles(full_name, email), members:team_members(profiles(is_verified)))')
           .eq('tournament_id', id)
           .order('registered_at', { ascending: false });
 
@@ -168,6 +169,7 @@ export default function RegistrationsPage() {
                       {reg.teams && (
                         <span className="block text-gray-500 text-sm font-normal">
                           {reg.teams.team_members?.[0]?.count || 0} / {reg.teams.games?.max_players} players
+                          {tournament?.requires_verification && <VerifiedCount team={reg.teams} />}
                         </span>
                       )}
                     </div>
@@ -226,5 +228,16 @@ export default function RegistrationsPage() {
         )}
       </div>
     </div>
+  );
+}
+
+// "· 3 / 5 verified" for tournaments that only accept verified students
+function VerifiedCount({ team }: { team: Team }) {
+  const members = team.members ?? [];
+  const verified = members.filter((m) => m.profiles?.is_verified).length;
+  return (
+    <span className={verified === members.length ? 'text-[#8fbcf2]' : 'text-yellow-300'}>
+      {' · '}{verified} / {members.length} verified
+    </span>
   );
 }

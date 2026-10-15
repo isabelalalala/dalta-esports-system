@@ -75,7 +75,7 @@ function MatchBox({ match, teamNames }: { match: Match; teamNames: Record<string
             } ${teamId === null ? 'italic text-gray-500' : ''}`}
           >
             <span className="truncate">{name}</span>
-            <span className="tabular-nums">{score ?? ''}</span>
+            <span className="tabular-nums">{won && match.is_forfeit ? 'FF' : score ?? ''}</span>
           </div>
         );
       })}

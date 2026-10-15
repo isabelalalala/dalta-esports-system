@@ -1,78 +1,116 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import Link from 'next/link'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/utils/supabase/client'
 import { getErrorMessage } from '@/utils/errors'
-import { useRouter } from 'next/navigation'
+import { confirmEmailRedirect, isEmailNotConfirmed } from '@/utils/auth'
+
+const inputClass = 'w-full p-3 bg-[#0a0a0c] text-white border border-[#00d2ff] rounded-lg'
 
 export default function Login() {
   const supabase = createClient()
+  const router = useRouter()
+  // ?confirmed=1: the user came from the "confirm your email" link
+  const confirmed = useSearchParams().get('confirmed') === '1'
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
+  // Set when the login failed because the email isn't confirmed yet
+  const [notConfirmed, setNotConfirmed] = useState(false)
+  const [resendMessage, setResendMessage] = useState('')
   const [loading, setLoading] = useState(false)
-  const router = useRouter()
+
+  // The confirmation link usually logs the user in already (same browser): go straight on.
+  useEffect(() => {
+    if (!confirmed) return
+    const check = async () => {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (session) router.replace('/dashboard')
+    }
+    check()
+  }, [confirmed, router, supabase])
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
+    setNotConfirmed(false)
+    setResendMessage('')
     setLoading(true)
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      })
-
+      const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password })
       if (error) throw error
-
       router.push('/dashboard')
     } catch (err) {
-      setError(getErrorMessage(err, 'Login failed'))
+      if (isEmailNotConfirmed(err)) {
+        setNotConfirmed(true)
+      } else {
+        setError(getErrorMessage(err, 'Login failed'))
+      }
     } finally {
       setLoading(false)
     }
   }
 
+  const handleResend = async () => {
+    setResendMessage('')
+    const { error } = await supabase.auth.resend({
+      type: 'signup',
+      email: email.trim(),
+      options: { emailRedirectTo: confirmEmailRedirect() },
+    })
+    setResendMessage(error ? getErrorMessage(error, 'Could not resend the email.') : 'Sent. Check your inbox and spam folder.')
+  }
+
   return (
-    <div style={{ minHeight: '100vh', display: 'grid', placeItems: 'center', background: '#0a0a0c' }}>
-      <form onSubmit={handleLogin} style={{ width: '100%', maxWidth: '400px', padding: '2rem', background: '#1a1a2e', borderRadius: '12px', boxShadow: '0 0 30px rgba(0, 210, 255, 0.1)' }}>
-        <h1 style={{ color: '#00d2ff', marginBottom: '2rem', textAlign: 'center' }}>Login</h1>
+    <div className="min-h-screen grid place-items-center bg-[#0a0a0c] px-4">
+      <form
+        onSubmit={handleLogin}
+        className="w-full max-w-md bg-[#1a1a2e] rounded-xl p-8 shadow-[0_0_30px_rgba(0,210,255,0.1)] space-y-4"
+      >
+        <h1 className="text-[#00d2ff] text-2xl font-bold text-center mb-4">Login</h1>
 
-        {error && <div style={{ background: '#ff4444', color: 'white', padding: '0.75rem', borderRadius: '8px', marginBottom: '1rem' }}>{error}</div>}
+        {confirmed && !notConfirmed && !error && (
+          <div className="bg-green-500/10 border border-green-500 text-green-300 px-3 py-2 rounded-lg">
+            Thanks for confirming your email. You can log in now.
+          </div>
+        )}
 
-        <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          style={{ width: '100%', padding: '0.75rem', marginBottom: '1rem', background: '#0a0a0c', color: 'white', border: '1px solid #00d2ff', borderRadius: '8px' }}
-          required
-        />
+        {error && <div className="bg-[#ff4444] text-white px-3 py-2 rounded-lg">{error}</div>}
 
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          style={{ width: '100%', padding: '0.75rem', marginBottom: '1.5rem', background: '#0a0a0c', color: 'white', border: '1px solid #00d2ff', borderRadius: '8px' }}
-          required
-        />
+        {notConfirmed && (
+          <div className="bg-yellow-500/10 border border-yellow-500 text-yellow-200 px-3 py-2 rounded-lg space-y-2">
+            <p>
+              Please confirm your email first. Open the link we sent to{' '}
+              <span className="font-semibold">{email.trim()}</span> when you registered.
+            </p>
+            <button type="button" onClick={handleResend} className="underline font-semibold">
+              Resend confirmation email
+            </button>
+            {resendMessage && <p className="text-sm">{resendMessage}</p>}
+          </div>
+        )}
+
+        <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)}
+          className={inputClass} autoComplete="email" required />
+        <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)}
+          className={inputClass} autoComplete="current-password" required />
 
         <button
           type="submit"
           disabled={loading}
-          style={{ width: '100%', padding: '0.75rem', background: '#00d2ff', color: '#000', fontWeight: 'bold', border: 'none', borderRadius: '8px', cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.6 : 1 }}
+          className="w-full p-3 bg-[#00d2ff] text-black font-bold rounded-lg disabled:opacity-60 disabled:cursor-not-allowed"
         >
           {loading ? 'Signing in...' : 'Sign In'}
         </button>
 
-        <p style={{ textAlign: 'center', marginTop: '1rem' }}>
-          <a href="/auth/forgot-password" style={{ color: '#00d2ff', textDecoration: 'none' }}>Forgot password?</a>
+        <p className="text-center">
+          <Link href="/auth/forgot-password" className="text-[#00d2ff]">Forgot password?</Link>
         </p>
-
-        <p style={{ textAlign: 'center', marginTop: '0.5rem', color: '#ccc' }}>
-          Don&apos;t have an account? <a href="/auth/register" style={{ color: '#00d2ff', textDecoration: 'none' }}>Register</a>
+        <p className="text-center text-gray-300">
+          Don&apos;t have an account? <Link href="/auth/register" className="text-[#00d2ff]">Register</Link>
         </p>
       </form>
     </div>

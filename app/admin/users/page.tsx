@@ -254,6 +254,12 @@ function UserRow({ user, isMe, onChanged }: { user: Profile; isMe: boolean; onCh
         <span className="md:hidden">Joined </span>
         {/* created_at is a real moment in time, so show it in the viewer's time zone */}
         {new Date(user.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+        {/* Data Privacy Act consent; only the user can give it (see /privacy/consent) */}
+        <span className="block text-xs text-gray-500">
+          {user.privacy_consent_at
+            ? `Privacy consent ${new Date(user.privacy_consent_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}`
+            : 'No privacy consent yet'}
+        </span>
       </div>
 
       {/* Actions */}
