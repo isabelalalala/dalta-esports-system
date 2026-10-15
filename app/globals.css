@@ -1,5 +1,17 @@
 @import "tailwindcss";
 
+/* DALTA brand colors, e.g. bg-cyan, text-darkbg, border-darkcard.
+   Single names like --color-red don't remove Tailwind's red-500 etc. */
+@theme {
+  --color-cyan: #00d2ff;
+  --color-darkbg: #0a0a0c;
+  --color-darkcard: #1a1a2e;
+  --color-red: #ff4444;
+  --color-green: #6bcf7f;
+  --color-yellow: #ffd93d;
+  --color-teal: #4ecdc4;
+}
+
 :root {
   --background: #ffffff;
   --foreground: #171717;
@@ -24,3 +36,4 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
