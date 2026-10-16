@@ -9,6 +9,7 @@ export default function FacebookPlayer({ url, title }: { url: string; title: str
         <iframe
           src={facebookEmbedUrl(url)}
           title={title}
+          loading="lazy"
           className="absolute inset-0 w-full h-full border-0"
           allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
           allowFullScreen

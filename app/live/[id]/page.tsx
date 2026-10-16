@@ -129,17 +129,24 @@ export default function WatchStreamPage() {
 
     // Any change to this tournament's matches (a score saved, a match going live)
     // reloads the scoreboard. Reloading is simpler than patching the list by hand.
+    // Advancing a winner writes several match rows — coalesce to one reload.
+    let timer: ReturnType<typeof setTimeout> | null = null;
+    const reload = () => {
+      if (timer) clearTimeout(timer);
+      timer = setTimeout(() => { loadMatches(); }, 500);
+    };
     const channel = supabase
       .channel(`watch-${tournamentId}`)
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'matches', filter: `tournament_id=eq.${tournamentId}` },
-        () => { loadMatches(); }
+        reload
       )
       .subscribe((status) => setRealtimeOn(status === 'SUBSCRIBED'));
 
     // Stop listening when leaving the page
     return () => {
+      if (timer) clearTimeout(timer);
       supabase.removeChannel(channel);
     };
   }, [supabase, tournamentId, matchId]);
