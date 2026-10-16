@@ -2,7 +2,7 @@
 
 ## Verdict
 
-Privacy design is genuinely solid (versioned consent, DB-enforced single write path, honest notice covering most of the schema) but **not submission-ready**: the privacy contact is a self-admitted placeholder, the consent gate is enforced on `/dashboard` only (every other page still works — and still collects data — without consent), match-proof screenshots persist forever with no disclosure or deletion path, and public-site officer/player names+photos are published outside the notice entirely.
+Privacy design is genuinely solid (versioned consent, DB-enforced single write path, honest notice covering most of the schema). All five Required items below are now resolved: the contact is env-configurable (`NEXT_PUBLIC_PRIVACY_CONTACT_*`, real values still to be set before launch), the consent gate runs in `proxy.ts` on every protected page, and the notice discloses match-proof retention, public officers/players, export scope and check-ins (`PRIVACY_NOTICE_VERSION` bumped to `2026-10-18.2` to force re-consent).
 
 ## Checked
 
@@ -17,15 +17,15 @@ Privacy design is genuinely solid (versioned consent, DB-enforced single write p
 
 **Required**
 
-1. **Privacy contact is a confirmed placeholder.** `utils/privacy.ts:12–13` — `PRIVACY_CONTACT_EMAIL = 'its.molino@perpetualdalta.edu.ph'` sits under an explicit `// TODO: replace with the organization's real contact before going live.` `PRIVACY_CONTACT_PERSON = 'DALTA Esports Data Privacy Officer'` (`utils/privacy.ts:14`) is a role title, not a named DPO. CLAUDE.md:57 confirms "(the contact is still a placeholder)". Rendered verbatim on the public notice (`app/privacy/page.tsx:32–33`, mailto at :168). Under RA 10173 the notice should name a reachable data protection contact — must be fixed before demo/go-live.
+1. ~~**Privacy contact is a confirmed placeholder.**~~ **PARTIALLY RESOLVED** — `utils/privacy.ts` now reads `NEXT_PUBLIC_PRIVACY_CONTACT_EMAIL`/`NEXT_PUBLIC_PRIVACY_CONTACT_PERSON` (documented in `.env.example`/`.env.local`/CLAUDE.md). The fallbacks remain placeholders, so the remaining task is operational: set the real values in `.env.local` and Railway before launch.
 
-2. **Consent enforcement exists only on `/dashboard`.** The sole version/consent check in the codebase is `app/dashboard/page.tsx:124–127` (`privacy_consent_version !== PRIVACY_NOTICE_VERSION` → `router.replace('/privacy/consent')`); grep confirms no other page or component enforces it. `proxy.ts:57–62` checks only authentication, not consent. A non-consented user (pre-notice account, admin-created account, or a user whose notice version went stale) can still directly open `/teams`, `/feedback`, `/live/[id]`, `/profile`, etc. and trigger personal-data writes: `stream_views` insert (`app/live/[id]/page.tsx:47–52`), `feedback` insert (`202610162200` policies), `predictions` insert, `gemini_calls` rows. Consent gating is advisory, not enforced — processing continues without valid consent. Consider enforcing in `proxy.ts` or a shared layout check.
+2. ~~**Consent enforcement exists only on `/dashboard`.**~~ **RESOLVED** — `proxy.ts` now checks `profiles.privacy_consent_version` against `PRIVACY_NOTICE_VERSION` on every protected page (one PK lookup; `/privacy/consent` exempt to avoid a loop) and redirects to `/privacy/consent`. The dashboard check remains as a client-side fallback.
 
-3. **Match-proof screenshots are retained forever and this is undisclosed — and the notice is internally inconsistent about it.** The `match-proofs` bucket has no update/delete policy at all: "No update or delete policies: proofs can't be replaced or removed from the app" (`202610171500_match_results.sql:99`); CLAUDE.md states deleting a match/tournament does not delete the files. On account deletion only `submitted_by`/`responded_by`/`reviewed_by` are nulled (`202610171500:108,115,121`) — the submission row and the file itself persist. Notice §6 lists what is deleted and kept (`app/privacy/page.tsx:132–141`) but never mentions screenshots; worse, "Kept as event records: … match results, which show team names, not personal data" (:140–141) contradicts §2's own admission that screenshots "can show in-game names" (:48–49). Personal data (IGNs in images) outlives the account with no retention limit and no deletion path — needs a §6 line and ideally a manual purge procedure.
+3. ~~**Match-proof screenshots are retained forever and this is undisclosed.**~~ **RESOLVED (disclosure)** — §6 now states screenshots stay as event records indefinitely (may show in-game names) and that organizers remove files manually from storage. The internal contradiction is gone. Still absent by design: an in-app deletion path (the bucket intentionally has no update/delete policy).
 
-4. **Public website publishes named/photographed people the notice doesn't mention.** `officers` (`name`, `position`, `photo_path`) and `official_team_players` (`name`, `ign`, `role`, `photo_path`) are readable by `anon` when published (`202610171600_public_website.sql:99–133`; anon policies :151–171; public `site-images` bucket :201–206). Notice §4's "anyone" list (`app/privacy/page.tsx:87–89`) covers only tournament details, brackets, team names and pick'em splits — not officers' real names/photos or official rosters on `/about`, `/divisions/[game]/[team]`. These people may not even be app users, so no consent flow covers them at all.
+4. ~~**Public website publishes named/photographed people the notice doesn't mention.**~~ **RESOLVED (disclosure)** — §4's "anyone" list now covers officers'/official players' names, positions, in-game roles and photos. Remaining real-world caveat: officers/players may not be app users, so their consent is an offline matter the app cannot record.
 
-5. **Download disclosure understates export scope.** Notice §4: "Organizers may download lists (registrations, team rosters, schedules and results)" (`app/privacy/page.tsx:106–107`). Actual exports (`utils/exports.ts:12`) also include `users` — full_name, **email, student_id, school, course_year, privacy_consent_at** for every account (`utils/exports.ts:397–419`, admin-only) — and `feedback` with full comment text (`utils/exports.ts:361–395`, admin). The registrations export itself embeds member `student_id`/`school`/`course_year` (`utils/exports.ts:249–254`). The notice should enumerate account-list and feedback exports, since emails and student IDs leaving the system in files is the highest-risk flow it has.
+5. ~~**Download disclosure understates export scope.**~~ **RESOLVED** — §4 now enumerates the registrations export (member student ID/school/course-year), the admin account-list export (names, emails, student details, consent date) and the feedback export (comment text).
 
 **Nit:**
 
@@ -33,9 +33,9 @@ Privacy design is genuinely solid (versioned consent, DB-enforced single write p
 
 7. **`give_privacy_consent` accepts any version string.** Only non-empty is required (`202610170900:102–104`); nothing ties `p_version` to the real `PRIVACY_NOTICE_VERSION`. Self-limiting (a wrong value re-triggers the dashboard redirect) but means the stored version is whatever the caller claimed.
 
-8. **`match_checkins` readable by every logged-in user** — `using (true)` select policy (`202610171400:41–44`) exposes `checked_in_by` + `checked_in_at`; §4 doesn't list check-ins under "who can see it".
+8. ~~**`match_checkins` readable by every logged-in user**~~ **RESOLVED (disclosure)** — §4 now lists check-ins ("who checked in for a match and when") under logged-in visibility. The `using (true)` policy itself is unchanged.
 
-9. **Team-invite history persists undisclosed.** "No delete policy: answered invites stay as history" (`202610171300:68`); `invited_by` only nulled on deletion (:23). Not mentioned in §2 or §6.
+9. ~~**Team-invite history persists undisclosed.**~~ **RESOLVED** — §6 now notes answered team invitations are kept as history.
 
 10. **"This note is deleted after one day" is slightly overstated.** `gemini_calls` rows do purge after 1 day (`202610181000:196`), matching `app/privacy/page.tsx:52–53`, but `feedback.analysis_attempts/analysis_error/analysis_attempted_at` (`202610181000:36–38`) persist on the feedback row indefinitely.
 
