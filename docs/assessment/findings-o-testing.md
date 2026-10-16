@@ -15,9 +15,9 @@ Zero automated tests, zero CI, no seed/harness — every safety-critical behavio
 - `supabase/` — only `migrations/` (25 files); **no `config.toml`, no `seed.sql`** → no local Supabase harness
 - `scripts/` — does not exist
 - `utils/types.ts` — hand-written ("Keep these in sync with the database schema", line 1); no generated `database.types.ts`
-- `README.md` — stock create-next-app boilerplate, no test/UAT docs; `docs/requirements.md` — no test plan
+- ~~`README.md` — stock create-next-app boilerplate~~ — since rewritten with real setup instructions; `docs/requirements.md` — no test plan
 - Spot-checked ~10 of 43 `.rpc()` call sites in `app/`/`components/`/`utils/` for error handling
-- **Could not run** `npx tsc --noEmit` or `npm run lint`: `node_modules` is not installed in this checkout (no `node_modules/next/package.json`, no `next-env.d.ts`) and the audit environment had no shell exec tool
+- ~~**Could not run** `npx tsc --noEmit` or `npm run lint`~~ — **since run and verified clean** (see Required below): `npm install` → `npx next typegen` → `tsc --noEmit` zero errors; `eslint` zero warnings
 
 ## Findings
 

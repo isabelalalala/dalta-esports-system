@@ -38,7 +38,8 @@ a missing URL/key crashes every route and fails `next build` during prerender.
 The three base tables — `profiles`, `tournaments`, `tournament_registrations` — were
 created by hand and are **not** in any migration file. On a fresh Supabase project you
 must recreate them (plus their RLS policies) in the SQL Editor *before* running
-migrations; the very first migration (`202610151200`) already alters them.
+migrations; the very first migration (`202610151200`) already references them. Column
+definitions are documented in the schema section of `CLAUDE.md`.
 
 Then, in order:
 

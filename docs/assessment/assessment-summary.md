@@ -26,7 +26,7 @@ find.
 | # | Area | Finding | Evidence |
 |---|------|---------|----------|
 | 1 | B | **Open redirect in `/auth/callback`** — `next=/\evil.com` passes the `startsWith('/')` + `!startsWith('//')` check; WHATWG URL parsing treats `\` as a separator → off-site redirect after any email link. | `app/auth/callback/route.ts:21,33` — findings-b |
-| 2 | M | **Fresh Supabase project cannot run this repo** — `profiles`/`tournaments`/`tournament_registrations` have no `CREATE TABLE` anywhere; first migration fails (`alter table public.tournaments` inside a transaction). Base schema exists nowhere in the repo. | `202610151200:88`; findings-a/m/n |
+| 2 | M | **Fresh Supabase project cannot run this repo** — `profiles`/`tournaments`/`tournament_registrations` have no `CREATE TABLE` anywhere; first migration fails (`language sql` function reading `profiles`, validated at CREATE under `check_function_bodies`, inside a transaction). Base schema exists nowhere in the repo. | `202610151200:44`; findings-a/m/n |
 | 3 | M | **No Node.js pin** — Nixpacks defaults to Node 18; Next 16 requires ≥20.9 → Railway build fails. | `package.json` (no engines/.nvmrc) — findings-m |
 | 4 | O | **Zero test infrastructure** — no test runner, no CI, no seed/harness; all tournament-integrity logic (bracket gen, winner advance, result lock, pick'em, RLS) lives in untested Postgres. Five TS functions duplicate DB rules with only a comment as contract. | `package.json`; findings-o |
 | 5 | N | ~~README boilerplate~~ — **RESOLVED** (rewritten with real setup). | — |
@@ -143,7 +143,7 @@ behavior, actual DB query plans/row counts.
 
 ## Remediation priority (recommended order)
 
-1. **Deploy blockers** — add `engines`/`/.nvmrc` (Node ≥20.9); document or migrate
+1. **Deploy blockers** — add `engines` or `.nvmrc` (Node ≥20.9); document or migrate
    the three base tables (README now covers the caveat; a `schema.sql` bootstrap is better).
 2. **Security fix** — tighten the `/auth/callback` `next` allowlist (reject `\`,
    or parse+compare `URL` origin).

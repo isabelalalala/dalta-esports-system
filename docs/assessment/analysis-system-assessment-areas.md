@@ -1,11 +1,6 @@
----
-agent: devin-local
-session: intriguing-blizzard
-created: 2026-10-16T13:38:47Z
----
 # Analysis — Comprehensive Assessment Areas for DALTA Esports System
 
-Temp overview listing the areas worth assessing in this codebase, grounded in the actual files, tables, and RPCs present. Purpose: decide scope before running a real audit. Each entry names what to check, where to look, and how to verify.
+Scope overview for the audit documented in this folder, grounded in the actual files, tables, and RPCs present. Each entry names what to check, where to look, and how to verify. The per-area results are in `findings-*.md`; the consolidated report is `assessment-summary.md`.
 
 ## Assumptions
 
