@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { getSiteContent } from '@/utils/site-data';
-import { DEFAULT_LOGO, logoUrl } from '@/utils/site';
+import { logoUrl } from '@/utils/site';
 import SiteAuthButtons from './SiteAuthButtons';
 import SiteSearchBox from './SiteSearchBox';
 
@@ -21,7 +21,6 @@ export default async function SiteHeader() {
             alt="DALTA Esports logo"
             width={44}
             height={44}
-            unoptimized={logo !== DEFAULT_LOGO}
             className="border-2 border-gold bg-white"
           />
           <span className="font-pixel text-gold text-xs sm:text-sm leading-relaxed">DALTA<br />ESPORTS</span>

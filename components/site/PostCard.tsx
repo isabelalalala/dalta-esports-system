@@ -14,7 +14,7 @@ export default function PostCard({ post, href }: { post: SitePost; href: string 
     >
       <div className="relative aspect-video border-b-2 border-brownlight bg-sitebg overflow-hidden">
         {image ? (
-          <Image src={image} alt="" fill unoptimized className="object-cover group-hover:scale-105 transition-transform" />
+          <Image src={image} alt="" fill sizes="(max-width: 768px) 100vw, 400px" className="object-cover group-hover:scale-105 transition-transform" />
         ) : (
           <div className="absolute inset-0 grid place-items-center font-pixel text-[10px] text-brownlight">DALTA</div>
         )}

@@ -26,7 +26,7 @@ export default async function DivisionsPage() {
               >
                 <div className="relative aspect-video border-b-2 border-brownlight bg-brown/40 overflow-hidden grid place-items-center">
                   {image ? (
-                    <Image src={image} alt="" fill unoptimized className="object-cover group-hover:scale-105 transition-transform" />
+                    <Image src={image} alt="" fill sizes="(max-width: 768px) 100vw, 400px" className="object-cover group-hover:scale-105 transition-transform" />
                   ) : (
                     <span className="font-pixel text-gold text-sm">{d.games?.name}</span>
                   )}

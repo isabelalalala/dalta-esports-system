@@ -38,7 +38,7 @@ export async function PostDetail({ table, id, backLabel }: { table: PostTable; i
       <PageTitle title={post.title} subtitle={post.event_date ? formatDate(post.event_date) : undefined} />
       {image && (
         <div className="relative aspect-video border-2 border-gold overflow-hidden shadow-[6px_6px_0_var(--color-brown)]">
-          <Image src={image} alt="" fill unoptimized className="object-cover" />
+          <Image src={image} alt="" fill sizes="(max-width: 768px) 100vw, 400px" className="object-cover" />
         </div>
       )}
       <SiteBox className="space-y-4">

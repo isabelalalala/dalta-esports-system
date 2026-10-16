@@ -292,7 +292,7 @@ export default function ListEditor({
                 <div className="flex flex-wrap items-center gap-3">
                   {imageFields.length > 0 && (
                     <div className="relative w-16 h-12 bg-black border border-gray-700 overflow-hidden shrink-0">
-                      {thumb && <Image src={thumb} alt="" fill unoptimized className="object-cover" />}
+                      {thumb && <Image src={thumb} alt="" fill sizes="96px" className="object-cover" />}
                     </div>
                   )}
                   <div className="flex-1 min-w-0">

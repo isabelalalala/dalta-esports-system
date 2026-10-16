@@ -33,7 +33,7 @@ async function OfficialTeam({ params }: { params: PageProps<'/divisions/[game]/[
 
       {photo && (
         <div className="relative aspect-video border-2 border-gold overflow-hidden shadow-[6px_6px_0_var(--color-brown)]">
-          <Image src={photo} alt={team.name} fill unoptimized className="object-cover" />
+          <Image src={photo} alt={team.name} fill sizes="(max-width: 768px) 100vw, 300px" className="object-cover" />
         </div>
       )}
       {team.description && (
