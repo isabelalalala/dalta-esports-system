@@ -83,11 +83,14 @@ Readers: "anyone" = also logged out; "logged-in" = any role; "admin/staff" = org
   verification_note (reason shown to the player), submitted_at, reviewed_by, reviewed_at. Saving complete details
   sets `pending`; changing them later resets to `pending` (trigger). Only admin/staff change the status, through
   `review_student_verification(user, approve, note)` (rejecting or revoking needs a reason). One account per
-  student ID per school (unique index). Other users only see `is_verified` (roster, player search). Created by the `handle_new_user()` trigger on sign-up. Read: own row; admin/staff read all.
-  Update: own row (role, id and email are protected by a trigger); admins update any.
+  student ID per school (unique index). Other users only see `is_verified` (roster, player search).
+  Created by the `handle_new_user()` trigger on sign-up (it also saves the privacy consent from the register form).
+  Read: own row; admin/staff read all. Update: own row (role, id, email, consent and verification fields are
+  protected by triggers); admins update any.
 
 **Registration and tournaments (Module 2)**
-- `games`: id (text, e.g. `mlbb`), name, min_players, max_players. Logged-in read. Edited only in the SQL Editor.
+- `games`: id (text, e.g. `mlbb`), name, min_players, max_players. Anyone reads (also logged out, since
+  202610171600). Edited only in the SQL Editor.
 - `tournaments`: id, name, description, rules, game (one of the 5 game names), game_id (→ games, required),
   start_date, end_date, max_participants, registration_deadline (≤ start_date; end_date ≥ start_date),
   requires_verification (default true; tournaments made before 202610171000 were set to false: every team member
@@ -191,14 +194,18 @@ Readers: "anyone" = also logged out; "logged-in" = any role; "admin/staff" = org
 - Kept 1 year (Privacy Notice): run `select public.purge_old_activity_logs();` in the SQL Editor; the app can't.
 
 **Notifications**
-- `notifications`: id, user_id (→ profiles, deleted with the user), type (CHECK list; `team_invite` is reserved for
-  team invites), title, message, link (app path only), is_read, created_at. Users read their own and may update
+- `notifications`: id, user_id (→ profiles, deleted with the user), type (CHECK list; the latest full list is in
+  `202610171500_match_results.sql`), title, message, link (app path only), is_read, created_at. Users read their own and may update
   ONLY `is_read` (column grant); no insert/delete from the app. In the `supabase_realtime` publication.
 - Created only by AFTER triggers through `notify_users()` (not callable from the app; skips the person who caused
   it): registration approved/rejected → captain; match time set/changed or match live → members of both teams;
   announcement → everyone (general) or members of teams registered for that tournament; team invite → the player;
   invite accepted/declined, member left → the captain; removed from a team → the player; made captain → the new
-  captain; student verified/rejected/revoked → the player. (`team_added` is no longer sent.) Message texts are saved, so times are in PH time.
+  captain; student verified/rejected/revoked → the player; check-in open → both captains (pg_cron); forfeit →
+  both teams; result submitted → other captain, confirmed/disputed → staff (+ submitter), approved/rejected →
+  teams/captains. Some are sent from the functions themselves (`transfer_team_captaincy`, `declare_forfeit`,
+  `submit/respond/review_match_result`, `send_checkin_open_notifications`). (`team_added` is no longer sent.)
+  Message texts are saved, so times are in PH time.
   New types need the CHECK list and `notificationIcons` in `utils/notifications.ts`.
 - Cleanup: `select public.purge_old_notifications();` in the SQL Editor (read ones older than 90 days).
 - Email notifications aren't built. Resend would need an API key (server only), a verified domain (DNS), a
@@ -214,7 +221,7 @@ Readers: "anyone" = also logged out; "logged-in" = any role; "admin/staff" = org
   Anyone (also logged out) reads published rows; admins read all and are the only writers.
 - `games` is now readable by logged-out visitors too (division names).
 - Storage: public bucket `site-images` (PNG/JPEG/WebP/GIF, 5 MB); admins upload/replace/delete.
-- Public pages live in `app/(site)/` (layout = site header, side nav, search). They are server components that
+- Public pages live in `app/(site)/` (layout = the wireframe's side nav; the header is global, see Pages). They are server components that
   read through the cached functions in `utils/site-data.ts` (`'use cache'`, `cacheLife('minutes')`, tag `site`)
   with `createPublicClient()` from `utils/supabase/public.ts` (no login: cached code can't read cookies). That is
   the fourth Supabase client and it is read-only. After admin edits, call the server action `refreshSite()`
@@ -223,6 +230,13 @@ Readers: "anyone" = also logged out; "logged-in" = any role; "admin/staff" = org
   Official teams (+ players). Lists use the generic `ListEditor` (add, edit, ▲▼ order, publish, delete, images);
   images go through `utils/site-images.ts` (`<folder>/<random>.<ext>`), and replaced/removed files are deleted.
 - Logo: `public/daltaesportslogo.jpg` unless one is uploaded on `/admin/website`.
+
+**Storage buckets**
+- `match-proofs` (private): result screenshots, `<match id>/<random>.<ext>`, PNG/JPEG/WebP, 5 MB. Captains of the
+  match upload; the two teams and staff read through signed URLs. No update/delete from the app.
+- `site-images` (public): website images (logo, carousel, campaigns, events, divisions, officers, teams,
+  players), `<folder>/<random>.<ext>`, PNG/JPEG/WebP/GIF, 5 MB. Anyone views; only admins write.
+- Bucket settings and policies are created in the migrations (storage.buckets / storage.objects).
 
 **Database functions**: `get_my_role()`, `current_user_role()` (older alias of get_my_role), `search_players(game_id, search)`,
 `get_team_roster(team_id)` (name, IGN, in-game role, is_verified), `generate_bracket(tournament_id)`, `delete_own_account()`,
@@ -313,6 +327,54 @@ triggers with readable error messages.
    charts, print/PDF and CSV; staff view engagement stats. Filters: tournament, game, date range.
 The business case also lists a "Database Module". It is not a separate module: each module adds its own
 tables and migrations (see Current schema).
+
+## Extra features (after the 6 modules)
+Steps 1–9 of the extra-features prompts are done (the prompts file itself isn't in `docs/`):
+1. Account security and privacy: password reset, email confirmation screens, Data Privacy Act consent
+   (`/privacy`, `/privacy/consent`, `202610170900_privacy_consent`).
+2. Student verification (`/profile` student details, `/admin/verification`, `requires_verification` on
+   tournaments, Verified badges; `202610171000_student_verification`).
+3. Activity (audit) log (`/admin/activity`; `202610171100_activity_log`).
+4. In-app notifications (bell in the header, `/notifications`, Realtime; `202610171200_notifications`).
+5. Team invites (invite/accept/decline, leave, remove, transfer captaincy, roster lock;
+   `202610171300_team_invites`).
+6. Match check-in and result submission (`/matches/[id]`, forfeits, screenshots, confirm/dispute, staff review,
+   "Needs attention"; `202610171400_match_checkin`, `202610171500_match_results`).
+7. Admin-editable public website (`app/(site)/`, `/admin/website`; `202610171600_public_website`).
+8. Exports to Excel/CSV (`/api/exports/[type]`; `202610171700_export_log`).
+9. Public tournament pages, link previews (Open Graph), "Add to calendar" (.ics) and Share (`/t/[id]`,
+   `/t/[id]/match/[matchId]`, `/calendar/...`; `202610171800_public_tournaments`).
+Also done: the yellow/brown restyle of every page (one look for public and logged-in pages).
+
+## How things work (read before adding a feature)
+- **Notifications are created only in the database**: an AFTER trigger (or a security definer function) calls
+  `notify_users(user_ids[], type, title, message, link)`. The app never inserts notifications. A new type needs:
+  a migration that drops and re-adds `notifications_type_check` with the FULL list (copy the latest one), the type
+  and an icon in `utils/notifications.ts`, and the trigger. Links must be app paths (`/...`).
+- **Activity log entries are created only in the database**: AFTER triggers call `log_activity(action,
+  entity_type, entity_id, details)`, which adds the actor's name. Put names (not ids only) in `details` so entries
+  stay readable after deletions; never emails or student IDs. Skip `pg_trigger_depth() > 1` (cascades/other
+  triggers). Add the action to `ACTION_GROUPS` and `describeActivity()` in `utils/activity.ts`. App-side actions
+  that need logging go through a role-checked function like `log_export()`.
+- **"Only through a function" rules**: some columns may only change inside one security definer function. The
+  function sets a transaction flag with `set_config('app.<flag>', 'on', true)` and a BEFORE trigger refuses the
+  change without it (`auth.uid() is null` = SQL Editor is always allowed). Flags in use: `giving_privacy_consent`,
+  `reviewing_student`, `answering_invite`, `transferring_captain`, `declaring_forfeit`.
+- **Redefining an existing function or trigger function**: always start from its LATEST version (create or
+  replace keeps only what you write). Latest versions: `check_tournament_registration`, `check_registration_update`
+  → `202610171000_student_verification`; `check_team_member` → `202610171000`; `get_team_roster` → `202610171000`;
+  `search_players` → `202610171300_team_invites`; `protect_team_fields` → `202610171300`; `protect_profile_role`,
+  `handle_new_user` → `202610170900_privacy_consent`; `log_match` → `202610171400_match_checkin`;
+  `get_needs_attention` → `202610171500_match_results`; `notifications_type_check` → `202610171500`.
+- **Scheduled jobs (pg_cron, enabled)**: `dalta-checkin-open-notifications` every 5 minutes. Manual cleanups run in
+  the SQL Editor: `purge_old_activity_logs()` (1 year), `purge_old_notifications()` (read, 90 days).
+- **Privacy Notice**: current version `2026-10-17.2` (`utils/privacy.ts`). A new kind of personal data, or a new
+  group who can see it, means updating `/privacy` and the version (everyone agrees again); small clarifications
+  don't change the version.
+- **Logged-out data** comes only from published website rows and the `get_public_tournament()` /
+  `get_public_calendar()` functions (team names only). Don't open teams, registrations, streams or profiles to
+  `anon`; add a security definer function that returns just what the public page needs.
+- **New protected pages** go in `proxy.ts`. Public pages (website, `/t`, `/calendar`, `/privacy`) must not.
 
 ### Notes on reports (Module 6)
 - Chart colors are in `utils/reports.ts` and were checked for color-blind safety on the card color `#1f1714`.
