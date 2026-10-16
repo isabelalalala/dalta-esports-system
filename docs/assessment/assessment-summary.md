@@ -33,18 +33,13 @@ find.
 
 ## Required findings (condensed — details in area files)
 
-**Data integrity & races** (C, D1, D2)
-- NULL-boolean args bypass "reason required" in `review_student_verification` and
-  `respond_to_match_result` (`p_approve`/`p_confirm` NULL skips the guard).
-- `review_match_result` checks submission status but not `matches.status` — a stale
-  submission can overwrite a forfeited/completed match.
-- Bracket regeneration silently deletes unreviewed submitted results;
-  `next_match_id` has no integrity checks (cross-tournament/self-feeds possible).
-- One-team-per-game is racy across different teams; team name uniqueness is
-  case/whitespace-sensitive; `registered_at`/`predictions.created_at` client-writable.
-- `tournaments.status` nullable; `topics ≤3` no CHECK; `give_privacy_consent`
-  accepts any version string; `unverified_team_members()` leaks member emails in
-  exception text; approved registration vanishes if its team is deleted pre-bracket.
+**Data integrity & races** (C, D1, D2) — **largely RESOLVED in `202610181200_integrity_hardening`** (applied + smoke-tested on the dev project):
+- ~~NULL-boolean args bypass "reason required"~~ — all four RPCs (`review_student_verification`, `respond_to_match_result`, `review_match_result`, `respond_to_team_invite`) now raise on NULL.
+- ~~`review_match_result` never checks `matches.status`~~ — completed matches reject approve/override (reject stays for clearing stale rows); `declare_forfeit` auto-rejects open submissions.
+- ~~Bracket regen deletes unreviewed results; `next_match_id` unchecked~~ — regen refuses while submissions are open; `check_match` enforces same-tournament/not-self/scheduled-target.
+- ~~One-team-per-game race; case/whitespace team names; client-writable `registered_at`/`predictions.created_at`~~ — profile-row lock, `lower(btrim(name))` index, server-side pinning.
+- ~~`tournaments.status` nullable; `topics ≤3` no CHECK; email leak in `unverified_team_members()`; approved registration vanishing on team delete~~ — all fixed (NOT NULL, cardinality CHECK, name fallback, delete blocked while registered).
+- **Remaining:** `give_privacy_consent` accepts any version string (fail-closed — bogus version just keeps the gate locked); captain needs no game profile for the team's game (spec unclear); `gemini_calls.user_id` index; staff can still remove a captain's member row.
 
 **Live/engagement** (G, F)
 - Presence "Watching now" is spoofable: public `viewers-<id>` channel, client-supplied

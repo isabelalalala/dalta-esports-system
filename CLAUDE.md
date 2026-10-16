@@ -76,7 +76,7 @@ Enforced by a CHECK constraint on `profiles.role` (migration `202610161200_role_
 - RLS policies check roles with `public.get_my_role()`.
 
 ## Current schema (public)
-All migrations are in `supabase/migrations/`, run in filename order (202610151100 … 202610181100). `202610151100_base_schema` creates the three pre-migration base tables (`profiles`, `tournaments`, `tournament_registrations`) — it is `if not exists`, so it is a no-op on databases that already have them.
+All migrations are in `supabase/migrations/`, run in filename order (202610151100 … 202610181200). `202610151100_base_schema` creates the three pre-migration base tables (`profiles`, `tournaments`, `tournament_registrations`) — it is `if not exists`, so it is a no-op on databases that already have them.
 `202610181000_feedback_protection` also needs its one-time Vault key setup (the `feedback_server_key` secret +
 `FEEDBACK_SERVER_KEY`); the steps are at the top of that file.
 Readers: "anyone" = also logged out; "logged-in" = any role; "admin/staff" = organizers only.
@@ -109,7 +109,9 @@ Readers: "anyone" = also logged out; "logged-in" = any role; "admin/staff" = org
 - `player_game_profiles`: id, user_id, game_id (→ games), ign, in_game_role, rank, created_at.
   UNIQUE (user_id, game_id). Logged-in read; players write their own.
 - `teams`: id, name, description, game_id (→ games), captain_id (→ profiles), created_at. UNIQUE (name, game_id).
-  The captain can edit name and description; game and captain can't change. Teams in a bracket can't be deleted.
+  The captain can edit name and description; game and captain can't change. Teams in a bracket can't be deleted,
+  and neither can teams with a pending/approved registration for a tournament that hasn't ended
+  (remove the registration first — 202610181200). Team names are unique per game ignoring case/whitespace.
 - `team_members`: id, team_id, user_id, role (`captain`/`player`), joined_at. The captain is added automatically;
   other players join only by accepting an invite (no insert policy). Members leave and the captain removes players
   (delete policy), except while the team is registered (pending/approved) for a tournament that hasn't ended
@@ -148,6 +150,8 @@ Readers: "anyone" = also logged out; "logged-in" = any role; "admin/staff" = org
   `submit_match_result()` (either captain, match live or past its time, screenshot already uploaded),
   `respond_to_match_result()` (the OTHER captain; dispute needs a reason) and `review_match_result()` (admin/staff:
   approve / override with own score / reject with a note). Approve and override complete the match (winner advances).
+  Since 202610181200: approve/override are refused once the match is completed (reject stays, so stale rows can
+  be cleared), a forfeit auto-rejects open submissions, and generate_bracket refuses while submissions are open.
 - Storage: private bucket `match-proofs` (PNG/JPEG/WebP, 5 MB), paths `<match id>/<random>.<ext>`. Captains of the
   match upload; the two teams and staff read (signed URLs); no update/delete from the app. Deleting a match or
   tournament does NOT delete its files (remove them in Supabase Storage if needed).
