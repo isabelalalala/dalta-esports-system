@@ -37,7 +37,7 @@ Full title: "DALTA Esports: Tournament Management System with AI-Powered Feedbac
   for link previews (metadataBase), shared links and calendar files. Defaults to http://localhost:3000.
 - `NEXT_PUBLIC_PRIVACY_CONTACT_EMAIL`, `NEXT_PUBLIC_PRIVACY_CONTACT_PERSON`: optional; the privacy notice's
   data protection contact. The fallbacks in `utils/privacy.ts` are placeholders: set the real ones before launch.
-- All of them live in `.env.local` (git-ignored) and must also be set in Railway when deploying.
+- All of them live in `.env` (git-ignored) and must also be set in Railway when deploying.
 
 ## Auth pages and Supabase settings
 - `/auth/login`, `/auth/register`, `/auth/forgot-password`, `/auth/reset-password`.

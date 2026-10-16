@@ -1,10 +1,7 @@
 # Self-host the app with one command. Supabase stays hosted (no DB service).
-# Uses the same .env.local the Next.js app already needs:
+# Reads the same .env the Next.js app already needs:
 #
-#   docker compose --env-file .env.local up --build
-#
-# (--env-file feeds the build-arg interpolation below; env_file sets runtime env.
-#  Or copy .env.local to .env and run plain `docker compose up --build`.)
+#   docker compose up --build
 #
 # NEXT_PUBLIC_* values are baked into the image at build time; rebuild after
 # changing them.
@@ -14,12 +11,12 @@ services:
     build:
       context: .
       args:
-        NEXT_PUBLIC_SUPABASE_URL: ${NEXT_PUBLIC_SUPABASE_URL:?set it in .env.local}
-        NEXT_PUBLIC_SUPABASE_ANON_KEY: ${NEXT_PUBLIC_SUPABASE_ANON_KEY:?set it in .env.local}
+        NEXT_PUBLIC_SUPABASE_URL: ${NEXT_PUBLIC_SUPABASE_URL:?set it in .env}
+        NEXT_PUBLIC_SUPABASE_ANON_KEY: ${NEXT_PUBLIC_SUPABASE_ANON_KEY:?set it in .env}
         NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-http://localhost:3000}
         NEXT_PUBLIC_PRIVACY_CONTACT_EMAIL: ${NEXT_PUBLIC_PRIVACY_CONTACT_EMAIL:-}
         NEXT_PUBLIC_PRIVACY_CONTACT_PERSON: ${NEXT_PUBLIC_PRIVACY_CONTACT_PERSON:-}
-    env_file: .env.local
+    env_file: .env
     ports:
       - "3000:3000"
     restart: unless-stopped
