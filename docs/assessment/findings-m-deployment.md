@@ -56,7 +56,7 @@ Auth redirects do **not** depend on `NEXT_PUBLIC_SITE_URL` — they use `window.
 
 **Nit:**
 
-6. **No `.env.example` / `.env.local.example`** — glob `**/.env*` finds nothing; the only var list is prose in CLAUDE.md. `.gitignore:34` correctly covers `.env*`; no committed secrets found (only doc mentions and package-lock hashes).
+6. ~~**No `.env.example`**~~ — **resolved:** `.env.example` added, mirroring the README env table with the build-time/Vault caveats inline. `.gitignore:34` correctly covers `.env*`; no committed secrets found (only doc mentions and package-lock hashes).
 
 7. **No `robots.txt`/`robots.ts`, `sitemap.xml`/`sitemap.ts`, or `manifest`** for the public site. `app/favicon.ico` and `public/daltaesportslogo.jpg` exist; OG images are generated via `opengraph-image.tsx` + `utils/og-card.tsx` (node `next/og`).
 
