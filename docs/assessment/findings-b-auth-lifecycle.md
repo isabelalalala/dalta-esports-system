@@ -2,7 +2,7 @@
 
 ## Verdict
 
-Auth and account lifecycle are implemented substantially as documented — role gating, consent capture, cascade deletes, and last-admin protections are all enforced in the database, not just the UI — ~~but `/auth/callback`'s `?next=` allowlist is bypassable with a backslash (open redirect)~~ **— RESOLVED: `safeNextPath()` (`utils/auth.ts`) compares the resolved origin, covering backslash AND tab/newline injection; 5 tests in `utils/auth.test.ts`** — and two smaller drifts exist: admin-created accounts get a confirmation link that skips `/auth/callback`, and `profiles.updated_at` is depended on by code but not maintained by any migration.
+Auth and account lifecycle are implemented substantially as documented — role gating, consent capture, cascade deletes, and last-admin protections are all enforced in the database, not just the UI — ~~but `/auth/callback`'s `?next=` allowlist is bypassable with a backslash (open redirect)~~ **— RESOLVED: `safeNextPath()` (`utils/auth.ts`) compares the resolved origin, covering backslash AND tab/newline injection; 5 tests in `utils/auth.test.ts`** — and the two smaller drifts are also resolved: admin-created accounts now route their confirmation link through `/auth/callback` via `confirmEmailRedirect()`, and `profiles.updated_at` is a real maintained column (`202610181700`).
 
 ## Checked
 
@@ -24,8 +24,8 @@ Auth and account lifecycle are implemented substantially as documented — role 
 
 **Required:**
 
-- **Admin "Add account" confirmation link skips `/auth/callback`.** CLAUDE.md:53-54 documents "The confirmation link goes through `/auth/callback` to `/auth/login?confirmed=1`", but `admin/users/page.tsx:322` sets `emailRedirectTo: \`${window.location.origin}/auth/login\``. Consequences: the login page only shows the "Thanks for confirming" banner and auto-redirects when `?confirmed=1` (`login/page.tsx:16,26-33`), so an admin-created user lands on a plain login form; with the implicit flow the fragment session is silently picked up by the browser client (no visible confirmation state), and if the Supabase email template produces a PKCE `?code=` link, `/auth/login` has no code-exchange logic at all (only `/auth/callback` does, `route.ts:24-28`). Should mirror `confirmEmailRedirect()` (`utils/auth.ts:6-9`).
-- **`profiles.updated_at` is relied on but not maintained by any migration.** `Profile.updated_at` is declared non-null (`utils/types.ts:8`), CLAUDE.md:85 lists it, and `admin/users/page.tsx:137-139` uses it in the row React key with the comment "updated_at in the key resets the row's form after every save" — but no migration adds the column (the `profiles` table predates migrations per `202610161300:47-49`) and no BEFORE UPDATE trigger sets `new.updated_at` (the profile triggers are `profiles_protect_role`, `profiles_student_verification`, `profiles_log`, `profiles_notify` — none maintain `updated_at`). So even if the column exists, name edits never bump it and the "reset the row's form" behavior doesn't happen; if it doesn't exist the type lies. Add the column + touch trigger, or drop it from the key/type/docs.
+- ~~**Admin "Add account" confirmation link skips `/auth/callback`.**~~ **RESOLVED** — `admin/users/page.tsx` now uses `confirmEmailRedirect()`, so admin-created accounts go through `/auth/callback` to `/auth/login?confirmed=1` exactly like self-registered ones.
+- ~~**`profiles.updated_at` is relied on but not maintained by any migration.**~~ **RESOLVED** — `202610181700_profiles_updated_at.sql` adds the column (backfilled from `created_at`, NOT NULL, default `now()`) and a `profiles_touch` BEFORE UPDATE trigger on the shared `touch_updated_at()`. Verified live: an update advanced `updated_at`.
 
 **Nit:**
 
@@ -47,7 +47,7 @@ Auth and account lifecycle are implemented substantially as documented — role 
 ## Unverifiable locally
 
 - **Actual email delivery and link formats** — confirmation/reset emails, PKCE `?code=` vs `token_hash` template links, and whether the Supabase dashboard has "Confirm email" ON, min password length 8, Site URL and Redirect URLs (`localhost:3000/**`, Railway `/**`) configured per CLAUDE.md:45-55.
-- **Whether `profiles.updated_at` exists in the live DB** — the table was created outside migrations; needs a live schema check.
+- ~~**Whether `profiles.updated_at` exists in the live DB**~~ — checked: it did not; `202610181700` adds it on all projects.
 - **Cookie session round-trips** — `exchangeCodeForSession` cookie writes in the route handler, `proxy.ts` session refresh, `signOut` clearing, and `getSession()` on client pages.
 - **Implicit-fragment session detection** on `/auth/login` for admin-created accounts (`detectSessionInUrl` default in `createBrowserClient`).
 - **RLS/trigger behavior end-to-end** — e.g. `admin_delete_user` refusing non-admins, `delete_own_account` refusing a captain with teammates, cascade/set-null behavior on real deletes, resend rate limits.
