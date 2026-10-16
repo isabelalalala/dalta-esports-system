@@ -12,6 +12,78 @@ import type { User } from '@supabase/supabase-js'
 import type { Profile } from '@/utils/types'
 import { PRIVACY_NOTICE_VERSION } from '@/utils/privacy'
 
+interface DashCard {
+  href: string
+  title: string
+  text: string
+}
+
+const roleLabels: Record<string, string> = {
+  admin: '👑 Administrator',
+  staff: '🎮 Tournament Staff',
+  player: '🎯 Player',
+  spectator: '👀 Spectator',
+}
+
+// One badge color per role, so people can see at a glance which view they're in
+const roleBadge: Record<string, string> = {
+  admin: 'bg-red-400 text-black',
+  staff: 'bg-gold text-black',
+  player: 'bg-green-400 text-black',
+  spectator: 'bg-teal-300 text-black',
+}
+
+// Shortcuts for each role. The pages check the role themselves (and RLS protects the data);
+// the cards are only a convenience.
+function cardsFor(role: string | undefined): DashCard[] {
+  if (role === 'player') {
+    return [
+      { href: '/tournaments', title: '📋 Available Tournaments', text: 'Browse and register for tournaments' },
+      { href: '/teams', title: '👥 My Teams', text: 'Manage your teams and players' },
+      { href: '/registrations', title: '🏆 My Registrations', text: 'View your tournament registrations' },
+      { href: '/schedule', title: '📅 Schedule & Results', text: 'Upcoming matches and latest results' },
+      { href: '/live', title: '📺 Live Streams', text: 'Watch matches live' },
+      { href: '/feedback', title: '💬 Feedback', text: 'Rate the tournaments and tell us what to improve' },
+      { href: '/announcements', title: '📢 Announcements', text: 'News and updates from the organizers' },
+    ]
+  }
+  if (role === 'spectator') {
+    return [
+      { href: '/live', title: '📺 Live Tournaments', text: 'Watch ongoing tournaments and matches' },
+      { href: '/schedule', title: '📅 Schedule & Results', text: 'Upcoming matches, results and brackets' },
+      { href: '/announcements', title: '📢 Announcements', text: 'News and updates from the organizers' },
+      { href: '/feedback', title: '💬 Feedback', text: 'Share your feedback and ratings' },
+    ]
+  }
+  if (role === 'admin' || role === 'staff') {
+    const isAdmin = role === 'admin'
+    const cards: (DashCard | false)[] = [
+      { href: '/tournaments', title: '📋 Manage Tournaments', text: 'Create and manage tournaments' },
+      // Admin only: staff share this section but can't manage users, the website or the log
+      isAdmin && { href: '/admin/users', title: '👥 Manage Users', text: 'Change roles, edit names and delete accounts' },
+      isAdmin && { href: '/admin/website', title: '🌐 Website', text: 'Edit the public pages, photos, officers and teams' },
+      isAdmin && { href: '/admin/activity', title: '🕵️ Activity Log', text: 'Who did what, and when' },
+      { href: '/matches', title: '🎮 Match Management', text: 'Schedule and manage matches' },
+      { href: '/admin/verification', title: '🎓 Student Verification', text: "Verify players' student details" },
+      { href: '/live', title: '📡 Live Streams', text: 'Watch streams; configure them from each tournament' },
+      // Admin only: feedback and sentiment are for the Organizing Committee
+      isAdmin && { href: '/admin/feedback', title: '🧠 Feedback Analysis', text: 'Sentiment of audience and player feedback' },
+      {
+        href: '/announcements',
+        title: '📢 Announcements',
+        text: isAdmin ? 'Post and manage announcements' : 'Read the latest announcements',
+      },
+      {
+        href: '/analytics',
+        title: '📊 Analytics',
+        text: isAdmin ? 'Generate activity, sentiment and engagement reports' : 'Viewership and audience engagement stats',
+      },
+    ]
+    return cards.filter((c): c is DashCard => !!c)
+  }
+  return []
+}
+
 export default function Dashboard() {
   const supabase = createClient()
   const [user, setUser] = useState<User | null>(null)
@@ -50,299 +122,56 @@ export default function Dashboard() {
     getUser()
   }, [router, supabase])
 
-  const handleLogout = async () => {
-    await supabase.auth.signOut()
-    router.push('/')
-  }
-
   if (loading) {
-    return (
-      <div style={{ color: 'white', textAlign: 'center', paddingTop: '2rem' }}>
-        Loading...
-      </div>
-    )
+    return <div className="min-h-screen bg-sitebg text-white p-10 text-center">Loading...</div>
   }
 
-  const getRoleColor = (role?: string) => {
-    switch (role) {
-      case 'admin':
-        return '#ff6b6b'
-      case 'staff':
-        return '#ffd93d'
-      case 'player':
-        return '#6bcf7f'
-      case 'spectator':
-        return '#4ecdc4'
-      default:
-        return '#00d2ff'
-    }
-  }
-
-  const getRoleLabel = (role?: string) => {
-    switch (role) {
-      case 'admin':
-        return '👑 Administrator'
-      case 'staff':
-        return '🎮 Tournament Staff'
-      case 'player':
-        return '🎯 Player'
-      case 'spectator':
-        return '👀 Spectator'
-      default:
-        return 'User'
-    }
-  }
+  const role = profile?.role
+  const isOrganizer = role === 'admin' || role === 'staff'
 
   return (
-    <div style={{ minHeight: '100vh', background: '#0a0a0c', color: 'white', padding: '2rem' }}>
-      <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-          <h1 style={{ fontSize: '2rem', color: '#00d2ff' }}>DALTA ESPORTS Dashboard</h1>
-          {/* Shown for every role */}
-          <div style={{ display: 'flex', gap: '0.75rem' }}>
-            <Link
-              href="/profile"
-              style={{
-                padding: '0.75rem 1.5rem',
-                border: '1px solid #00d2ff',
-                color: '#00d2ff',
-                borderRadius: '8px',
-                fontWeight: 'bold',
-                textDecoration: 'none',
-              }}
-            >
-              My Profile
-            </Link>
-            <button
-              onClick={handleLogout}
-              style={{
-                padding: '0.75rem 1.5rem',
-                background: '#ff4444',
-                color: 'white',
-                border: 'none',
-                borderRadius: '8px',
-                cursor: 'pointer',
-                fontWeight: 'bold',
-              }}
-            >
-              Logout
-            </button>
-          </div>
+    <div className="min-h-screen bg-sitebg text-white px-4 py-8">
+      <div className="max-w-6xl mx-auto space-y-8">
+        <div className="flex flex-wrap justify-between items-center gap-4">
+          <h1 className="font-pixel text-xl sm:text-2xl leading-relaxed text-gold">Dashboard</h1>
+          <Link href="/profile" className="px-4 py-2 border-2 border-gold text-gold font-bold hover:bg-gold/10">
+            My Profile
+          </Link>
         </div>
 
-        <div
-          style={{
-            background: '#1a1a2e',
-            padding: '2rem',
-            borderRadius: '12px',
-            marginBottom: '2rem',
-            border: `2px solid ${getRoleColor(profile?.role)}`,
-          }}
-        >
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-            <div>
-              <p style={{ fontSize: '1.1rem', marginBottom: '0.5rem' }}>
-                {/* Older accounts may not have a name yet, so fall back to the email */}
-                Welcome, <span style={{ color: '#00d2ff' }}>{profile?.full_name || user?.email}</span>
-              </p>
-            </div>
-
-            <div
-              style={{
-                background: getRoleColor(profile?.role),
-                color: '#000',
-                padding: '0.75rem 1.5rem',
-                borderRadius: '8px',
-                fontWeight: 'bold',
-                textAlign: 'center',
-              }}
-            >
-              {getRoleLabel(profile?.role)}
-            </div>
-          </div>
+        {/* Welcome, with the role */}
+        <div className="bg-sitecard border-2 border-gold shadow-[6px_6px_0_var(--color-brown)] p-6 flex flex-wrap justify-between items-center gap-4">
+          <p className="text-lg">
+            {/* Older accounts may not have a name yet, so fall back to the email */}
+            Welcome, <span className="text-gold font-semibold">{profile?.full_name || user?.email}</span>
+          </p>
+          <span className={`px-4 py-2 font-bold ${roleBadge[role ?? ''] ?? 'bg-gold text-black'}`}>
+            {roleLabels[role ?? ''] ?? 'User'}
+          </span>
         </div>
 
         {/* Open team invites (shows nothing when there are none) */}
-        {profile?.role === 'player' && <TeamInvites />}
+        {role === 'player' && <TeamInvites />}
 
-        {profile?.role === 'player' && (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1.5rem' }}>
-            <Link href="/tournaments" style={{ textDecoration: 'none' }}>
-              <div style={{ background: '#1a1a2e', padding: '1.5rem', borderRadius: '12px', border: '1px solid #00d2ff', cursor: 'pointer' }}>
-                <h3 style={{ color: '#00d2ff', marginBottom: '1rem' }}>📋 Available Tournaments</h3>
-                <p style={{ color: '#aaa' }}>Browse and register for tournaments</p>
-              </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          {cardsFor(role).map((card) => (
+            <Link
+              key={card.href}
+              href={card.href}
+              className="group bg-sitecard border-2 border-brownlight p-5 shadow-[4px_4px_0_var(--color-brown)] hover:border-gold transition-colors"
+            >
+              <h3 className="font-bold text-gold mb-2">{card.title}</h3>
+              <p className="text-gray-400 text-sm">{card.text}</p>
             </Link>
-
-            <Link href="/teams" style={{ textDecoration: 'none' }}>
-              <div style={{ background: '#1a1a2e', padding: '1.5rem', borderRadius: '12px', border: '1px solid #00d2ff', cursor: 'pointer' }}>
-                <h3 style={{ color: '#00d2ff', marginBottom: '1rem' }}>👥 My Teams</h3>
-                <p style={{ color: '#aaa' }}>Manage your teams and players</p>
-              </div>
-            </Link>
-
-            <Link href="/registrations" style={{ textDecoration: 'none' }}>
-              <div style={{ background: '#1a1a2e', padding: '1.5rem', borderRadius: '12px', border: '1px solid #00d2ff', cursor: 'pointer' }}>
-                <h3 style={{ color: '#00d2ff', marginBottom: '1rem' }}>🏆 My Registrations</h3>
-                <p style={{ color: '#aaa' }}>View your tournament registrations</p>
-              </div>
-            </Link>
-
-            <Link href="/schedule" style={{ textDecoration: 'none' }}>
-              <div style={{ background: '#1a1a2e', padding: '1.5rem', borderRadius: '12px', border: '1px solid #00d2ff', cursor: 'pointer' }}>
-                <h3 style={{ color: '#00d2ff', marginBottom: '1rem' }}>📅 Schedule &amp; Results</h3>
-                <p style={{ color: '#aaa' }}>Upcoming matches and latest results</p>
-              </div>
-            </Link>
-
-            <Link href="/live" style={{ textDecoration: 'none' }}>
-              <div style={{ background: '#1a1a2e', padding: '1.5rem', borderRadius: '12px', border: '1px solid #00d2ff', cursor: 'pointer' }}>
-                <h3 style={{ color: '#00d2ff', marginBottom: '1rem' }}>📺 Live Streams</h3>
-                <p style={{ color: '#aaa' }}>Watch matches live</p>
-              </div>
-            </Link>
-
-            <Link href="/feedback" style={{ textDecoration: 'none' }}>
-              <div style={{ background: '#1a1a2e', padding: '1.5rem', borderRadius: '12px', border: '1px solid #00d2ff', cursor: 'pointer' }}>
-                <h3 style={{ color: '#00d2ff', marginBottom: '1rem' }}>💬 Feedback</h3>
-                <p style={{ color: '#aaa' }}>Rate the tournaments and tell us what to improve</p>
-              </div>
-            </Link>
-
-            <Link href="/announcements" style={{ textDecoration: 'none' }}>
-              <div style={{ background: '#1a1a2e', padding: '1.5rem', borderRadius: '12px', border: '1px solid #00d2ff', cursor: 'pointer' }}>
-                <h3 style={{ color: '#00d2ff', marginBottom: '1rem' }}>📢 Announcements</h3>
-                <p style={{ color: '#aaa' }}>News and updates from the organizers</p>
-              </div>
-            </Link>
-          </div>
-        )}
-
-        {profile?.role === 'player' && user && <MyMatches userId={user.id} />}
-
-        {profile?.role === 'spectator' && (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1.5rem' }}>
-            <Link href="/live" style={{ textDecoration: 'none' }}>
-              <div style={{ background: '#1a1a2e', padding: '1.5rem', borderRadius: '12px', border: '1px solid #4ecdc4', cursor: 'pointer' }}>
-                <h3 style={{ color: '#4ecdc4', marginBottom: '1rem' }}>📺 Live Tournaments</h3>
-                <p style={{ color: '#aaa' }}>Watch ongoing tournaments and matches</p>
-              </div>
-            </Link>
-
-            <Link href="/schedule" style={{ textDecoration: 'none' }}>
-              <div style={{ background: '#1a1a2e', padding: '1.5rem', borderRadius: '12px', border: '1px solid #4ecdc4', cursor: 'pointer' }}>
-                <h3 style={{ color: '#4ecdc4', marginBottom: '1rem' }}>📅 Schedule &amp; Results</h3>
-                <p style={{ color: '#aaa' }}>Upcoming matches, results and brackets</p>
-              </div>
-            </Link>
-
-            <Link href="/announcements" style={{ textDecoration: 'none' }}>
-              <div style={{ background: '#1a1a2e', padding: '1.5rem', borderRadius: '12px', border: '1px solid #4ecdc4', cursor: 'pointer' }}>
-                <h3 style={{ color: '#4ecdc4', marginBottom: '1rem' }}>📢 Announcements</h3>
-                <p style={{ color: '#aaa' }}>News and updates from the organizers</p>
-              </div>
-            </Link>
-
-            <Link href="/feedback" style={{ textDecoration: 'none' }}>
-              <div style={{ background: '#1a1a2e', padding: '1.5rem', borderRadius: '12px', border: '1px solid #4ecdc4', cursor: 'pointer' }}>
-                <h3 style={{ color: '#4ecdc4', marginBottom: '1rem' }}>💬 Feedback</h3>
-                <p style={{ color: '#aaa' }}>Share your feedback and ratings</p>
-              </div>
-            </Link>
-          </div>
-        )}
-
-        {(profile?.role === 'admin' || profile?.role === 'staff') && (
-  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1.5rem' }}>
-    <Link href="/tournaments" style={{ textDecoration: 'none' }}>
-      <div style={{ background: '#1a1a2e', padding: '1.5rem', borderRadius: '12px', border: '1px solid #ffd93d', cursor: 'pointer' }}>
-        <h3 style={{ color: '#ffd93d', marginBottom: '1rem' }}>📋 Manage Tournaments</h3>
-        <p style={{ color: '#aaa' }}>Create and manage tournaments</p>
-      </div>
-    </Link>
-
-    {/* Admin only: staff share this section but can't manage users */}
-    {profile?.role === 'admin' && (
-      <Link href="/admin/users" style={{ textDecoration: 'none' }}>
-        <div style={{ background: '#1a1a2e', padding: '1.5rem', borderRadius: '12px', border: '1px solid #ffd93d', cursor: 'pointer' }}>
-          <h3 style={{ color: '#ffd93d', marginBottom: '1rem' }}>👥 Manage Users</h3>
-          <p style={{ color: '#aaa' }}>Change roles, edit names and delete accounts</p>
+          ))}
         </div>
-      </Link>
-    )}
 
-    {/* Admin only: edit the public website */}
-    {profile?.role === 'admin' && (
-      <Link href="/admin/website" style={{ textDecoration: 'none' }}>
-        <div style={{ background: '#1a1a2e', padding: '1.5rem', borderRadius: '12px', border: '1px solid #ffd93d', cursor: 'pointer' }}>
-          <h3 style={{ color: '#ffd93d', marginBottom: '1rem' }}>🌐 Website</h3>
-          <p style={{ color: '#aaa' }}>Edit the public pages, photos, officers and teams</p>
-        </div>
-      </Link>
-    )}
+        {role === 'player' && user && <MyMatches userId={user.id} />}
 
-    {/* Admin only: the activity log is readable by admins only (RLS) */}
-    {profile?.role === 'admin' && (
-      <Link href="/admin/activity" style={{ textDecoration: 'none' }}>
-        <div style={{ background: '#1a1a2e', padding: '1.5rem', borderRadius: '12px', border: '1px solid #ffd93d', cursor: 'pointer' }}>
-          <h3 style={{ color: '#ffd93d', marginBottom: '1rem' }}>🕵️ Activity Log</h3>
-          <p style={{ color: '#aaa' }}>Who did what, and when</p>
-        </div>
-      </Link>
-    )}
-
-    <Link href="/matches" style={{ textDecoration: 'none' }}>
-      <div style={{ background: '#1a1a2e', padding: '1.5rem', borderRadius: '12px', border: '1px solid #ffd93d', cursor: 'pointer' }}>
-        <h3 style={{ color: '#ffd93d', marginBottom: '1rem' }}>🎮 Match Management</h3>
-        <p style={{ color: '#aaa' }}>Schedule and manage matches</p>
-      </div>
-    </Link>
-
-    <Link href="/admin/verification" style={{ textDecoration: 'none' }}>
-      <div style={{ background: '#1a1a2e', padding: '1.5rem', borderRadius: '12px', border: '1px solid #ffd93d', cursor: 'pointer' }}>
-        <h3 style={{ color: '#ffd93d', marginBottom: '1rem' }}>🎓 Student Verification</h3>
-        <p style={{ color: '#aaa' }}>Verify players&apos; student details</p>
-      </div>
-    </Link>
-
-    <Link href="/live" style={{ textDecoration: 'none' }}>
-      <div style={{ background: '#1a1a2e', padding: '1.5rem', borderRadius: '12px', border: '1px solid #ffd93d', cursor: 'pointer' }}>
-        <h3 style={{ color: '#ffd93d', marginBottom: '1rem' }}>📡 Live Streams</h3>
-        <p style={{ color: '#aaa' }}>Watch streams; configure them from each tournament</p>
-      </div>
-    </Link>
-
-    {/* Admin only: feedback and sentiment are for the Organizing Committee */}
-    {profile?.role === 'admin' && (
-      <Link href="/admin/feedback" style={{ textDecoration: 'none' }}>
-        <div style={{ background: '#1a1a2e', padding: '1.5rem', borderRadius: '12px', border: '1px solid #ffd93d', cursor: 'pointer' }}>
-          <h3 style={{ color: '#ffd93d', marginBottom: '1rem' }}>🧠 Feedback Analysis</h3>
-          <p style={{ color: '#aaa' }}>Sentiment of audience and player feedback</p>
-        </div>
-      </Link>
-    )}
-
-    <Link href="/announcements" style={{ textDecoration: 'none' }}>
-      <div style={{ background: '#1a1a2e', padding: '1.5rem', borderRadius: '12px', border: '1px solid #ffd93d', cursor: 'pointer' }}>
-        <h3 style={{ color: '#ffd93d', marginBottom: '1rem' }}>📢 Announcements</h3>
-        <p style={{ color: '#aaa' }}>{profile?.role === 'admin' ? 'Post and manage announcements' : 'Read the latest announcements'}</p>
-      </div>
-    </Link>
-
-    <Link href="/analytics" style={{ textDecoration: 'none' }}>
-      <div style={{ background: '#1a1a2e', padding: '1.5rem', borderRadius: '12px', border: '1px solid #ffd93d', cursor: 'pointer' }}>
-        <h3 style={{ color: '#ffd93d', marginBottom: '1rem' }}>📊 Analytics</h3>
-        <p style={{ color: '#aaa' }}>{profile?.role === 'admin' ? 'Generate activity, sentiment and engagement reports' : 'Viewership and audience engagement stats'}</p>
-      </div>
-    </Link>
-  </div>
-)}
-
-        {(profile?.role === 'admin' || profile?.role === 'staff') && <NeedsAttention />}
+        {isOrganizer && <NeedsAttention />}
 
         {/* Shown for every role */}
         <LatestAnnouncements />
-
       </div>
     </div>
   )

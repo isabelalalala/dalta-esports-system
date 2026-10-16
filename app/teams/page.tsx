@@ -154,7 +154,7 @@ export default function TeamsPage() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {teams.map(team => (
-            <div key={team.id} className="bg-[#111116] border border-brown p-6 hover:border-gold transition">
+            <div key={team.id} className="bg-sitecard border-2 border-brownlight p-6 shadow-[4px_4px_0_var(--color-brown)] hover:border-gold transition-colors">
               <h2 className="text-2xl font-bold text-gold">{team.name}</h2>
               <p className="text-gray-400 mt-1 uppercase text-xs font-bold tracking-widest">{team.games?.name}</p>
               {team.description && <p className="text-gray-300 mt-3 text-sm">{team.description}</p>}

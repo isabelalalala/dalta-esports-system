@@ -6,7 +6,7 @@ import { createClient } from '@/utils/supabase/client';
 import Link from 'next/link';
 import { getErrorMessage } from '@/utils/errors';
 import { ACTIVE_REGISTRATION_STATUSES } from '@/utils/types';
-import { getTournamentStatus, statusLabels, statusStyles } from '@/utils/tournaments';
+import { formatDate, getTournamentStatus, statusLabels, statusStyles } from '@/utils/tournaments';
 import type { Profile, Tournament } from '@/utils/types';
 
 export default function TournamentsPage() {
@@ -75,14 +75,15 @@ export default function TournamentsPage() {
             <Link href="/dashboard" className="text-gold hover:underline text-sm flex items-center gap-1">
               ← Back to Dashboard
             </Link>
-            <h1 className="text-4xl font-black tracking-tighter uppercase italic">Tournaments</h1>
+            <h1 className="font-pixel text-xl sm:text-2xl leading-relaxed text-gold">Tournaments</h1>
           </div>
 
           {(profile?.role === 'admin' || profile?.role === 'staff') && (
-            <Link href="/tournaments/create">
-              <button className="bg-gold text-black px-6 py-3 font-bold hover:bg-golddark transition skew-x-[-10deg]">
-                <span className="inline-block skew-x-[10deg]">+ CREATE TOURNAMENT</span>
-              </button>
+            <Link
+              href="/tournaments/create"
+              className="bg-gold text-black px-6 py-3 font-bold border-2 border-gold shadow-[4px_4px_0_var(--color-brown)] hover:bg-golddark"
+            >
+              + Create Tournament
             </Link>
           )}
         </div>
@@ -95,7 +96,7 @@ export default function TournamentsPage() {
 
         {/* Tournaments Grid */}
         {tournaments.length === 0 ? (
-          <div className="text-center text-gray-500 py-20 border-2 border-dashed border-sitecard">
+          <div className="text-center text-gray-500 py-20 border-2 border-dashed border-brown">
             <p>No tournaments yet.</p>
           </div>
         ) : (
@@ -107,7 +108,7 @@ export default function TournamentsPage() {
 
               return (
                 <Link key={tournament.id} href={`/tournaments/${tournament.id}`}>
-                  <div className="group bg-[#111116] border border-brownlight overflow-hidden hover:border-gold transition-all duration-300 relative">
+                  <div className="group bg-sitecard border-2 border-brownlight shadow-[4px_4px_0_var(--color-brown)] overflow-hidden hover:border-gold transition-colors relative">
                     {/* Status Badge */}
                     <div className="absolute top-4 right-4">
                       <span className={`text-[10px] font-black px-2 py-1 border uppercase ${statusStyles[status]}`}>
@@ -125,41 +126,42 @@ export default function TournamentsPage() {
 
                       <div className="space-y-4">
                         {/* Participants Stats */}
-                        <div className="bg-sitebg p-3 border border-sitecard">
+                        <div className="bg-sitebg p-3 border border-brown">
                           <div className="flex justify-between items-end mb-1">
                             <span className="text-gray-500 text-[10px] font-bold uppercase">Participants</span>
                             <span className="text-white text-sm font-bold">
                               {registeredCount} / {tournament.max_participants || '∞'}
                             </span>
                           </div>
-                          {/* Progress Bar */}
-                          <div className="w-full bg-sitecard h-1.5 rounded-full overflow-hidden">
-                            <div 
-                              className="bg-gold h-full transition-all duration-500" 
-                              style={{ width: `${Math.min((registeredCount / (tournament.max_participants || 1)) * 100, 100)}%` }}
-                            />
-                          </div>
+                          {/* How full the tournament is (a native progress bar, styled for the theme) */}
+                          <progress
+                            value={Math.min(registeredCount, tournament.max_participants || registeredCount)}
+                            max={tournament.max_participants || 1}
+                            aria-label="Teams registered"
+                            className="w-full h-1.5 block appearance-none bg-sitecard [&::-webkit-progress-bar]:bg-sitecard [&::-webkit-progress-value]:bg-gold [&::-moz-progress-bar]:bg-gold"
+                          />
                         </div>
 
                         <div className="grid grid-cols-2 gap-4">
                           <div>
                             <p className="text-gray-500 text-[10px] font-bold uppercase">Start Date</p>
                             <p className="text-white text-sm font-medium">
-                              {new Date(tournament.start_date).toLocaleDateString()}
+                              {formatDate(tournament.start_date)}
                             </p>
                           </div>
                           <div>
                             <p className="text-gray-500 text-[10px] font-bold uppercase">Deadline</p>
                             <p className="text-white text-sm font-medium">
-                              {tournament.registration_deadline ? new Date(tournament.registration_deadline).toLocaleDateString() : 'N/A'}
+                              {tournament.registration_deadline ? formatDate(tournament.registration_deadline) : 'N/A'}
                             </p>
                           </div>
                         </div>
                       </div>
 
-                      <button className="w-full mt-6 py-3 border border-gold text-gold font-bold hover:bg-gold hover:text-black transition-all uppercase text-sm tracking-tighter">
+                      {/* The whole card is the link; this only looks like a button */}
+                      <span className="block text-center w-full mt-6 py-3 border-2 border-gold text-gold font-bold group-hover:bg-gold group-hover:text-black transition-colors uppercase text-sm">
                         View Tournament Details
-                      </button>
+                      </span>
                     </div>
                   </div>
                 </Link>

@@ -222,10 +222,7 @@ Readers: "anyone" = also logged out; "logged-in" = any role; "admin/staff" = org
 - `/admin/website` (admin): tabs Site text (`SiteTextEditor`), Carousel, Campaigns, Events, Divisions, Officers,
   Official teams (+ players). Lists use the generic `ListEditor` (add, edit, ▲▼ order, publish, delete, images);
   images go through `utils/site-images.ts` (`<folder>/<random>.<ext>`), and replaced/removed files are deleted.
-- Wireframe style on a dark background: theme colors `gold`, `brown`, `brownlight`, `sitebg`, `sitecard` and
-  `font-pixel` (Press Start 2P) in `app/globals.css`. Logo: `public/daltaesportslogo.jpg` unless one is uploaded.
-- `components/Footer.tsx` is the site footer on every page (texts and social links from `site_content`).
-  `components/AppHeader.tsx` hides itself on the public pages (they have their own header).
+- Logo: `public/daltaesportslogo.jpg` unless one is uploaded on `/admin/website`.
 
 **Database functions**: `get_my_role()`, `current_user_role()` (older alias of get_my_role), `search_players(game_id, search)`,
 `get_team_roster(team_id)` (name, IGN, in-game role, is_verified), `generate_bracket(tournament_id)`, `delete_own_account()`,
@@ -262,8 +259,10 @@ triggers with readable error messages.
 - Calendar files: `/calendar/match|tournament|team/[id]` (route handler, `utils/ics.ts`, no library):
   Asia/Manila VTIMEZONE, fixed UID per match + SEQUENCE from updated_at (re-import updates), 1-hour events,
   `webcal://` subscribe links (`components/CalendarLinks.tsx`). Data from `get_public_calendar()`.
-- `components/ShareButton.tsx`: native share sheet when available, Copy link, Share on Facebook. Footer on every page: `components/Footer.tsx`; while logged in, `components/AppHeader.tsx`
-  (DALTA Esports link + `NotificationBell`) at the top. Both are in `app/layout.tsx`.
+- `components/ShareButton.tsx`: native share sheet when available, Copy link, Share on Facebook.
+- Every page (public and logged in) has the same header and footer, both in `app/layout.tsx`:
+  `components/site/SiteHeader.tsx` (logo, search, and `SiteAuthButtons`: Log in / Sign up, or Dashboard +
+  `NotificationBell` + Log out) and `components/Footer.tsx` (texts and social links from `site_content`).
 - Everyone logged in: `/notifications`, `/privacy/consent`, `/announcements`, `/schedule`, `/live`, `/live/[id]`, `/feedback`.
 - Exports: GET `/api/exports/[type]?format=xlsx|csv&tournament=&game=` (`utils/exports.ts`, server only).
   Types: registrations, rosters, matches (admin/staff), feedback (admin, anonymous), users (admin). Reads with the
@@ -289,7 +288,15 @@ triggers with readable error messages.
   that a row came back, then show a clear message.
 - Dates without a time (tournament dates) are stored as midnight UTC: use `toDateInput()` and `formatDate()`.
   Real moments (`created_at`, `scheduled_at`) are shown in the viewer's local time.
-- New UI uses Tailwind classes, not inline styles.
+- New UI uses Tailwind classes, not inline styles (only exception: `utils/og-card.tsx`, because `next/og` can't
+  use Tailwind).
+- One look for the whole app, public and logged in: the logo's yellow and brown on a dark background (the
+  client's wireframe style). Use the theme tokens from `app/globals.css`, never hex colors in classes:
+  `bg-sitebg` (page), `bg-sitecard` (cards), `text-gold` / `bg-gold` + `hover:bg-golddark` (accents, buttons with
+  `text-black`), `border-brownlight` / `border-brown` (lines), `shadow-[4px_4px_0_var(--color-brown)]` or `6px`
+  (hard offset shadow), square corners (`rounded-full` only for pills and dots), `font-pixel` for page titles
+  (`font-pixel text-xl sm:text-2xl leading-relaxed text-gold`). Red/green/yellow and the blue Verified badge are
+  for meaning (errors, success, pending, verified), not decoration.
 - The Supabase API returns at most 1000 rows per request by default, and anything beyond that is cut off without
   an error. Count or aggregate big tables (`stream_views`, `feedback`) in SQL instead of loading every row.
 
@@ -308,14 +315,13 @@ The business case also lists a "Database Module". It is not a separate module: e
 tables and migrations (see Current schema).
 
 ### Notes on reports (Module 6)
-- Chart colors are in `utils/reports.ts` and were checked for color-blind safety on the card color `#1a1a2e`.
+- Chart colors are in `utils/reports.ts` and were checked for color-blind safety on the card color `#1f1714`.
   Sentiment uses blue (positive) / gray (neutral) / red (negative); other charts use `categoryColors` in order.
 - Viewership is counted by the app, not by Facebook: one view per logged-in person per stream per day.
   Official Facebook viewer counts would need the Graph API (a Facebook App and page tokens). That isn't built.
 - Realtime Presence needs Realtime enabled for the project (it is, for `matches`); public channels must be allowed.
 
-After all 6 modules: restyle every page with Tailwind CSS. The home (`app/page.tsx`), dashboard and `/tournaments` pages
-still use inline styles; the rest already use Tailwind classes.
+Restyle: done. Every page uses Tailwind and the yellow/brown theme (no inline styles left).
 
 Supported games: MLBB, Valorant, Tekken 8, League of Legends, CODM.
 

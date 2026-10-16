@@ -10,7 +10,7 @@ import {
 } from '@/utils/notifications';
 
 // 🔔 with the unread count (kept up to date with Supabase Realtime) and a dropdown
-// with the latest notifications. Shown in the header (components/AppHeader.tsx).
+// with the latest notifications. Shown in the header (components/site/SiteAuthButtons.tsx).
 export default function NotificationBell({ userId }: { userId: string }) {
   const supabase = createClient();
   const router = useRouter();
