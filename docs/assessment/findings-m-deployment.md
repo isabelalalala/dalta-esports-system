@@ -2,7 +2,7 @@
 
 ## Verdict
 
-Deployable on Railway but **not turnkey**: two repo-level blockers (no Node.js pin — Nixpacks defaults to Node 18 while Next 16 needs ≥20.9; base tables `profiles`/`tournaments`/`tournament_registrations` are never created by any migration so the very first migration fails on a fresh project) plus several dashboard-only prerequisites (pg_cron before `202610171400`, Vault secret, SMTP, auth redirect URLs) that are documented but must be executed manually and in order.
+Deployable on Railway but **not turnkey**: one repo-level blocker remains (no Node.js pin — Nixpacks defaults to Node 18 while Next 16 needs ≥20.9) plus several dashboard-only prerequisites (pg_cron before `202610171400`, Vault secret, SMTP, auth redirect URLs) that are documented but must be executed manually and in order. *(The second original blocker — base tables missing from migrations — is resolved by `202610151100_base_schema.sql`; see Critical 1.)*
 
 ## Checked
 
@@ -30,8 +30,8 @@ Auth redirects do **not** depend on `NEXT_PUBLIC_SITE_URL` — they use `window.
 | Vault secret `feedback_server_key` | manual `vault.create_secret(...)`, header `202610181000:13–19`; checked by `feedback_server_key_ok` `:158–169` | `claim_gemini_call` raises `:188–189` → RPC error → stored as `pendingReason` (silent pending). If `vault` schema/ext absent the function errors at call → same pending path. Degrades, not crash. |
 | pg_cron extension + job `dalta-checkin-open-notifications` | `202610171400:328–332`, inside `begin;`(:13)…`commit;`(:388); prerequisite noted only in comment `:327` | **Whole migration file rolls back** if pg_cron isn't enabled first (fresh project can't pass `202610171400`). If the job is later dropped → `checkin_open` notifications silently never send. |
 | `supabase_realtime` publication | guarded `do` blocks (`202610171400:49–57`, `…1200:55–63`, `…1500:143–151`, `…2100:109–117`) | exists by default on Supabase; would error only off-platform |
-| Base tables `profiles`, `tournaments`, `tournament_registrations` | no CREATE anywhere; ~134 references across migrations; first failure `202610151200:44` | **fresh project cannot run migrations** (see Critical 1) |
-| `handle_new_user` trigger on `auth.users` | recreated in `202610161200:112–114` (old triggers dropped `:95–110`) + backfill `:117` | covered by migrations — but unreachable since profiles itself has no CREATE |
+| ~~Base tables `profiles`, `tournaments`, `tournament_registrations`~~ | **RESOLVED** — created by `202610151100_base_schema.sql` (idempotent `if not exists`) | none — automated |
+| `handle_new_user` trigger on `auth.users` | recreated in `202610161200:112–114` (old triggers dropped `:95–110`) + backfill `:117` | covered by migrations — no base trigger needed |
 | Supabase Auth URL config (Site URL, redirect allowlist) | dashboard only; documented in CLAUDE.md | email confirm/reset links point at wrong domain or get rejected |
 | SMTP for auth emails | dashboard only; CLAUDE.md notes built-in sender allows only a few emails/hr | sign-up/reset emails unreliable in a demo |
 | Recovery email template edit | dashboard only; CLAUDE.md | reset links work only in the requesting browser |
@@ -42,7 +42,7 @@ Auth redirects do **not** depend on `NEXT_PUBLIC_SITE_URL` — they use `window.
 
 **Critical:**
 
-1. **Fresh Supabase project cannot run this repo end-to-end.** `profiles`, `tournaments`, `tournament_registrations` have no `CREATE TABLE` anywhere (grep-verified; also no `schema.sql`/base dump exists). The first migration already fails even earlier than the `alter table` at `:88`: `create or replace function public.current_user_role()` at `202610151200:44-52` is a `language sql` function whose body selects `public.profiles`, and `check_function_bodies` (on by default) validates SQL function bodies at CREATE time — so the file dies at `:44`, inside `begin;`/`commit;` → full rollback (it also FKs `profiles` at `:110`, `:160` and alters `tournament_registrations` at `:343`). Correction to the audit premise: `teams`/`team_members`/`games`/`team_join_codes` **are** created (`:106`, `:157`, `:59`, `:137`), and `tournament_registrant_students` is referenced nowhere in the repo. CLAUDE.md documents the missing tables' columns (lines ~85–128) but not executable DDL — a fresh deploy needs those three tables hand-recreated before any migration can run. *(Core fact also recorded in findings-a.)*
+1. ~~**Fresh Supabase project cannot run this repo end-to-end.**~~ **RESOLVED** — `supabase/migrations/202610151100_base_schema.sql` now creates the three base tables (`profiles`, `tournaments`, `tournament_registrations`) ahead of every migration; `if not exists` makes it a no-op on existing databases. Original finding: no `CREATE TABLE` anywhere; the first migration died at `202610151200:44` (`language sql` function selecting `public.profiles`, validated at CREATE under `check_function_bodies`, inside `begin;`/`commit;` → full rollback). *(Core fact also recorded in findings-a.)*
 
 2. **No Node.js version pin — Railway Nixpacks will install Node 18, which cannot build Next 16.** `package.json` has no `engines`; no `.nvmrc`/`.node-version`; no `nixpacks.toml`/`railway.*`. Nixpacks' `DEFAULT_NODE_VERSION` is 18; Next.js 16 requires ≥20.9.0 (consistent with the `node >=20.9.0` engines throughout `package-lock.json`, e.g. sharp entries). Build fails on the Nixpacks builder; it survives only if Railway uses Railpack (defaults to Node 22). Fix: `"engines": {"node": ">=20.9.0"}` or `.nvmrc`. (`package.json:1–33`)
 
