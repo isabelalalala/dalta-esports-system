@@ -9,7 +9,7 @@ import ActivitySection from '../../ActivitySection';
 import SentimentSection from '../../SentimentSection';
 import EngagementSection from '../../EngagementSection';
 import {
-  activityCsv, buildCsv, describeFilters, downloadCsv, engagementCsv, sentimentCsv, type SavedReport,
+  activityCsv, buildCsv, dateInManila, describeFilters, downloadCsv, engagementCsv, sentimentCsv, type SavedReport,
 } from '@/utils/reports';
 import PageLoading from '@/components/PageLoading';
 import PageError from '@/components/PageError';
@@ -63,7 +63,7 @@ export default function SavedReportPage() {
       ...sentimentCsv(report.data.sentiment),
       ...engagementCsv(report.data.engagement),
     ]);
-    downloadCsv(`analytics-report-${report.generated_at.slice(0, 10)}.csv`, csv);
+    downloadCsv(`analytics-report-${dateInManila(report.generated_at)}.csv`, csv);
   };
 
   return (

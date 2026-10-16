@@ -57,8 +57,12 @@ find.
   `result.<status>` rows for every submission status change.
 
 **Reports** (H)
-- `report_activity` per-tournament team counts are unfiltered lifetime numbers next
-  to date-filtered match counts — internally inconsistent rows under a date range.
+- ~~`report_activity` per-tournament team counts are unfiltered lifetime numbers next
+  to date-filtered match counts — internally inconsistent rows under a date range.~~
+  RESOLVED: `approved_teams`/`pending_teams` now count from the filtered `r` CTE;
+  `prediction_participation` divides by accounts that existed by `p_to`; CSV
+  filenames and date presets use Manila dates; `stream_views(viewed_on)` indexed.
+  (`202610181600`.)
 
 **Auth/accounts** (B)
 - Admin-created accounts' confirm links point at `/auth/login`, skipping

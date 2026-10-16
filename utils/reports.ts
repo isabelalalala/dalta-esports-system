@@ -223,6 +223,18 @@ export function buildCsv(sections: CsvSection[]) {
     .join('\r\n\r\n');
 }
 
+// ---------------------------------------------------------------------------
+// Philippine dates, for filenames and filter presets. Same UTC+8 logic as the
+// server-side helpers in utils/exports.ts (which client code can't import).
+// ---------------------------------------------------------------------------
+export function dateInManila(iso: string) {
+  return new Date(Date.parse(iso) + 8 * 60 * 60 * 1000).toISOString().slice(0, 10);
+}
+
+export function todayInManila() {
+  return dateInManila(new Date().toISOString());
+}
+
 // Starts a download in the browser. The BOM makes Excel read the file as UTF-8 (ñ, ★, ...).
 export function downloadCsv(filename: string, csv: string) {
   const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8' });

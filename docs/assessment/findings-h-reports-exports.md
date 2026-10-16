@@ -2,7 +2,7 @@
 
 ## Verdict
 
-Reports, analytics and exports are mostly correct — role gates, dedup, Manila-date handling and saved-report version drift are all handled properly — but `report_activity` mixes filtered and unfiltered numbers inside the same tournament row, and there is a cluster of smaller issues around filtered denominators, the concerns aggregation cut-off, and UTC-vs-Manila date labels in client-generated filenames.
+Reports, analytics and exports are mostly correct — role gates, dedup, Manila-date handling and saved-report version drift are all handled properly. The one Required issue (`report_activity` mixing filtered and unfiltered numbers) and four of the nits below are resolved in `202610181600_report_consistency.sql` + `utils/reports.ts`; remaining nits are around the concerns aggregation cut-off and UX edges.
 
 ## Checked
 
@@ -20,19 +20,19 @@ Reports, analytics and exports are mostly correct — role gates, dedup, Manila-
 
 **Required:**
 
-1. **`report_activity` mixes date-filtered and all-time numbers in the same row and totals.** The `r` (registrations) and `m` (matches) CTEs are date-filtered (`202610162300:127-128,137-138`), so `totals.registrations`, `registrations_by_status`, `matches_*` respect `p_from/p_to` — but the per-tournament columns `approved_teams`/`pending_teams` are lifetime counts with no date predicate (`:194-197`). With a date range set, one tournament row shows all-time team counts next to in-range match counts, and the table's team columns disagree with the "Registrations" total. Either document the split or filter the two subqueries like `r`.
+1. ~~**`report_activity` mixes date-filtered and all-time numbers in the same row and totals.**~~ **RESOLVED** — `approved_teams`/`pending_teams` now count from the date-filtered `r` CTE (`202610181600_report_consistency.sql`), so every tournament row and total uses the same range semantics. Verified live: a backdated out-of-range approved registration no longer inflates `approved_teams`.
 
 **Nit:**
 
-2. **Prediction participation divides a filtered numerator by an unfiltered denominator.** `predictors`/accuracy come from `pr` (tournament/game/date-filtered, `202610181100:302-311`), but `audience.accounts` counts all player+spectator profiles regardless of filters (`:312-314`), and `prediction_participation` = filtered predictors ÷ all accounts (`:332-334`). Under "MLBB / last 7 days" the % reads as participation rate but is really "share of the entire audience that picked in scope". `audience_accounts` also ignores the date filter, so it can't be reconciled with "new users" from `report_activity` for the same range.
+2. ~~**Prediction participation divides a filtered numerator by an unfiltered denominator.**~~ **RESOLVED** — `audience` now counts player/spectator accounts that existed by `p_to` (or today when no range is set), so `prediction_participation` divides in-range predictors by the accounts that could have picked. (`202610181600`.)
 3. **"Common concerns" can drop negative topics.** SQL caps topics at `limit 20` ordered by *total* mentions (`202610162300:284-293`); the UI then filters `negative > 0` (`SentimentSection.tsx:16-19`). With >20 distinct topics, a rarely-mentioned but purely-negative topic is cut before the negative filter sees it — the chart then reports "No negative topics" while one exists.
-4. **CSV filenames use the UTC date while everything else uses Manila.** `engagement-${new Date().toISOString().slice(0,10)}` (`app/analytics/engagement/page.tsx:81`) and `analytics-report-${report.generated_at.slice(0,10)}` (`app/analytics/reports/[id]/page.tsx:66`) take the UTC day — off by one for Manila 00:00–07:59 — whereas server exports use `todayInManila()` (`utils/exports.ts:70-72`). Same root cause as the already-reported UTC/Manila issue, different location.
-5. **Date-range presets use the viewer's time zone, not Manila.** `daysAgo()` builds YYYY-MM-DD from the browser's local date (`components/ReportFilters.tsx:50-55`), but the RPCs interpret from/to as Philippine dates. Correct for PH users; a non-PH viewer's "Last 7 days" shifts by up to a day.
+4. ~~**CSV filenames use the UTC date while everything else uses Manila.**~~ **RESOLVED** — both filenames now use `todayInManila()`/`dateInManila()` from `utils/reports.ts` (client-safe Manila helpers matching `utils/exports.ts`).
+5. ~~**Date-range presets use the viewer's time zone, not Manila.**~~ **RESOLVED** — `daysAgo()` now computes Philippine dates, matching how the RPCs interpret from/to.
 6. **Organizer exclusion is evaluated by current role at report time.** `v`/`pr` join `profiles` and exclude `role in ('admin','staff')` (`202610181100:287,308`) — correct for "organizers' own visits don't count", but a viewer promoted to staff later loses their historical views/picks retroactively, and a demoted organizer's old views reappear.
 7. **Export buttons render for roles that can never use them.** `/tournaments/[id]/registrations` has no role gate (logged-in read is allowed; `app/tournaments/[id]/registrations/page.tsx:137-138`), so players/spectators see "⬇ Excel / CSV" that always 403s into an error line. Route is safe (`route.ts:24-26`); it's a UX nit only.
 8. **Generating while filter options fail to load saves wrong filter labels.** If `useFilterOptions` errors, `filterNames` resolves `tournament`/`game` to `undefined` (`ReportFilters.tsx:40-47`) and the saved report permanently displays "All tournaments · All games" even when ids were set — `handleGenerate` doesn't block on `optionsError` (`app/analytics/page.tsx:67-91`).
 9. **Saved-report CSV omits the negative-feedback examples.** `sentimentCsv` exports totals/by-week/by-tournament/topics (`utils/reports.ts:265-290`) but not `negative_examples`, which the page renders (`SentimentSection.tsx:97-112`) — the CSV is not a complete copy of the saved snapshot.
-10. **`stream_views.viewed_on` range scans have no index.** The only index is `unique (stream_id, user_id, viewed_on)` (`202610162100:88`); `v` filters `sv.viewed_on >= p_from` (`202610181100:289`), so engagement reports seq-scan views. Additive to findings-c nit 17 (different index).
+10. ~~**`stream_views.viewed_on` range scans have no index.**~~ **RESOLVED** — `stream_views_viewed_on_idx` added in `202610181600`.
 11. **Pending feedback is invisible in the stacked charts.** `sentimentSeries` only plots positive/neutral/negative (`SentimentSection.tsx:22-23`); a week or tournament with only pending rows shows a label with a zero-height bar, though `pending` is exported to CSV. Cosmetic. *(Also in findings-f nit 7.)*
 
 **FYI:**
@@ -51,7 +51,7 @@ Reports, analytics and exports are mostly correct — role gates, dedup, Manila-
 
 ## Unverifiable locally
 
-- **Real DB aggregates** — all findings are from SQL/code inspection; actual row counts, the `jsonb` shapes, `date_trunc` bucket labels and `at time zone 'Asia/Manila'` behavior need a live Supabase instance.
+- **Real DB aggregates** — the `202610181600` fixes were verified against the dev project with in-range vs out-of-range fixtures. Other findings are still from SQL/code inspection; the full `jsonb` shapes and `date_trunc` bucket labels would benefit from richer sample data.
 - **Whether `tournaments.start_date`/`end_date`/`registration_deadline` are NOT NULL** (tables created outside migrations — findings-a): if `end_date` can be NULL, `report_activity`'s `t` CTE (`tr.end_date::date >= p_from`, `202610162300:120`) silently drops those tournaments whenever a `from` date is set. App form requires both dates (`app/tournaments/create/page.tsx`), so impact only if API-written.
 - **File downloads** — XLSX bytes, `write-excel-file` date rendering, Content-Disposition round-trip, and CSV in Excel can't be produced without running the route.
 - **Chart rendering** — Chart.js output (stacked/horizontal/doughnut, print resize via `beforeprint`) and `window.print()` output are runtime-only.

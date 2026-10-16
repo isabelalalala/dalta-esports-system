@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { createClient } from '@/utils/supabase/client';
 import { getErrorMessage } from '@/utils/errors';
-import { emptyFilters, type ReportFilters as Filters, type SavedReport } from '@/utils/reports';
+import { dateInManila, emptyFilters, type ReportFilters as Filters, type SavedReport } from '@/utils/reports';
 
 export interface FilterOptions {
   tournaments: { id: string; name: string; game_id: string | null }[];
@@ -46,12 +46,10 @@ export function filterNames(filters: Filters, options: FilterOptions): SavedRepo
   };
 }
 
-// YYYY-MM-DD for today minus `days`, in the viewer's time zone
+// YYYY-MM-DD for today minus `days`, in Philippine time — the report functions
+// interpret from/to as Manila dates regardless of the viewer's time zone.
 function daysAgo(days: number) {
-  const d = new Date();
-  d.setDate(d.getDate() - days);
-  const pad = (n: number) => String(n).padStart(2, '0');
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+  return dateInManila(new Date(Date.now() - days * 86400000).toISOString());
 }
 
 const inputClass =
