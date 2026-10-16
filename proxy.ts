@@ -26,6 +26,25 @@ const protectedRoutes = [
 export async function proxy(request: NextRequest) {
   let response = NextResponse.next({ request });
 
+  const path = request.nextUrl.pathname;
+  const isProtected = protectedRoutes.some((route) => route.test(path));
+  const hasAuthCookie = request.cookies.getAll().some((c) => c.name.startsWith('sb-'));
+
+  // No Supabase cookie means there is no session to verify or refresh — skip the
+  // remote getUser() round-trip. Protected pages go straight to login.
+  if (!hasAuthCookie) {
+    if (isProtected) {
+      return NextResponse.redirect(new URL('/auth/login', request.url));
+    }
+    return response;
+  }
+
+  // Route handlers verify the session themselves; refreshing it here too would
+  // make every API call pay for two getUser() round-trips.
+  if (path.startsWith('/api/')) {
+    return response;
+  }
+
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -51,9 +70,6 @@ export async function proxy(request: NextRequest) {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-
-  const path = request.nextUrl.pathname;
-  const isProtected = protectedRoutes.some((route) => route.test(path));
 
   if (!user && isProtected) {
     const redirect = NextResponse.redirect(new URL('/auth/login', request.url));
