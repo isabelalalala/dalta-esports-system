@@ -1,0 +1,53 @@
+# Findings — G: Realtime and live features (Module 4)
+
+## Verdict
+
+Realtime hygiene is mostly clean — minimal publication, correct per-resource channels/filters, proper cleanup — but "Watching now" is spoofable through unauthenticated public presence channels, and Facebook URL validation accepts non-video links the embed can't render.
+
+## Checked
+
+- Publication membership → all `alter publication supabase_realtime add table` sites: `supabase/migrations/202610162100_live_streaming.sql:109-117` (matches), `202610171200_notifications.sql:55-63` (notifications), `202610171400_match_checkin.sql:49-57` (match_checkins), `202610171500_match_results.sql:143-151` (match_result_submissions)
+- Match page realtime → `app/matches/[id]/page.tsx:100-112` (channel `match-<id>`, three filtered handlers, reload-all), reload path `:49-91`
+- NotificationBell → `components/NotificationBell.tsx:25-39` (channel `notifications-<userId>`, filter `user_id=eq`, cleanup), mark-read utils `utils/notifications.ts:81-89`; `/notifications` list `app/notifications/page.tsx:28-42`
+- Presence → `app/live/[id]/page.tsx:66-90` (join gate, `key = session.user.id`, track on SUBSCRIBED, removeChannel); observer side `app/analytics/engagement/page.tsx:55-77`; display `app/analytics/EngagementSection.tsx:23,33,73`
+- stream_views → upsert `app/live/[id]/page.tsx:47-52`; DDL unique `202610162100:82-89`; Manila-date default + insert policy `202610162300:35-43`; organizer exclusion `202610162300:344-352`
+- Stream lifecycle → `streams` CHECK + manual status `202610162100:13-28`, `check_stream` trigger `:56-76` (no matches.status sync); status buttons `app/tournaments/[id]/streams/page.tsx:96-111,214-224`; `/live` grouping `app/live/page.tsx:80-82`; public live-only filter `202610171800:48-54`
+- Facebook embed → `utils/streams.ts:7,10-19,22-24`; `components/FacebookPlayer.tsx:9-15`; preview in form `app/tournaments/[id]/streams/page.tsx:268,336`
+- Public pages → `components/site/LiveRefresher.tsx:13-33` (postgres_changes on matches + 60 s `router.refresh()`), `app/(site)/t/[id]/page.tsx:86`, `app/(site)/t/[id]/match/[matchId]/page.tsx:74`; anon read `202610161700:44-47`; uncached `get_public_tournament` `utils/public-tournament.ts:21-27`
+- Staleness of non-published data → `app/tournaments/[id]/page.tsx:127-133` (watch-live banner, no channel — grep confirms zero `.channel(` outside the five channels), `app/announcements/page.tsx:31-60`, `app/dashboard/NeedsAttention.tsx:37`, `components/PredictionsProvider.tsx:46-55`
+- Route protection → `proxy.ts:12,17` (`/matches`, `/live` protected)
+
+## Findings
+
+**Required:**
+
+- **Presence "Watching now" is spoofable and leaks viewer identities.** `viewers-<streamId>` is a plain public channel (`app/live/[id]/page.tsx:79`): the presence key is whatever the client passes (`key: session.user.id`) and no private-channel/`realtime.messages` authorization exists anywhere in the repo (CLAUDE.md even notes "public channels must be allowed"). Any client — including logged-out with the anon key — can `track()` arbitrary keys and inflate the count shown to organizers on `/analytics/engagement` (`app/analytics/engagement/page.tsx:62-69` counts `Object.keys(presenceState())`), and can enumerate the real user IDs of everyone currently watching. The players/spectators-only exclusion (`app/live/[id]/page.tsx:76`) and the key=user-id dedupe are client-side conventions only. Fix would need `private: true` channels + authorization policies; at minimum the metric should be treated as unreliable.
+- **Facebook URL validation accepts links the embed can't render.** Both the DB CHECK (`202610162100:22-23`) and `FACEBOOK_URL` (`utils/streams.ts:7`) accept any `https://{www.,m.,web.}facebook.com/<anything>` — page URLs, profiles, groups, `/events/` links all pass — but `facebookEmbedUrl` (`utils/streams.ts:22-24`) hardcodes `plugins/video.php`, which only renders public video/live posts. A staffer pasting `https://www.facebook.com/<page>` gets a valid "✓ Valid Facebook link" (`streams/page.tsx:314-318`) and a permanently broken player for all viewers. Mitigations exist: the live preview (`streams/page.tsx:336`) and the "Open on Facebook" fallback (`FacebookPlayer.tsx:18-21`), but nothing blocks saving. Constrain to video paths (`/videos/`, `/watch/`, `story.php`, `/reel/`) or drop the "validated" claim.
+
+**Nit:**
+
+- **`streams` not in `supabase_realtime`, and the logged-in stream pages have no fallback refresh.** `/live` fetches once (`app/live/page.tsx:18-35`); `/live/[id]` fetches the stream row once (`app/live/[id]/page.tsx:37-41`), so a status flip to `ended` or an edited `facebook_url` leaves a stale "● Live" badge/player until reload. The public `/t/[id]` works around this with the 60 s poll (`LiveRefresher.tsx:26`, comment `:8-9`); logged-in pages lack an equivalent. Publishing `streams` (it has `to authenticated` read, `:34-37`) would fix both.
+- **The logged-in tournament page is staler than its public twin.** `/tournaments/[id]` never subscribes — watch-live banner, bracket and announcements are all fetch-once (`page.tsx:91-133`), so a stream going live or a score change is invisible without navigation, while public visitors get Realtime + polling.
+- **`/announcements` and `NeedsAttention` fetch once** (`announcements/page.tsx:31-60`, `dashboard/NeedsAttention.tsx:37`); `announcements` isn't published, so the only live signal is the bell's `announcement` notification.
+- **`/notifications` doesn't subscribe** (`app/notifications/page.tsx:28-42` deps: `supabase, unreadOnly, reloadCount` only): on the open page the header bell badge updates via Realtime while the list on screen goes stale.
+- **"Watching now" only covers streams live at report load.** `liveKey` is derived from the loaded report (`engagement/page.tsx:57`); a stream that goes live afterward gets no presence channel until manual Refresh — no publication signal exists to detect it.
+- **Pick'em community split never refreshes for passive viewers.** `PredictionsProvider` reloads only when `matchKey` (id/status/winner) changes or the user picks (`PredictionsProvider.tsx:47-48,84`); other users' picks — including on the public `/t/[id]` after `router.refresh()` — leave `splits` stale. `predictions` isn't published, so no fix exists client-side.
+- **No subscribe-error handling except the scoreboard.** `match-` (`matches/[id]/page.tsx:108`), `notifications-` (`NotificationBell.tsx:33`), `viewers-` (`live/[id]/page.tsx:80`) and `public-tournament-` (`LiveRefresher.tsx:25`) ignore `CHANNEL_ERROR`/`TIMED_OUT` — silent staleness if a subscription fails; only `watch-` surfaces status (`live/[id]/page.tsx:129`).
+- **`markAllAsRead` can trigger a reload burst** in the bell: N updated rows → N postgres_changes → N `setReloadCount`/`fetchUnreadCount` calls (`NotificationBell.tsx:31,44`). LiveRefresher's 500 ms debounce (`:17-19`) is the pattern to copy.
+
+**FYI:**
+
+- Publication list is minimal and correct — exactly the four subscribed tables, nothing extraneous. Sensible additions would be `streams` and `announcements` (above); `teams`/`tournaments`/`predictions`/`site_content`/`stream_views` have no realtime need (60 s public poll covers the public surface).
+- Match page filters are correct (`id=eq.<id>` for matches, `match_id=eq.<id>` for the two child tables, `:105-107`); any event reloads match + tournament + teams + checkins + submissions (`:49-91`), a match DELETE still fires the `id=eq` event (filter evaluated on the old row) and degrades to "Match not found" (`:115-116`); cleanup present (`:109-111`).
+- stream_views integrity: `viewed_on` is the DB-side Manila default (`202610162300:35-36`) and the policy pins `viewed_on = today` (`:41-43`), so dates can't be spoofed and same-day re-opens dedupe via `ignoreDuplicates` (`live/[id]/page.tsx:47-52`). Remaining gap: the policy checks only `user_id = auth.uid()` — any authenticated user can record a "view" on any existing stream without opening it (extends E's rate-limit FYI). Organizers' visits are stored but excluded in `report_engagement` (`202610162300:349-350` `p.role not in ('admin','staff')`), consistent with the presence-side exclusion.
+- Stream lifecycle is manual-only as designed: `check_stream` validates tournament↔match consistency + `updated_at` (`202610162100:56-76`); nothing syncs `streams.status` with `matches.status`. `/live` shows Live/Upcoming/Replays (`app/live/page.tsx:80-82`); ended streams remain watchable; public pages show only `status='live'` (`202610171800:53`); linked-match scoreboard on `/live/[id]` verified (`:97-135`).
+- Channel names are per-resource (`match-<id>`, `watch-<tournamentId>`, `viewers-<streamId>`, `notifications-<userId>`, `public-tournament-<id>`); no shared/global channel. `viewers-` shared between watcher and observer is required for presence counting.
+- Logged-out realtime works by design: `matches` SELECT policy is `to anon, authenticated` (`202610161700:44-47`); `get_public_tournament` is per-request `cache()` only, so `router.refresh()` gets fresh data.
+- Bell cross-tab sync works: a mark-read UPDATE in tab A fires postgres_changes → tab B refetches the count (`NotificationBell.tsx:29-31,41-51`).
+
+## Unverifiable locally
+
+- Whether the deployed Realtime applies per-subscriber RLS on `postgres_changes` (affects `match_result_submissions` — already noted in E — and equally the `notifications` `user_id` filter and `match_checkins`).
+- Whether the project's `viewers-*` channels are actually public (Realtime Authorization/private-channel config isn't in the repo) — the spoofability finding assumes defaults per CLAUDE.md's note.
+- Actual realtime delivery, presence join/leave timing, and `pg_cron` job `dalta-checkin-open-notifications` (`202610171400:328-332`).
+- Facebook `plugins/video.php` rendering behavior for `facebook.com/watch/live/` and page/profile URLs — embed output can't be verified without rendering.
