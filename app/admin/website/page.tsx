@@ -9,6 +9,7 @@ import SiteTextEditor from './SiteTextEditor';
 import PageLoading from '@/components/PageLoading';
 import PageError from '@/components/PageError';
 import { getErrorMessage } from '@/utils/errors';
+import { usePageTitle } from '@/utils/page-title';
 
 const TABS = ['Site text', 'Carousel', 'Campaigns', 'Events', 'Divisions', 'Officers', 'Official teams'] as const;
 type Tab = (typeof TABS)[number];
@@ -27,6 +28,7 @@ const postFields: FieldConfig[] = [
 // Edit the public website without code (admin only; RLS and the storage policies also check).
 export default function WebsiteAdminPage() {
   const supabase = createClient();
+  usePageTitle('Edit website');
   const [role, setRole] = useState('');
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState('');
@@ -63,17 +65,17 @@ export default function WebsiteAdminPage() {
   if (loadError) return <PageError message={loadError} />;
   if (role !== 'admin') {
     return (
-      <div className="min-h-screen bg-sitebg text-white p-10 text-center">
+      <main id="main-content" className="min-h-screen bg-sitebg text-white p-10 text-center">
         Only admins can edit the website.{' '}
         <Link href="/dashboard" className="text-gold underline">Back to Dashboard</Link>
-      </div>
+      </main>
     );
   }
 
   const gameName = (id: unknown) => games.find((g) => g.value === id)?.label ?? str(id);
 
   return (
-    <div className="min-h-screen bg-sitebg text-white px-4 py-10">
+    <main id="main-content" className="min-h-screen bg-sitebg text-white px-4 py-10">
       <div className="max-w-5xl mx-auto space-y-6">
         <div>
           <Link href="/dashboard" className="inline-block text-gold hover:underline mb-6">← Back to Dashboard</Link>
@@ -201,7 +203,7 @@ export default function WebsiteAdminPage() {
           )}
         </div>
       </div>
-    </div>
+    </main>
   );
 }
 

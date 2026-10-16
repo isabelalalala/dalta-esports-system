@@ -7,6 +7,7 @@ import { createClient } from '@/utils/supabase/client';
 import { getErrorMessage } from '@/utils/errors';
 import type { Match, MatchCheckin, MatchResultSubmission, MatchTeam } from '@/utils/types';
 import { formatDateTime, roundLabel } from '@/utils/tournaments';
+import { usePageTitle } from '@/utils/page-title';
 import CheckinSection from './CheckinSection';
 import ShareButton from '@/components/ShareButton';
 import CalendarLinks from '@/components/CalendarLinks';
@@ -27,6 +28,7 @@ interface MatchTournament {
 // Everyone logged in can view it.
 export default function MatchPage() {
   const supabase = createClient();
+  usePageTitle('Match details');
   const params = useParams();
   const id = params?.id as string;
 
@@ -124,11 +126,11 @@ export default function MatchPage() {
 
   const teamClass = (teamId: string | undefined) =>
     match.status === 'completed'
-      ? match.winner_team_id === teamId ? 'text-gold' : 'text-gray-500'
+      ? match.winner_team_id === teamId ? 'text-gold' : 'text-gray-400'
       : 'text-white';
 
   return (
-    <div className="min-h-screen bg-sitebg text-white px-4 py-10">
+    <main id="main-content" className="min-h-screen bg-sitebg text-white px-4 py-10">
       <div className="max-w-3xl mx-auto space-y-6">
         <Link href={`/tournaments/${tournament.id}`} className="inline-block text-gold hover:underline">
           ← {tournament.name}
@@ -136,17 +138,17 @@ export default function MatchPage() {
 
         {/* Match header */}
         <div className="bg-sitecard border-2 border-gold shadow-[6px_6px_0_var(--color-brown)] p-4 sm:p-6 space-y-4">
-          <p className="text-xs uppercase font-bold text-gray-400 tracking-widest">
+          <h1 className="text-xs uppercase font-bold text-gray-400 tracking-widest">
             {tournament.game} · {roundLabel(match.round, roundCount)} · Match {match.match_number}
-          </p>
+          </h1>
           <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2 sm:gap-4 text-center">
-            <p className={`text-lg sm:text-2xl font-bold break-words ${teamClass(teamA?.id)}`}>{teamA?.name ?? <span className="italic text-gray-500">TBD</span>}</p>
+            <p className={`text-lg sm:text-2xl font-bold break-words ${teamClass(teamA?.id)}`}>{teamA?.name ?? <span className="italic text-gray-400">TBD</span>}</p>
             <p className="text-2xl sm:text-3xl font-bold tabular-nums">
               {match.status === 'completed' && !match.is_forfeit
                 ? `${match.score_a ?? '-'} : ${match.score_b ?? '-'}`
-                : <span className="text-gray-500 text-xl">vs</span>}
+                : <span className="text-gray-400 text-xl">vs</span>}
             </p>
-            <p className={`text-lg sm:text-2xl font-bold break-words ${teamClass(teamB?.id)}`}>{teamB?.name ?? <span className="italic text-gray-500">TBD</span>}</p>
+            <p className={`text-lg sm:text-2xl font-bold break-words ${teamClass(teamB?.id)}`}>{teamB?.name ?? <span className="italic text-gray-400">TBD</span>}</p>
           </div>
           <div className="flex flex-wrap justify-center items-center gap-3 text-sm">
             <span className="text-gray-300">{formatDateTime(match.scheduled_at)}</span>
@@ -171,7 +173,7 @@ export default function MatchPage() {
           </div>
         </div>
 
-        {error && <div className="bg-red-500/10 border border-red-500 text-red-300 px-4 py-3">{error}</div>}
+        {error && <div role="alert" className="bg-red-500/10 border border-red-500 text-red-300 px-4 py-3">{error}</div>}
 
         {/* Pick'em: the community split, and pick buttons for the audience (not the two teams) */}
         {teamA && teamB && (
@@ -213,6 +215,6 @@ export default function MatchPage() {
           </p>
         )}
       </div>
-    </div>
+    </main>
   );
 }

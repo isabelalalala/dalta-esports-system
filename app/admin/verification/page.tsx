@@ -6,6 +6,7 @@ import { createClient } from '@/utils/supabase/client';
 import { getErrorMessage } from '@/utils/errors';
 import type { Profile, VerificationStatus } from '@/utils/types';
 import { verificationLabels } from '@/utils/verification';
+import { usePageTitle } from '@/utils/page-title';
 import PageLoading from '@/components/PageLoading';
 import PageError from '@/components/PageError';
 
@@ -18,6 +19,7 @@ const TABS: VerificationStatus[] = ['pending', 'rejected', 'verified'];
 // Student verification (admin/staff): check players' student details and verify or reject them.
 export default function VerificationPage() {
   const supabase = createClient();
+  usePageTitle('Student verification');
   const [role, setRole] = useState('');
   const [tab, setTab] = useState<VerificationStatus>('pending');
   const [players, setPlayers] = useState<Profile[]>([]);
@@ -91,10 +93,10 @@ export default function VerificationPage() {
   if (!role && error) return <PageError message={error} />;
   if (role !== 'admin' && role !== 'staff') {
     return (
-      <div className="min-h-screen bg-sitebg text-white p-10 text-center">
+      <main id="main-content" className="min-h-screen bg-sitebg text-white p-10 text-center">
         Only organizers can verify students.{' '}
         <Link href="/dashboard" className="text-gold underline">Back to Dashboard</Link>
-      </div>
+      </main>
     );
   }
 
@@ -105,7 +107,7 @@ export default function VerificationPage() {
   );
 
   return (
-    <div className="min-h-screen bg-sitebg text-white px-4 py-10">
+    <main id="main-content" className="min-h-screen bg-sitebg text-white px-4 py-10">
       <div className="max-w-5xl mx-auto space-y-6">
         <div>
           <Link href="/dashboard" className="inline-block text-gold hover:underline mb-6">
@@ -118,8 +120,8 @@ export default function VerificationPage() {
           </p>
         </div>
 
-        {error && <div className="bg-red-500/10 border border-red-500 text-red-300 px-4 py-3">{error}</div>}
-        {message && <div className="bg-green-500/10 border border-green-500 text-green-300 px-4 py-3">{message}</div>}
+        {error && <div role="alert" className="bg-red-500/10 border border-red-500 text-red-300 px-4 py-3">{error}</div>}
+        {message && <div role="status" className="bg-green-500/10 border border-green-500 text-green-300 px-4 py-3">{message}</div>}
 
         <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
           <div className="flex flex-wrap gap-2">
@@ -139,6 +141,7 @@ export default function VerificationPage() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search name, email, student ID, school"
+            aria-label="Search name, email, student ID, school"
             className={`${inputClass} flex-1`}
           />
         </div>
@@ -156,18 +159,18 @@ export default function VerificationPage() {
                 <li key={p.id} className="bg-sitecard border border-brown p-4 space-y-3">
                   <div className="flex flex-wrap justify-between gap-4">
                     <div>
-                      <p className="font-bold">{p.full_name || <span className="italic text-gray-500">No name</span>}</p>
+                      <p className="font-bold">{p.full_name || <span className="italic text-gray-400">No name</span>}</p>
                       <p className="text-sm text-gray-400 break-all">{p.email}</p>
                     </div>
                     {/* One column on phones, three side by side on larger screens */}
                     <dl className="grid grid-cols-1 sm:grid-cols-3 gap-x-6 gap-y-2 text-sm">
-                      <div><dt className="text-gray-500">Student ID</dt><dd className="font-semibold break-all">{p.student_id}</dd></div>
-                      <div><dt className="text-gray-500">School</dt><dd>{p.school}</dd></div>
-                      <div><dt className="text-gray-500">Course / Year</dt><dd>{p.course_year}</dd></div>
+                      <div><dt className="text-gray-400">Student ID</dt><dd className="font-semibold break-all">{p.student_id}</dd></div>
+                      <div><dt className="text-gray-400">School</dt><dd>{p.school}</dd></div>
+                      <div><dt className="text-gray-400">Course / Year</dt><dd>{p.course_year}</dd></div>
                     </dl>
                   </div>
 
-                  <p className="text-xs text-gray-500">
+                  <p className="text-xs text-gray-400">
                     {p.submitted_at && `Submitted ${new Date(p.submitted_at).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })}`}
                     {p.reviewed_at && ` · Reviewed ${new Date(p.reviewed_at).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })}`}
                   </p>
@@ -183,12 +186,13 @@ export default function VerificationPage() {
                         onChange={(e) => setReason(e.target.value)}
                         maxLength={300}
                         placeholder="Reason the player will see, e.g. Student ID doesn't match school records."
+                        aria-label="Reason the player will see"
                         className={`${inputClass} flex-1`}
                         autoFocus
                         required
                       />
                       <button type="submit" disabled={busy}
-                        className="bg-red-500 text-white px-4 py-2 font-bold hover:bg-red-600 disabled:opacity-50">
+                        className="bg-red-600 text-white px-4 py-2 font-bold hover:bg-red-700 disabled:opacity-50">
                         {tab === 'verified' ? 'Revoke' : 'Reject'}
                       </button>
                       <button type="button" onClick={() => { setRejectingId(null); setReason(''); }}
@@ -218,6 +222,6 @@ export default function VerificationPage() {
           </ul>
         )}
       </div>
-    </div>
+    </main>
   );
 }

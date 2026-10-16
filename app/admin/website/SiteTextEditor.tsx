@@ -87,8 +87,8 @@ export default function SiteTextEditor() {
 
   return (
     <div className="space-y-6">
-      {error && <div className="bg-red-500/10 border border-red-500 text-red-300 px-4 py-3">{error}</div>}
-      {message && <div className="bg-green-500/10 border border-green-500 text-green-300 px-4 py-3">{message}</div>}
+      {error && <div role="alert" className="bg-red-500/10 border border-red-500 text-red-300 px-4 py-3">{error}</div>}
+      {message && <div role="status" className="bg-green-500/10 border border-green-500 text-green-300 px-4 py-3">{message}</div>}
 
       <section className="bg-sitecard border border-brown p-4 grid grid-cols-1 sm:grid-cols-2 gap-6">
         {IMAGE_KEYS.map(({ key, label }) => (

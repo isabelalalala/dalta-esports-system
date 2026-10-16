@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { getErrorMessage } from '@/utils/errors';
 import { confirmEmailRedirect } from '@/utils/auth';
 import type { Profile } from '@/utils/types';
+import { usePageTitle } from '@/utils/page-title';
 import ExportButtons from '@/components/ExportButtons';
 import PageLoading from '@/components/PageLoading';
 
@@ -24,6 +25,7 @@ const inputClass =
 
 export default function ManageUsersPage() {
   const supabase = createClient();
+  usePageTitle('Manage users');
   const [users, setUsers] = useState<Profile[]>([]);
   const [me, setMe] = useState<Profile | null>(null);
   const [search, setSearch] = useState('');
@@ -63,10 +65,10 @@ export default function ManageUsersPage() {
   // Hiding the page is only for convenience; the database refuses these changes from non-admins.
   if (me?.role !== 'admin') {
     return (
-      <div className="min-h-screen bg-sitebg text-white p-10 text-center">
+      <main id="main-content" className="min-h-screen bg-sitebg text-white p-10 text-center">
         Only administrators can manage users.{' '}
         <Link href="/dashboard" className="text-gold underline">Back to the dashboard</Link>
-      </div>
+      </main>
     );
   }
 
@@ -80,7 +82,7 @@ export default function ManageUsersPage() {
   });
 
   return (
-    <div className="min-h-screen bg-sitebg text-white px-4 py-10">
+    <main id="main-content" className="min-h-screen bg-sitebg text-white px-4 py-10">
       <div className="max-w-6xl mx-auto">
         <Link href="/dashboard" className="inline-block text-gold hover:underline mb-6">
           ← Back to Dashboard
@@ -95,7 +97,7 @@ export default function ManageUsersPage() {
         </div>
 
         {error && (
-          <div className="mb-6 bg-red-500/10 border border-red-500 text-red-300 px-4 py-3">{error}</div>
+          <div role="alert" className="mb-6 bg-red-500/10 border border-red-500 text-red-300 px-4 py-3">{error}</div>
         )}
 
         <AddAccountForm onCreated={() => setReloadCount((n) => n + 1)} />
@@ -106,9 +108,10 @@ export default function ManageUsersPage() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search by name or email"
+            aria-label="Search by name or email"
             className={`${inputClass} flex-1`}
           />
-          <select value={roleFilter} onChange={(e) => setRoleFilter(e.target.value)} className={inputClass}>
+          <select value={roleFilter} onChange={(e) => setRoleFilter(e.target.value)} className={inputClass} aria-label="Filter by role">
             <option value="all">All roles</option>
             {ROLES.map((r) => (
               <option key={r} value={r}>{roleLabels[r]}</option>
@@ -147,7 +150,7 @@ export default function ManageUsersPage() {
           )}
         </div>
       </div>
-    </div>
+    </main>
   );
 }
 
@@ -219,7 +222,7 @@ function UserRow({ user, isMe, onChanged }: { user: Profile; isMe: boolean; onCh
           <form onSubmit={handleSaveName} className="flex gap-2">
             <input
               type="text" value={fullName} onChange={(e) => setFullName(e.target.value)}
-              placeholder="Full name" className={`${inputClass} flex-1 min-w-0`} autoFocus
+              placeholder="Full name" aria-label="Full name" className={`${inputClass} flex-1 min-w-0`} autoFocus
             />
             <button type="submit" disabled={busy} className="text-gold font-semibold text-sm disabled:opacity-50">
               Save
@@ -234,7 +237,7 @@ function UserRow({ user, isMe, onChanged }: { user: Profile; isMe: boolean; onCh
           </form>
         ) : (
           <p className="font-semibold truncate">
-            {user.full_name || <span className="italic text-gray-500">No name</span>}
+            {user.full_name || <span className="italic text-gray-400">No name</span>}
             {isMe && <span className="ml-2 text-xs text-yellow-400">(you)</span>}
           </p>
         )}
@@ -262,7 +265,7 @@ function UserRow({ user, isMe, onChanged }: { user: Profile; isMe: boolean; onCh
         {/* created_at is a real moment in time, so show it in the viewer's time zone */}
         {new Date(user.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
         {/* Data Privacy Act consent; only the user can give it (see /privacy/consent) */}
-        <span className="block text-xs text-gray-500">
+        <span className="block text-xs text-gray-400">
           {user.privacy_consent_at
             ? `Privacy consent ${new Date(user.privacy_consent_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}`
             : 'No privacy consent yet'}
@@ -283,7 +286,7 @@ function UserRow({ user, isMe, onChanged }: { user: Profile; isMe: boolean; onCh
         )}
       </div>
 
-      {error && <p className="md:col-span-12 text-sm text-red-300">{error}</p>}
+      {error && <p role="alert" className="md:col-span-12 text-sm text-red-300">{error}</p>}
     </div>
   );
 }
@@ -361,7 +364,7 @@ function AddAccountForm({ onCreated }: { onCreated: () => void }) {
     return (
       <div className="mb-6">
         {message && (
-          <div className="mb-3 bg-green-500/10 border border-green-500 text-green-300 px-4 py-3">{message}</div>
+          <div role="status" className="mb-3 bg-green-500/10 border border-green-500 text-green-300 px-4 py-3">{message}</div>
         )}
         <button
           onClick={() => setOpen(true)}
@@ -377,26 +380,26 @@ function AddAccountForm({ onCreated }: { onCreated: () => void }) {
     <form onSubmit={handleCreate} className="mb-6 bg-sitecard border-2 border-gold shadow-[6px_6px_0_var(--color-brown)] p-6 space-y-4">
       <h2 className="text-xl font-bold">Add account</h2>
 
-      {error && <div className="bg-red-500/10 border border-red-500 text-red-300 px-4 py-3">{error}</div>}
-      {message && <div className="bg-green-500/10 border border-green-500 text-green-300 px-4 py-3">{message}</div>}
+      {error && <div role="alert" className="bg-red-500/10 border border-red-500 text-red-300 px-4 py-3">{error}</div>}
+      {message && <div role="status" className="bg-green-500/10 border border-green-500 text-green-300 px-4 py-3">{message}</div>}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <input
           type="email" value={email} onChange={(e) => setEmail(e.target.value)}
-          placeholder="Email" className={inputClass} required
+          placeholder="Email" aria-label="Email" className={inputClass} required
         />
         <input
           type="text" value={fullName} onChange={(e) => setFullName(e.target.value)}
-          placeholder="Full name" className={inputClass} required
+          placeholder="Full name" aria-label="Full name" className={inputClass} required
         />
-        <select value={role} onChange={(e) => setRole(e.target.value)} className={inputClass}>
+        <select value={role} onChange={(e) => setRole(e.target.value)} className={inputClass} aria-label="Role">
           {ROLES.map((r) => (
             <option key={r} value={r}>{roleLabels[r]}</option>
           ))}
         </select>
         <input
           type="text" value={password} onChange={(e) => setPassword(e.target.value)}
-          placeholder="Temporary password (8+ characters)" className={inputClass} required
+          placeholder="Temporary password (8+ characters)" aria-label="Temporary password" className={inputClass} required
           autoComplete="off"
         />
       </div>
