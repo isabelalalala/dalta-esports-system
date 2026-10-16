@@ -21,7 +21,7 @@ export async function createClient() {
             );
           } catch {
             // Server Components can't set cookies, so this throws there.
-            // That's fine: proxy.ts refreshes the session cookies on every request.
+            // That's fine: proxy.ts refreshes the session cookies on page requests.
           }
         },
       },
