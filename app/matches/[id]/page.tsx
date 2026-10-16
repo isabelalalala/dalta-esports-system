@@ -98,10 +98,15 @@ export default function MatchPage() {
     return () => clearInterval(timer);
   }, []);
 
-  // Reload when this match, its check-ins or its results change (Supabase Realtime)
+  // Reload when this match, its check-ins or its results change (Supabase Realtime).
+  // A result approval writes to several tables at once — coalesce to one reload.
   useEffect(() => {
     if (!id) return;
-    const reload = () => setReloadCount((n) => n + 1);
+    let timer: ReturnType<typeof setTimeout> | null = null;
+    const reload = () => {
+      if (timer) clearTimeout(timer);
+      timer = setTimeout(() => setReloadCount((n) => n + 1), 500);
+    };
     const channel = supabase
       .channel(`match-${id}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'matches', filter: `id=eq.${id}` }, reload)
@@ -109,6 +114,7 @@ export default function MatchPage() {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'match_result_submissions', filter: `match_id=eq.${id}` }, reload)
       .subscribe();
     return () => {
+      if (timer) clearTimeout(timer);
       supabase.removeChannel(channel);
     };
   }, [supabase, id]);

@@ -51,7 +51,9 @@ export default function EngagementPage() {
         setLoading(false);
       }
     };
-    load();
+    // Debounce: each filter change runs report_engagement; coalesce quick edits
+    const timer = setTimeout(() => { load(); }, 300);
+    return () => clearTimeout(timer);
   }, [supabase, filters, filterError, reloadCount]);
 
   // Live viewers: listen to the presence channel of every live stream.
