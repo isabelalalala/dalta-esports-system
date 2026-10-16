@@ -1,4 +1,4 @@
-# DALTA Esports – Features Added Beyond the Original 6 Modules
+# DALTA Esports: Features Added Beyond the Original 6 Modules
 
 This document lists every feature that was built **after** (or on top of) the six modules in the business case,
 so the business case, Context Flow Diagram (CFD), Data Flow Diagram Level 1 (DFD) and Use Case diagrams can be
@@ -23,13 +23,13 @@ updated to match the final system.
 | 4 | Match check-in & forfeits | 2 Registration & Tournament Mgmt | `match_checkins` | `202610171400_match_checkin` |
 | 5 | Captain result submission, disputes & staff review | 2 Registration & Tournament Mgmt | `match_result_submissions`, bucket `match-proofs` | `202610171500_match_results` |
 | 6 | In-app notifications | 3 Event Information & Announcements | `notifications` | `202610171200_notifications` (+ later ones add types) |
-| 7 | Public tournament & match pages, link previews, calendar files, sharing | 3 Event Information & Announcements | – (read-only functions) | `202610171800_public_tournaments` |
+| 7 | Public tournament & match pages, link previews, calendar files, sharing | 3 Event Information & Announcements | - (read-only functions) | `202610171800_public_tournaments` |
 | 8 | Admin-editable public website | **7 Public Website & Content Management (new)** | `site_content`, `hero_images`, `campaigns`, `events`, `game_divisions`, `officers`, `official_teams`, `official_team_players`, bucket `site-images` | `202610171600_public_website` |
 | 9 | Feedback protection (one per item, instant AI analysis, rate limit, retry) | 5 Feedback & Sentiment Analysis | `gemini_calls` (+ new columns on `feedback`) | `202610181000_feedback_protection` |
-| 10 | Pick'em predictions & leaderboard | **8 Audience Engagement – Pick'em (new)** | `predictions` | `202610181100_predictions` |
+| 10 | Pick'em predictions & leaderboard | **8 Audience Engagement: Pick'em (new)** | `predictions` | `202610181100_predictions` |
 | 11 | Activity (audit) log | 6 Administrative Reports ("System Report") | `activity_logs` | `202610171100_activity_log` |
-| 12 | Excel / CSV exports | 6 Administrative Reports | – (logged in `activity_logs`) | `202610171700_export_log` |
-| 13 | Enhancements inside the original modules (saved reports, "watching now", engagement additions) | 4, 6 | – | `202610162300_admin_reports`, `202610181100_predictions` |
+| 12 | Excel / CSV exports | 6 Administrative Reports | - (logged in `activity_logs`) | `202610171700_export_log` |
+| 13 | Enhancements inside the original modules (saved reports, "watching now", engagement additions) | 4, 6 | - | `202610162300_admin_reports`, `202610181100_predictions` |
 
 ---
 
@@ -77,8 +77,8 @@ updated to match the final system.
 | **D9 Predictions DB** | `predictions` |
 
 **New processes:** **7.0 Manage Public Website** and **8.0 Manage Pick'em Predictions**. The existing processes
-1.0–6.0 gain the flows listed per feature in Section 3. Notifications are written by processes 1.0–3.0 into D7 and
-read by every logged-in actor. The activity log is written by 1.0–4.0 and 6.0 into D8 and read by the admin
+1.0-6.0 gain the flows listed per feature in Section 3. Notifications are written by processes 1.0-3.0 into D7 and
+read by every logged-in actor. The activity log is written by 1.0-4.0 and 6.0 into D8 and read by the admin
 through 6.0.
 
 ### 2.4 Use case diagrams
@@ -91,7 +91,7 @@ through 6.0.
 
 ## 3. Feature details
 
-### Feature 1 – Account security & Data Privacy Act consent
+### Feature 1: Account security & Data Privacy Act consent
 **Module:** 1 Account Management
 
 **What it does:** forgot/reset password by email, email confirmation (with resend), a public Privacy Notice,
@@ -114,7 +114,7 @@ their own account.
 - `profiles` new columns: `privacy_consent_at`, `privacy_consent_version`.
 - Function: `give_privacy_consent(version)`.
 
-### Feature 2 – Student verification
+### Feature 2: Student verification
 **Module:** 1 Account Management. It also adds an eligibility rule to Module 2.
 
 **What it does:** players enter their student ID, school and course/year. Admin or staff verify or reject them,
@@ -137,7 +137,7 @@ before the team can register, be approved or add members. Other users only see a
 - `tournaments` new column: `requires_verification`.
 - Function: `review_student_verification(user, approve, note)`.
 
-### Feature 3 – Team invites & roster management
+### Feature 3: Team invites & roster management
 **Module:** 2 Registration and Tournament Management
 
 **What it does:** the captain searches players by IGN or name and invites them, and the player accepts or declines.
@@ -160,7 +160,7 @@ is registered for a tournament that hasn't ended. Roster sizes come from each ga
 - Functions: `respond_to_team_invite()`, `transfer_team_captaincy()`, `get_my_team_invites()`,
   `get_team_invites()`, `search_players()`.
 
-### Feature 4 – Match check-in & forfeits
+### Feature 4: Match check-in & forfeits
 **Module:** 2 Registration and Tournament Management (match operations). It supports Module 4's
 "Real-Time Match Management".
 
@@ -186,7 +186,7 @@ Both captains get a notification when check-in opens. Staff see matches with a m
 - Functions: `check_in_match()`, `declare_forfeit()`, `get_needs_attention()`,
   `send_checkin_open_notifications()` (pg_cron job `dalta-checkin-open-notifications`).
 
-### Feature 5 – Result submission, disputes & staff review
+### Feature 5: Result submission, disputes & staff review
 **Module:** 2 Registration and Tournament Management (DFD flow "Tournament Rule & Match Result")
 
 **What it does:** after a match, a captain submits the score with a screenshot. The other captain confirms it or
@@ -210,7 +210,7 @@ Approval completes the match, and the winner advances in the bracket.
 - Storage: private bucket **`match-proofs`** (screenshots; only the two teams and staff can view them).
 - Functions: `submit_match_result()`, `respond_to_match_result()`, `review_match_result()`.
 
-### Feature 6 – In-app notifications
+### Feature 6: In-app notifications
 **Module:** 3 Event Information and Announcements (it carries the DFD output "Announcement and Match Update"),
 but the notifications are created by several processes.
 
@@ -230,7 +230,7 @@ answer; member left or removed; new captain; student verified, rejected or revok
 - New table: **`notifications`** (`user_id`, `type`, `title`, `message`, `link`, `is_read`, `created_at`).
 - Function: `purge_old_notifications()` (read notifications older than 90 days; run by hand).
 
-### Feature 7 – Public tournament & match pages, link previews, calendar, share
+### Feature 7: Public tournament & match pages, link previews, calendar, share
 **Module:** 3 Event Information and Announcements (information for the audience, now also without an account)
 
 **What it does:** `/t/[id]` and `/t/[id]/match/[matchId]` show tournament info, rules, team names, the bracket,
@@ -251,7 +251,7 @@ buttons.
 - No new tables. Read-only functions `get_public_tournament()` and `get_public_calendar()`. They are safe for
   visitors because they return team names only.
 
-### Feature 8 – Admin-editable public website
+### Feature 8: Admin-editable public website
 **Module:** **7 Public Website & Content Management (new)**. The client's wireframe pages existed in
 `requirements.md`, but no module covered them.
 
@@ -276,7 +276,7 @@ items.
   `display_order` and `is_published`).
 - Storage: public bucket **`site-images`**.
 
-### Feature 9 – Feedback protection
+### Feature 9: Feedback protection
 **Module:** 5 Feedback and Sentiment Analysis
 
 **What it does:**
@@ -307,8 +307,8 @@ items.
 - Functions: `claim_gemini_call()`, `save_feedback_sentiment()`, `mark_feedback_pending()` (these work only with
   the server key stored in Supabase Vault).
 
-### Feature 10 – Pick'em predictions & leaderboard
-**Module:** **8 Audience Engagement – Pick'em Predictions (new)**. Its statistics feed Module 6.
+### Feature 10: Pick'em predictions & leaderboard
+**Module:** **8 Audience Engagement: Pick'em Predictions (new)**. Its statistics feed Module 6.
 
 **What it does:**
 - Spectators and players pick the winner of upcoming matches on the match pages and under each bracket match.
@@ -337,7 +337,7 @@ items.
 - Functions: `get_prediction_split()`, `get_prediction_leaderboard()`. Triggers `check_prediction()` and
   `mark_predictions()`.
 
-### Feature 11 – Activity (audit) log
+### Feature 11: Activity (audit) log
 **Module:** 6 Administrative Reports (the DFD output "Overall Tournament Activity & System Report")
 
 **What it does:** the system records important actions automatically, with who did them and when. These include
@@ -356,7 +356,7 @@ Entries are kept for one year.
 - New table: **`activity_logs`** (`actor_id`, `action`, `entity_type`, `entity_id`, `details`, `created_at`).
 - Functions: `activity_log_actors()`, `purge_old_activity_logs()`.
 
-### Feature 12 – Excel / CSV exports
+### Feature 12: Excel / CSV exports
 **Module:** 6 Administrative Reports
 
 **What it does:** download registrations, team rosters, schedule & results (admin/staff), anonymous feedback and
@@ -371,7 +371,7 @@ the user list (admin only) as Excel or CSV. Every download is recorded in the ac
 **Database**
 - No new table (entries go to `activity_logs`). Function: `log_export()`.
 
-### Feature 13 – Enhancements inside the original modules
+### Feature 13: Enhancements inside the original modules
 These additions stay inside existing modules but add flows you may want to draw.
 - **Module 4:** "Watching now" live viewer count (Supabase Realtime Presence, not stored). Staff see it on the
   engagement page.
