@@ -10,6 +10,11 @@
 --
 -- Runs as one transaction: if any statement fails, nothing is changed.
 
+-- pg_cron must be enabled before the cron.schedule call below. Installing it here
+-- makes the migration self-contained on fresh projects; a no-op where it already
+-- exists. (Supabase dashboard: Database -> Extensions -> pg_cron does the same.)
+create extension if not exists pg_cron;
+
 begin;
 
 -- ---------------------------------------------------------------------------
@@ -324,7 +329,7 @@ end $$;
 revoke execute on function public.send_checkin_open_notifications() from public, anon, authenticated;
 
 -- Every 5 minutes. Scheduling with the same name again replaces the job.
--- (pg_cron must be enabled: Database -> Extensions -> pg_cron.)
+-- (pg_cron itself is installed at the top of this file.)
 select cron.schedule(
   'dalta-checkin-open-notifications',
   '*/5 * * * *',
