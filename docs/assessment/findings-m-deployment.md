@@ -52,7 +52,7 @@ Auth redirects do **not** depend on `NEXT_PUBLIC_SITE_URL` — they use `window.
 
 4. **`NEXT_PUBLIC_*` vars are inlined at build time.** They must be set on Railway *before* `next build` runs; a later change to `NEXT_PUBLIC_SITE_URL` (e.g. assigning a custom domain) silently keeps the old value until rebuild (`utils/site-url.ts:4`, `app/layout.tsx:27`).
 
-5. **Missing Supabase env = total outage, not degradation.** `createServerClient` in `proxy.ts:28–30` runs per request on the matcher (`:69` — everything except static assets); a missing URL/key throws at client construction → 500 on every route, bypassing `error.tsx`/`global-error.tsx` (proxy fails before the React tree renders). No guard exists.
+5. **Missing Supabase env = total outage, not degradation.** `createServerClient` in `proxy.ts:28–30` runs per request on the matcher (`:69` — everything except static assets); a missing URL/key throws at client construction → 500 on every route, bypassing `error.tsx`/`global-error.tsx` (proxy fails before the React tree renders). No guard exists. **Verified at runtime:** `next dev` with no env returns 500 on `/`, `/tournaments`, `/auth/login` — all throwing `"Your project's URL and Key are required"` at `proxy.ts:28`. `npm run build` also fails at prerender on the same throw from `utils/supabase/public.ts:7` (empirically confirming the FYI below).
 
 **Nit:**
 
@@ -72,13 +72,15 @@ Auth redirects do **not** depend on `NEXT_PUBLIC_SITE_URL` — they use `window.
 
 13. **No `supabase/config.toml`** — migrations can't be `supabase db push`ed; they are run manually in the SQL Editor per CLAUDE.md. Filename ordering is the only sequencing guarantee.
 
-14. **README is create-next-app boilerplate** pointing to Vercel deploy docs; CLAUDE.md is the real deploy doc — worth noting for hand-off. *(Full assessment in findings-n Critical 1.)*
+14. ~~**README is create-next-app boilerplate**~~ — **resolved:** README rewritten with real setup instructions (env table, base-tables caveat, migration order, pg_cron/Vault/SMTP/redirect config, Railway notes). *(Was findings-n Critical 1.)*
+
+14b. **`npm audit`: 5 high-severity vulnerabilities** — all transitive dev-deps (`braces`/`micromatch`/`fast-glob` inside `eslint-config-next`→`@next/eslint-plugin-next`; GHSA-vfj7-8cjw-p6xm stack-exhaustion DoS in lint tooling). Not shipped to production, but flag for dependency hygiene. `npm audit fix --force` would break eslint-config-next (downgrades to v14) — needs a proper version bump, not autofix.
 
 15. **`alter publication` guards check table membership, not publication existence** (`202610171400:51–56` pattern) — safe on Supabase (publication always exists), would error on self-hosted Postgres. FYI only.
 
 16. Unused boilerplate assets in `public/` (`next.svg`, `vercel.svg`, `file.svg`, `globe.svg`, `window.svg`) — cosmetic.
 
-**FYI:** error coverage is complete — `app/error.tsx`, `app/global-error.tsx`, `app/not-found.tsx` all branded with Next 16's `error`/`retry` props; server code returns `{error}` objects rather than throwing; `auth/callback` deliberately swallows exchange failures (`route.ts:30–32`). `cacheComponents: true` prerenders `'use cache'` site data at build; with Supabase env present but DB unreachable it degrades to `DEFAULT_SITE_CONTENT` (`site-data.ts:23`) — build survives; with env absent it likely fails at prerender (same crash class as finding 5).
+**FYI:** error coverage is complete — `app/error.tsx`, `app/global-error.tsx`, `app/not-found.tsx` all branded with Next 16's `error`/`retry` props; server code returns `{error}` objects rather than throwing; `auth/callback` deliberately swallows exchange failures (`route.ts:30–32`). `cacheComponents: true` prerenders `'use cache'` site data at build; with Supabase env present but DB unreachable it degrades to `DEFAULT_SITE_CONTENT` (`site-data.ts:23`) — build survives; with env absent it **fails at prerender** (verified: `npm run build` exits 1 on `supabaseUrl is required` at `utils/supabase/public.ts:7` during `/matches/[id]` + `/analytics` prerender — same crash class as finding 5).
 
 ## Unverifiable locally
 
