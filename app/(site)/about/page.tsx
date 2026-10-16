@@ -15,7 +15,7 @@ export default async function AboutPage() {
       <SiteBox className="space-y-4">
         {image && (
           <div className="relative aspect-video border-2 border-brownlight overflow-hidden">
-            <Image src={image} alt="DALTA Esports" fill unoptimized className="object-cover" />
+            <Image src={image} alt="DALTA Esports" fill sizes="(max-width: 768px) 100vw, 800px" className="object-cover" />
           </div>
         )}
         <Paragraphs text={content.about_intro} />

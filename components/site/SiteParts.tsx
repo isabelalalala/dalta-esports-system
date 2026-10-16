@@ -48,7 +48,7 @@ export function PersonPhoto({ path, name, size = 'md' }: { path: string | null; 
   return (
     <div className={`relative shrink-0 border-2 border-gold bg-brown overflow-hidden grid place-items-center ${photoSizes[size]}`}>
       {url ? (
-        <Image src={url} alt={name} fill unoptimized className="object-cover" />
+        <Image src={url} alt={name} fill sizes="160px" className="object-cover" />
       ) : (
         <span className="font-pixel text-gold text-xs" aria-hidden>{initials || '?'}</span>
       )}

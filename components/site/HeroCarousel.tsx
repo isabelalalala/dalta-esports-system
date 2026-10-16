@@ -28,7 +28,7 @@ export default function HeroCarousel({ images }: { images: HeroImage[] }) {
       src={siteImageUrl(current.image_path)!}
       alt={current.caption || 'DALTA Esports event photo'}
       fill
-      unoptimized
+      sizes="100vw"
       className="object-cover"
       priority
     />

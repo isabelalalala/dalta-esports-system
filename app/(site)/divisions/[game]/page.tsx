@@ -50,7 +50,7 @@ async function Division({ params }: { params: PageProps<'/divisions/[game]'>['pa
                 >
                   <div className="relative aspect-video border-b-2 border-brownlight bg-brown/40 overflow-hidden grid place-items-center">
                     {photo ? (
-                      <Image src={photo} alt="" fill unoptimized className="object-cover" />
+                      <Image src={photo} alt="" fill sizes="(max-width: 768px) 100vw, 400px" className="object-cover" />
                     ) : (
                       <span className="font-pixel text-gold text-xs">{team.name}</span>
                     )}

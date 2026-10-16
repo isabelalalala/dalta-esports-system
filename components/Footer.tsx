@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { getSiteContent } from '@/utils/site-data';
-import { DEFAULT_LOGO, logoUrl } from '@/utils/site';
+import { logoUrl } from '@/utils/site';
 
 // Footer on every page (added in app/layout.tsx), from the wireframe. The texts and social
 // links are edited on /admin/website. Hidden when printing reports.
@@ -25,7 +25,6 @@ export default async function Footer() {
             alt="DALTA Esports logo"
             width={48}
             height={48}
-            unoptimized={logo !== DEFAULT_LOGO}
             className="border-2 border-gold bg-white"
           />
           <p className="font-pixel text-gold text-[10px] leading-relaxed">{content.footer_tagline}</p>
