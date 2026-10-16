@@ -3,8 +3,11 @@ import type { StreamStatus } from '@/utils/types';
 // Facebook Live helpers. Videos are played with Facebook's embedded video player,
 // which needs no API key but only works for videos set to Public.
 
-// Same rule as the CHECK constraint on streams.facebook_url
-const FACEBOOK_URL = /^https:\/\/(www\.|m\.|web\.)?facebook\.com\/.+/i;
+// Same rule as the CHECK constraint on streams.facebook_url: the embedded
+// player (plugins/video.php) only renders video/live posts, so the link must
+// point at a video — page, group and event URLs embed as a broken player.
+const FACEBOOK_VIDEO_URL =
+  /^https:\/\/(www\.|m\.|web\.)?facebook\.com\/(watch[/?#]|reel\/|story\.php\?|[^/?#]+\/(videos|live)([/?#]|$))/i;
 
 // Returns an error message, or '' if the link can be used.
 export function validateFacebookUrl(url: string) {
@@ -14,7 +17,8 @@ export function validateFacebookUrl(url: string) {
     return 'Short fb.watch links can\'t be embedded. Open the video on Facebook and copy the full link from the address bar.';
   }
   if (!value.startsWith('https://')) return 'The link must start with https://';
-  if (!FACEBOOK_URL.test(value)) return 'Only facebook.com video links are supported.';
+  if (!/^https:\/\/(www\.|m\.|web\.)?facebook\.com\//i.test(value)) return 'Only facebook.com video links are supported.';
+  if (!FACEBOOK_VIDEO_URL.test(value)) return 'Link to the video itself — open it on Facebook first (the address should contain /videos/, /watch, /reel/ or /live).';
   return '';
 }
 
