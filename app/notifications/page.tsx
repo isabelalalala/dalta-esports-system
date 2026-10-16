@@ -9,6 +9,7 @@ import {
   fetchNotifications, markAllAsRead, markAsRead, notificationIcons, type AppNotification,
 } from '@/utils/notifications';
 import PageLoading from '@/components/PageLoading';
+import { usePageTitle } from '@/utils/page-title';
 
 const PAGE_SIZE = 30;
 
@@ -16,6 +17,7 @@ const PAGE_SIZE = 30;
 export default function NotificationsPage() {
   const supabase = createClient();
   const router = useRouter();
+  usePageTitle('Notifications');
   const [unreadOnly, setUnreadOnly] = useState(false);
   const [items, setItems] = useState<AppNotification[]>([]);
   const [hasMore, setHasMore] = useState(false);
@@ -85,7 +87,7 @@ export default function NotificationsPage() {
   if (loading) return <PageLoading />;
 
   return (
-    <div className="min-h-screen bg-sitebg text-white px-4 py-10">
+    <main id="main-content" className="min-h-screen bg-sitebg text-white px-4 py-10">
       <div className="max-w-3xl mx-auto space-y-6">
         <div>
           <Link href="/dashboard" className="inline-block text-gold hover:underline mb-6">
@@ -113,7 +115,7 @@ export default function NotificationsPage() {
           ))}
         </div>
 
-        {error && <div className="bg-red-500/10 border border-red-500 text-red-300 px-4 py-3">{error}</div>}
+        {error && <div role="alert" className="bg-red-500/10 border border-red-500 text-red-300 px-4 py-3">{error}</div>}
 
         {/* A failed load shows the error above, not "nothing here" */}
         {items.length === 0 && error ? null : items.length === 0 ? (
@@ -128,10 +130,10 @@ export default function NotificationsPage() {
                 <button onClick={() => handleOpen(n)} className="flex-1 min-w-0 text-left">
                   <span className="flex items-center gap-2">
                     <span className="font-semibold">{n.title}</span>
-                    {!n.is_read && <span className="w-2 h-2 rounded-full bg-gold" aria-label="unread" />}
+                    {!n.is_read && <span className="w-2 h-2 rounded-full bg-gold" role="img" aria-label="unread" />}
                   </span>
                   <span className="block text-gray-300 text-sm">{n.message}</span>
-                  <span className="block text-xs text-gray-500 mt-1">
+                  <span className="block text-xs text-gray-400 mt-1">
                     {new Date(n.created_at).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })}
                   </span>
                 </button>
@@ -157,6 +159,6 @@ export default function NotificationsPage() {
           </div>
         )}
       </div>
-    </div>
+    </main>
   );
 }

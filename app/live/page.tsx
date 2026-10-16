@@ -7,10 +7,12 @@ import { getErrorMessage } from '@/utils/errors';
 import type { Stream } from '@/utils/types';
 import { streamStatusStyles } from '@/utils/streams';
 import PageLoading from '@/components/PageLoading';
+import { usePageTitle } from '@/utils/page-title';
 
 // "Watch live stream" (use case, Audience): every stream, live ones first
 export default function LiveStreamsPage() {
   const supabase = createClient();
+  usePageTitle('Live streams');
   const [streams, setStreams] = useState<Stream[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -38,7 +40,7 @@ export default function LiveStreamsPage() {
     <section>
       <h2 className="text-2xl font-bold mb-3">{title}</h2>
       {list.length === 0 ? (
-        <p className="text-gray-500">{emptyText}</p>
+        <p className="text-gray-400">{emptyText}</p>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {list.map((s) => (
@@ -66,7 +68,7 @@ export default function LiveStreamsPage() {
   if (loading) return <PageLoading />;
 
   return (
-    <div className="min-h-screen bg-sitebg text-white px-4 py-10">
+    <main id="main-content" className="min-h-screen bg-sitebg text-white px-4 py-10">
       <div className="max-w-4xl mx-auto space-y-10">
         <div>
           <Link href="/dashboard" className="inline-block text-gold hover:underline mb-6">
@@ -75,12 +77,12 @@ export default function LiveStreamsPage() {
           <h1 className="font-pixel text-xl sm:text-2xl leading-relaxed text-gold">Live Streams</h1>
         </div>
 
-        {error && <div className="bg-red-500/10 border border-red-500 text-red-300 px-4 py-3">{error}</div>}
+        {error && <div role="alert" className="bg-red-500/10 border border-red-500 text-red-300 px-4 py-3">{error}</div>}
 
         {section('🔴 Live now', streams.filter((s) => s.status === 'live'), 'Nothing is live right now.')}
         {section('Upcoming', streams.filter((s) => s.status === 'scheduled'), 'No streams scheduled.')}
         {section('Replays', streams.filter((s) => s.status === 'ended'), 'No replays yet.')}
       </div>
-    </div>
+    </main>
   );
 }

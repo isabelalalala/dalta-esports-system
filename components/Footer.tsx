@@ -40,7 +40,7 @@ export default async function Footer() {
 
         <div>
           <p className="font-semibold text-gray-200 mb-1">Connect With Us</p>
-          {socials.length === 0 && !content.contact_email && <p className="text-gray-500">Links coming soon.</p>}
+          {socials.length === 0 && !content.contact_email && <p className="text-gray-400">Links coming soon.</p>}
           <ul className="flex flex-wrap gap-x-4 gap-y-1">
             {socials.map((s) => (
               <li key={s.label}>
@@ -53,7 +53,7 @@ export default async function Footer() {
           </ul>
         </div>
       </div>
-      <p className="max-w-7xl mx-auto mt-6 text-center text-xs text-gray-500">{content.footer_copyright}</p>
+      <p className="max-w-7xl mx-auto mt-6 text-center text-xs text-gray-400">{content.footer_copyright}</p>
     </footer>
   );
 }

@@ -12,10 +12,12 @@ import { streamStatusStyles } from '@/utils/streams';
 import FacebookPlayer from '@/components/FacebookPlayer';
 import PageLoading from '@/components/PageLoading';
 import PageError from '@/components/PageError';
+import { usePageTitle } from '@/utils/page-title';
 
 // Watch page: Facebook player + a scoreboard that updates in real time
 export default function WatchStreamPage() {
   const supabase = createClient();
+  usePageTitle('Live stream');
   const [stream, setStream] = useState<Stream | null>(null);
   const [matches, setMatches] = useState<Match[]>([]);
   const [teamNames, setTeamNames] = useState<Record<string, string>>({});
@@ -150,7 +152,7 @@ export default function WatchStreamPage() {
   const name = (teamId: string | null) => (teamId ? teamNames[teamId] ?? 'Unknown team' : 'TBD');
 
   return (
-    <div className="min-h-screen bg-sitebg text-white px-4 py-10">
+    <main id="main-content" className="min-h-screen bg-sitebg text-white px-4 py-10">
       <div className="max-w-5xl mx-auto space-y-6">
         <Link href="/live" className="inline-block text-gold hover:underline">
           ← All streams
@@ -171,7 +173,7 @@ export default function WatchStreamPage() {
           </p>
         </div>
 
-        {error && <div className="bg-red-500/10 border border-red-500 text-red-300 px-4 py-3">{error}</div>}
+        {error && <div role="alert" className="bg-red-500/10 border border-red-500 text-red-300 px-4 py-3">{error}</div>}
 
         {stream.status === 'scheduled' && (
           <p className="bg-sitecard border border-brownlight px-4 py-3 text-gray-300">
@@ -185,13 +187,13 @@ export default function WatchStreamPage() {
         <section className="bg-sitecard border border-brownlight p-4 sm:p-6">
           <div className="flex flex-wrap justify-between items-center gap-2 mb-3">
             <h2 className="text-xl font-bold">{matchId ? 'Match' : 'Live matches'}</h2>
-            <span className={`text-xs ${realtimeOn ? 'text-green-400' : 'text-gray-500'}`}>
+            <span className={`text-xs ${realtimeOn ? 'text-green-400' : 'text-gray-400'}`}>
               {realtimeOn ? '● Updates automatically' : 'Connecting...'}
             </span>
           </div>
 
           {matches.length === 0 ? (
-            <p className="text-gray-500">
+            <p className="text-gray-400">
               {matchId ? 'This match is no longer in the bracket.' : 'No match is being played right now.'}
             </p>
           ) : (
@@ -199,7 +201,7 @@ export default function WatchStreamPage() {
               {matches.map((m) => {
                 const teamClass = (teamId: string | null) =>
                   m.status === 'completed'
-                    ? m.winner_team_id === teamId ? 'text-gold font-bold' : 'text-gray-500'
+                    ? m.winner_team_id === teamId ? 'text-gold font-bold' : 'text-gray-400'
                     : 'text-white font-semibold';
 
                 return (
@@ -234,6 +236,6 @@ export default function WatchStreamPage() {
           💬 Enjoying the stream? Give feedback
         </Link>
       </div>
-    </div>
+    </main>
   );
 }

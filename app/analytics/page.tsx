@@ -12,6 +12,7 @@ import {
 } from '@/utils/reports';
 import PageLoading from '@/components/PageLoading';
 import PageError from '@/components/PageError';
+import { usePageTitle } from '@/utils/page-title';
 
 type ReportListItem = Pick<SavedReport, 'id' | 'filters' | 'generated_at'> & {
   generator: { full_name: string | null; email: string } | null;
@@ -22,6 +23,7 @@ type ReportListItem = Pick<SavedReport, 'id' | 'filters' | 'generated_at'> & {
 export default function AnalyticsPage() {
   const supabase = createClient();
   const router = useRouter();
+  usePageTitle('Analytics');
   const { options, error: optionsError } = useFilterOptions();
   const [role, setRole] = useState('');
   const [filters, setFilters] = useState<Filters>(emptyFilters);
@@ -112,15 +114,15 @@ export default function AnalyticsPage() {
   if (!role && error) return <PageError message={error} />;
   if (role !== 'admin') {
     return (
-      <div className="min-h-screen bg-sitebg text-white p-10 text-center">
+      <main id="main-content" className="min-h-screen bg-sitebg text-white p-10 text-center">
         Only organizers can view reports.{' '}
         <Link href="/dashboard" className="text-gold underline">Back to Dashboard</Link>
-      </div>
+      </main>
     );
   }
 
   return (
-    <div className="min-h-screen bg-sitebg text-white px-4 py-10">
+    <main id="main-content" className="min-h-screen bg-sitebg text-white px-4 py-10">
       <div className="max-w-5xl mx-auto space-y-6">
         <div>
           <Link href="/dashboard" className="inline-block text-gold hover:underline mb-6">
@@ -139,7 +141,7 @@ export default function AnalyticsPage() {
         </div>
 
         {(error || optionsError) && (
-          <div className="bg-red-500/10 border border-red-500 text-red-300 px-4 py-3">{error || optionsError}</div>
+          <div role="alert" className="bg-red-500/10 border border-red-500 text-red-300 px-4 py-3">{error || optionsError}</div>
         )}
 
         <ReportFilters value={filters} onChange={setFilters} options={options} />
@@ -176,6 +178,6 @@ export default function AnalyticsPage() {
           )}
         </div>
       </div>
-    </div>
+    </main>
   );
 }

@@ -7,12 +7,14 @@ import { createClient } from '@/utils/supabase/client';
 import { getErrorMessage } from '@/utils/errors';
 import { PRIVACY_NOTICE_VERSION } from '@/utils/privacy';
 import PrivacyConsentCheckbox from '@/components/PrivacyConsentCheckbox';
+import { usePageTitle } from '@/utils/page-title';
 
 // The dashboard sends users here when they haven't agreed to the current Privacy Notice:
 // accounts made before the notice existed, accounts added by an admin, or after the notice changed.
 export default function PrivacyConsentPage() {
   const supabase = createClient();
   const router = useRouter();
+  usePageTitle('Privacy consent');
   const [consent, setConsent] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
@@ -39,7 +41,7 @@ export default function PrivacyConsentPage() {
   };
 
   return (
-    <div className="min-h-screen grid place-items-center bg-sitebg px-4 py-10">
+    <main id="main-content" className="min-h-screen grid place-items-center bg-sitebg px-4 py-10">
       <form
         onSubmit={handleAgree}
         className="w-full max-w-lg bg-sitecard p-6 sm:p-8 shadow-[6px_6px_0_var(--color-brown)] space-y-5"
@@ -51,7 +53,7 @@ export default function PrivacyConsentPage() {
           what personal data we collect, why, who can see it, how long we keep it, and how to delete your account.
         </p>
 
-        {error && <div className="bg-[#ff4444] text-white px-3 py-2">{error}</div>}
+        {error && <div role="alert" className="bg-red-500/10 border border-red-500 text-red-300 px-3 py-2">{error}</div>}
 
         <PrivacyConsentCheckbox checked={consent} onChange={setConsent} />
 
@@ -73,6 +75,6 @@ export default function PrivacyConsentPage() {
           </button>
         </div>
       </form>
-    </div>
+    </main>
   );
 }

@@ -7,6 +7,7 @@ import { getErrorMessage } from '@/utils/errors';
 import type { Registration, RegistrationStatus, Tournament } from '@/utils/types';
 import { formatDate } from '@/utils/tournaments';
 import PageLoading from '@/components/PageLoading';
+import { usePageTitle } from '@/utils/page-title';
 
 type MyRegistration = Registration & {
   tournaments: Pick<Tournament, 'id' | 'name' | 'game' | 'start_date'> | null;
@@ -22,6 +23,7 @@ const statusStyles: Record<RegistrationStatus, string> = {
 // Registrations of every team the player is on, as captain or member
 export default function MyRegistrationsPage() {
   const supabase = createClient();
+  usePageTitle('My registrations');
   const [registrations, setRegistrations] = useState<MyRegistration[]>([]);
   const [userId, setUserId] = useState('');
   const [loading, setLoading] = useState(true);
@@ -90,7 +92,7 @@ export default function MyRegistrationsPage() {
   if (loading) return <PageLoading />;
 
   return (
-    <div className="min-h-screen bg-sitebg text-white px-4 py-10">
+    <main id="main-content" className="min-h-screen bg-sitebg text-white px-4 py-10">
       <div className="max-w-4xl mx-auto">
         <Link href="/dashboard" className="inline-block text-gold hover:underline mb-6">
           ← Back to Dashboard
@@ -99,7 +101,7 @@ export default function MyRegistrationsPage() {
         <h1 className="font-pixel text-xl sm:text-2xl leading-relaxed text-gold mb-8">My Registrations</h1>
 
         {error && (
-          <div className="mb-6 bg-red-500/10 border border-red-500 text-red-300 px-4 py-3">{error}</div>
+          <div role="alert" className="mb-6 bg-red-500/10 border border-red-500 text-red-300 px-4 py-3">{error}</div>
         )}
 
         {/* A failed load shows the error above, not "nothing here" */}
@@ -132,7 +134,7 @@ export default function MyRegistrationsPage() {
                       {isCaptain && <span className="text-yellow-400"> (you&apos;re captain)</span>}
                       {' · '}{reg.tournaments?.game} · starts {formatDate(reg.tournaments?.start_date)}
                     </p>
-                    <p className="text-gray-500 text-xs">
+                    <p className="text-gray-400 text-xs">
                       Registered {new Date(reg.registered_at).toLocaleDateString()}
                     </p>
                   </div>
@@ -152,6 +154,6 @@ export default function MyRegistrationsPage() {
           </ul>
         )}
       </div>
-    </div>
+    </main>
   );
 }

@@ -8,6 +8,7 @@ import type { Match, Tournament } from '@/utils/types';
 import { formatDateTime, roundLabel } from '@/utils/tournaments';
 import { fetchRoundCounts, fetchTeamNames } from '@/utils/matches';
 import { SectionLoading } from '@/components/PageLoading';
+import { usePageTitle } from '@/utils/page-title';
 
 type ScheduleMatch = Match & { tournaments: { name: string } | null };
 
@@ -17,6 +18,7 @@ const LIST_LIMIT = 30;
 // Match schedule and results across all tournaments (DFD 3.0: "Announcement and Match Update")
 export default function SchedulePage() {
   const supabase = createClient();
+  usePageTitle('Schedule');
   const [tournaments, setTournaments] = useState<Pick<Tournament, 'id' | 'name'>[]>([]);
   const [filter, setFilter] = useState('all');
   const [live, setLive] = useState<ScheduleMatch[]>([]);
@@ -84,8 +86,8 @@ export default function SchedulePage() {
   const renderMatch = (m: ScheduleMatch, showScore: boolean) => {
     const teamClass = (teamId: string | null) =>
       m.status === 'completed'
-        ? m.winner_team_id === teamId ? 'text-gold font-bold' : 'text-gray-500'
-        : teamId ? 'text-white font-semibold' : 'italic text-gray-500';
+        ? m.winner_team_id === teamId ? 'text-gold font-bold' : 'text-gray-400'
+        : teamId ? 'text-white font-semibold' : 'italic text-gray-400';
 
     return (
       <li key={m.id} className="py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-1">
@@ -123,7 +125,7 @@ export default function SchedulePage() {
     <section className="bg-sitecard border border-brownlight p-6">
       <h2 className="text-xl font-bold mb-2">{title}</h2>
       {list.length === 0 ? (
-        <p className="text-gray-500">{emptyText}</p>
+        <p className="text-gray-400">{emptyText}</p>
       ) : (
         <ul className="divide-y divide-brown">{list.map((m) => renderMatch(m, showScore))}</ul>
       )}
@@ -131,7 +133,7 @@ export default function SchedulePage() {
   );
 
   return (
-    <div className="min-h-screen bg-sitebg text-white px-4 py-10">
+    <main id="main-content" className="min-h-screen bg-sitebg text-white px-4 py-10">
       <div className="max-w-3xl mx-auto space-y-6">
         <Link href="/dashboard" className="inline-block text-gold hover:underline">
           ← Back to Dashboard
@@ -143,6 +145,7 @@ export default function SchedulePage() {
           value={filter}
           onChange={(e) => { setLoading(true); setFilter(e.target.value); }}
           className="w-full border border-brownlight bg-sitebg px-4 py-3 text-white outline-none focus:border-gold"
+          aria-label="Filter by tournament"
         >
           <option value="all">All tournaments</option>
           {tournaments.map((t) => (
@@ -150,7 +153,7 @@ export default function SchedulePage() {
           ))}
         </select>
 
-        {error && <div className="bg-red-500/10 border border-red-500 text-red-300 px-4 py-3">{error}</div>}
+        {error && <div role="alert" className="bg-red-500/10 border border-red-500 text-red-300 px-4 py-3">{error}</div>}
 
         {loading ? (
           <div className="py-12 grid place-items-center"><SectionLoading /></div>
@@ -162,6 +165,6 @@ export default function SchedulePage() {
           </>
         )}
       </div>
-    </div>
+    </main>
   );
 }
