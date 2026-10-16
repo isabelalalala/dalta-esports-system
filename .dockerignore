@@ -1,0 +1,20 @@
+.git
+.github
+node_modules
+.next
+.vscode
+*.log
+
+# secrets must never enter the build context or image layers
+.env
+.env.*
+!.env.example
+
+# not needed to build or run the app
+docs/
+.agents/
+supabase/tests/
+*.md
+!README.md
+Dockerfile
+docker-compose.yml

@@ -2,6 +2,7 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   /* config options here */
+  output: 'standalone',
   images: {
     // Site images live in the public Supabase `site-images` bucket
     remotePatterns: [
