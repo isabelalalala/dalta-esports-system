@@ -7,7 +7,7 @@ import { getErrorMessage } from '@/utils/errors';
 import ReportFilters, { filterNames, useFilterOptions } from '@/components/ReportFilters';
 import EngagementSection from '../EngagementSection';
 import {
-  buildCsv, describeFilters, downloadCsv, emptyFilters, engagementCsv, fetchEngagementReport, validateFilters,
+  buildCsv, describeFilters, downloadCsv, emptyFilters, engagementCsv, fetchEngagementReport, todayInManila, validateFilters,
   type EngagementReport, type ReportFilters as Filters,
 } from '@/utils/reports';
 import PageLoading from '@/components/PageLoading';
@@ -77,7 +77,7 @@ export default function EngagementPage() {
 
   const handleCsv = () => {
     if (!report) return;
-    downloadCsv(`engagement-${new Date().toISOString().slice(0, 10)}.csv`, buildCsv(engagementCsv(report)));
+    downloadCsv(`engagement-${todayInManila()}.csv`, buildCsv(engagementCsv(report)));
   };
 
   if (loading) return <PageLoading />;
