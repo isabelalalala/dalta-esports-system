@@ -42,10 +42,10 @@ find.
 - **Remaining:** `give_privacy_consent` accepts any version string (fail-closed — bogus version just keeps the gate locked); captain needs no game profile for the team's game (spec unclear); `gemini_calls.user_id` index; staff can still remove a captain's member row.
 
 **Live/engagement** (G, F)
-- Presence "Watching now" is spoofable: public `viewers-<id>` channel, client-supplied
-  key — anyone can inflate the organizer-facing count and enumerate real viewer IDs.
-- Facebook URL validation accepts `facebook.com/<anything>`; `plugins/video.php`
-  can't render non-video links → validates "✓ Valid" then embeds broken.
+- ~~Presence "Watching now" is spoofable~~ — **RESOLVED (202610181300):** `stream_presence`
+  heartbeat table (no SELECT policy, IDs stay in DB) + admin/staff-only `get_live_viewer_counts`.
+- ~~Facebook URL validation accepts `facebook.com/<anything>`~~ — **RESOLVED (202610181310):**
+  DB CHECK + `utils/streams.ts` require video-renderable paths (/watch, /videos/, /reel/, /live, story.php?).
 - `analysis_attempts` never read — unclassifiable feedback retries forever, burning
   Gemini claim slots.
 

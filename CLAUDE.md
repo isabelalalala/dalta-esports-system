@@ -76,7 +76,7 @@ Enforced by a CHECK constraint on `profiles.role` (migration `202610161200_role_
 - RLS policies check roles with `public.get_my_role()`.
 
 ## Current schema (public)
-All migrations are in `supabase/migrations/`, run in filename order (202610151100 … 202610181200). `202610151100_base_schema` creates the three pre-migration base tables (`profiles`, `tournaments`, `tournament_registrations`) — it is `if not exists`, so it is a no-op on databases that already have them.
+All migrations are in `supabase/migrations/`, run in filename order (202610151100 … 202610181310). `202610151100_base_schema` creates the three pre-migration base tables (`profiles`, `tournaments`, `tournament_registrations`) — it is `if not exists`, so it is a no-op on databases that already have them.
 `202610181000_feedback_protection` also needs its one-time Vault key setup (the `feedback_server_key` secret +
 `FEEDBACK_SERVER_KEY`); the steps are at the top of that file.
 Readers: "anyone" = also logged out; "logged-in" = any role; "admin/staff" = organizers only.
@@ -180,15 +180,19 @@ Readers: "anyone" = also logged out; "logged-in" = any role; "admin/staff" = org
 
 **Live streaming (Module 4)**, DFD store D3 "Streaming & Match Stat DB"
 - `streams`: id, tournament_id, match_id (optional, set null when the match is deleted), title, facebook_url
-  (must be https facebook.com, checked in the database), status (`scheduled`/`live`/`ended`), created_by,
+  (must be an https facebook.com video link — /watch, /videos/, /reel/, /<page>/live or story.php? — checked in
+  the database because the embed only renders video posts), status (`scheduled`/`live`/`ended`), created_by,
   created_at, updated_at. Logged-in read; admin/staff write.
 - `stream_views`: id, stream_id, user_id, viewed_on (date), created_at. UNIQUE (stream_id, user_id, viewed_on):
   one row per person per stream per day, recorded when the watch page opens. Users insert their own;
   only admin/staff read. `viewed_on` is the Philippine date (`Asia/Manila`) since 202610162300; older rows are UTC.
+- `stream_presence` (`202610181300`): stream_id, user_id, last_seen (server-pinned). "Watching now": `/live/[id]`
+  upserts its row every 45 s and deletes it on close; rows older than 90 s stop counting. Players/spectators
+  write their own row only; nobody can select the table (viewer ids stay in the DB); `/analytics/engagement`
+  polls `get_live_viewer_counts(stream_ids)` (admin/staff-only RPC) every 30 s. pg_cron job
+  `dalta-stream-presence-cleanup` deletes rows older than 15 min.
 - Notes for reports: organizers' own visits are stored but left out of the reports. Views per match exist only when
   the stream has a `match_id`. `streams.status` is set by hand by staff and doesn't depend on `matches.status`.
-- "Watching now" uses Supabase Realtime Presence, not a table: `/live/[id]` joins channel `viewers-<stream id>`
-  (key = user id; players and spectators only) and `/analytics/engagement` counts who is in it.
 
 **Feedback and sentiment (Module 5)**, DFD store D4 "Feedback DB"
 - `feedback`: id, user_id (set null when the account is deleted), tournament_id (empty = general; set null when the
