@@ -54,7 +54,7 @@ Full title: "DALTA Esports: Tournament Management System with AI-Powered Feedbac
   password length to 8 (the app checks 8 too). Register works either way: no session after `signUp()` = show
   "Check your email"; a session = go to the dashboard. The confirmation link goes through `/auth/callback` to
   `/auth/login?confirmed=1`. Login shows a "confirm your email first" message with a resend button
-  (`utils/auth.ts`).
+  (`app/auth/login/page.tsx`, using helpers from `utils/auth.ts`).
 - Data Privacy Act (RA 10173): `/privacy` is the public Privacy Notice; its version, contact email and contact person
   are in `utils/privacy.ts` (the contact fallbacks are placeholders; set `NEXT_PUBLIC_PRIVACY_CONTACT_*`). Register
   requires the consent checkbox (`components/PrivacyConsentCheckbox.tsx`). `proxy.ts` sends logged-in users
@@ -91,7 +91,7 @@ Readers: "anyone" = also logged out; "logged-in" = any role; "admin/staff" = org
   Student verification (players): student_id, school, course_year (the player edits them on `/profile`),
   verification_status (`unsubmitted`/`pending`/`verified`/`rejected`), is_verified (generated from the status),
   verification_note (reason shown to the player), submitted_at, reviewed_by, reviewed_at. Saving complete details
-  sets `pending`; changing them later resets to `pending` (trigger). Only admin/staff change the status, through
+  sets `pending`; emptying any of the three fields later resets to `unsubmitted` (trigger). Only admin/staff change the status, through
   `review_student_verification(user, approve, note)` (rejecting or revoking needs a reason). One account per
   student ID per school (unique index). Other users only see `is_verified` (roster, player search).
   Created by the `handle_new_user()` trigger on sign-up (it also saves the privacy consent from the register form).
@@ -427,7 +427,8 @@ The final feature list for the documents is docs/new-features-summary.md.
 - **"Only through a function" rules**: some columns may only change inside one security definer function. The
   function sets a transaction flag with `set_config('app.<flag>', 'on', true)` and a BEFORE trigger refuses the
   change without it (`auth.uid() is null` = SQL Editor is always allowed). Flags in use: `giving_privacy_consent`,
-  `reviewing_student`, `answering_invite`, `transferring_captain`, `declaring_forfeit`.
+  `reviewing_student`, `answering_invite`, `transferring_captain`, `declaring_forfeit`,
+  `marking_predictions`.
 - **Redefining an existing function or trigger function**: always start from its LATEST version (create or
   replace keeps only what you write). Latest versions: `check_tournament_registration`, `check_registration_update`
   → `202610171000_student_verification`; `check_team_member` → `202610171000`; `get_team_roster` → `202610171000`;
