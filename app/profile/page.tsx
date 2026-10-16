@@ -56,19 +56,20 @@ export default function ProfilePage() {
         setProfile(profileData);
         setFullName(profileData.full_name || '');
 
-        const { data: gamesData, error: gamesError } = await supabase
-          .from('games')
-          .select('*')
-          .order('name');
-        if (gamesError) throw gamesError;
-        setGames(gamesData || []);
-
-        const { data: gpData, error: gpError } = await supabase
-          .from('player_game_profiles')
-          .select('*')
-          .eq('user_id', session.user.id);
-        if (gpError) throw gpError;
-        setGameProfiles(gpData || []);
+        const [gamesRes, gpRes] = await Promise.all([
+          supabase
+            .from('games')
+            .select('*')
+            .order('name'),
+          supabase
+            .from('player_game_profiles')
+            .select('*')
+            .eq('user_id', session.user.id),
+        ]);
+        if (gamesRes.error) throw gamesRes.error;
+        if (gpRes.error) throw gpRes.error;
+        setGames(gamesRes.data || []);
+        setGameProfiles(gpRes.data || []);
       } catch (err) {
         setError(getErrorMessage(err, 'Failed to load profile'));
       } finally {

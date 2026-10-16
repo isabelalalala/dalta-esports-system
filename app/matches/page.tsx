@@ -18,7 +18,7 @@ export default function MatchesOverviewPage() {
   const supabase = createClient();
   usePageTitle('Matches');
   const [tournaments, setTournaments] = useState<TournamentWithMatches[]>([]);
-  const [profile, setProfile] = useState<Profile | null>(null);
+  const [profile, setProfile] = useState<Pick<Profile, 'id' | 'role'> | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -30,7 +30,7 @@ export default function MatchesOverviewPage() {
 
         const { data: profileData, error: profileError } = await supabase
           .from('profiles')
-          .select('*')
+          .select('id, role')
           .eq('id', session.user.id)
           .single();
         if (profileError) throw profileError;

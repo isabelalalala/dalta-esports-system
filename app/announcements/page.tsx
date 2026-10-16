@@ -45,21 +45,22 @@ export default function AnnouncementsPage() {
         if (profileError) throw profileError;
         setIsAdmin(profileData?.role === 'admin');
 
-        const { data: tournamentsData, error: tourError } = await supabase
-          .from('tournaments')
-          .select('id, name')
-          .order('start_date', { ascending: false });
-        if (tourError) throw tourError;
-        setTournaments(tournamentsData || []);
-
-        // Pinned first, then newest
-        const { data, error: annError } = await supabase
-          .from('announcements')
-          .select('*, tournaments(id, name)')
-          .order('pinned', { ascending: false })
-          .order('created_at', { ascending: false });
-        if (annError) throw annError;
-        setAnnouncements(data || []);
+        const [tourRes, annRes] = await Promise.all([
+          supabase
+            .from('tournaments')
+            .select('id, name')
+            .order('start_date', { ascending: false }),
+          // Pinned first, then newest
+          supabase
+            .from('announcements')
+            .select('*, tournaments(id, name)')
+            .order('pinned', { ascending: false })
+            .order('created_at', { ascending: false }),
+        ]);
+        if (tourRes.error) throw tourRes.error;
+        if (annRes.error) throw annRes.error;
+        setTournaments(tourRes.data || []);
+        setAnnouncements(annRes.data || []);
       } catch (err) {
         setError(getErrorMessage(err, 'Failed to load announcements'));
       } finally {
