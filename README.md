@@ -32,7 +32,7 @@ npm install
 migration (`202610171400`) calls `cron.schedule` and fails without it.
 
 **5. Run the migrations.** In the Supabase SQL Editor, run every file in
-`supabase/migrations/` in filename order (`202610151100` … `202610181400`). The
+`supabase/migrations/` in filename order (`202610151100` … `202610181500`). The
 first file, `202610151100_base_schema.sql`, creates the three base tables the rest
 build on — everything is automatic from here. There is no `supabase/config.toml` —
 migrations are run manually, not pushed via CLI.

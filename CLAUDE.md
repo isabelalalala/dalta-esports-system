@@ -76,7 +76,7 @@ Enforced by a CHECK constraint on `profiles.role` (migration `202610161200_role_
 - RLS policies check roles with `public.get_my_role()`.
 
 ## Current schema (public)
-All migrations are in `supabase/migrations/`, run in filename order (202610151100 … 202610181400). `202610151100_base_schema` creates the three pre-migration base tables (`profiles`, `tournaments`, `tournament_registrations`) — it is `if not exists`, so it is a no-op on databases that already have them.
+All migrations are in `supabase/migrations/`, run in filename order (202610151100 … 202610181500). `202610151100_base_schema` creates the three pre-migration base tables (`profiles`, `tournaments`, `tournament_registrations`) — it is `if not exists`, so it is a no-op on databases that already have them.
 `202610181000_feedback_protection` also needs its one-time Vault key setup (the `feedback_server_key` secret +
 `FEEDBACK_SERVER_KEY`); the steps are at the top of that file.
 Readers: "anyone" = also logged out; "logged-in" = any role; "admin/staff" = organizers only.
@@ -230,7 +230,8 @@ Readers: "anyone" = also logged out; "logged-in" = any role; "admin/staff" = org
   action (e.g. `registration.approved`), entity_type, entity_id, details (jsonb: names as they were, incl.
   actor_name; never emails or student IDs), created_at. Only admins read; no insert/update/delete policies.
 - Written only by AFTER triggers through `log_activity()` (not callable from the app): tournaments, registrations,
-  matches (results + one `bracket.generated` entry when the final is inserted), profiles (role, student review,
+  matches (results, `match.edited` field changes, and one `bracket.generated` entry when the final is inserted),
+  match_result_submissions (`result.<status>` for every decision), profiles (role, student review,
   deletion), announcements, streams. Changes made by other triggers or FK cascades (`pg_trigger_depth() > 1`)
   aren't logged, except account deletion. When adding a new loggable action, add its label and sentence to
   `utils/activity.ts` (`ACTION_GROUPS`, `describeActivity()`).
@@ -241,7 +242,9 @@ Readers: "anyone" = also logged out; "logged-in" = any role; "admin/staff" = org
   `202610171500_match_results.sql`), title, message, link (app path only), is_read, created_at. Users read their own and may update
   ONLY `is_read` (column grant); no insert/delete from the app. In the `supabase_realtime` publication.
 - Created only by AFTER triggers through `notify_users()` (not callable from the app; skips the person who caused
-  it): registration approved/rejected → captain; match time set/changed or match live → members of both teams;
+  it): registration approved/rejected → captain, registration removed (admin delete) → captain; tournament
+  cancelled → members of registered teams; match time set/changed or match live → members of both teams
+  (finished matches send nothing; a reschedule warns check-ins were reset);
   announcement → everyone (general) or members of teams registered for that tournament; team invite → the player;
   invite accepted/declined, member left → the captain; removed from a team → the player; made captain → the new
   captain; student verified/rejected/revoked → the player; check-in open → both captains (pg_cron); forfeit →

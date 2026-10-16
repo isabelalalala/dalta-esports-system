@@ -5,10 +5,11 @@ import type { createClient } from '@/utils/supabase/client';
 type SupabaseClient = ReturnType<typeof createClient>;
 
 export type NotificationType =
-  | 'registration_approved' | 'registration_rejected'
+  | 'registration_approved' | 'registration_rejected' | 'registration_removed'
   | 'match_scheduled' | 'match_rescheduled' | 'match_live'
   | 'checkin_open' | 'match_forfeit'
   | 'result_submitted' | 'result_confirmed' | 'result_disputed' | 'result_approved' | 'result_rejected'
+  | 'tournament_cancelled'
   | 'announcement'
   | 'team_invite' | 'invite_accepted' | 'invite_declined' | 'team_captain'
   | 'team_added' | 'member_left' | 'member_removed'
@@ -29,6 +30,7 @@ export interface AppNotification {
 export const notificationIcons: Record<NotificationType, string> = {
   registration_approved: '✅',
   registration_rejected: '❌',
+  registration_removed: '🗑️',
   match_scheduled: '📅',
   match_rescheduled: '🔁',
   match_live: '🔴',
@@ -39,6 +41,7 @@ export const notificationIcons: Record<NotificationType, string> = {
   result_disputed: '⚖️',
   result_approved: '🏆',
   result_rejected: '↩️',
+  tournament_cancelled: '🚫',
   announcement: '📢',
   team_invite: '✉️',
   invite_accepted: '🤝',
