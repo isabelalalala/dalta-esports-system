@@ -216,26 +216,31 @@ export default function ResultSection({ match, teamA, teamB, submissions, isStaf
             <p className="text-sm text-gray-400">Waiting for the other captain to confirm.</p>
           )}
 
-          {/* Staff review */}
+          {/* Staff review. Once the match is completed (e.g. by forfeit) the database
+              refuses approve/override — reject stays so the stale submission can be cleared. */}
           {isStaff && (
             <div className="border-t border-gray-700 pt-4 space-y-3">
               <p className="text-sm font-semibold text-yellow-300">Staff review</p>
-              <button onClick={() => review('approve')} disabled={busy}
-                className="bg-gold text-black px-4 py-2 font-bold hover:bg-golddark disabled:opacity-50">
-                Approve {open.score_a} - {open.score_b}
-              </button>
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="text-sm text-gray-300">Override:</span>
-                <input type="number" min="0" value={overrideA} onChange={(e) => setOverrideA(e.target.value)}
-                  className={`${inputClass} w-20`} aria-label={`Score for ${teamA?.name}`} placeholder={teamA?.name} />
-                <span>-</span>
-                <input type="number" min="0" value={overrideB} onChange={(e) => setOverrideB(e.target.value)}
-                  className={`${inputClass} w-20`} aria-label={`Score for ${teamB?.name}`} placeholder={teamB?.name} />
-                <button onClick={() => review('override')} disabled={busy}
-                  className="border border-yellow-500 text-yellow-300 px-4 py-2 font-bold hover:bg-yellow-500/10 disabled:opacity-50">
-                  Apply this score
-                </button>
-              </div>
+              {match.status !== 'completed' && (
+                <>
+                  <button onClick={() => review('approve')} disabled={busy}
+                    className="bg-gold text-black px-4 py-2 font-bold hover:bg-golddark disabled:opacity-50">
+                    Approve {open.score_a} - {open.score_b}
+                  </button>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="text-sm text-gray-300">Override:</span>
+                    <input type="number" min="0" value={overrideA} onChange={(e) => setOverrideA(e.target.value)}
+                      className={`${inputClass} w-20`} aria-label={`Score for ${teamA?.name}`} placeholder={teamA?.name} />
+                    <span>-</span>
+                    <input type="number" min="0" value={overrideB} onChange={(e) => setOverrideB(e.target.value)}
+                      className={`${inputClass} w-20`} aria-label={`Score for ${teamB?.name}`} placeholder={teamB?.name} />
+                    <button onClick={() => review('override')} disabled={busy}
+                      className="border border-yellow-500 text-yellow-300 px-4 py-2 font-bold hover:bg-yellow-500/10 disabled:opacity-50">
+                      Apply this score
+                    </button>
+                  </div>
+                </>
+              )}
               <div className="flex flex-col sm:flex-row gap-2">
                 <input value={note} onChange={(e) => setNote(e.target.value)} maxLength={500}
                   placeholder="Note (required to reject, e.g. screenshot unreadable)" className={`${inputClass} flex-1`} />
