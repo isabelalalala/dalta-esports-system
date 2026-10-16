@@ -26,7 +26,7 @@ export default function PrivacyConsentCheckbox({ checked, onChange }: Props) {
           .
         </span>
       </label>
-      <p className="text-xs text-gray-500 pl-7">
+      <p className="text-xs text-gray-400 pl-7">
         Under 18? Your parent or guardian must read the Privacy Notice and agree to it with you.
       </p>
     </div>

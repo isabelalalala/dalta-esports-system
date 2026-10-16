@@ -70,7 +70,7 @@ async function TournamentContent({ params }: { params: PageProps<'/t/[id]'>['par
           <span className={m.status === 'completed' && m.winner_team_id === m.team_a_id ? 'text-gold font-bold' : 'text-white'}>{name(m.team_a_id)}</span>
           {m.status === 'completed'
             ? <span className="mx-2 tabular-nums text-white">{m.is_forfeit ? 'forfeit' : `${m.score_a ?? '-'} : ${m.score_b ?? '-'}`}</span>
-            : <span className="mx-2 text-gray-500">vs</span>}
+            : <span className="mx-2 text-gray-400">vs</span>}
           <span className={m.status === 'completed' && m.winner_team_id === m.team_b_id ? 'text-gold font-bold' : 'text-white'}>{name(m.team_b_id)}</span>
           {m.status === 'live' && <span className="ml-2 text-xs text-red-400 font-bold">● LIVE</span>}
         </span>
@@ -170,7 +170,7 @@ async function TournamentContent({ params }: { params: PageProps<'/t/[id]'>['par
       {upcoming.length > 0 && (
         <section>
           <SectionTitle>Schedule</SectionTitle>
-          <p className="text-xs text-gray-500 mb-2">Times are Philippine time.</p>
+          <p className="text-xs text-gray-400 mb-2">Times are Philippine time.</p>
           <ul className="border-2 border-brownlight bg-sitecard divide-y-2 divide-brown">{upcoming.map(matchRow)}</ul>
         </section>
       )}

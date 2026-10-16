@@ -15,7 +15,7 @@ export default function SearchPage({ searchParams }: PageProps<'/search'>) {
   return (
     <div>
       <PageTitle title="Search" />
-      <Suspense fallback={<p className="text-gray-500">Searching...</p>}>
+      <Suspense fallback={<p className="text-gray-400">Searching...</p>}>
         <SearchResults searchParams={searchParams} />
       </Suspense>
     </div>

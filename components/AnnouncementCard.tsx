@@ -45,7 +45,7 @@ export default function AnnouncementCard({
       </div>
 
       <h3 className="text-lg font-bold text-white">{a.title}</h3>
-      <p className="text-xs text-gray-500 mb-2">
+      <p className="text-xs text-gray-400 mb-2">
         {new Date(a.created_at).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })}
         {edited && ' · edited'}
       </p>

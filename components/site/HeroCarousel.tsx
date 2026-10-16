@@ -13,6 +13,8 @@ export default function HeroCarousel({ images }: { images: HeroImage[] }) {
 
   useEffect(() => {
     if (images.length < 2 || paused) return;
+    // WCAG 2.2.2: no auto-advance for users who prefer reduced motion.
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     const timer = setInterval(() => setIndex((i) => (i + 1) % images.length), 5000);
     return () => clearInterval(timer);
   }, [images.length, paused]);
@@ -39,6 +41,9 @@ export default function HeroCarousel({ images }: { images: HeroImage[] }) {
       className="relative border-2 border-gold shadow-[6px_6px_0_var(--color-brown)] bg-black"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
+      onFocusCapture={() => setPaused(true)}
+      onBlurCapture={() => setPaused(false)}
+      onTouchStart={() => setPaused(true)}
     >
       <div className="relative aspect-[16/7] overflow-hidden">
         {current.link ? <Link href={current.link}>{photo}</Link> : photo}

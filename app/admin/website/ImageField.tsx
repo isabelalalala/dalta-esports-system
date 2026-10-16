@@ -42,14 +42,14 @@ export default function ImageField({ label, value, onChange, folder, required = 
       <p className="text-sm font-semibold text-gray-300">{label}</p>
       <div className="flex flex-wrap items-center gap-3">
         <div className="relative w-32 h-20 border border-gray-700 bg-black overflow-hidden grid place-items-center">
-          {url ? <Image src={url} alt="" fill unoptimized className="object-cover" /> : <span className="text-xs text-gray-500">No image</span>}
+          {url ? <Image src={url} alt="" fill unoptimized className="object-cover" /> : <span className="text-xs text-gray-400">No image</span>}
         </div>
         <label className="cursor-pointer border border-gold text-gold px-3 py-1.5 text-sm font-bold hover:bg-gold/10">
           {uploading ? 'Uploading...' : url ? 'Replace' : 'Upload'}
           <input
             type="file"
             accept="image/png,image/jpeg,image/webp,image/gif"
-            className="hidden"
+            className="sr-only"
             disabled={uploading}
             onChange={(e) => { handleFile(e.target.files?.[0]); e.target.value = ''; }}
           />
@@ -60,8 +60,8 @@ export default function ImageField({ label, value, onChange, folder, required = 
           </button>
         )}
       </div>
-      <p className="text-xs text-gray-500">PNG, JPG, WebP or GIF, max 5 MB.</p>
-      {error && <p className="text-sm text-red-300">{error}</p>}
+      <p className="text-xs text-gray-400">PNG, JPG, WebP or GIF, max 5 MB.</p>
+      {error && <p className="text-sm text-red-300" role="alert">{error}</p>}
     </div>
   );
 }

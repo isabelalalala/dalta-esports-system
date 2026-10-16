@@ -14,7 +14,7 @@ export default function StarRating({
 
   if (!onChange) {
     return (
-      <span className={`${textSize} text-yellow-400`} aria-label={`${value} out of 5 stars`}>
+      <span className={`${textSize} text-yellow-400`} role="img" aria-label={`${value} out of 5 stars`}>
         {'★'.repeat(value)}
         <span className="text-gray-600">{'★'.repeat(5 - value)}</span>
       </span>

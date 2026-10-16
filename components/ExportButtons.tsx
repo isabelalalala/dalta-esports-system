@@ -59,7 +59,7 @@ export default function ExportButtons({ type, label, params = {} }: Props) {
           {busy === 'csv' ? 'Preparing...' : '⬇ CSV'}
         </button>
       </div>
-      {error && <p className="text-sm text-red-300">{error}</p>}
+      {error && <p className="text-sm text-red-300" role="alert">{error}</p>}
     </div>
   );
 }

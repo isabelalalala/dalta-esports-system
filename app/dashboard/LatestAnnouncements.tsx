@@ -46,7 +46,7 @@ export default function LatestAnnouncements() {
       {loading ? (
         <SectionLoading />
       ) : error ? (
-        <p className="text-red-300">{error}</p>
+        <p className="text-red-300" role="alert">{error}</p>
       ) : announcements.length === 0 ? (
         <p className="text-gray-400">No announcements yet.</p>
       ) : (

@@ -8,7 +8,7 @@ export function StatTile({ label, value, note }: { label: string; value: ReactNo
     <div className="bg-sitecard border border-brownlight p-4 print:border-gray-400 print:bg-white">
       <p className="text-xs uppercase font-bold text-gray-400 print:text-gray-600">{label}</p>
       <p className="text-2xl font-bold">{value}</p>
-      {note && <p className="text-xs text-gray-500 mt-1">{note}</p>}
+      {note && <p className="text-xs text-gray-400 mt-1">{note}</p>}
     </div>
   );
 }
@@ -26,7 +26,7 @@ export function ReportCard({ title, note, children }: { title: string; note?: st
 
 // Shown instead of a chart that has no data
 export function NoData({ text = 'No data for these filters.' }: { text?: string }) {
-  return <p className="text-gray-500 text-sm py-8 text-center">{text}</p>;
+  return <p className="text-gray-400 text-sm py-8 text-center">{text}</p>;
 }
 
 // A simple table; numbers are right-aligned so they line up
