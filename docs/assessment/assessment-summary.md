@@ -65,9 +65,11 @@ find.
   (`202610181600`.)
 
 **Auth/accounts** (B)
-- Admin-created accounts' confirm links point at `/auth/login`, skipping
-  `/auth/callback` (session never established from the link).
-- `profiles.updated_at` referenced by code but maintained by no migration.
+- ~~Admin-created accounts' confirm links point at `/auth/login`, skipping
+  `/auth/callback` (session never established from the link).~~ RESOLVED: admin
+  "Add account" uses `confirmEmailRedirect()`.
+- ~~`profiles.updated_at` referenced by code but maintained by no migration.~~
+  RESOLVED: column + `profiles_touch` trigger added (`202610181700`).
 
 **Privacy** (L)
 - DPO contact is an explicit placeholder (`utils/privacy.ts`).

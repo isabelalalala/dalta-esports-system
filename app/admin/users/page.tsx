@@ -5,6 +5,7 @@ import { createClient } from '@/utils/supabase/client';
 import { createSignupClient } from '@/utils/supabase/signup-client';
 import Link from 'next/link';
 import { getErrorMessage } from '@/utils/errors';
+import { confirmEmailRedirect } from '@/utils/auth';
 import type { Profile } from '@/utils/types';
 import ExportButtons from '@/components/ExportButtons';
 import PageLoading from '@/components/PageLoading';
@@ -319,7 +320,7 @@ function AddAccountForm({ onCreated }: { onCreated: () => void }) {
         password,
         options: {
           data: { full_name: fullName.trim(), role },
-          emailRedirectTo: `${window.location.origin}/auth/login`,
+          emailRedirectTo: confirmEmailRedirect(),
         },
       });
       if (signUpError) throw signUpError;
