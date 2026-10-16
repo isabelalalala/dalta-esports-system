@@ -50,11 +50,11 @@ find.
   (shared `isFeedbackRetryable`), admins exempt from the per-user claim cap,
   honest limit messages; "Gave up" state in the admin list.
 
-**Notifications & audit** (I)
-- Tournament cancelled → registrants get no notification (no trigger, no type).
-- Admin-deleted registration → captain never told.
-- Reschedule/status edits (which wipe check-ins) leave no `activity_logs` entry;
-  result submit/confirm/dispute/reject decisions only half-audited.
+**Notifications & audit** (I) — **RESOLVED in `202610181500_notification_audit_gaps`** (applied + smoke-tested live):
+- ~~Tournament cancelled → no notification~~ — `tournament_cancelled` type + notify trigger.
+- ~~Admin-deleted registration → captain never told~~ — `registration_removed` on AFTER DELETE.
+- ~~Reschedule/status edits unaudited; result decisions half-audited~~ — `match.edited` +
+  `result.<status>` rows for every submission status change.
 
 **Reports** (H)
 - `report_activity` per-tournament team counts are unfiltered lifetime numbers next
