@@ -10,5 +10,5 @@ export const PRIVACY_NOTICE_VERSION = '2026-10-18';
 
 // Where people send privacy requests and questions.
 // TODO: replace with the organization's real contact before going live.
-export const PRIVACY_CONTACT_EMAIL = 'privacy@dalta-esports.example';
+export const PRIVACY_CONTACT_EMAIL = 'its.molino@perpetualdalta.edu.ph';
 export const PRIVACY_CONTACT_PERSON = 'DALTA Esports Data Privacy Officer';

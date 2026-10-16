@@ -1,6 +1,8 @@
 # DALTA Esports – Tournament Management System
 
 Full requirements (business case, CFD, DFD, use cases, wireframes): see docs/requirements.md. Read it before starting a new module.
+Everything added beyond the original 6 modules (actors, use cases, data flows, tables): docs/new-features-summary.md.
+Keep both files in sync when a feature adds an actor, a use case, a data flow or a table.
 
 Capstone system for DALTA Esports (UPHSD Molino) and AcadArena South Luzon Esports Conference (SLEC).
 Full title: "DALTA Esports: Tournament Management System with AI-Powered Feedback Sentiment Analytics".
@@ -74,8 +76,9 @@ Enforced by a CHECK constraint on `profiles.role` (migration `202610161200_role_
 - RLS policies check roles with `public.get_my_role()`.
 
 ## Current schema (public)
-All migrations are in `supabase/migrations/` and have been run, in filename order (202610151200 … 202610171800).
-`202610181000_feedback_protection` (plus its Vault setup steps) and `202610181100_predictions` are new and must be run.
+All migrations are in `supabase/migrations/`, run in filename order (202610151200 … 202610181100).
+`202610181000_feedback_protection` also needs its one-time Vault key setup (the `feedback_server_key` secret +
+`FEEDBACK_SERVER_KEY`); the steps are at the top of that file.
 Readers: "anyone" = also logged out; "logged-in" = any role; "admin/staff" = organizers only.
 
 **Accounts (Module 1)**
@@ -360,15 +363,20 @@ triggers with readable error messages.
 3. Event Information and Announcements: done. Event info, announcements, match schedule updates.
 4. Live Streaming: done. Staff configure Facebook Live URLs; audience watches embedded streams;
    real-time scoreboard; viewership recorded in `stream_views`.
-5. Feedback and Sentiment Analysis: done. Audience and players submit feedback and ratings; admins classify
-   sentiment with Gemini on `/admin/feedback`.
-6. Administrative Reports: done. Admins generate a saved report (activity, sentiment, engagement) with Chart.js
-   charts, print/PDF and CSV; staff view engagement stats. Filters: tournament, game, date range.
+5. Feedback and Sentiment Analysis: done. Audience and players submit feedback and ratings (one per tournament,
+   per match and one general); Gemini classifies sentiment and topics when it's sent (rate-limited); failures stay
+   "pending analysis" and admins retry them on `/admin/feedback`.
+6. Administrative Reports: done. Admins generate a saved report (activity, sentiment, engagement incl. pick'em)
+   with Chart.js charts, print/PDF and CSV; staff view engagement stats. Filters: tournament, game, date range.
+   Also: activity (audit) log and Excel/CSV exports.
+7. (added) Public Website & Content Management: done. `app/(site)/`, edited on `/admin/website` (DFD 7.0, store D6).
+8. (added) Audience Engagement – Pick'em Predictions: done. Picks, community split, leaderboard (DFD 8.0, store D9).
+In the updated diagrams, notifications are store D7 and the activity log store D8 (see docs/requirements.md).
 The business case also lists a "Database Module". It is not a separate module: each module adds its own
 tables and migrations (see Current schema).
 
 ## Extra features (after the 6 modules)
-Steps 1–9 of the extra-features prompts are done (the prompts file itself isn't in `docs/`):
+All extra features are done (the prompts file itself isn't in `docs/`):
 1. Account security and privacy: password reset, email confirmation screens, Data Privacy Act consent
    (`/privacy`, `/privacy/consent`, `202610170900_privacy_consent`).
 2. Student verification (`/profile` student details, `/admin/verification`, `requires_verification` on
@@ -383,7 +391,12 @@ Steps 1–9 of the extra-features prompts are done (the prompts file itself isn'
 8. Exports to Excel/CSV (`/api/exports/[type]`; `202610171700_export_log`).
 9. Public tournament pages, link previews (Open Graph), "Add to calendar" (.ics) and Share (`/t/[id]`,
    `/t/[id]/match/[matchId]`, `/calendar/...`; `202610171800_public_tournaments`).
+10. Final quality pass: mobile layout at 375px, shared loading/empty/error states, friendly error messages,
+    404/error pages; feedback protection with Gemini rate limit and "pending analysis" retry
+    (`202610181000_feedback_protection`).
+11. Pick'em predictions and leaderboard (`202610181100_predictions`).
 Also done: the yellow/brown restyle of every page (one look for public and logged-in pages).
+The final feature list for the documents is docs/new-features-summary.md.
 
 ## How things work (read before adding a feature)
 - **Notifications are created only in the database**: an AFTER trigger (or a security definer function) calls
