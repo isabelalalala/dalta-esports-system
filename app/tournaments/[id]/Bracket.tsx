@@ -91,8 +91,8 @@ function MatchBox({ match, teamNames, timeZone }: { match: Match; teamNames: Rec
           <div
             key={i}
             className={`flex justify-between items-center gap-2 px-3 py-2 ${i === 0 ? 'border-b border-brown' : ''} ${
-              won ? 'text-gold font-bold' : lost ? 'text-gray-500' : 'text-white'
-            } ${teamId === null ? 'italic text-gray-500' : ''}`}
+              won ? 'text-gold font-bold' : lost ? 'text-gray-400' : 'text-white'
+            } ${teamId === null ? 'italic text-gray-400' : ''}`}
           >
             <span className="truncate">{name}</span>
             <span className="tabular-nums">{won && match.is_forfeit ? 'FF' : score ?? ''}</span>

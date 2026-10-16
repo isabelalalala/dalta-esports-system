@@ -8,8 +8,10 @@ import { getErrorMessage } from '@/utils/errors';
 import { toDateInput, validateTournamentDates } from '@/utils/tournaments';
 import type { Game } from '@/utils/types';
 import PageLoading from '@/components/PageLoading';
+import { usePageTitle } from '@/utils/page-title';
 
 export default function EditTournamentPage() {
+  usePageTitle('Edit tournament');
   const supabase = createClient();
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
@@ -120,7 +122,7 @@ export default function EditTournamentPage() {
   }
 
   return (
-    <div className="min-h-screen bg-sitebg text-white px-4 py-10">
+    <main id="main-content" className="min-h-screen bg-sitebg text-white px-4 py-10">
       <div className="max-w-3xl mx-auto">
         <Link href={`/tournaments/${id}`} className="inline-block text-gold hover:underline mb-6">
           ← Back to Tournament
@@ -135,16 +137,17 @@ export default function EditTournamentPage() {
           className="bg-sitecard border-2 border-gold shadow-[6px_6px_0_var(--color-brown)] p-4 sm:p-8 space-y-5"
         >
           {error && (
-            <div className="bg-red-500/10 border border-red-500 text-red-400 px-4 py-3">
+            <div role="alert" className="bg-red-500/10 border border-red-500 text-red-400 px-4 py-3">
               {error}
             </div>
           )}
 
           <div>
-            <label className="block text-sm font-semibold text-gray-300 mb-2">
+            <label htmlFor="tournament-name" className="block text-sm font-semibold text-gray-300 mb-2">
               Tournament Name *
             </label>
             <input
+              id="tournament-name"
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
@@ -154,10 +157,11 @@ export default function EditTournamentPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-semibold text-gray-300 mb-2">
+            <label htmlFor="game" className="block text-sm font-semibold text-gray-300 mb-2">
               Game *
             </label>
             <select
+              id="game"
               value={gameId}
               onChange={(e) => setGameId(e.target.value)}
               className="w-full border border-brownlight bg-sitebg px-4 py-3 text-white outline-none focus:border-gold"
@@ -171,10 +175,11 @@ export default function EditTournamentPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-semibold text-gray-300 mb-2">
+            <label htmlFor="description" className="block text-sm font-semibold text-gray-300 mb-2">
               Description
             </label>
             <textarea
+              id="description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={4}
@@ -183,23 +188,25 @@ export default function EditTournamentPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-semibold text-gray-300 mb-2">
+            <label htmlFor="rules" className="block text-sm font-semibold text-gray-300 mb-2">
               Rules
             </label>
             <textarea
+              id="rules"
               value={rules}
               onChange={(e) => setRules(e.target.value)}
               rows={6}
               placeholder="Format, match rules, check-in time, etc."
-              className="w-full border border-brownlight bg-sitebg px-4 py-3 text-white placeholder-gray-500 outline-none focus:border-gold"
+              className="w-full border border-brownlight bg-sitebg px-4 py-3 text-white placeholder-gray-400 outline-none focus:border-gold"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-semibold text-gray-300 mb-2">
+            <label htmlFor="max-participants" className="block text-sm font-semibold text-gray-300 mb-2">
               Max Participants *
             </label>
             <input
+              id="max-participants"
               type="number"
               min="1"
               value={maxParticipants}
@@ -218,7 +225,7 @@ export default function EditTournamentPage() {
             />
             <span>
               <span className="font-semibold">Only verified students can register</span>
-              <span className="block text-gray-500">Every team member must have their student details verified first. Teams already registered aren&apos;t removed, but can only be approved once everyone is verified.</span>
+              <span className="block text-gray-400">Every team member must have their student details verified first. Teams already registered aren&apos;t removed, but can only be approved once everyone is verified.</span>
             </span>
           </label>
 
@@ -237,10 +244,11 @@ export default function EditTournamentPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-              <label className="block text-sm font-semibold text-gray-300 mb-2">
+              <label htmlFor="start-date" className="block text-sm font-semibold text-gray-300 mb-2">
                 Start Date *
               </label>
               <input
+                id="start-date"
                 type="date"
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
@@ -250,10 +258,11 @@ export default function EditTournamentPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-gray-300 mb-2">
+              <label htmlFor="end-date" className="block text-sm font-semibold text-gray-300 mb-2">
                 End Date *
               </label>
               <input
+                id="end-date"
                 type="date"
                 value={endDate}
                 onChange={(e) => setEndDate(e.target.value)}
@@ -263,10 +272,11 @@ export default function EditTournamentPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-gray-300 mb-2">
+              <label htmlFor="registration-deadline" className="block text-sm font-semibold text-gray-300 mb-2">
                 Registration Deadline *
               </label>
               <input
+                id="registration-deadline"
                 type="date"
                 value={registrationDeadline}
                 onChange={(e) => setRegistrationDeadline(e.target.value)}
@@ -310,6 +320,6 @@ export default function EditTournamentPage() {
           </div>
         </form>
       </div>
-    </div>
+    </main>
   );
 }

@@ -35,7 +35,7 @@ export default function PickemLeaderboard({ tournamentId, limit }: { tournamentI
   if (loading) return <SectionLoading label="Loading leaderboard..." />;
   if (error) return <p role="alert" className="text-red-300 text-sm">{error}</p>;
   if (rows.length === 0) {
-    return <p className="text-gray-500">No picks yet. Pick the winners in the bracket to get on the board!</p>;
+    return <p className="text-gray-400">No picks yet. Pick the winners in the bracket to get on the board!</p>;
   }
 
   const top = limit ? rows.slice(0, limit) : rows;
@@ -59,7 +59,7 @@ export default function PickemLeaderboard({ tournamentId, limit }: { tournamentI
           <span className="shrink-0 text-right text-sm">
             <span className="font-bold text-white tabular-nums">{r.correct}</span>
             <span className="text-gray-400"> correct</span>
-            <span className="block text-xs text-gray-500 tabular-nums">
+            <span className="block text-xs text-gray-400 tabular-nums">
               {r.decided > 0 ? `${Math.round((r.correct / r.decided) * 100)}% of ${r.decided}` : `${r.total} pending`}
             </span>
           </span>

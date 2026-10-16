@@ -10,11 +10,13 @@ import { formatDateTime, fromDateTimeInput, isBye, roundLabel, toDateTimeInput }
 import ExportButtons from '@/components/ExportButtons';
 import PageLoading from '@/components/PageLoading';
 import PageError from '@/components/PageError';
+import { usePageTitle } from '@/utils/page-title';
 
 const inputClass =
   'w-full border border-brownlight bg-sitebg px-3 py-2 text-white outline-none focus:border-gold disabled:opacity-50';
 
 export default function MatchManagementPage() {
+  usePageTitle('Tournament matches');
   const supabase = createClient();
   const [tournament, setTournament] = useState<Tournament | null>(null);
   const [matches, setMatches] = useState<Match[]>([]);
@@ -106,10 +108,10 @@ export default function MatchManagementPage() {
   // Hiding the page is only for convenience; the database refuses changes from other roles.
   if (profile?.role !== 'admin' && profile?.role !== 'staff') {
     return (
-      <div className="min-h-screen bg-sitebg text-white p-10 text-center">
+      <main id="main-content" className="min-h-screen bg-sitebg text-white p-10 text-center">
         Only organizers can manage matches.{' '}
         <Link href={`/tournaments/${id}`} className="text-gold underline">Back to the tournament</Link>
-      </div>
+      </main>
     );
   }
 
@@ -117,7 +119,7 @@ export default function MatchManagementPage() {
   const rounds = Array.from({ length: roundCount }, (_, i) => i + 1);
 
   return (
-    <div className="min-h-screen bg-sitebg text-white px-4 py-10">
+    <main id="main-content" className="min-h-screen bg-sitebg text-white px-4 py-10">
       <div className="max-w-5xl mx-auto">
         <Link href={`/tournaments/${id}`} className="inline-block text-gold hover:underline mb-6">
           ← Back to Tournament
@@ -130,7 +132,7 @@ export default function MatchManagementPage() {
         </div>
 
         {error && (
-          <div className="mb-6 bg-red-500/10 border border-red-500 text-red-300 px-4 py-3">{error}</div>
+          <div role="alert" className="mb-6 bg-red-500/10 border border-red-500 text-red-300 px-4 py-3">{error}</div>
         )}
 
         {/* A failed load shows the error above, not "nothing here" */}
@@ -162,7 +164,7 @@ export default function MatchManagementPage() {
           </div>
         )}
       </div>
-    </div>
+    </main>
   );
 }
 
@@ -314,10 +316,10 @@ function MatchCard({
       </div>
 
       {!bothTeamsKnown && (
-        <p className="text-xs text-gray-500">Waiting for earlier matches. You can already set the time.</p>
+        <p className="text-xs text-gray-400">Waiting for earlier matches. You can already set the time.</p>
       )}
 
-      {error && <p className="text-sm text-red-300">{error}</p>}
+      {error && <p role="alert" className="text-sm text-red-300">{error}</p>}
 
       <button
         type="submit" disabled={saving}
