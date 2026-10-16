@@ -46,8 +46,9 @@ find.
   heartbeat table (no SELECT policy, IDs stay in DB) + admin/staff-only `get_live_viewer_counts`.
 - ~~Facebook URL validation accepts `facebook.com/<anything>`~~ — **RESOLVED (202610181310):**
   DB CHECK + `utils/streams.ts` require video-renderable paths (/watch, /videos/, /reel/, /live, story.php?).
-- `analysis_attempts` never read — unclassifiable feedback retries forever, burning
-  Gemini claim slots.
+- ~~`analysis_attempts` never read~~ — **RESOLVED (202610181400):** retry cap of 5
+  (shared `isFeedbackRetryable`), admins exempt from the per-user claim cap,
+  honest limit messages; "Gave up" state in the admin list.
 
 **Notifications & audit** (I)
 - Tournament cancelled → registrants get no notification (no trigger, no type).
