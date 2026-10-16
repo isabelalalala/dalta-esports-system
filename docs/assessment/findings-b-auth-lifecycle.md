@@ -2,7 +2,7 @@
 
 ## Verdict
 
-Auth and account lifecycle are implemented substantially as documented — role gating, consent capture, cascade deletes, and last-admin protections are all enforced in the database, not just the UI — **but `/auth/callback`'s `?next=` allowlist is bypassable with a backslash (open redirect)**, and two smaller drifts exist: admin-created accounts get a confirmation link that skips `/auth/callback`, and `profiles.updated_at` is depended on by code but not maintained by any migration.
+Auth and account lifecycle are implemented substantially as documented — role gating, consent capture, cascade deletes, and last-admin protections are all enforced in the database, not just the UI — ~~but `/auth/callback`'s `?next=` allowlist is bypassable with a backslash (open redirect)~~ **— RESOLVED: `safeNextPath()` (`utils/auth.ts`) compares the resolved origin, covering backslash AND tab/newline injection; 5 tests in `utils/auth.test.ts`** — and two smaller drifts exist: admin-created accounts get a confirmation link that skips `/auth/callback`, and `profiles.updated_at` is depended on by code but not maintained by any migration.
 
 ## Checked
 
@@ -20,7 +20,7 @@ Auth and account lifecycle are implemented substantially as documented — role 
 
 **Critical:**
 
-- **Open redirect in `/auth/callback` `?next=` validation.** `route.ts:21` accepts any value starting with `/` that isn't `//`. A value like `?next=/\evil.com` (or URL-encoded `/%5C%5Cevil.com`, which `searchParams.get` decodes) passes the check, but WHATWG URL parsing treats `\` as a path separator for `http(s)` URLs, so `new URL('/\\evil.com', request.url)` at `route.ts:33` resolves to `https://evil.com/` and `NextResponse.redirect` sends the victim off-site. Same bypass via tab-stripping (`/%09/evil.com` → `//evil.com` → host `evil.com`). Fix: require `next` to match `/^\/(?!\/|\\)[^\\]*$/` or compare `new URL(next, request.url).origin === new URL(request.url).origin` before redirecting. Note the redirect happens unconditionally (`:30-33` — intentionally, even on failed exchange), so no valid session/token is needed for the redirect to fire.
+- ~~**Open redirect in `/auth/callback` `?next=` validation.**~~ **RESOLVED** — the check now verifies the parsed URL's origin (`safeNextPath`, `utils/auth.ts`), closing both the backslash and the tab/newline variants. Original finding: `route.ts:21` accepts any value starting with `/` that isn't `//`. A value like `?next=/\evil.com` (or URL-encoded `/%5C%5Cevil.com`, which `searchParams.get` decodes) passes the check, but WHATWG URL parsing treats `\` as a path separator for `http(s)` URLs, so `new URL('/\\evil.com', request.url)` at `route.ts:33` resolves to `https://evil.com/` and `NextResponse.redirect` sends the victim off-site. Same bypass via tab-stripping (`/%09/evil.com` → `//evil.com` → host `evil.com`). Fix: require `next` to match `/^\/(?!\/|\\)[^\\]*$/` or compare `new URL(next, request.url).origin === new URL(request.url).origin` before redirecting. Note the redirect happens unconditionally (`:30-33` — intentionally, even on failed exchange), so no valid session/token is needed for the redirect to fire.
 
 **Required:**
 

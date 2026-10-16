@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import type { EmailOtpType } from '@supabase/supabase-js';
 import { createClient } from '@/utils/supabase/server';
+import { safeNextPath } from '@/utils/auth';
 
 // Email links (e.g. "reset your password") land here. This logs the user in
 // from the link, then sends them on to `next`.
@@ -17,8 +18,7 @@ export async function GET(request: NextRequest) {
   const type = params.get('type') as EmailOtpType | null;
 
   // Only allow paths inside this app, so a crafted link can't redirect to another site.
-  const nextParam = params.get('next') ?? '/dashboard';
-  const next = nextParam.startsWith('/') && !nextParam.startsWith('//') ? nextParam : '/dashboard';
+  const next = safeNextPath(params.get('next'), request.nextUrl.origin);
 
   const supabase = await createClient();
   if (code) {
