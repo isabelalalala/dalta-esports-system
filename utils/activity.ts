@@ -69,7 +69,14 @@ export const ACTION_GROUPS: { label: string; actions: { value: string; label: st
     label: 'Matches',
     actions: [
       { value: 'bracket.generated', label: 'Bracket generated' },
+      { value: 'match.edited', label: 'Match edited' },
       { value: 'match.result', label: 'Match result' },
+      { value: 'result.submitted', label: 'Result submitted' },
+      { value: 'result.confirmed', label: 'Result confirmed' },
+      { value: 'result.disputed', label: 'Result disputed' },
+      { value: 'result.approved', label: 'Result approved' },
+      { value: 'result.overridden', label: 'Result overridden' },
+      { value: 'result.rejected', label: 'Result rejected' },
     ],
   },
   {
@@ -130,6 +137,10 @@ const fieldLabels: Record<string, string> = {
   title: 'title',
   facebook_url: 'Facebook link',
   match_id: 'match',
+  scheduled_at: 'time',
+  tournament_id: 'tournament',
+  round: 'round',
+  match_number: 'match number',
 };
 
 const exportLabels: Record<string, string> = {
@@ -195,6 +206,37 @@ export function describeActivity(log: ActivityLog): string {
       const score = d.score_a != null && d.score_b != null ? ` ${d.score_a}–${d.score_b}` : '';
       const winner = d.winner ? `, ${d.winner} won` : '';
       return `${actor} entered the result of ${match} in ${tournament}: ${d.team_a ?? 'TBD'} vs ${d.team_b ?? 'TBD'}${score}${winner}`;
+    }
+    case 'match.edited': {
+      const match = d.round
+        ? `${roundLabel(d.round, d.round_count ?? d.round)} match ${d.match_number}`
+        : 'a match';
+      return `${actor} edited ${match} in ${tournament}${listFields(d.fields)}`;
+    }
+    case 'result.submitted': {
+      const match = d.round
+        ? `${roundLabel(d.round, d.round_count ?? d.round)} match ${d.match_number}`
+        : 'a match';
+      const score = d.score_a != null && d.score_b != null ? ` ${d.score_a}–${d.score_b}` : '';
+      return `${actor} submitted a result for ${match} in ${tournament} (${d.team_a ?? 'TBD'} vs ${d.team_b ?? 'TBD'}${score})`;
+    }
+    case 'result.confirmed':
+    case 'result.disputed':
+    case 'result.approved':
+    case 'result.overridden':
+    case 'result.rejected': {
+      const match = d.round
+        ? `${roundLabel(d.round, d.round_count ?? d.round)} match ${d.match_number}`
+        : 'a match';
+      const verbs: Record<string, string> = {
+        'result.confirmed': 'confirmed the submitted result of',
+        'result.disputed': 'disputed the submitted result of',
+        'result.approved': 'approved the result of',
+        'result.overridden': 'overrode the result of',
+        'result.rejected': 'rejected a result submission for',
+      };
+      const note = d.note ? `: "${d.note}"` : '';
+      return `${actor} ${verbs[log.action]} ${match} in ${tournament}${note}`;
     }
 
     case 'user.role_changed':
