@@ -30,7 +30,7 @@ export function SectionTitle({ children }: { children: ReactNode }) {
 
 // Shown when a list has nothing published yet
 export function EmptyNote({ children }: { children: ReactNode }) {
-  return <p className="text-gray-500 border-2 border-dashed border-brown p-6 text-center">{children}</p>;
+  return <p className="text-gray-400 border-2 border-dashed border-brown p-6 text-center">{children}</p>;
 }
 
 // Text typed in /admin/website: keep the line breaks the admin typed

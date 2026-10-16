@@ -67,7 +67,7 @@ async function MatchContent({ params }: { params: PageProps<'/t/[id]/match/[matc
   // A stream for this match, or else any live stream of the tournament
   const stream = data.live_streams.find((s) => s.match_id === match.id) ?? (match.status === 'live' ? data.live_streams[0] : undefined);
   const teamClass = (teamId: string | null) =>
-    done ? (match.winner_team_id === teamId ? 'text-gold' : 'text-gray-500') : 'text-white';
+    done ? (match.winner_team_id === teamId ? 'text-gold' : 'text-gray-400') : 'text-white';
 
   return (
     <div className="space-y-8">
@@ -78,6 +78,7 @@ async function MatchContent({ params }: { params: PageProps<'/t/[id]/match/[matc
         <p className="text-xs uppercase tracking-widest text-gray-400">
           {data.tournament.game} · {info.round} · Match {match.match_number}
         </p>
+        <h1 className="sr-only">{teamA} vs {teamB}</h1>
         <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto_1fr] items-center gap-4">
           <p className={`font-pixel text-sm sm:text-base leading-relaxed ${teamClass(match.team_a_id)}`}>{teamA}</p>
           <p className="text-3xl font-bold tabular-nums text-white">

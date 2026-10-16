@@ -254,7 +254,7 @@ export default function ListEditor({
             className={`${inputClass} mt-1 font-normal`}
           />
         )}
-        {f.help && <span className="block text-xs text-gray-500 font-normal mt-1">{f.help}</span>}
+        {f.help && <span className="block text-xs text-gray-400 font-normal mt-1">{f.help}</span>}
       </label>
     );
   };
@@ -273,7 +273,7 @@ export default function ListEditor({
       {addWithImage && (
         <label className={`inline-block cursor-pointer bg-gold text-black px-4 py-2 font-bold hover:bg-golddark ${busy ? 'opacity-50' : ''}`}>
           + Add photo
-          <input type="file" accept="image/png,image/jpeg,image/webp,image/gif" className="hidden" disabled={busy}
+          <input type="file" accept="image/png,image/jpeg,image/webp,image/gif" className="sr-only" disabled={busy}
             onChange={(e) => { handleAddWithImage(e.target.files?.[0]); e.target.value = ''; }} />
         </label>
       )}
@@ -296,7 +296,7 @@ export default function ListEditor({
                     </div>
                   )}
                   <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-white truncate">{titleOf(row) || <span className="italic text-gray-500">Untitled</span>}</p>
+                    <p className="font-semibold text-white truncate">{titleOf(row) || <span className="italic text-gray-400">Untitled</span>}</p>
                     {subtitleOf && <p className="text-xs text-gray-400 truncate">{subtitleOf(row)}</p>}
                   </div>
                   {hasPublish && (

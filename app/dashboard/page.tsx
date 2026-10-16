@@ -14,6 +14,7 @@ import { PRIVACY_NOTICE_VERSION } from '@/utils/privacy'
 import PageLoading from '@/components/PageLoading'
 import PageError from '@/components/PageError'
 import { getErrorMessage } from '@/utils/errors'
+import { usePageTitle } from '@/utils/page-title'
 
 interface DashCard {
   href: string
@@ -94,6 +95,7 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true)
   const [loadError, setLoadError] = useState('')
   const router = useRouter()
+  usePageTitle('Dashboard')
 
   useEffect(() => {
     const getUser = async () => {
@@ -143,7 +145,7 @@ export default function Dashboard() {
   const isOrganizer = role === 'admin' || role === 'staff'
 
   return (
-    <div className="min-h-screen bg-sitebg text-white px-4 py-8">
+    <main id="main-content" className="min-h-screen bg-sitebg text-white px-4 py-8">
       <div className="max-w-6xl mx-auto space-y-8">
         <div className="flex flex-wrap justify-between items-center gap-4">
           <h1 className="font-pixel text-xl sm:text-2xl leading-relaxed text-gold">Dashboard</h1>
@@ -186,6 +188,6 @@ export default function Dashboard() {
         {/* Shown for every role */}
         <LatestAnnouncements />
       </div>
-    </div>
+    </main>
   )
 }

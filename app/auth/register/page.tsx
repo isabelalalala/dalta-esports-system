@@ -8,10 +8,12 @@ import { getErrorMessage } from '@/utils/errors'
 import { PRIVACY_NOTICE_VERSION } from '@/utils/privacy'
 import { confirmEmailRedirect } from '@/utils/auth'
 import PrivacyConsentCheckbox from '@/components/PrivacyConsentCheckbox'
+import { usePageTitle } from '@/utils/page-title'
 
 const inputClass = 'w-full p-3 bg-sitebg text-white border border-gold'
 
 export default function Register() {
+  usePageTitle('Register')
   const supabase = createClient()
   const router = useRouter()
   const [fullName, setFullName] = useState('')
@@ -93,14 +95,14 @@ export default function Register() {
 
   if (sentTo) {
     return (
-      <div className="min-h-screen grid place-items-center bg-sitebg px-4">
+      <main id="main-content" className="min-h-screen grid place-items-center bg-sitebg px-4">
         <div className="w-full max-w-md bg-sitecard p-6 sm:p-8 shadow-[6px_6px_0_var(--color-brown)] text-center space-y-4">
           <h1 className="text-gold text-2xl font-bold">Check your email to confirm your account</h1>
           <p className="text-gray-300">
             We sent a confirmation link to <span className="text-white font-semibold">{sentTo}</span>.
             Open it to activate your account, then log in.
           </p>
-          <p className="text-gray-500 text-sm">Can&apos;t find it? Check your spam folder, or send it again.</p>
+          <p className="text-gray-400 text-sm">Can&apos;t find it? Check your spam folder, or send it again.</p>
           <button onClick={handleResend} className="border border-gold text-gold px-4 py-2 font-bold hover:bg-gold/10">
             Resend email
           </button>
@@ -109,27 +111,27 @@ export default function Register() {
             <Link href="/auth/login" className="text-gold">Go to login</Link>
           </p>
         </div>
-      </div>
+      </main>
     )
   }
 
   return (
-    <div className="min-h-screen grid place-items-center bg-sitebg px-4 py-10">
+    <main id="main-content" className="min-h-screen grid place-items-center bg-sitebg px-4 py-10">
       <form
         onSubmit={handleRegister}
         className="w-full max-w-md bg-sitecard p-6 sm:p-8 shadow-[6px_6px_0_var(--color-brown)] space-y-4"
       >
         <h1 className="text-gold text-2xl font-bold text-center mb-4">Register</h1>
 
-        {error && <div className="bg-[#ff4444] text-white px-3 py-2">{error}</div>}
+        {error && <div role="alert" className="bg-red-500/10 border border-red-500 text-red-300 px-3 py-2">{error}</div>}
 
-        <input type="text" placeholder="Full Name" value={fullName} onChange={(e) => setFullName(e.target.value)}
+        <input type="text" placeholder="Full Name" aria-label="Full Name" value={fullName} onChange={(e) => setFullName(e.target.value)}
           className={inputClass} autoComplete="name" required />
-        <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)}
+        <input type="email" placeholder="Email" aria-label="Email" value={email} onChange={(e) => setEmail(e.target.value)}
           className={inputClass} autoComplete="email" required />
-        <input type="password" placeholder="Password (8+ characters)" value={password} onChange={(e) => setPassword(e.target.value)}
+        <input type="password" placeholder="Password (8+ characters)" aria-label="Password (8+ characters)" value={password} onChange={(e) => setPassword(e.target.value)}
           className={inputClass} autoComplete="new-password" required />
-        <input type="password" placeholder="Confirm Password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)}
+        <input type="password" placeholder="Confirm Password" aria-label="Confirm Password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)}
           className={inputClass} autoComplete="new-password" required />
 
         <div>
@@ -155,6 +157,6 @@ export default function Register() {
           <Link href="/auth/login" className="text-gold">Login</Link>
         </p>
       </form>
-    </div>
+    </main>
   )
 }

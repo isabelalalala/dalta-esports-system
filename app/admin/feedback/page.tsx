@@ -6,6 +6,7 @@ import { createClient } from '@/utils/supabase/client';
 import { getErrorMessage } from '@/utils/errors';
 import type { Feedback, Sentiment, Tournament } from '@/utils/types';
 import { isFeedbackRetryable } from '@/utils/feedback';
+import { usePageTitle } from '@/utils/page-title';
 import StarRating from '@/components/StarRating';
 import ExportButtons from '@/components/ExportButtons';
 import PageLoading from '@/components/PageLoading';
@@ -32,6 +33,7 @@ async function runClassification(): Promise<{ classified: number; remaining: num
 // "Classify sentiment" (use case, Organizing Committee): feedback list and sentiment summary
 export default function FeedbackAnalysisPage() {
   const supabase = createClient();
+  usePageTitle('Feedback');
   const [feedback, setFeedback] = useState<Feedback[]>([]);
   const [tournaments, setTournaments] = useState<Pick<Tournament, 'id' | 'name'>[]>([]);
   const [role, setRole] = useState('');
@@ -116,10 +118,10 @@ export default function FeedbackAnalysisPage() {
   if (!role && error) return <PageError message={error} />;
   if (role !== 'admin') {
     return (
-      <div className="min-h-screen bg-sitebg text-white p-10 text-center">
+      <main id="main-content" className="min-h-screen bg-sitebg text-white p-10 text-center">
         Only admins can view the feedback analysis.{' '}
         <Link href="/feedback" className="text-gold underline">Send feedback instead</Link>
-      </div>
+      </main>
     );
   }
 
@@ -153,7 +155,7 @@ export default function FeedbackAnalysisPage() {
   const topTopics = [...topicCounts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 8);
 
   return (
-    <div className="min-h-screen bg-sitebg text-white px-4 py-10">
+    <main id="main-content" className="min-h-screen bg-sitebg text-white px-4 py-10">
       <div className="max-w-5xl mx-auto space-y-6">
         <div>
           <Link href="/dashboard" className="inline-block text-gold hover:underline mb-6">
@@ -183,18 +185,18 @@ export default function FeedbackAnalysisPage() {
           </div>
         </div>
 
-        {error && <div className="bg-red-500/10 border border-red-500 text-red-300 px-4 py-3">{error}</div>}
-        {message && <div className="bg-green-500/10 border border-green-500 text-green-300 px-4 py-3">{message}</div>}
+        {error && <div role="alert" className="bg-red-500/10 border border-red-500 text-red-300 px-4 py-3">{error}</div>}
+        {message && <div role="status" className="bg-green-500/10 border border-green-500 text-green-300 px-4 py-3">{message}</div>}
 
         <div className="flex flex-col sm:flex-row gap-3">
-          <select value={tournamentFilter} onChange={(e) => setTournamentFilter(e.target.value)} className={`${inputClass} flex-1`}>
+          <select value={tournamentFilter} onChange={(e) => setTournamentFilter(e.target.value)} className={`${inputClass} flex-1`} aria-label="Filter by tournament">
             <option value="all">All feedback</option>
             <option value="general">General only</option>
             {tournaments.map((t) => (
               <option key={t.id} value={t.id}>{t.name}</option>
             ))}
           </select>
-          <select value={sentimentFilter} onChange={(e) => setSentimentFilter(e.target.value)} className={inputClass}>
+          <select value={sentimentFilter} onChange={(e) => setSentimentFilter(e.target.value)} className={inputClass} aria-label="Filter by sentiment">
             <option value="all">Any sentiment</option>
             <option value="positive">Positive</option>
             <option value="neutral">Neutral</option>
@@ -237,7 +239,7 @@ export default function FeedbackAnalysisPage() {
         {/* Feedback list */}
         {/* A failed load shows the error above, not "nothing here" */}
         {visible.length === 0 && error ? null : visible.length === 0 ? (
-          <p className="text-gray-500 border-2 border-dashed border-brown p-6 text-center">
+          <p className="text-gray-400 border-2 border-dashed border-brown p-6 text-center">
             {feedback.length === 0 ? 'No feedback yet.' : 'No feedback matches these filters.'}
           </p>
         ) : (
@@ -255,7 +257,7 @@ export default function FeedbackAnalysisPage() {
                       Pending analysis
                     </span>
                   )}
-                  <span className="text-xs text-gray-500 ml-auto">
+                  <span className="text-xs text-gray-400 ml-auto">
                     {f.tournaments?.name ?? (f.target_removed ? 'Deleted tournament' : 'General')}
                     {f.matches && ` · Match ${f.matches.match_number} (round ${f.matches.round})`}
                     {' · '}{new Date(f.created_at).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })}
@@ -281,6 +283,6 @@ export default function FeedbackAnalysisPage() {
           </ul>
         )}
       </div>
-    </div>
+    </main>
   );
 }

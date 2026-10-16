@@ -12,10 +12,12 @@ import {
 } from '@/utils/reports';
 import PageLoading from '@/components/PageLoading';
 import PageError from '@/components/PageError';
+import { usePageTitle } from '@/utils/page-title';
 
 // "View engagement stats" (use case, Tournament Staff). Admins can open it too.
 export default function EngagementPage() {
   const supabase = createClient();
+  usePageTitle('Engagement analytics');
   const { options, error: optionsError } = useFilterOptions();
   const [role, setRole] = useState('');
   const [filters, setFilters] = useState<Filters>(emptyFilters);
@@ -87,15 +89,15 @@ export default function EngagementPage() {
   if (!role && error) return <PageError message={error} />;
   if (role !== 'admin' && role !== 'staff') {
     return (
-      <div className="min-h-screen bg-sitebg text-white p-10 text-center">
+      <main id="main-content" className="min-h-screen bg-sitebg text-white p-10 text-center">
         Only organizers can view engagement stats.{' '}
         <Link href="/dashboard" className="text-gold underline">Back to Dashboard</Link>
-      </div>
+      </main>
     );
   }
 
   return (
-    <div className="min-h-screen bg-sitebg text-white px-4 py-10 print:bg-white print:text-black print:p-0">
+    <main id="main-content" className="min-h-screen bg-sitebg text-white px-4 py-10 print:bg-white print:text-black print:p-0">
       <div className="max-w-6xl mx-auto space-y-6">
         <div>
           <Link href={role === 'admin' ? '/analytics' : '/dashboard'} className="inline-block text-gold hover:underline mb-6 print:hidden">
@@ -123,13 +125,13 @@ export default function EngagementPage() {
         <ReportFilters value={filters} onChange={setFilters} options={options} />
 
         {(error || optionsError || filterError) && (
-          <div className="bg-red-500/10 border border-red-500 text-red-300 px-4 py-3">
+          <div role="alert" className="bg-red-500/10 border border-red-500 text-red-300 px-4 py-3">
             {filterError || error || optionsError}
           </div>
         )}
 
         {report && <EngagementSection report={report} liveCounts={liveCounts} />}
       </div>
-    </div>
+    </main>
   );
 }

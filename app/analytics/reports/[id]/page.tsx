@@ -13,11 +13,13 @@ import {
 } from '@/utils/reports';
 import PageLoading from '@/components/PageLoading';
 import PageError from '@/components/PageError';
+import { usePageTitle } from '@/utils/page-title';
 
 // A generated report, shown from its saved copy ("display after report": print or export).
 export default function SavedReportPage() {
   const supabase = createClient();
   const params = useParams();
+  usePageTitle('Saved report');
   const id = params?.id as string;
   const [report, setReport] = useState<SavedReport | null>(null);
   const [loading, setLoading] = useState(true);
@@ -67,7 +69,7 @@ export default function SavedReportPage() {
   };
 
   return (
-    <div className="min-h-screen bg-sitebg text-white px-4 py-10 print:bg-white print:text-black print:p-0">
+    <main id="main-content" className="min-h-screen bg-sitebg text-white px-4 py-10 print:bg-white print:text-black print:p-0">
       <div className="max-w-6xl mx-auto space-y-10">
         <div>
           <Link href="/analytics" className="inline-block text-gold hover:underline mb-6 print:hidden">
@@ -89,7 +91,7 @@ export default function SavedReportPage() {
               </button>
             </div>
           </div>
-          <p className="text-xs text-gray-500 mt-2 print:hidden">
+          <p className="text-xs text-gray-400 mt-2 print:hidden">
             To save as PDF, choose &quot;Save as PDF&quot; as the printer.
           </p>
         </div>
@@ -98,6 +100,6 @@ export default function SavedReportPage() {
         <SentimentSection report={report.data.sentiment} />
         <EngagementSection report={report.data.engagement} />
       </div>
-    </div>
+    </main>
   );
 }

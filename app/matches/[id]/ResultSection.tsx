@@ -163,7 +163,7 @@ export default function ResultSection({ match, teamA, teamB, submissions, isStaf
     <section className="bg-sitecard border border-brownlight p-6 space-y-4">
       <h2 className="text-xl font-bold">Result</h2>
 
-      {error && <div className="bg-red-500/10 border border-red-500 text-red-300 px-4 py-3">{error}</div>}
+      {error && <div role="alert" className="bg-red-500/10 border border-red-500 text-red-300 px-4 py-3">{error}</div>}
 
       {/* The open submission */}
       {open && (
@@ -204,7 +204,7 @@ export default function ResultSection({ match, teamA, teamB, submissions, isStaf
                   Confirm
                 </button>
                 <input value={reason} onChange={(e) => setReason(e.target.value)} maxLength={500}
-                  placeholder="If it's wrong: what happened?" className={`${inputClass} flex-1`} />
+                  placeholder="If it's wrong: what happened?" aria-label="Dispute reason" className={`${inputClass} flex-1`} />
                 <button onClick={() => respond(false)} disabled={busy}
                   className="border border-red-500 text-red-300 px-4 py-2 font-bold hover:bg-red-500/10 disabled:opacity-50">
                   Dispute
@@ -243,13 +243,13 @@ export default function ResultSection({ match, teamA, teamB, submissions, isStaf
               )}
               <div className="flex flex-col sm:flex-row gap-2">
                 <input value={note} onChange={(e) => setNote(e.target.value)} maxLength={500}
-                  placeholder="Note (required to reject, e.g. screenshot unreadable)" className={`${inputClass} flex-1`} />
+                  placeholder="Note (required to reject, e.g. screenshot unreadable)" aria-label="Review note" className={`${inputClass} flex-1`} />
                 <button onClick={() => review('reject')} disabled={busy}
                   className="border border-red-500 text-red-300 px-4 py-2 font-bold hover:bg-red-500/10 disabled:opacity-50">
                   Reject
                 </button>
               </div>
-              <p className="text-xs text-gray-500">
+              <p className="text-xs text-gray-400">
                 Approving or overriding completes the match and moves the winner to the next round.
               </p>
             </div>
@@ -271,6 +271,7 @@ export default function ResultSection({ match, teamA, teamB, submissions, isStaf
             type="file"
             accept="image/png,image/jpeg,image/webp"
             onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+            aria-label="Match result screenshot"
             className="block text-sm text-gray-300 file:mr-3 file:rounded file:border-0 file:bg-gold file:px-3 file:py-1 file:font-bold file:text-black"
             required
           />

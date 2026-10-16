@@ -70,7 +70,7 @@ export default function NeedsAttention() {
                     {item.tournament_name} · {roundLabel(item.round, item.round_count)} · {item.detail}
                   </span>
                 </span>
-                <span className="text-xs text-gray-500 shrink-0">{formatDateTime(item.since)}</span>
+                <span className="text-xs text-gray-400 shrink-0">{formatDateTime(item.since)}</span>
               </Link>
             </li>
           ))}

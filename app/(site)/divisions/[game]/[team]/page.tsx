@@ -59,7 +59,7 @@ async function OfficialTeam({ params }: { params: PageProps<'/divisions/[game]/[
       <section>
         <SectionTitle>Players</SectionTitle>
         {others.length === 0 ? (
-          <p className="text-gray-500">No other players listed yet.</p>
+          <p className="text-gray-400">No other players listed yet.</p>
         ) : (
           <ul className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {others.map((p) => (

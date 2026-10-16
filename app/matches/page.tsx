@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { getErrorMessage } from '@/utils/errors';
 import type { Profile, Tournament } from '@/utils/types';
 import { formatDate, getTournamentStatus, statusLabels, statusStyles } from '@/utils/tournaments';
+import { usePageTitle } from '@/utils/page-title';
 import ExportButtons from '@/components/ExportButtons';
 import PageLoading from '@/components/PageLoading';
 import PageError from '@/components/PageError';
@@ -15,6 +16,7 @@ type TournamentWithMatches = Tournament & { matches: { count: number }[] };
 
 export default function MatchesOverviewPage() {
   const supabase = createClient();
+  usePageTitle('Matches');
   const [tournaments, setTournaments] = useState<TournamentWithMatches[]>([]);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
@@ -56,15 +58,15 @@ export default function MatchesOverviewPage() {
   if (!profile && error) return <PageError message={error} />;
   if (profile?.role !== 'admin' && profile?.role !== 'staff') {
     return (
-      <div className="min-h-screen bg-sitebg text-white p-10 text-center">
+      <main id="main-content" className="min-h-screen bg-sitebg text-white p-10 text-center">
         Only organizers can manage matches.{' '}
         <Link href="/dashboard" className="text-gold underline">Back to the dashboard</Link>
-      </div>
+      </main>
     );
   }
 
   return (
-    <div className="min-h-screen bg-sitebg text-white px-4 py-10">
+    <main id="main-content" className="min-h-screen bg-sitebg text-white px-4 py-10">
       <div className="max-w-4xl mx-auto">
         <Link href="/dashboard" className="inline-block text-gold hover:underline mb-6">
           ← Back to Dashboard
@@ -76,7 +78,7 @@ export default function MatchesOverviewPage() {
         </div>
 
         {error && (
-          <div className="mb-6 bg-red-500/10 border border-red-500 text-red-300 px-4 py-3">{error}</div>
+          <div role="alert" className="mb-6 bg-red-500/10 border border-red-500 text-red-300 px-4 py-3">{error}</div>
         )}
 
         {/* A failed load shows the error above, not "nothing here" */}
@@ -128,6 +130,6 @@ export default function MatchesOverviewPage() {
           </ul>
         )}
       </div>
-    </div>
+    </main>
   );
 }

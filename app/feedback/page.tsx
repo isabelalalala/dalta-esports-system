@@ -9,9 +9,10 @@ import type { Feedback, Match, Tournament } from '@/utils/types';
 import { isBye, roundLabel } from '@/utils/tournaments';
 import StarRating from '@/components/StarRating';
 import PageLoading from '@/components/PageLoading';
+import { usePageTitle } from '@/utils/page-title';
 
 const inputClass =
-  'w-full border border-brownlight bg-sitebg px-4 py-3 text-white placeholder-gray-500 outline-none focus:border-gold disabled:opacity-50';
+  'w-full border border-brownlight bg-sitebg px-4 py-3 text-white placeholder-gray-400 outline-none focus:border-gold disabled:opacity-50';
 
 // A match of the chosen tournament, with a readable label ("Semifinals · Team A vs Team B")
 interface MatchOption {
@@ -24,6 +25,7 @@ interface MatchOption {
 export default function FeedbackPage() {
   const supabase = createClient();
   const searchParams = useSearchParams();
+  usePageTitle('Feedback');
 
   const [tournaments, setTournaments] = useState<Pick<Tournament, 'id' | 'name'>[]>([]);
   const [myFeedback, setMyFeedback] = useState<Feedback[]>([]);
@@ -177,7 +179,7 @@ export default function FeedbackPage() {
   };
 
   return (
-    <div className="min-h-screen bg-sitebg text-white px-4 py-10">
+    <main id="main-content" className="min-h-screen bg-sitebg text-white px-4 py-10">
       <div className="max-w-2xl mx-auto space-y-8">
         <div>
           <Link href="/dashboard" className="inline-block text-gold hover:underline mb-6">
@@ -239,7 +241,7 @@ export default function FeedbackPage() {
                   className={inputClass}
                   required
                 />
-                <span className="block text-right text-xs text-gray-500">{comment.length} / 1000</span>
+                <span className="block text-right text-xs text-gray-400">{comment.length} / 1000</span>
               </label>
 
               <button
@@ -256,7 +258,7 @@ export default function FeedbackPage() {
         <section>
           <h2 className="text-xl font-bold mb-3">My feedback</h2>
           {myFeedback.length === 0 ? (
-            <p className="text-gray-500 border-2 border-dashed border-brown p-6 text-center">
+            <p className="text-gray-400 border-2 border-dashed border-brown p-6 text-center">
               You haven&apos;t sent any feedback yet.
             </p>
           ) : (
@@ -265,7 +267,7 @@ export default function FeedbackPage() {
                 <li key={f.id} className="bg-sitecard border border-brown p-4">
                   <div className="flex flex-wrap justify-between gap-2 mb-1">
                     <StarRating value={f.rating} size="sm" />
-                    <span className="text-xs text-gray-500">
+                    <span className="text-xs text-gray-400">
                       {aboutLabel(f)} · {new Date(f.created_at).toLocaleDateString()}
                     </span>
                   </div>
@@ -276,6 +278,6 @@ export default function FeedbackPage() {
           )}
         </section>
       </div>
-    </div>
+    </main>
   );
 }

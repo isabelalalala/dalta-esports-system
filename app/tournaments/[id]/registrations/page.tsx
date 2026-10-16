@@ -9,6 +9,7 @@ import { ACTIVE_REGISTRATION_STATUSES } from '@/utils/types';
 import type { Registration, RegistrationStatus, Team, Tournament } from '@/utils/types';
 import ExportButtons from '@/components/ExportButtons';
 import PageLoading from '@/components/PageLoading';
+import { usePageTitle } from '@/utils/page-title';
 
 const statusStyles: Record<RegistrationStatus, string> = {
   pending: 'bg-yellow-500/15 text-yellow-300 border-yellow-500/50',
@@ -18,6 +19,7 @@ const statusStyles: Record<RegistrationStatus, string> = {
 };
 
 export default function RegistrationsPage() {
+  usePageTitle('Tournament registrations');
   const supabase = createClient();
   const [registrations, setRegistrations] = useState<Registration[]>([]);
   const [tournament, setTournament] = useState<Tournament | null>(null);
@@ -119,7 +121,7 @@ export default function RegistrationsPage() {
   const activeCount = registrations.filter((r) => ACTIVE_REGISTRATION_STATUSES.includes(r.status)).length;
 
   return (
-    <div className="min-h-screen bg-sitebg text-white px-4 py-10">
+    <main id="main-content" className="min-h-screen bg-sitebg text-white px-4 py-10">
       <div className="max-w-6xl mx-auto">
         <Link href={`/tournaments/${id}`} className="inline-block text-gold hover:underline mb-6">
           ← Back to Tournament
@@ -139,7 +141,7 @@ export default function RegistrationsPage() {
         </div>
 
         {error && (
-          <div className="mb-6 bg-red-500/10 border border-red-500 text-red-400 px-4 py-3">
+          <div role="alert" className="mb-6 bg-red-500/10 border border-red-500 text-red-400 px-4 py-3">
             {error}
           </div>
         )}
@@ -172,7 +174,7 @@ export default function RegistrationsPage() {
                       {/* Older registrations have no team, only the typed team_name */}
                       {reg.teams?.name || reg.team_name || 'Unnamed Team'}
                       {reg.teams && (
-                        <span className="block text-gray-500 text-sm font-normal">
+                        <span className="block text-gray-400 text-sm font-normal">
                           {reg.teams.team_members?.[0]?.count || 0} / {reg.teams.games?.max_players} players
                           {tournament?.requires_verification && <VerifiedCount team={reg.teams} />}
                         </span>
@@ -194,7 +196,7 @@ export default function RegistrationsPage() {
                         <button
                           onClick={() => handleSetStatus(reg.id, 'approved')}
                           disabled={busy}
-                          className="bg-green-600 hover:bg-green-700 text-white px-3 py-2 text-sm font-semibold transition disabled:opacity-50"
+                          className="bg-green-700 hover:bg-green-800 text-white px-3 py-2 text-sm font-semibold transition disabled:opacity-50"
                         >
                           Approve
                         </button>
@@ -226,13 +228,13 @@ export default function RegistrationsPage() {
               <p className="text-gray-400">
                 Participants (pending + approved): <span className="text-gold font-bold">{activeCount}</span> /{' '}
                 <span className="text-gray-300">{tournament?.max_participants || '∞'}</span>
-                <span className="ml-4 text-gray-500 text-sm">{registrations.length} registrations in total</span>
+                <span className="ml-4 text-gray-400 text-sm">{registrations.length} registrations in total</span>
               </p>
             </div>
           </div>
         )}
       </div>
-    </div>
+    </main>
   );
 }
 

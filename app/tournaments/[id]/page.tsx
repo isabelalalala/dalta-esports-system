@@ -18,8 +18,10 @@ import ShareButton from '@/components/ShareButton';
 import CalendarLinks from '@/components/CalendarLinks';
 import PageLoading from '@/components/PageLoading';
 import PageError from '@/components/PageError';
+import { usePageTitle } from '@/utils/page-title';
 
 export default function TournamentDetailsPage() {
+  usePageTitle('Tournament');
   const supabase = createClient();
   const [tournament, setTournament] = useState<Tournament | null>(null);
   // Pending + approved registrations (the ones that take up a slot)
@@ -290,7 +292,7 @@ export default function TournamentDetailsPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-sitebg text-white px-4 py-6 sm:p-6">
+    <main id="main-content" className="min-h-screen bg-sitebg text-white px-4 py-6 sm:p-6">
       <div className="max-w-4xl mx-auto">
         <Link href="/tournaments" className="text-gold hover:underline mb-6 inline-block">
           ← Back to Tournaments
@@ -322,10 +324,10 @@ export default function TournamentDetailsPage() {
           </div>
 
           {error && (
-            <div className="bg-red-500/10 border border-red-500 text-red-300 px-4 py-3">{error}</div>
+            <div role="alert" className="bg-red-500/10 border border-red-500 text-red-300 px-4 py-3">{error}</div>
           )}
           {message && (
-            <div className="bg-green-500/10 border border-green-500 text-green-300 px-4 py-3">{message}</div>
+            <div role="status" className="bg-green-500/10 border border-green-500 text-green-300 px-4 py-3">{message}</div>
           )}
 
           {/* Watch live banner */}
@@ -374,7 +376,7 @@ export default function TournamentDetailsPage() {
                 {tournament.rules}
               </p>
             ) : (
-              <p className="text-gray-500">No rules posted yet.</p>
+              <p className="text-gray-400">No rules posted yet.</p>
             )}
           </div>
 
@@ -399,7 +401,7 @@ export default function TournamentDetailsPage() {
                 </PredictionsProvider>
               </>
             ) : (
-              <p className="text-gray-500">
+              <p className="text-gray-400">
                 No bracket yet. It appears here once the organizers generate it from the approved teams.
               </p>
             )}
@@ -420,7 +422,7 @@ export default function TournamentDetailsPage() {
           <div>
             <h2 className="text-xl font-bold mb-2">Approved Teams ({approvedTeams.length})</h2>
             {approvedTeams.length === 0 ? (
-              <p className="text-gray-500">No approved teams yet.</p>
+              <p className="text-gray-400">No approved teams yet.</p>
             ) : (
               <ul className="divide-y divide-brown bg-sitebg border border-brown">
                 {approvedTeams.map((reg) => (
@@ -479,7 +481,7 @@ export default function TournamentDetailsPage() {
                 <button
                   onClick={handleGenerateBracket}
                   disabled={generating}
-                  className="bg-green-600 text-white px-6 py-2 font-bold hover:bg-green-700 transition disabled:opacity-50"
+                  className="bg-green-700 text-white px-6 py-2 font-bold hover:bg-green-800 transition disabled:opacity-50"
                 >
                   {generating ? 'Generating...' : matches.length > 0 ? 'Regenerate Bracket' : 'Generate Bracket'}
                 </button>
@@ -510,7 +512,7 @@ export default function TournamentDetailsPage() {
             /* PLAYER REGISTRATION */
             <form onSubmit={handleRegister} className="p-6 bg-sitebg border border-gold space-y-4">
               <div>
-                <label className="block text-gold mb-2 font-semibold">
+                <label htmlFor="register-team" className="block text-gold mb-2 font-semibold">
                   Select Your Team
                 </label>
 
@@ -521,6 +523,7 @@ export default function TournamentDetailsPage() {
                   </div>
                 ) : (
                   <select
+                    id="register-team"
                     value={selectedTeamId}
                     onChange={(e) => setSelectedTeamId(e.target.value)}
                     className="w-full bg-sitecard border border-brownlight p-3 text-white outline-none focus:border-gold"
@@ -577,6 +580,6 @@ export default function TournamentDetailsPage() {
           )}
         </div>
       </div>
-    </div>
+    </main>
   );
 }

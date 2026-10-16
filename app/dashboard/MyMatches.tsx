@@ -92,7 +92,7 @@ export default function MyMatches({ userId }: { userId: string }) {
       {loading ? (
         <SectionLoading label="Loading your matches..." />
       ) : error ? (
-        <p className="text-red-300">{error}</p>
+        <p className="text-red-300" role="alert">{error}</p>
       ) : matches.length === 0 ? (
         <p className="text-gray-400">
           {myTeamIds.length === 0 ? 'You are not on a team yet.' : 'No upcoming matches.'}
@@ -111,7 +111,7 @@ export default function MyMatches({ userId }: { userId: string }) {
                   <p className="font-semibold text-white">
                     {myTeam ? teamNames[myTeam] : 'Your team'}{' '}
                     <span className="text-gray-400 font-normal">vs</span>{' '}
-                    {opponent ? teamNames[opponent] ?? 'Unknown team' : <span className="italic text-gray-500">TBD</span>}
+                    {opponent ? teamNames[opponent] ?? 'Unknown team' : <span className="italic text-gray-400">TBD</span>}
                     {m.status === 'live' && (
                       <span className="ml-2 text-xs bg-green-500/20 text-green-400 border border-green-500/50 px-2 py-0.5 rounded-full font-bold">
                         LIVE

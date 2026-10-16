@@ -9,8 +9,10 @@ import { ACTIVE_REGISTRATION_STATUSES } from '@/utils/types';
 import { formatDate, getTournamentStatus, statusLabels, statusStyles } from '@/utils/tournaments';
 import type { Profile, Tournament } from '@/utils/types';
 import PageLoading from '@/components/PageLoading';
+import { usePageTitle } from '@/utils/page-title';
 
 export default function TournamentsPage() {
+  usePageTitle('Tournaments');
   const supabase = createClient();
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
   const [loading, setLoading] = useState(true);
@@ -65,7 +67,7 @@ export default function TournamentsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-sitebg text-white px-4 py-6 sm:p-6 font-sans">
+    <main id="main-content" className="min-h-screen bg-sitebg text-white px-4 py-6 sm:p-6 font-sans">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="flex flex-wrap items-end justify-between gap-4 mb-8">
@@ -87,7 +89,7 @@ export default function TournamentsPage() {
         </div>
 
         {error && (
-          <div className="mb-6 bg-red-500/10 border border-red-500 p-4 text-red-500 text-sm">
+          <div role="alert" className="mb-6 bg-red-500/10 border border-red-500 p-4 text-red-500 text-sm">
             {error}
           </div>
         )}
@@ -95,7 +97,7 @@ export default function TournamentsPage() {
         {/* Tournaments Grid */}
         {/* A failed load shows the error above, not "nothing here" */}
         {tournaments.length === 0 && error ? null : tournaments.length === 0 ? (
-          <div className="text-center text-gray-500 py-20 px-4 border-2 border-dashed border-brown space-y-2">
+          <div className="text-center text-gray-400 py-20 px-4 border-2 border-dashed border-brown space-y-2">
             <p>No tournaments yet.</p>
             {(profile?.role === 'admin' || profile?.role === 'staff') ? (
               <p className="text-sm">Use &quot;+ Create Tournament&quot; to add the first one.</p>
@@ -133,7 +135,7 @@ export default function TournamentsPage() {
                         {/* Participants Stats */}
                         <div className="bg-sitebg p-3 border border-brown">
                           <div className="flex justify-between items-end mb-1">
-                            <span className="text-gray-500 text-[10px] font-bold uppercase">Participants</span>
+                            <span className="text-gray-400 text-[10px] font-bold uppercase">Participants</span>
                             <span className="text-white text-sm font-bold">
                               {registeredCount} / {tournament.max_participants || '∞'}
                             </span>
@@ -149,13 +151,13 @@ export default function TournamentsPage() {
 
                         <div className="grid grid-cols-2 gap-4">
                           <div>
-                            <p className="text-gray-500 text-[10px] font-bold uppercase">Start Date</p>
+                            <p className="text-gray-400 text-[10px] font-bold uppercase">Start Date</p>
                             <p className="text-white text-sm font-medium">
                               {formatDate(tournament.start_date)}
                             </p>
                           </div>
                           <div>
-                            <p className="text-gray-500 text-[10px] font-bold uppercase">Deadline</p>
+                            <p className="text-gray-400 text-[10px] font-bold uppercase">Deadline</p>
                             <p className="text-white text-sm font-medium">
                               {tournament.registration_deadline ? formatDate(tournament.registration_deadline) : 'N/A'}
                             </p>
@@ -175,6 +177,6 @@ export default function TournamentsPage() {
           </div>
         )}
       </div>
-    </div>
+    </main>
   );
 }

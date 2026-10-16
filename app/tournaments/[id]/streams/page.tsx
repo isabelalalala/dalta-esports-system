@@ -12,12 +12,14 @@ import { streamStatusStyles, validateFacebookUrl } from '@/utils/streams';
 import FacebookPlayer from '@/components/FacebookPlayer';
 import PageLoading from '@/components/PageLoading';
 import PageError from '@/components/PageError';
+import { usePageTitle } from '@/utils/page-title';
 
 const inputClass =
-  'w-full border border-brownlight bg-sitebg px-4 py-3 text-white placeholder-gray-500 outline-none focus:border-gold';
+  'w-full border border-brownlight bg-sitebg px-4 py-3 text-white placeholder-gray-400 outline-none focus:border-gold';
 
 // "Configure stream" (use case, Tournament Staff): Facebook Live links for one tournament
 export default function ManageStreamsPage() {
+  usePageTitle('Tournament streams');
   const supabase = createClient();
   const [tournament, setTournament] = useState<Tournament | null>(null);
   const [streams, setStreams] = useState<Stream[]>([]);
@@ -141,15 +143,15 @@ export default function ManageStreamsPage() {
   // Hiding the page is only for convenience; the database refuses changes from other roles.
   if (profile?.role !== 'admin' && profile?.role !== 'staff') {
     return (
-      <div className="min-h-screen bg-sitebg text-white p-10 text-center">
+      <main id="main-content" className="min-h-screen bg-sitebg text-white p-10 text-center">
         Only organizers can configure streams.{' '}
         <Link href="/live" className="text-gold underline">Watch live streams</Link>
-      </div>
+      </main>
     );
   }
 
   return (
-    <div className="min-h-screen bg-sitebg text-white px-4 py-10">
+    <main id="main-content" className="min-h-screen bg-sitebg text-white px-4 py-10">
       <div className="max-w-4xl mx-auto">
         <Link href={`/tournaments/${id}`} className="inline-block text-gold hover:underline mb-6">
           ← Back to Tournament
@@ -169,7 +171,7 @@ export default function ManageStreamsPage() {
         <p className="text-gray-400 text-lg mb-8">Stream Configuration</p>
 
         {error && (
-          <div className="mb-6 bg-red-500/10 border border-red-500 text-red-300 px-4 py-3">{error}</div>
+          <div role="alert" className="mb-6 bg-red-500/10 border border-red-500 text-red-300 px-4 py-3">{error}</div>
         )}
 
         {showForm && profile && (
@@ -209,7 +211,7 @@ export default function ManageStreamsPage() {
                   {stream.match_id && (
                     <p className="text-sm text-gray-400">{matchLabels[stream.match_id] ?? 'Linked match'}</p>
                   )}
-                  <p className="text-sm text-gray-500 truncate">{stream.facebook_url}</p>
+                  <p className="text-sm text-gray-400 truncate">{stream.facebook_url}</p>
 
                   <div className="mt-3 flex flex-wrap gap-3 text-sm font-semibold">
                     {stream.status !== 'live' && (
@@ -236,7 +238,7 @@ export default function ManageStreamsPage() {
           </div>
         )}
       </div>
-    </div>
+    </main>
   );
 }
 
@@ -299,33 +301,33 @@ function StreamForm({
   return (
     <form onSubmit={handleSubmit} className="mb-6 bg-sitecard border-2 border-gold shadow-[6px_6px_0_var(--color-brown)] p-6 space-y-4">
       <h2 className="text-xl font-bold">{existing ? 'Edit stream' : 'Add stream'}</h2>
-      {error && <div className="bg-red-500/10 border border-red-500 text-red-300 px-4 py-3">{error}</div>}
+      {error && <div role="alert" className="bg-red-500/10 border border-red-500 text-red-300 px-4 py-3">{error}</div>}
 
       <input
         type="text" value={title} onChange={(e) => setTitle(e.target.value)}
-        placeholder="Title, e.g. Main Stage – Day 1" className={inputClass} required
+        placeholder="Title, e.g. Main Stage – Day 1" aria-label="Stream title" className={inputClass} required
       />
 
       <div>
         <input
           type="url" value={url} onChange={(e) => setUrl(e.target.value)}
-          placeholder="https://www.facebook.com/yourpage/videos/123..." className={inputClass} required
+          placeholder="https://www.facebook.com/yourpage/videos/123..." aria-label="Facebook video URL" className={inputClass} required
         />
         {url && (
-          <p className={`mt-1 text-sm ${urlError ? 'text-red-300' : 'text-green-400'}`}>
+          <p role={urlError ? 'alert' : 'status'} className={`mt-1 text-sm ${urlError ? 'text-red-300' : 'text-green-400'}`}>
             {urlError || '✓ Valid Facebook link. Check the preview below plays.'}
           </p>
         )}
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <select value={matchId} onChange={(e) => setMatchId(e.target.value)} className={inputClass}>
+        <select value={matchId} onChange={(e) => setMatchId(e.target.value)} className={inputClass} aria-label="Linked match">
           <option value="">Whole tournament (no single match)</option>
           {Object.entries(matchLabels).map(([mid, label]) => (
             <option key={mid} value={mid}>{label}</option>
           ))}
         </select>
-        <select value={status} onChange={(e) => setStatus(e.target.value as StreamStatus)} className={inputClass}>
+        <select value={status} onChange={(e) => setStatus(e.target.value as StreamStatus)} className={inputClass} aria-label="Stream status">
           <option value="scheduled">Scheduled</option>
           <option value="live">Live</option>
           <option value="ended">Ended (replay)</option>

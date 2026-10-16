@@ -100,7 +100,7 @@ export default function SentimentSection({ report }: { report: SentimentReport }
             {report.negative_examples.map((f, i) => (
               <li key={i} className="border-l-2 border-[#e66767] pl-3">
                 <p className="text-gray-200 whitespace-pre-wrap print:text-black">{f.comment}</p>
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-xs text-gray-400 mt-1">
                   {f.rating} ★ · {f.tournament_name ?? 'General'} ·{' '}
                   {new Date(f.created_at).toLocaleDateString(undefined, { dateStyle: 'medium' })}
                   {f.topics.length > 0 && ` · ${f.topics.join(', ')}`}

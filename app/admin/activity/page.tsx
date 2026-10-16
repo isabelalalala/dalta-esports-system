@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { createClient } from '@/utils/supabase/client';
 import { getErrorMessage } from '@/utils/errors';
 import { ACTION_GROUPS, describeActivity, type ActivityLog } from '@/utils/activity';
+import { usePageTitle } from '@/utils/page-title';
 import PageLoading from '@/components/PageLoading';
 import PageError from '@/components/PageError';
 
@@ -58,6 +59,7 @@ async function fetchPage(supabase: ReturnType<typeof createClient>, filters: Fil
 // Activity log (admin only): who did what, newest first.
 export default function ActivityLogPage() {
   const supabase = createClient();
+  usePageTitle('Activity log');
   const [role, setRole] = useState('');
   const [filters, setFilters] = useState<Filters>(emptyFilters);
   const [logs, setLogs] = useState<ActivityLog[]>([]);
@@ -118,17 +120,17 @@ export default function ActivityLogPage() {
   if (!role && error) return <PageError message={error} />;
   if (role !== 'admin') {
     return (
-      <div className="min-h-screen bg-sitebg text-white p-10 text-center">
+      <main id="main-content" className="min-h-screen bg-sitebg text-white p-10 text-center">
         Only admins can view the activity log.{' '}
         <Link href="/dashboard" className="text-gold underline">Back to Dashboard</Link>
-      </div>
+      </main>
     );
   }
 
   const sortedActors = [...actors].sort((a, b) => (a.actor_name || '').localeCompare(b.actor_name || ''));
 
   return (
-    <div className="min-h-screen bg-sitebg text-white px-4 py-10">
+    <main id="main-content" className="min-h-screen bg-sitebg text-white px-4 py-10">
       <div className="max-w-5xl mx-auto space-y-6">
         <div>
           <Link href="/dashboard" className="inline-block text-gold hover:underline mb-6">
@@ -181,7 +183,7 @@ export default function ActivityLogPage() {
           )}
         </div>
 
-        {error && <div className="bg-red-500/10 border border-red-500 text-red-300 px-4 py-3">{error}</div>}
+        {error && <div role="alert" className="bg-red-500/10 border border-red-500 text-red-300 px-4 py-3">{error}</div>}
 
         {/* A failed load shows the error above, not "nothing here" */}
         {logs.length === 0 && error ? null : logs.length === 0 ? (
@@ -195,7 +197,7 @@ export default function ActivityLogPage() {
               const showLink = tournamentId && log.action !== 'tournament.deleted';
               return (
                 <li key={log.id} className="px-4 py-3 flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4">
-                  <time className="text-xs text-gray-500 sm:w-40 shrink-0" dateTime={log.created_at}>
+                  <time className="text-xs text-gray-400 sm:w-40 shrink-0" dateTime={log.created_at}>
                     {new Date(log.created_at).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })}
                   </time>
                   <p className="flex-1 text-gray-200">{describeActivity(log)}</p>
@@ -222,6 +224,6 @@ export default function ActivityLogPage() {
           </div>
         )}
       </div>
-    </div>
+    </main>
   );
 }

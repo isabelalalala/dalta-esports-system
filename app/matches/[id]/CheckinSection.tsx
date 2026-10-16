@@ -94,7 +94,7 @@ export default function CheckinSection({ match, windowMinutes, teamA, teamB, che
         </p>
       )}
 
-      {error && <div className="bg-red-500/10 border border-red-500 text-red-300 px-4 py-3">{error}</div>}
+      {error && <div role="alert" className="bg-red-500/10 border border-red-500 text-red-300 px-4 py-3">{error}</div>}
 
       {state !== 'off' && (
         <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -102,7 +102,7 @@ export default function CheckinSection({ match, windowMinutes, teamA, teamB, che
             const row = checkedIn(team?.id);
             return (
               <li key={i} className={`border p-3 ${row ? 'border-green-500/60 bg-green-500/10' : 'border-gray-700'}`}>
-                <p className="font-semibold">{team?.name ?? <span className="italic text-gray-500">TBD</span>}</p>
+                <p className="font-semibold">{team?.name ?? <span className="italic text-gray-400">TBD</span>}</p>
                 <p className={`text-sm ${row ? 'text-green-300' : 'text-gray-400'}`}>
                   {row
                     ? `✅ Checked in ${new Date(row.checked_in_at).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })}`

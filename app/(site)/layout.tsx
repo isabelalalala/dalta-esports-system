@@ -39,7 +39,7 @@ export default function SiteLayout({ children }: LayoutProps<'/'>) {
           </ul>
         </nav>
 
-        <main className="flex-1 min-w-0">{children}</main>
+        <main id="main-content" className="flex-1 min-w-0">{children}</main>
       </div>
     </div>
   );

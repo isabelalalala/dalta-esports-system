@@ -56,7 +56,7 @@ function PostSection({ title, moreHref, emptyText, children }: {
         {children.length > 0 && <Link href={moreHref} className="text-sm text-gold hover:underline">See all →</Link>}
       </div>
       {children.length === 0 ? (
-        <p className="text-gray-500 border-2 border-dashed border-brown p-6 text-center">{emptyText}</p>
+        <p className="text-gray-400 border-2 border-dashed border-brown p-6 text-center">{emptyText}</p>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">{children}</div>
       )}

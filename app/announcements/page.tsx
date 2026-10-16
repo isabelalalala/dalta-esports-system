@@ -7,14 +7,16 @@ import { getErrorMessage } from '@/utils/errors';
 import type { Announcement, Tournament } from '@/utils/types';
 import AnnouncementCard from '@/components/AnnouncementCard';
 import PageLoading from '@/components/PageLoading';
+import { usePageTitle } from '@/utils/page-title';
 
 const inputClass =
-  'w-full border border-brownlight bg-sitebg px-4 py-3 text-white placeholder-gray-500 outline-none focus:border-gold';
+  'w-full border border-brownlight bg-sitebg px-4 py-3 text-white placeholder-gray-400 outline-none focus:border-gold';
 
 type TournamentOption = Pick<Tournament, 'id' | 'name'>;
 
 export default function AnnouncementsPage() {
   const supabase = createClient();
+  usePageTitle('Announcements');
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [tournaments, setTournaments] = useState<TournamentOption[]>([]);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -102,7 +104,7 @@ export default function AnnouncementsPage() {
   });
 
   return (
-    <div className="min-h-screen bg-sitebg text-white px-4 py-10">
+    <main id="main-content" className="min-h-screen bg-sitebg text-white px-4 py-10">
       <div className="max-w-3xl mx-auto">
         <Link href="/dashboard" className="inline-block text-gold hover:underline mb-6">
           ← Back to Dashboard
@@ -122,7 +124,7 @@ export default function AnnouncementsPage() {
         </div>
 
         {error && (
-          <div className="mb-6 bg-red-500/10 border border-red-500 text-red-300 px-4 py-3">{error}</div>
+          <div role="alert" className="mb-6 bg-red-500/10 border border-red-500 text-red-300 px-4 py-3">{error}</div>
         )}
 
         {isAdmin && showForm && (
@@ -134,7 +136,7 @@ export default function AnnouncementsPage() {
           />
         )}
 
-        <select value={filter} onChange={(e) => setFilter(e.target.value)} className={`${inputClass} mb-6`}>
+        <select value={filter} onChange={(e) => setFilter(e.target.value)} className={`${inputClass} mb-6`} aria-label="Filter announcements">
           <option value="all">All announcements</option>
           <option value="general">General only</option>
           {tournaments.map((t) => (
@@ -179,7 +181,7 @@ export default function AnnouncementsPage() {
           </div>
         )}
       </div>
-    </div>
+    </main>
   );
 }
 
@@ -234,18 +236,18 @@ function AnnouncementForm({
   return (
     <form onSubmit={handleSubmit} className="mb-6 bg-sitecard border-2 border-gold shadow-[6px_6px_0_var(--color-brown)] p-6 space-y-4">
       <h2 className="text-xl font-bold">{existing ? 'Edit announcement' : 'New announcement'}</h2>
-      {error && <div className="bg-red-500/10 border border-red-500 text-red-300 px-4 py-3">{error}</div>}
+      {error && <div role="alert" className="bg-red-500/10 border border-red-500 text-red-300 px-4 py-3">{error}</div>}
 
       <input
         type="text" value={title} onChange={(e) => setTitle(e.target.value)}
-        placeholder="Title" className={inputClass} required
+        placeholder="Title" aria-label="Announcement title" className={inputClass} required
       />
       <textarea
         value={body} onChange={(e) => setBody(e.target.value)}
-        placeholder="What do you want to announce?" rows={6} className={inputClass} required
+        placeholder="What do you want to announce?" aria-label="Announcement body" rows={6} className={inputClass} required
       />
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-center">
-        <select value={tournamentId} onChange={(e) => setTournamentId(e.target.value)} className={inputClass}>
+        <select value={tournamentId} onChange={(e) => setTournamentId(e.target.value)} className={inputClass} aria-label="Tournament">
           <option value="">General (not for one tournament)</option>
           {tournaments.map((t) => (
             <option key={t.id} value={t.id}>{t.name}</option>

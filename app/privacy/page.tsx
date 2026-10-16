@@ -6,14 +6,16 @@ import { formatDate } from '@/utils/tournaments';
 // Privacy Notice (Data Privacy Act of 2012, RA 10173). Public: no login needed.
 // Keep it in sync with what the app really does; if it changes in an important way,
 // update PRIVACY_NOTICE_VERSION in utils/privacy.ts.
+export const metadata = { title: 'Privacy notice' };
+
 export default function PrivacyNoticePage() {
   return (
-    <div className="min-h-screen bg-sitebg text-gray-300 px-4 py-10">
+    <main id="main-content" className="min-h-screen bg-sitebg text-gray-300 px-4 py-10">
       <article className="max-w-3xl mx-auto space-y-8 leading-relaxed">
         <header>
           <Link href="/" className="inline-block text-gold hover:underline mb-6">← Home</Link>
           <h1 className="font-pixel text-xl sm:text-2xl leading-relaxed text-gold">Privacy Notice</h1>
-          <p className="text-sm text-gray-500 mt-2">Last updated {formatDate(PRIVACY_NOTICE_VERSION)}</p>
+          <p className="text-sm text-gray-400 mt-2">Last updated {formatDate(PRIVACY_NOTICE_VERSION)}</p>
           <p className="mt-4">
             DALTA Esports respects your privacy. This notice explains what personal data the DALTA Esports
             Tournament Management System collects, why, who can see it, how long we keep it, and what you can do
@@ -200,7 +202,7 @@ export default function PrivacyNoticePage() {
           </p>
         </Section>
       </article>
-    </div>
+    </main>
   );
 }
 

@@ -50,6 +50,16 @@ export default function NotificationBell({ userId }: { userId: string }) {
     load();
   }, [supabase, open, reloadCount]);
 
+  // Escape closes the dropdown (the invisible overlay only covers pointer users)
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setOpen(false);
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [open]);
+
   const handleClick = async (n: AppNotification) => {
     setOpen(false);
     if (!n.is_read) {
@@ -82,7 +92,7 @@ export default function NotificationBell({ userId }: { userId: string }) {
       >
         🔔
         {unread > 0 && (
-          <span className="absolute -top-0.5 -right-0.5 min-w-5 h-5 px-1 rounded-full bg-red-500 text-white text-[11px] font-bold grid place-items-center">
+          <span className="absolute -top-0.5 -right-0.5 min-w-5 h-5 px-1 rounded-full bg-red-600 text-white text-[11px] font-bold grid place-items-center">
             {unread > 99 ? '99+' : unread}
           </span>
         )}
@@ -117,10 +127,10 @@ export default function NotificationBell({ userId }: { userId: string }) {
                       <span className="flex-1 min-w-0">
                         <span className="flex items-center gap-2">
                           <span className="font-semibold text-white text-sm min-w-0 break-words">{n.title}</span>
-                          {!n.is_read && <span className="w-2 h-2 rounded-full bg-gold shrink-0" aria-label="unread" />}
+                          {!n.is_read && <span className="w-2 h-2 rounded-full bg-gold shrink-0" role="img" aria-label="unread" />}
                         </span>
                         <span className="block text-sm text-gray-300 line-clamp-2">{n.message}</span>
-                        <span className="block text-xs text-gray-500 mt-0.5">{timeAgo(n.created_at)}</span>
+                        <span className="block text-xs text-gray-400 mt-0.5">{timeAgo(n.created_at)}</span>
                       </span>
                     </button>
                   </li>

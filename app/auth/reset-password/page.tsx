@@ -5,9 +5,11 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
 import { getErrorMessage } from '@/utils/errors';
+import { usePageTitle } from '@/utils/page-title';
 
 // Reached from the reset email (through /auth/callback, which logs the user in).
 export default function ResetPasswordPage() {
+  usePageTitle('Reset password');
   const supabase = createClient();
   const router = useRouter();
   const [hasSession, setHasSession] = useState<boolean | null>(null);
@@ -50,7 +52,7 @@ export default function ResetPasswordPage() {
   };
 
   return (
-    <div className="min-h-screen grid place-items-center bg-sitebg px-4">
+    <main id="main-content" className="min-h-screen grid place-items-center bg-sitebg px-4">
       <div className="w-full max-w-md bg-sitecard p-6 sm:p-8 shadow-[6px_6px_0_var(--color-brown)]">
         <h1 className="text-gold text-2xl font-bold text-center mb-6">Choose a new password</h1>
 
@@ -68,15 +70,15 @@ export default function ResetPasswordPage() {
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
-            {error && <div className="bg-[#ff4444] text-white px-3 py-2">{error}</div>}
+            {error && <div role="alert" className="bg-red-500/10 border border-red-500 text-red-300 px-3 py-2">{error}</div>}
             <input
-              type="password" placeholder="New password (8+ characters)"
+              type="password" placeholder="New password (8+ characters)" aria-label="New password (8+ characters)"
               value={password} onChange={(e) => setPassword(e.target.value)}
               className="w-full p-3 bg-sitebg text-white border border-gold"
               autoComplete="new-password" required
             />
             <input
-              type="password" placeholder="Confirm new password"
+              type="password" placeholder="Confirm new password" aria-label="Confirm new password"
               value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)}
               className="w-full p-3 bg-sitebg text-white border border-gold"
               autoComplete="new-password" required
@@ -90,6 +92,6 @@ export default function ResetPasswordPage() {
           </form>
         )}
       </div>
-    </div>
+    </main>
   );
 }
