@@ -76,7 +76,7 @@ Enforced by a CHECK constraint on `profiles.role` (migration `202610161200_role_
 - RLS policies check roles with `public.get_my_role()`.
 
 ## Current schema (public)
-All migrations are in `supabase/migrations/`, run in filename order (202610151100 … 202610181310). `202610151100_base_schema` creates the three pre-migration base tables (`profiles`, `tournaments`, `tournament_registrations`) — it is `if not exists`, so it is a no-op on databases that already have them.
+All migrations are in `supabase/migrations/`, run in filename order (202610151100 … 202610181400). `202610151100_base_schema` creates the three pre-migration base tables (`profiles`, `tournaments`, `tournament_registrations`) — it is `if not exists`, so it is a no-op on databases that already have them.
 `202610181000_feedback_protection` also needs its one-time Vault key setup (the `feedback_server_key` secret +
 `FEEDBACK_SERVER_KEY`); the steps are at the top of that file.
 Readers: "anyone" = also logged out; "logged-in" = any role; "admin/staff" = organizers only.
@@ -206,11 +206,13 @@ Readers: "anyone" = also logged out; "logged-in" = any role; "admin/staff" = org
   One feedback per user per tournament, per match, and one general (unique index `feedback_one_per_target`,
   nulls not distinct, ignores target_removed rows).
 - Sending: POST `/api/feedback` saves as the user, then classifies right away through `utils/feedback-analysis.ts`
-  (server only): `claim_gemini_call()` rate limit (10/min, 500/day app-wide, 5 per user per 10 min, table
-  `gemini_calls`, rows kept 1 day) → Gemini (15 s timeout) → `save_feedback_sentiment()`; on any failure
-  `mark_feedback_pending()` records the reason ("pending analysis" = sentiment is null). These three functions
-  require FEEDBACK_SERVER_KEY (checked against Vault by `feedback_server_key_ok()`). `/admin/feedback` no longer
-  calls Gemini on open; "Retry pending analysis" (POST `/api/feedback/classify`, admin) retries 20 at a time.
+  (server only): `claim_gemini_call()` rate limit (10/min, 500/day app-wide; 5 per user per 10 min, admins exempt
+  since 202610181400; table `gemini_calls`, rows kept 1 day) → Gemini (15 s timeout) → `save_feedback_sentiment()`;
+  on any failure `mark_feedback_pending()` records the reason ("pending analysis" = sentiment is null). These
+  three functions require FEEDBACK_SERVER_KEY (checked against Vault by `feedback_server_key_ok()`).
+  `/admin/feedback` no longer calls Gemini on open; "Retry pending analysis" (POST `/api/feedback/classify`,
+  admin) retries 20 at a time, skipping rows that already failed `MAX_FEEDBACK_ANALYSIS_ATTEMPTS` (5,
+  `utils/feedback.ts`) — those show "Gave up" and stay pending.
 - Notes for reports: `topics` mix praise and complaints; "common concerns" = topics on negative feedback.
   Pending rows still have a rating.
 

@@ -72,7 +72,10 @@ export async function analyzeFeedback(
   // Gemini skipped some items (or saving failed): keep them pending with a reason
   const missing = ids.filter((id) => !saved.has(id));
   if (missing.length > 0) {
-    const reason = 'Gemini returned no result for this comment.';
+    const returned = new Set(results.map((r) => r.id));
+    const reason = missing.every((id) => !returned.has(id))
+      ? 'Gemini returned no result for this comment.'
+      : 'The analysis could not be saved. Please try again.';
     await supabase.rpc('mark_feedback_pending', { p_key: key, p_feedback_ids: missing, p_reason: reason });
     return { classified, pendingReason: reason };
   }
