@@ -13,8 +13,10 @@ AI-Powered Feedback Sentiment Analytics"*.
 
 ## Setup — step by step
 
-**1. Install Node.js ≥ 20.9.** Next.js 16 requires it. (Railway Nixpacks defaults to
-Node 18, which cannot build this project — pin Node on the host too; see Deploying.)
+**1. Install Node.js ≥ 20.9.** Next.js 16 requires it; the repo pins Node 22 LTS in
+`.nvmrc` (`nvm use` picks it up automatically). Railway/Nixpacks default to Node 18,
+which cannot build this project — the `.nvmrc` and `engines` in `package.json` make
+the builders use 22 instead.
 
 **2. Clone and install.**
 
@@ -101,8 +103,8 @@ npm run lint   # eslint
 
 Set all env vars in Railway **before** the first build — `NEXT_PUBLIC_*` values are
 inlined at build time, so changing `NEXT_PUBLIC_SITE_URL` later requires a rebuild.
-Pin Node to ≥ 20.9 (via `engines` in package.json or a `.nvmrc`) if your builder
-defaults to Node 18.
+Node is pinned to 22 LTS via `.nvmrc` and `engines` in `package.json` — no extra
+builder config needed.
 
 ## Notes
 
