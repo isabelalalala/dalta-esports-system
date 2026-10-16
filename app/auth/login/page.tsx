@@ -6,10 +6,12 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/utils/supabase/client'
 import { getErrorMessage } from '@/utils/errors'
 import { confirmEmailRedirect, isEmailNotConfirmed } from '@/utils/auth'
+import { usePageTitle } from '@/utils/page-title'
 
 const inputClass = 'w-full p-3 bg-sitebg text-white border border-gold'
 
 export default function Login() {
+  usePageTitle('Log in')
   const supabase = createClient()
   const router = useRouter()
   // ?confirmed=1: the user came from the "confirm your email" link
@@ -65,7 +67,7 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen grid place-items-center bg-sitebg px-4">
+    <main id="main-content" className="min-h-screen grid place-items-center bg-sitebg px-4">
       <form
         onSubmit={handleLogin}
         className="w-full max-w-md bg-sitecard p-6 sm:p-8 shadow-[6px_6px_0_var(--color-brown)] space-y-4"
@@ -73,12 +75,12 @@ export default function Login() {
         <h1 className="text-gold text-2xl font-bold text-center mb-4">Login</h1>
 
         {confirmed && !notConfirmed && !error && (
-          <div className="bg-green-500/10 border border-green-500 text-green-300 px-3 py-2">
+          <div role="status" className="bg-green-500/10 border border-green-500 text-green-300 px-3 py-2">
             Thanks for confirming your email. You can log in now.
           </div>
         )}
 
-        {error && <div className="bg-[#ff4444] text-white px-3 py-2">{error}</div>}
+        {error && <div role="alert" className="bg-red-500/10 border border-red-500 text-red-300 px-3 py-2">{error}</div>}
 
         {notConfirmed && (
           <div className="bg-yellow-500/10 border border-yellow-500 text-yellow-200 px-3 py-2 space-y-2">
@@ -93,9 +95,9 @@ export default function Login() {
           </div>
         )}
 
-        <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)}
+        <input type="email" placeholder="Email" aria-label="Email" value={email} onChange={(e) => setEmail(e.target.value)}
           className={inputClass} autoComplete="email" required />
-        <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)}
+        <input type="password" placeholder="Password" aria-label="Password" value={password} onChange={(e) => setPassword(e.target.value)}
           className={inputClass} autoComplete="current-password" required />
 
         <button
@@ -113,6 +115,6 @@ export default function Login() {
           Don&apos;t have an account? <Link href="/auth/register" className="text-gold">Register</Link>
         </p>
       </form>
-    </div>
+    </main>
   )
 }
