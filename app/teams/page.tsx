@@ -7,8 +7,10 @@ import { getErrorMessage } from '@/utils/errors';
 import type { Game, Team } from '@/utils/types';
 import TeamInvites from '@/components/TeamInvites';
 import { SectionLoading } from '@/components/PageLoading';
+import { usePageTitle } from '@/utils/page-title';
 
 export default function TeamsPage() {
+  usePageTitle('Teams');
   const supabase = createClient();
   const [teams, setTeams] = useState<Team[]>([]);
   const [games, setGames] = useState<Game[]>([]);
@@ -85,7 +87,7 @@ export default function TeamsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-sitebg text-white px-4 py-6 sm:p-8">
+    <main id="main-content" className="min-h-screen bg-sitebg text-white px-4 py-6 sm:p-8">
       <div className="max-w-5xl mx-auto">
         <Link href="/dashboard" className="text-gold hover:underline mb-6 inline-block">
           ← Back to Dashboard
@@ -105,7 +107,7 @@ export default function TeamsPage() {
         <TeamInvites onAnswered={() => setReloadCount((n) => n + 1)} />
 
         {error && (
-          <div className="mb-6 bg-red-500/10 border border-red-500 text-red-300 px-4 py-3">
+          <div role="alert" className="mb-6 bg-red-500/10 border border-red-500 text-red-300 px-4 py-3">
             {error}
           </div>
         )}
@@ -114,12 +116,13 @@ export default function TeamsPage() {
           <form onSubmit={handleCreateTeam} className="mb-8 p-4 sm:p-6 bg-sitecard border-2 border-gold shadow-[6px_6px_0_var(--color-brown)]">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <input
-                type="text" placeholder="Team Name"
+                type="text" placeholder="Team Name" aria-label="Team Name"
                 value={newTeamName} onChange={(e) => setNewTeamName(e.target.value)}
                 className="bg-sitebg border border-gray-700 p-3 text-white outline-none focus:border-gold"
                 required
               />
               <select
+                aria-label="Select Game"
                 value={gameId} onChange={(e) => setGameId(e.target.value)}
                 className="bg-sitebg border border-gray-700 p-3 text-white outline-none focus:border-gold"
                 required
@@ -133,7 +136,7 @@ export default function TeamsPage() {
               </select>
             </div>
             <textarea
-              placeholder="Description (optional)"
+              placeholder="Description (optional)" aria-label="Description (optional)"
               value={description} onChange={(e) => setDescription(e.target.value)}
               rows={3}
               className="mt-4 w-full bg-sitebg border border-gray-700 p-3 text-white outline-none focus:border-gold"
@@ -160,7 +163,7 @@ export default function TeamsPage() {
               <p className="text-gray-400 mt-1 uppercase text-xs font-bold tracking-widest">{team.games?.name}</p>
               {team.description && <p className="text-gray-300 mt-3 text-sm">{team.description}</p>}
               <div className="mt-4 flex flex-wrap justify-between items-center gap-2 text-sm">
-                <span className="text-gray-500">
+                <span className="text-gray-400">
                   Members: {team.team_members?.[0]?.count || 0} / {team.games?.max_players}
                 </span>
                 <Link href={`/teams/${team.id}`} className="text-gold hover:underline font-bold">
@@ -171,6 +174,6 @@ export default function TeamsPage() {
           ))}
         </div>
       </div>
-    </div>
+    </main>
   );
 }

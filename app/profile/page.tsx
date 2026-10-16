@@ -10,11 +10,13 @@ import VerifiedBadge from '@/components/VerifiedBadge';
 import StudentDetails from './StudentDetails';
 import PageLoading from '@/components/PageLoading';
 import PageError from '@/components/PageError';
+import { usePageTitle } from '@/utils/page-title';
 
 const inputClass =
-  'w-full border border-brownlight bg-sitebg px-4 py-3 text-white placeholder-gray-500 outline-none focus:border-gold';
+  'w-full border border-brownlight bg-sitebg px-4 py-3 text-white placeholder-gray-400 outline-none focus:border-gold';
 
 export default function ProfilePage() {
+  usePageTitle('Profile');
   const supabase = createClient();
   const router = useRouter();
 
@@ -185,7 +187,7 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-sitebg text-white px-4 py-10">
+    <main id="main-content" className="min-h-screen bg-sitebg text-white px-4 py-10">
       <div className="max-w-3xl mx-auto space-y-8">
         <Link href="/dashboard" className="text-gold hover:underline inline-block">
           ← Back to Dashboard
@@ -194,10 +196,10 @@ export default function ProfilePage() {
         <h1 className="font-pixel text-xl sm:text-2xl leading-relaxed text-gold">My Profile</h1>
 
         {error && (
-          <div className="bg-red-500/10 border border-red-500 text-red-300 px-4 py-3">{error}</div>
+          <div role="alert" className="bg-red-500/10 border border-red-500 text-red-300 px-4 py-3">{error}</div>
         )}
         {message && (
-          <div className="bg-green-500/10 border border-green-500 text-green-300 px-4 py-3">{message}</div>
+          <div role="status" className="bg-green-500/10 border border-green-500 text-green-300 px-4 py-3">{message}</div>
         )}
 
         {/* Account details */}
@@ -223,8 +225,9 @@ export default function ProfilePage() {
             </div>
           </div>
           <div>
-            <label className="block text-sm font-semibold text-gray-300 mb-2">Full Name</label>
+            <label htmlFor="full-name" className="block text-sm font-semibold text-gray-300 mb-2">Full Name</label>
             <input
+              id="full-name"
               type="text"
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
@@ -265,18 +268,18 @@ export default function ProfilePage() {
                     >
                       <h3 className="font-bold text-gold">{game.name}</h3>
                       <input
-                        type="text" placeholder="IGN (in-game name) *"
+                        type="text" placeholder="IGN (in-game name) *" aria-label="IGN (in-game name)"
                         value={ign} onChange={(e) => setIgn(e.target.value)}
                         className={inputClass} required
                       />
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                         <input
-                          type="text" placeholder="In-game role (e.g. Jungler, Duelist)"
+                          type="text" placeholder="In-game role (e.g. Jungler, Duelist)" aria-label="In-game role (e.g. Jungler, Duelist)"
                           value={inGameRole} onChange={(e) => setInGameRole(e.target.value)}
                           className={inputClass}
                         />
                         <input
-                          type="text" placeholder="Rank (e.g. Mythic, Diamond 2)"
+                          type="text" placeholder="Rank (e.g. Mythic, Diamond 2)" aria-label="Rank (e.g. Mythic, Diamond 2)"
                           value={rank} onChange={(e) => setRank(e.target.value)}
                           className={inputClass}
                         />
@@ -309,11 +312,11 @@ export default function ProfilePage() {
                       {gp ? (
                         <p className="text-sm text-gray-300">
                           {gp.ign}
-                          {gp.in_game_role && <span className="text-gray-500"> · {gp.in_game_role}</span>}
-                          {gp.rank && <span className="text-gray-500"> · {gp.rank}</span>}
+                          {gp.in_game_role && <span className="text-gray-400"> · {gp.in_game_role}</span>}
+                          {gp.rank && <span className="text-gray-400"> · {gp.rank}</span>}
                         </p>
                       ) : (
-                        <p className="text-sm text-gray-500">Not set up</p>
+                        <p className="text-sm text-gray-400">Not set up</p>
                       )}
                     </div>
                     <div className="flex gap-3 text-sm font-semibold">
@@ -359,10 +362,11 @@ export default function ProfilePage() {
             </button>
           ) : (
             <div className="mt-4 space-y-3">
-              <label className="block text-sm text-gray-300">
+              <label htmlFor="delete-confirm" className="block text-sm text-gray-300">
                 Type <span className="font-mono font-bold text-red-400">DELETE</span> to confirm:
               </label>
               <input
+                id="delete-confirm"
                 type="text"
                 value={deleteText}
                 onChange={(e) => setDeleteText(e.target.value)}
@@ -390,7 +394,7 @@ export default function ProfilePage() {
           )}
         </div>
       </div>
-    </div>
+    </main>
   );
 }
 
@@ -441,21 +445,21 @@ function ChangePassword({ email }: { email: string }) {
   return (
     <form onSubmit={handleSubmit} className="bg-sitecard border-2 border-gold shadow-[6px_6px_0_var(--color-brown)] p-6 space-y-4">
       <h2 className="text-xl font-bold">Change Password</h2>
-      {error && <div className="bg-red-500/10 border border-red-500 text-red-300 px-4 py-3">{error}</div>}
-      {message && <div className="bg-green-500/10 border border-green-500 text-green-300 px-4 py-3">{message}</div>}
+      {error && <div role="alert" className="bg-red-500/10 border border-red-500 text-red-300 px-4 py-3">{error}</div>}
+      {message && <div role="status" className="bg-green-500/10 border border-green-500 text-green-300 px-4 py-3">{message}</div>}
       <input
-        type="password" placeholder="Current password"
+        type="password" placeholder="Current password" aria-label="Current password"
         value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)}
         className={inputClass} autoComplete="current-password" required
       />
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <input
-          type="password" placeholder="New password (8+ characters)"
+          type="password" placeholder="New password (8+ characters)" aria-label="New password (8+ characters)"
           value={newPassword} onChange={(e) => setNewPassword(e.target.value)}
           className={inputClass} autoComplete="new-password" required
         />
         <input
-          type="password" placeholder="Confirm new password"
+          type="password" placeholder="Confirm new password" aria-label="Confirm new password"
           value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)}
           className={inputClass} autoComplete="new-password" required
         />

@@ -9,11 +9,13 @@ import type { PendingTeamInvite, PlayerSearchResult, RosterMember, Team } from '
 import VerifiedBadge from '@/components/VerifiedBadge';
 import PageLoading from '@/components/PageLoading';
 import PageError from '@/components/PageError';
+import { usePageTitle } from '@/utils/page-title';
 
 const inputClass =
   'w-full bg-sitebg border border-gray-700 p-3 text-white outline-none focus:border-gold';
 
 export default function ManageTeamPage() {
+  usePageTitle('Manage Team');
   const supabase = createClient();
   const [team, setTeam] = useState<Team | null>(null);
   const [roster, setRoster] = useState<RosterMember[]>([]);
@@ -252,7 +254,7 @@ export default function ManageTeamPage() {
   const isSolo = maxPlayers <= 1;
 
   return (
-    <div className="min-h-screen bg-sitebg text-white px-4 py-6 sm:p-8">
+    <main id="main-content" className="min-h-screen bg-sitebg text-white px-4 py-6 sm:p-8">
       <div className="max-w-3xl mx-auto">
         <Link href="/teams" className="text-gold hover:underline mb-6 inline-block">
           ← Back to My Teams
@@ -263,11 +265,11 @@ export default function ManageTeamPage() {
             <form onSubmit={handleSaveTeam} className="space-y-3">
               <input
                 type="text" value={name} onChange={(e) => setName(e.target.value)}
-                placeholder="Team Name" className={inputClass} required
+                placeholder="Team Name" aria-label="Team Name" className={inputClass} required
               />
               <textarea
                 value={description} onChange={(e) => setDescription(e.target.value)}
-                placeholder="Description (optional)" rows={3} className={inputClass}
+                placeholder="Description (optional)" aria-label="Description (optional)" rows={3} className={inputClass}
               />
               <div className="flex gap-2">
                 <button
@@ -300,12 +302,12 @@ export default function ManageTeamPage() {
           )}
 
           {error && (
-            <div className="mt-6 bg-red-500/10 border border-red-500 text-red-300 px-4 py-3">
+            <div role="alert" className="mt-6 bg-red-500/10 border border-red-500 text-red-300 px-4 py-3">
               {error}
             </div>
           )}
           {message && (
-            <div className="mt-6 bg-green-500/10 border border-green-500 text-green-300 px-4 py-3">
+            <div role="status" className="mt-6 bg-green-500/10 border border-green-500 text-green-300 px-4 py-3">
               {message}
             </div>
           )}
@@ -328,12 +330,12 @@ export default function ManageTeamPage() {
               <li key={member.user_id} className="py-3 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 sm:gap-4">
                 <div>
                   <p className="font-semibold">
-                    {member.ign || <span className="text-gray-500 italic">No IGN</span>}
+                    {member.ign || <span className="text-gray-400 italic">No IGN</span>}
                     {member.in_game_role && <span className="text-gray-400 font-normal"> · {member.in_game_role}</span>}
                     {member.role === 'captain' && <span className="ml-2 text-yellow-400 text-sm">Captain</span>}
                     <span className="ml-2"><VerifiedBadge verified={member.is_verified} /></span>
                   </p>
-                  {member.full_name && <p className="text-gray-500 text-sm">{member.full_name}</p>}
+                  {member.full_name && <p className="text-gray-400 text-sm">{member.full_name}</p>}
                 </div>
 
                 {isCaptain && member.role !== 'captain' && (
@@ -375,7 +377,7 @@ export default function ManageTeamPage() {
                   <form onSubmit={handleSearch} className="flex flex-col sm:flex-row gap-2">
                     <input
                       type="text" value={search} onChange={(e) => setSearch(e.target.value)}
-                      placeholder="IGN or name" className={inputClass} required
+                      placeholder="IGN or name" aria-label="IGN or name" className={inputClass} required
                     />
                     <button
                       type="submit" disabled={busy}
@@ -386,7 +388,7 @@ export default function ManageTeamPage() {
                   </form>
 
                   {results && results.length === 0 && (
-                    <p className="mt-3 text-gray-500 text-sm">No players found.</p>
+                    <p className="mt-3 text-gray-400 text-sm">No players found.</p>
                   )}
 
                   {results && results.length > 0 && (
@@ -397,10 +399,10 @@ export default function ManageTeamPage() {
                             <p className="font-semibold">
                               {player.ign}
                               {player.in_game_role && <span className="text-gray-400 font-normal"> · {player.in_game_role}</span>}
-                              {player.rank && <span className="text-gray-500 font-normal"> · {player.rank}</span>}
+                              {player.rank && <span className="text-gray-400 font-normal"> · {player.rank}</span>}
                               <span className="ml-2"><VerifiedBadge verified={player.is_verified} /></span>
                             </p>
-                            {player.full_name && <p className="text-gray-500 text-sm">{player.full_name}</p>}
+                            {player.full_name && <p className="text-gray-400 text-sm">{player.full_name}</p>}
                           </div>
                           {player.invited ? (
                             <span className="text-gray-400 text-sm font-semibold">Invited</span>
@@ -427,8 +429,8 @@ export default function ManageTeamPage() {
                     {pendingInvites.map((invite) => (
                       <li key={invite.invite_id} className="py-2 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1 sm:gap-4">
                         <div>
-                          <p className="font-semibold">{invite.ign || <span className="text-gray-500 italic">No IGN</span>}</p>
-                          {invite.full_name && <p className="text-gray-500 text-sm">{invite.full_name}</p>}
+                          <p className="font-semibold">{invite.ign || <span className="text-gray-400 italic">No IGN</span>}</p>
+                          {invite.full_name && <p className="text-gray-400 text-sm">{invite.full_name}</p>}
                         </div>
                         <button
                           onClick={() => handleCancelInvite(invite)}
@@ -456,7 +458,7 @@ export default function ManageTeamPage() {
                   Delete Team
                 </button>
                 {!isSolo && (
-                  <p className="text-gray-500 text-sm">To leave the team, first make another member captain.</p>
+                  <p className="text-gray-400 text-sm">To leave the team, first make another member captain.</p>
                 )}
               </>
             ) : isMember && (
@@ -471,6 +473,6 @@ export default function ManageTeamPage() {
           </div>
         </div>
       </div>
-    </div>
+    </main>
   );
 }

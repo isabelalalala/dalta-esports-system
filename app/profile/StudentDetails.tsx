@@ -7,7 +7,7 @@ import type { Profile } from '@/utils/types';
 import { SCHOOL_SUGGESTIONS, verificationLabels, verificationStyles } from '@/utils/verification';
 
 const inputClass =
-  'w-full border border-brownlight bg-sitebg px-4 py-3 text-white placeholder-gray-500 outline-none focus:border-gold';
+  'w-full border border-brownlight bg-sitebg px-4 py-3 text-white placeholder-gray-400 outline-none focus:border-gold';
 
 interface Props {
   profile: Profile;
@@ -71,12 +71,12 @@ export default function StudentDetails({ profile, onSaved }: Props) {
       </p>
 
       {status === 'rejected' && profile.verification_note && (
-        <div className="bg-red-500/10 border border-red-500 text-red-300 px-4 py-3 text-sm">
+        <div role="alert" className="bg-red-500/10 border border-red-500 text-red-300 px-4 py-3 text-sm">
           Not accepted: {profile.verification_note} Fix your details and save them to be reviewed again.
         </div>
       )}
-      {error && <div className="bg-red-500/10 border border-red-500 text-red-300 px-4 py-3">{error}</div>}
-      {message && <div className="bg-green-500/10 border border-green-500 text-green-300 px-4 py-3">{message}</div>}
+      {error && <div role="alert" className="bg-red-500/10 border border-red-500 text-red-300 px-4 py-3">{error}</div>}
+      {message && <div role="status" className="bg-green-500/10 border border-green-500 text-green-300 px-4 py-3">{message}</div>}
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <label className="block text-sm font-semibold text-gray-300">
