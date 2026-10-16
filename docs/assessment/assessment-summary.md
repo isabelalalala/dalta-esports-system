@@ -72,12 +72,16 @@ find.
   RESOLVED: column + `profiles_touch` trigger added (`202610181700`).
 
 **Privacy** (L)
-- DPO contact is an explicit placeholder (`utils/privacy.ts`).
-- Consent gate is dashboard-only — other authenticated routes collect data without
-  checking current-version consent.
-- Match-proof screenshots retained indefinitely, not deletable, undisclosed;
+- ~~DPO contact is an explicit placeholder (`utils/privacy.ts`).~~ RESOLVED:
+  env-configurable via `NEXT_PUBLIC_PRIVACY_CONTACT_*`; real values still to be
+  set before launch.
+- ~~Consent gate is dashboard-only — other authenticated routes collect data without
+  checking current-version consent.~~ RESOLVED: `proxy.ts` enforces consent on
+  every protected page.
+- ~~Match-proof screenshots retained indefinitely, not deletable, undisclosed;
   officers'/players' names+photos published outside the notice; export scope
-  understated.
+  understated.~~ RESOLVED: all disclosed in the notice; version bumped to
+  `2026-10-18.2` so everyone re-consents.
 
 **Accessibility** (J)
 - ~30 unlabeled inputs across auth/teams/tournaments/admin forms (placeholder-only);
@@ -147,16 +151,13 @@ behavior, actual DB query plans/row counts.
 
 1. ~~**Deploy blockers**~~ — done: Node pinned (`engines` + `.nvmrc`) and base tables
    covered by `202610151100_base_schema.sql`.
-2. **Security fix** — tighten the `/auth/callback` `next` allowlist (reject `\`,
-   or parse+compare `URL` origin).
-3. **Data-integrity races** — NULL-guard the boolean RPC params; check `m.status`
-   in `review_match_result`; add CHECK/constraints for `next_match_id`,
-   `topics ≤3`, `tournaments.status`.
-4. **Privacy compliance** — real DPO contact; consent gate on all authenticated
-   routes (or accept documented scope); disclose match-proof retention + public
-   rosters/officers in the notice.
-5. **Notification/audit gaps** — `tournament_cancelled` notification + type;
-   DELETE-side registration notify; log reschedules and review decisions.
+2. ~~**Security fix** — tighten the `/auth/callback` `next` allowlist~~ — done:
+   `safeNextPath()` compares the resolved origin.
+3. ~~**Data-integrity races**~~ — done: `202610181200_integrity_hardening.sql`.
+4. ~~**Privacy compliance**~~ — done: env-configurable contact, `proxy.ts` consent
+   gate, disclosures added + version bump. Residual: set the real
+   `NEXT_PUBLIC_PRIVACY_CONTACT_*` values before launch.
+5. ~~**Notification/audit gaps**~~ — done: `202610181500_notification_audit_gaps.sql`.
 6. **A11y quick wins** — wrap/form labels (copy FeedbackPage pattern), `role="alert"`
    on the shared error style, skip link + `<main>`, contrast bump (gray-500→400,
    green-600→700/#ff4444→red-600).

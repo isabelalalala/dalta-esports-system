@@ -35,6 +35,8 @@ Full title: "DALTA Esports: Tournament Management System with AI-Powered Feedbac
   Without it, feedback is saved but stays "pending analysis".
 - `NEXT_PUBLIC_SITE_URL`: the app's public address, e.g. `https://<app>.up.railway.app` (no trailing slash). Used
   for link previews (metadataBase), shared links and calendar files. Defaults to http://localhost:3000.
+- `NEXT_PUBLIC_PRIVACY_CONTACT_EMAIL`, `NEXT_PUBLIC_PRIVACY_CONTACT_PERSON`: optional; the privacy notice's
+  data protection contact. The fallbacks in `utils/privacy.ts` are placeholders — set the real ones before launch.
 - All of them live in `.env.local` (git-ignored) and must also be set in Railway when deploying.
 
 ## Auth pages and Supabase settings
@@ -54,9 +56,10 @@ Full title: "DALTA Esports: Tournament Management System with AI-Powered Feedbac
   `/auth/login?confirmed=1`. Login shows a "confirm your email first" message with a resend button
   (`utils/auth.ts`).
 - Data Privacy Act (RA 10173): `/privacy` is the public Privacy Notice; its version, contact email and contact person
-  are in `utils/privacy.ts` (the contact is still a placeholder). Register requires the consent checkbox
-  (`components/PrivacyConsentCheckbox.tsx`). The dashboard sends users without consent to the current version
-  to `/privacy/consent`. Changing `PRIVACY_NOTICE_VERSION` asks everyone to agree again.
+  are in `utils/privacy.ts` (the contact fallbacks are placeholders; set `NEXT_PUBLIC_PRIVACY_CONTACT_*`). Register
+  requires the consent checkbox (`components/PrivacyConsentCheckbox.tsx`). `proxy.ts` sends logged-in users
+  without current-version consent to `/privacy/consent` on every protected page (not just the dashboard).
+  Changing `PRIVACY_NOTICE_VERSION` asks everyone to agree again.
   Keep the notice in sync when a feature changes what data is collected or who can see it.
 
 ## Roles (stored in `profiles.role`)
