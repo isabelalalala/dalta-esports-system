@@ -20,7 +20,7 @@ export default function EngagementPage() {
   const [role, setRole] = useState('');
   const [filters, setFilters] = useState<Filters>(emptyFilters);
   const [report, setReport] = useState<EngagementReport | null>(null);
-  // Stream id -> people watching right now (Supabase Realtime Presence, see /live/[id])
+  // Stream id -> people watching right now (stream_presence heartbeats, see /live/[id])
   const [liveCounts, setLiveCounts] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -58,22 +58,21 @@ export default function EngagementPage() {
 
   useEffect(() => {
     if (!liveKey) return;
-    const channels = liveKey.split(',').map((streamId) => {
-      const channel = supabase.channel(`viewers-${streamId}`);
-      // 'sync' fires whenever someone starts or stops watching
-      channel
-        .on('presence', { event: 'sync' }, () => {
-          const watching = Object.keys(channel.presenceState()).length;
-          setLiveCounts((counts) => ({ ...counts, [streamId]: watching }));
-        })
-        .subscribe();
-      return channel;
-    });
+    const ids = liveKey.split(',');
 
-    // Stop listening when the live streams change or the page closes
-    return () => {
-      channels.forEach((channel) => supabase.removeChannel(channel));
+    const loadCounts = async () => {
+      const { data } = await supabase.rpc('get_live_viewer_counts', { p_stream_ids: ids });
+      const rows = (data ?? []) as { stream_id: string; viewers: number }[];
+      setLiveCounts((counts) => ({
+        ...counts,
+        ...Object.fromEntries(ids.map((id) => [id, rows.find((r) => r.stream_id === id)?.viewers ?? 0])),
+      }));
     };
+
+    loadCounts();
+    // Heartbeats stay fresh for 90 s; polling every 30 s keeps the count current.
+    const timer = setInterval(loadCounts, 30_000);
+    return () => clearInterval(timer);
   }, [supabase, liveKey]);
 
   const handleCsv = () => {

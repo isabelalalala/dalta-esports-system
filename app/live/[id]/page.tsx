@@ -60,32 +60,40 @@ export default function WatchStreamPage() {
     if (id) fetchStream();
   }, [id, supabase]);
 
-  // 2. "Watching now" for the Engagement Stats page (Supabase Realtime Presence):
-  //    this page joins the stream's presence channel while it is open, and leaves it on close.
-  //    Organizers aren't counted, the same as in the view counts. Nothing is saved in a table.
+  // 2. "Watching now" for the Engagement Stats page (stream_presence heartbeat):
+  //    the page upserts its row every 45 s while open and deletes it on close.
+  //    Rows older than 90 s stop counting. Organizers aren't counted, the same
+  //    as in the view counts. A failed heartbeat shouldn't stop anyone from
+  //    watching, so errors are ignored — like the stream_views upsert above.
   useEffect(() => {
     if (!id) return;
-    let channel: ReturnType<typeof supabase.channel> | null = null;
-    // Set when the page closes, in case that happens before join() has finished
-    let closed = false;
+    let timer: ReturnType<typeof setInterval> | null = null;
+    let cancelled = false;
+    let userId = '';
 
     const join = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) return;
       const { data: myRole } = await supabase.rpc('get_my_role');
-      if (closed || myRole === 'admin' || myRole === 'staff') return;
+      if (cancelled || myRole === 'admin' || myRole === 'staff') return;
+      userId = session.user.id;
 
-      // The key is the user id, so several tabs of one person count once
-      channel = supabase.channel(`viewers-${id}`, { config: { presence: { key: session.user.id } } });
-      channel.subscribe((status) => {
-        if (status === 'SUBSCRIBED') channel?.track({ watching_since: new Date().toISOString() });
-      });
+      const beat = () => supabase
+        .from('stream_presence')
+        .upsert({ stream_id: id, user_id: userId }, { onConflict: 'stream_id,user_id' })
+        .then(() => undefined, () => undefined);
+      await beat();
+      if (!cancelled) timer = setInterval(beat, 45_000);
     };
     join();
 
     return () => {
-      closed = true;
-      if (channel) supabase.removeChannel(channel);
+      cancelled = true;
+      if (timer) clearInterval(timer);
+      if (userId) {
+        supabase.from('stream_presence').delete().eq('stream_id', id).eq('user_id', userId)
+          .then(() => undefined, () => undefined);
+      }
     };
   }, [id, supabase]);
 
