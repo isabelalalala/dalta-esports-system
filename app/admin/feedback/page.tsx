@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { createClient } from '@/utils/supabase/client';
 import { getErrorMessage } from '@/utils/errors';
 import type { Feedback, Sentiment, Tournament } from '@/utils/types';
+import { isFeedbackRetryable } from '@/utils/feedback';
 import StarRating from '@/components/StarRating';
 import ExportButtons from '@/components/ExportButtons';
 import PageLoading from '@/components/PageLoading';
@@ -134,7 +135,9 @@ export default function FeedbackAnalysisPage() {
     return f.sentiment === sentimentFilter;
   });
 
-  const pendingCount = feedback.filter((f) => f.sentiment === null).length;
+  // Retryable = still pending and under the attempt cap; rows at the cap are
+  // left alone (see isFeedbackRetryable) so they don't burn rate-limit slots.
+  const pendingCount = feedback.filter(isFeedbackRetryable).length;
   const classified = inTournament.filter((f) => f.sentiment !== null);
   const averageRating = inTournament.length
     ? inTournament.reduce((sum, f) => sum + f.rating, 0) / inTournament.length
@@ -261,7 +264,9 @@ export default function FeedbackAnalysisPage() {
                 <p className="text-gray-200 whitespace-pre-wrap break-words">{f.comment}</p>
                 {f.sentiment === null && f.analysis_error && (
                   <p className="mt-1 text-xs text-yellow-300/80">
-                    Last try failed ({f.analysis_attempts}×): {f.analysis_error}
+                    {isFeedbackRetryable(f)
+                      ? `Last try failed (${f.analysis_attempts}×): ${f.analysis_error}`
+                      : `Gave up after ${f.analysis_attempts} tries: ${f.analysis_error}`}
                   </p>
                 )}
                 {f.topics.length > 0 && (
