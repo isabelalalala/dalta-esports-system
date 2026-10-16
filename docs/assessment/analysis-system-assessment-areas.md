@@ -10,7 +10,7 @@ Temp overview listing the areas worth assessing in this codebase, grounded in th
 ## Assumptions
 
 1. "Comprehensive assessment" means a capstone-level review for correctness, security, and defense readiness — not a marketing/SEO review of the public site.
-2. Assessment covers both the Next.js app (`app/`, `components/`, `utils/`) and the Supabase layer (23 migrations in `supabase/migrations/`).
+2. Assessment covers both the Next.js app (`app/`, `components/`, `utils/`) and the Supabase layer (25 migrations in `supabase/migrations/`).
 3. `docs/requirements.md` and `docs/new-features-summary.md` are the source of truth for what the system is supposed to do; CLAUDE.md documents what was built.
 4. There is no automated test suite (`package.json` has only dev/build/lint), so "assessment" is code review + manual/browser verification + SQL probes the user runs in the Supabase SQL Editor.
 
