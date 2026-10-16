@@ -2,7 +2,7 @@
 
 ## Verdict
 
-Solid UX engineering underneath (real buttons/links, confirm dialogs on every destructive action, helpful empty states, a genuinely accessible StarRating and report tables) but accessibility was clearly an afterthought on forms: placeholder-only labels are the dominant pattern, most error messages are never announced, there is no skip link and no `<main>` landmark on any logged-in page, and several contrast combos fail WCAG 2.2 AA. Nothing is a hard blocker for sighted mouse users; screen-reader and keyboard-only users will hit real walls.
+Solid UX engineering underneath (real buttons/links, confirm dialogs on every destructive action, helpful empty states, a genuinely accessible StarRating and report tables). **All 12 Required items are now resolved**: every input is programmatically labeled (aria-label or htmlFor), error/success messages are announced (`role="alert"`/`role="status"`), a skip link + `<main id="main-content">` landmark cover every page, all pages have descriptive titles (`usePageTitle` / metadata template), the failing contrast combos were bumped to passing shades, and the carousel pauses on focus/touch and honors `prefers-reduced-motion`. Remaining nit-level polish is listed below.
 
 ## Checked
 
@@ -20,7 +20,7 @@ Solid UX engineering underneath (real buttons/links, confirm dialogs on every de
 
 **Forms — programmatic labels (WCAG 1.3.1 / 3.3.2 / 4.1.2)**
 
-1. **Placeholder-only labels are the dominant pattern.** The following inputs/selects have no `<label>`, no `htmlFor`, no `aria-label` — the placeholder is the only name, and it disappears once text is entered:
+1. ~~**Placeholder-only labels are the dominant pattern.**~~ **RESOLVED** — every input/select/textarea below now has an `aria-label` or an associated `<label>` (verified by audit grep). Original list:
    - Login email + password — `app/auth/login/page.tsx:96-99`
    - Register full name, email, password, confirm — `app/auth/register/page.tsx:126-133` (only the role select is labeled, `:136-137`)
    - Forgot-password email — `app/auth/forgot-password/page.tsx:51-58`
@@ -36,40 +36,40 @@ Solid UX engineering underneath (real buttons/links, confirm dialogs on every de
    - Schedule tournament-filter select — `app/schedule/page.tsx:142-151`
    - Result submit: dispute reason, staff reject note, **and the file input** (no label/aria-label at all) — `app/matches/[id]/ResultSection.tsx:206-207, 240-241, 265-271`
 
-2. **"Ghost" labels**: many `<label>` elements sit next to the input inside a `<div>` without `htmlFor`/`id` and without wrapping — visible text but zero programmatic association: tournament create `app/tournaments/create/page.tsx:114-125, 128-155, 171-211` and edit `app/tournaments/[id]/edit/page.tsx:144-209, 240-276` (all fields except the two that do wrap), profile Full Name `app/profile/page.tsx:226-233`, tournament registration team select `app/tournaments/[id]/page.tsx:513-515`. Screen readers will not announce these labels; clicking the text doesn't focus the field.
+2. ~~**"Ghost" labels**~~ **RESOLVED** — all listed ghost labels now have `htmlFor`/`id` pairs (tournament create/edit ×8 fields each, profile Full Name + DELETE confirm, registration team select).
 
-3. **Hidden file inputs are unreachable by keyboard.** `app/admin/website/ImageField.tsx:47-56` and `app/admin/website/ListEditor.tsx:274-278` wrap `<input type="file" className="hidden">` (display:none) in a non-focusable `<label>` — the "Upload"/"+ Add photo" control cannot be tabbed to or activated by keyboard, and is invisible to the accessibility tree entirely.
+3. ~~**Hidden file inputs are unreachable by keyboard.**~~ **RESOLVED** — both use `sr-only` instead of `hidden`, so they are focusable and activatable; the `ResultSection` proof input also gained an `aria-label`.
 
 **Status messages (WCAG 4.1.3)**
 
-4. **Form errors are visually rendered but never announced.** The shared `bg-red-500/10 border border-red-500 text-red-300` error div has no `role="alert"`/`aria-live` in ~15 places — e.g. `app/tournaments/create/page.tsx:108`, `app/teams/page.tsx:108`, `app/profile/page.tsx:197`, `app/teams/[id]/page.tsx:303`, `app/announcements/page.tsx:125,237`, `app/tournaments/[id]/streams/page.tsx:172,302`, `app/matches/[id]/ResultSection.tsx:166`, `app/matches/[id]/CheckinSection.tsx:97`, `app/profile/StudentDetails.tsx:74,78`, `app/admin/users/page.tsx:97,285,379`, `app/admin/verification/page.tsx:121`, `app/schedule/page.tsx:153`. Success messages (`text-green-300`) likewise lack `role="status"` everywhere except `app/feedback/page.tsx:191-192` — the only page that gets this right. A screen-reader user who submits a failing form hears nothing.
+4. ~~**Form errors are visually rendered but never announced.**~~ **RESOLVED** — all listed error divs have `role="alert"` and success messages `role="status"` (plus the dashboard widgets, ExportButtons and ImageField errors found during the sweep).
 
 **Structure (WCAG 2.4.1, 1.3.1)**
 
-5. **No skip link anywhere** (grep for "skip" = zero hits). Keyboard users tab through the header (logo, search input + button, auth buttons/bell) plus the 6-link site nav on public pages before reaching content on every page load. Add a "Skip to content" link in `app/layout.tsx` before `<SiteHeader />` (line 46).
+5. ~~**No skip link anywhere**~~ **RESOLVED** — `app/layout.tsx` renders a visually-hidden-until-focused "Skip to content" link targeting `#main-content` before `<SiteHeader />`.
 
-6. **No `<main>` landmark on any logged-in page.** `<main>` exists only in `app/(site)/layout.tsx:42`, `app/not-found.tsx:12`, `app/error.tsx:16`. Every app page opens with `<div className="min-h-screen bg-sitebg …">` (e.g. `app/dashboard/page.tsx:146`, `app/tournaments/page.tsx:68`) — screen-reader users cannot jump to main content.
+6. ~~**No `<main>` landmark on any logged-in page.**~~ **RESOLVED** — every page's topmost content wrapper is now `<main id="main-content">` (all conditional return paths covered; mutually exclusive, so never two `<main>`s in the DOM). The `(site)` layout's `<main>` also carries the id for the skip link.
 
-7. **Missing `<h1>` on two pages**: `app/matches/[id]/page.tsx` (the match header uses `<p>` elements, `:139-150`; sections start at h2) and `app/(site)/t/[id]/match/[matchId]/page.tsx:82-86` (team names are `font-pixel` `<p>`s). All other audited pages have exactly one h1.
+7. ~~**Missing `<h1>` on two pages**~~ **RESOLVED** — `app/matches/[id]` has a real `<h1>`; `app/(site)/t/[id]/match/[matchId]` gained an `sr-only` "A vs B" `<h1>` (visual design preserved).
 
-8. **Every client page shares the tab title "DALTA Esports"** (`app/layout.tsx:28`); only `/t/*` and `not-found` export `metadata`/`generateMetadata`. WCAG 2.4.2 — page titles don't describe each page's purpose.
+8. ~~**Every client page shares the tab title "DALTA Esports"**~~ **RESOLVED** — the root metadata now uses a `%s – DALTA Esports` template; all ~30 client pages call `usePageTitle()` and server pages export metadata.
 
 **Contrast (WCAG 1.4.3)**
 
-9. **`bg-[#ff4444]` + white error banners ≈ 3.4:1** — `app/auth/login/page.tsx:81`, `app/auth/register/page.tsx:124`, `app/auth/forgot-password/page.tsx:50`, `app/auth/reset-password/page.tsx:71`, `app/privacy/consent/page.tsx:54`. Fails 4.5:1 for normal text. (The `bg-red-500/10 + text-red-300` variant used elsewhere passes — use it consistently.)
+9. ~~**`bg-[#ff4444]` + white error banners ≈ 3.4:1**~~ **RESOLVED** — all five converted to the passing `bg-red-500/10 + text-red-300` pattern (with `role="alert"`).
 
-10. **`text-gray-500` on sitebg/sitecard ≈ 3.9:1 — fails AA** and it carries real content, not just decoration: footer copyright `components/Footer.tsx:56`, member counts `app/teams/page.tsx:163`, empty states `components/site/SiteParts.tsx:33`, timestamps `components/NotificationBell.tsx:123`, "No picks yet" `components/PredictionPicker.tsx:75`, captain names `app/tournaments/[id]/page.tsx:433`, and `placeholder-gray-500` on most inputs. `text-gray-400` (~7:1) is fine — bump the 500s.
+10. ~~**`text-gray-500` on sitebg/sitecard ≈ 3.9:1 — fails AA**~~ **RESOLVED** — every `text-gray-500`/`placeholder-gray-500` in `app/` and `components/` is now 400 (audit grep returns zero).
 
-11. **Colored action buttons fail**: `bg-green-600` + white "Generate Bracket" ≈ 3.3:1 (`app/tournaments/[id]/page.tsx:482`); `bg-red-500` + white "Reject"/"Revoke" ≈ 3.8:1 (`app/admin/verification/page.tsx:191`). `bg-red-600` (~4.8:1) and `bg-purple-600` (~5.4:1) pass — swap to those shades.
+11. ~~**Colored action buttons fail**~~ **RESOLVED** — Generate Bracket/Approve → `bg-green-700` (`hover:bg-green-800` preserves the affordance); Reject/Revoke → `bg-red-600` (`hover:bg-red-700`); the bell's unread badge → `bg-red-600`.
 
 **Keyboard/motion (WCAG 2.2.2, 2.1.1)**
 
-12. **HeroCarousel auto-advances every 5 s and can only be paused by hover** — `components/site/HeroCarousel.tsx:40-41` (`onMouseEnter/Leave` only). Keyboard users tabbing to the ‹/›/dot controls get no pause, touch users can't pause at all, and there is no stop button or `prefers-reduced-motion` check. WCAG 2.2.2 Level A for auto-updating content.
+12. ~~**HeroCarousel auto-advances every 5 s and can only be paused by hover**~~ **RESOLVED** — pauses on focus-within (`onFocusCapture`/`onBlurCapture`) and `onTouchStart`, and auto-advance is skipped entirely under `prefers-reduced-motion: reduce`.
 
 ### Nit
 
-13. **NotificationBell dropdown**: no Escape-to-close (only click-outside via the invisible overlay button, `:94`), no focus management (focus isn't moved into the panel or returned to the bell on close), and the `aria-label="unread"` on a plain `<span>` (`:120`, same in `app/notifications/page.tsx:131`) is ignored without a role — use `role="img"` or `sr-only` text.
-14. **StarRating display variant**: `aria-label="…out of 5 stars"` on a generic `<span>` (`components/StarRating.tsx:17`) is ignored by AT — needs `role="img"`, otherwise SRs get raw "★★★☆☆".
+13. **NotificationBell dropdown** — ~~no Escape-to-close~~ (added) and ~~`aria-label="unread"` on a plain span~~ (`role="img"` added, both sites). Remaining: focus isn't moved into the panel or returned to the bell on close.
+14. ~~**StarRating display variant**~~ **RESOLVED** — `role="img"` added so the label is announced.
 15. **`prefers-reduced-motion` is never honored** (zero hits): `animate-pulse` loaders (`components/PageLoading.tsx:9-11`), `group-hover:scale-105` post images (`components/site/PostCard.tsx:17`), translate transitions throughout. Minor since most is decorative, but the carousel (Finding 12) is not.
 16. **Focus indicator is a 1px border-color change** — every input uses `outline-none focus:border-gold` (brownlight→gold); present but very subtle. Links/buttons keep the browser ring (good). Consider `focus-visible:ring-2` on inputs.
 17. **Realtime updates are visual-only**: live scoreboard (`app/live/[id]/page.tsx:190-215`), "Watching now" tile (`app/analytics/EngagementSection.tsx:33`), check-in countdown, and notification unread count update silently — no `aria-live="polite"`. Conversely `app/matches/[id]/page.tsx:100-112` reloads the whole page content on any realtime event, which can silently swap content under an SR user's cursor.

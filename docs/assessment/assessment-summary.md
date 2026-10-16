@@ -83,13 +83,16 @@ find.
   understated.~~ RESOLVED: all disclosed in the notice; version bumped to
   `2026-10-18.2` so everyone re-consents.
 
-**Accessibility** (J)
-- ~30 unlabeled inputs across auth/teams/tournaments/admin forms (placeholder-only);
-  "ghost" labels (no htmlFor/wrap); hidden file inputs keyboard-unreachable.
-- Form errors never announced (~15 sites missing `role="alert"`).
-- No skip link; no `<main>` on any logged-in page; two pages missing `<h1>`; all
-  client pages share the tab title; 3 contrast combos fail WCAG AA; carousel
-  auto-advances with no keyboard/touch pause.
+**Accessibility** (J) — all Required items resolved:
+- ~~Unlabeled inputs / ghost labels / unreachable file inputs~~ — every control is
+  programmatically labeled (aria-label or htmlFor).
+- ~~Form errors never announced~~ — `role="alert"`/`role="status"` throughout.
+- ~~No skip link / no `<main>` / missing `<h1>` / shared tab title~~ — skip link +
+  `<main id="main-content">` on every page, h1s added, per-page titles via
+  `usePageTitle` + the `%s – DALTA Esports` metadata template.
+- ~~Contrast combos fail WCAG AA~~ — bumped to passing shades.
+- ~~Carousel auto-advances~~ — pauses on focus/touch, honors reduced-motion.
+- Remaining nits: bell focus management, dot target size, realtime `aria-live`.
 
 **Performance** (K)
 - Every authenticated page is a client component with a 4–9-query serial waterfall.
@@ -158,9 +161,8 @@ behavior, actual DB query plans/row counts.
    gate, disclosures added + version bump. Residual: set the real
    `NEXT_PUBLIC_PRIVACY_CONTACT_*` values before launch.
 5. ~~**Notification/audit gaps**~~ — done: `202610181500_notification_audit_gaps.sql`.
-6. **A11y quick wins** — wrap/form labels (copy FeedbackPage pattern), `role="alert"`
-   on the shared error style, skip link + `<main>`, contrast bump (gray-500→400,
-   green-600→700/#ff4444→red-600).
+6. ~~**A11y quick wins**~~ — done: labels everywhere, announced errors, skip link +
+   `<main>`, contrast bumps, titles, carousel pause.
 7. **Perf** — `Promise.all` the independent page queries; skip `getUser()` in
    `proxy.ts` for cookie-less/public requests; `images.remotePatterns` + drop
    `unoptimized` for the public bucket.
