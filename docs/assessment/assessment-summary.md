@@ -25,7 +25,7 @@ find.
 
 | # | Area | Finding | Evidence |
 |---|------|---------|----------|
-| 1 | B | **Open redirect in `/auth/callback`** — `next=/\evil.com` passes the `startsWith('/')` + `!startsWith('//')` check; WHATWG URL parsing treats `\` as a separator → off-site redirect after any email link. | `app/auth/callback/route.ts:21,33` — findings-b |
+| 1 | B | ~~**Open redirect in `/auth/callback`**~~ — **RESOLVED** (`safeNextPath` in `utils/auth.ts` compares the resolved origin — covers `\`, tab and newline injection; tested). | — |
 | 2 | M | ~~Fresh Supabase project cannot run this repo~~ — **RESOLVED** (`202610151100_base_schema.sql` bootstrap migration creates the three base tables). | — |
 | 3 | M | ~~No Node.js pin~~ — **RESOLVED** (`engines` `>=20.9.0` + `.nvmrc` pinning 22). | — |
 | 4 | O | **Zero test infrastructure** — **PARTIALLY RESOLVED**: Vitest + 56 tests now cover all five TS/DB rule duplications (status, check-in, pick'em, dates, Facebook URL) plus CSV/ICS/error mapping. Still missing: CI, `gen types`, pgTAP for `generate_bracket`/RLS — the DB layer stays live-verifiable only. | `vitest.config.ts`; findings-o |
