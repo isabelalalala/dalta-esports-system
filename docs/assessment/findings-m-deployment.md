@@ -48,11 +48,11 @@ Auth redirects do **not** depend on `NEXT_PUBLIC_SITE_URL` — they use `window.
 
 **Required:**
 
-3. **pg_cron must be enabled before migration `202610171400`** — `cron.schedule` (`:328–332`) runs inside the file's single transaction; without the extension the entire check-in migration rolls back. The requirement exists only as a SQL comment (`:327`) — a one-line pre-flight checklist item.
+3. ~~**pg_cron must be enabled before migration `202610171400`**~~ **Resolved** — README step 4 instructs enabling it first and names the failing migration. Original: `cron.schedule` (`:328–332`) runs inside the file's single transaction; without the extension the entire check-in migration rolls back. The requirement existed only as a SQL comment (`:327`).
 
-4. **`NEXT_PUBLIC_*` vars are inlined at build time.** They must be set on Railway *before* `next build` runs; a later change to `NEXT_PUBLIC_SITE_URL` (e.g. assigning a custom domain) silently keeps the old value until rebuild (`utils/site-url.ts:4`, `app/layout.tsx:27`).
+4. ~~**`NEXT_PUBLIC_*` vars are inlined at build time.**~~ **Resolved** — README documents the build-time inlining and that changing `NEXT_PUBLIC_SITE_URL` on the host requires a rebuild (`utils/site-url.ts:4`, `app/layout.tsx:27`).
 
-5. **Missing Supabase env = total outage, not degradation.** `createServerClient` in `proxy.ts:28–30` runs per request on the matcher (`:69` — everything except static assets); a missing URL/key throws at client construction → 500 on every route, bypassing `error.tsx`/`global-error.tsx` (proxy fails before the React tree renders). No guard exists. **Verified at runtime:** `next dev` with no env returns 500 on `/`, `/tournaments`, `/auth/login` — all throwing `"Your project's URL and Key are required"` at `proxy.ts:28`. `npm run build` also fails at prerender on the same throw from `utils/supabase/public.ts:7` (empirically confirming the FYI below).
+5. ~~**Missing Supabase env = total outage, not degradation.**~~ **Resolved (documentation)** — README's env table now warns the two `NEXT_PUBLIC_*` Supabase vars are required at both build time and runtime (missing = crash on every route + `next build` prerender failure). The underlying fragility is inherent to the matcher-wide proxy; the doc warning is the fix this finding asked for. Original: `createServerClient` in `proxy.ts:28–30` ran per request on the matcher — a missing URL/key throws at client construction → 500 on every route, bypassing `error.tsx`/`global-error.tsx`. **Verified at runtime** (dev 500s, build prerender failure).
 
 **Nit:**
 
@@ -62,7 +62,7 @@ Auth redirects do **not** depend on `NEXT_PUBLIC_SITE_URL` — they use `window.
 
 8. **No security headers/CSP** — verified: `next.config.ts:3–18` contains only `experimental.agentFeedback`, `cacheComponents`, `partialPrefetching`, turbopack CSS rules. No `headers()` at all (exports route sets its own `Cache-Control: no-store` correctly, `app/api/exports/[type]/route.ts:57`). *(Also recorded in findings-e.)*
 
-9. **`images.remotePatterns` absent — but correct as-is:** every `<Image>` uses `unoptimized` (13 sites, e.g. `components/site/SiteParts.tsx:51`, `ResultSection.tsx:191`), so remote Supabase/Facebook-hosted URLs bypass the optimizer; no config needed. *(Performance impact assessed in findings-k Required 3.)*
+9. ~~**`images.remotePatterns` absent — but correct as-is**~~ — **superseded:** `remotePatterns` now exists (pinned to the project host) since the performance fix removed `unoptimized` from public images. *(Resolved via findings-k Required 3.)*
 
 10. **`output: 'standalone'` not set** — fine here since Railway keeps `node_modules` and runs `npm start` → `next start` (`package.json:8`); standalone would only matter for Docker slimming.
 

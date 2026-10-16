@@ -25,13 +25,13 @@ Docs are unusually accurate — every schema table, column, RPC, policy, flag, b
 
 2. ~~**No doc states that `profiles`, `tournaments` and `tournament_registrations` are not created by any migration.**~~ **RESOLVED** — obviated by `202610151100_base_schema.sql` (the base schema is now executable DDL, not just docs) and CLAUDE.md:79 updated to the `202610151100 …` range with a note. Original finding: running the set on an empty project failed at `202610151200:44` (`language sql` function selecting `public.profiles`, validated at CREATE under `check_function_bodies`), and the migrations themselves admitted it (`202610161300:48-49`, `202610161500:38-39` "created outside the migrations"). *(Same root issue as findings-a Required 1 and findings-m Critical 1.)*
 
-3. **AGENTS.md contains no rules at all.** It is only the auto-generated Next.js block (AGENTS.md:1-9). The instruction premise "AGENTS.md says never use service role" is misplaced — that rule is at CLAUDE.md:23. If AGENTS.md is intended as the agent-rules file, it's a stub; today agents only get the rules via CLAUDE.md's `@AGENTS.md` include *into* CLAUDE.md, not the reverse.
+3. ~~**AGENTS.md contains no rules at all.**~~ **Resolved** — AGENTS.md now carries a "Project rules" section under the auto-generated block: the never-break rules (no service role, migrations-only schema changes, RLS-first, client/server client split, `proxy.ts` not `middleware.ts`) plus a pointer to CLAUDE.md for the full reference. CLAUDE.md's `@AGENTS.md` include pulls them into its own context too.
 
 **Nit:**
 
-4. **"Flags in use" list is incomplete.** CLAUDE.md:414 lists 5 transaction flags but omits `app.marking_predictions`, used at `202610181100_predictions.sql:82,155,162` (the flag *is* mentioned inline at CLAUDE.md:162, so this is a completeness gap in the canonical list, not undocumented behavior).
-5. **Student-verification reset wording slightly wrong.** CLAUDE.md:90-92 says "Saving complete details sets `pending`; changing them later resets to `pending`" — code sets `'unsubmitted'` (not `pending`) when any of the three fields is emptied (`202610171000:93-98`).
-6. **Resend-button attribution imprecise.** CLAUDE.md:54-55 credits `utils/auth.ts`; the actual resend handler/button lives in `app/auth/login/page.tsx:57-64,89-91`. `utils/auth.ts` only holds `isEmailNotConfirmed`/`confirmEmailRedirect` (`utils/auth.ts:6-16`).
+4. ~~**"Flags in use" list is incomplete.**~~ **Resolved** — `app.marking_predictions` added to the CLAUDE.md flags list.
+5. ~~**Student-verification reset wording slightly wrong.**~~ **Resolved** — CLAUDE.md now reads "emptying any of the three fields later resets to `unsubmitted`", matching `202610171000:93-98`.
+6. ~~**Resend-button attribution imprecise.**~~ **Resolved** — CLAUDE.md now credits `app/auth/login/page.tsx` (with helpers from `utils/auth.ts`).
 7. **`202610162200_feedback.sql:3-4` header is stale in isolation** ("Admin/staff classify the sentiment", "Admin/staff read all feedback") — staff access was revoked by `202610162300:17-29`. Acceptable as point-in-time history, but misleading if someone audits policies file-by-file.
 
 **FYI:**

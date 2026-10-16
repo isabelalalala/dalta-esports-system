@@ -7,3 +7,21 @@ This version has breaking changes — APIs, conventions, and file structure may 
 This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
 
 <!-- END:nextjs-agent-rules -->
+
+## Project rules
+
+Full project rules, schema reference and conventions: `CLAUDE.md` (it also
+`@include`s this file). The rules you must never break:
+
+- Never use the Supabase service role key anywhere in this app.
+- Never run SQL against the database yourself. Schema changes go in
+  `supabase/migrations/<YYYYMMDDHHMM>_<name>.sql` and are run manually in the
+  Supabase SQL Editor.
+- Every new table enables RLS and ships its policies in the same migration.
+  RLS is the security layer; hiding UI is only convenience.
+- Client components use `createClient()` from `@/utils/supabase/client`;
+  server components, route handlers and actions use `await createClient()`
+  from `@/utils/supabase/server`.
+- Next.js 16 middleware is `proxy.ts` in the project root, not `middleware.ts`.
+- Secrets live in `.env.local` (git-ignored); the template is `.env.example`.
+- Verify with `npm test` (vitest), `npx tsc --noEmit` and `npx eslint .`.

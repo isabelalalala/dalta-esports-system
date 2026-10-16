@@ -102,13 +102,13 @@ find.
 - Remaining nits: unbounded list growth (no pagination ceilings), Chart.js `chart.js/auto` bundle.
 
 **Deploy** (M)
-- pg_cron must be enabled before `202610171400` (whole migration rolls back otherwise).
-- `NEXT_PUBLIC_*` vars inlined at build — `NEXT_PUBLIC_SITE_URL` changes need rebuild.
-- Missing Supabase env = 500 on every route **and** build failure (both verified).
+- ~~pg_cron must be enabled before `202610171400`~~ — documented in README step 4.
+- ~~`NEXT_PUBLIC_*` vars inlined at build~~ — documented in README (host changes need rebuild).
+- ~~Missing Supabase env = 500 on every route **and** build failure (both verified)~~ — warned in README env table; the fragility itself is inherent to the matcher-wide proxy.
 
 **Docs** (N)
 - ~~No doc admits the base tables aren't in migrations~~ — resolved outright by the `202610151100_base_schema.sql` bootstrap migration.
-- `AGENTS.md` is a stub — the real rules live only in CLAUDE.md.
+- ~~`AGENTS.md` is a stub~~ — resolved: hard rules + CLAUDE.md pointer added; flags list, verification-reset and resend-attribution nits fixed.
 
 **Testing** (O)
 - Hand-maintained `utils/types.ts` is a silent-drift risk across 25 migrations.
