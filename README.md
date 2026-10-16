@@ -181,11 +181,14 @@ docker run -p 3000:3000 \
   dalta-esports
 ```
 
-Or with compose (`cp .env.local .env` first — compose reads `.env` for build args):
+Or with compose — it reads the same `.env.local` (one flag, no extra file):
 
 ```bash
-docker compose up --build   # serves http://localhost:3000
+docker compose --env-file .env.local up --build   # serves http://localhost:3000
 ```
+
+(Plain `docker compose up --build` also works if you copy `.env.local` to `.env`;
+compose interpolates build args from `.env`/the shell, not `.env.local`.)
 
 Works on any container host: Railway (Dockerfile deploy), Render, Fly.io, Cloud Run,
 DigitalOcean, a VPS with Coolify/Dokploy, or plain Docker. Remember `NEXT_PUBLIC_*`
