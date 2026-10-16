@@ -1,4 +1,4 @@
-# Consolidated System Assessment — DALTA Esports TMS
+# Consolidated System Assessment: DALTA Esports TMS
 
 Full title: *"DALTA Esports: Tournament Management System with AI-Powered Feedback
 Sentiment Analytics"*. Capstone for UPHSD Molino / AcadArena SLEC.
@@ -7,7 +7,7 @@ Sentiment Analytics"*. Capstone for UPHSD Molino / AcadArena SLEC.
 in the repository at `docs/assessment/findings-*.md`, plus a limited runtime pass.
 Static-code audit: complete. Runtime audit: build/lint/typecheck + missing-env paths
 verified; interactive flows (bracket gen, check-in, predictions, live) remain
-unverified — no `.env.local`, no active Supabase project in the connected account,
+unverified: no `.env.local`, no active Supabase project in the connected account,
 and the documented Railway URL `dalta-esports.up.railway.app` returns 404.
 
 ## Overall verdict
@@ -25,40 +25,40 @@ find.
 
 | # | Area | Finding | Evidence |
 |---|------|---------|----------|
-| 1 | B | ~~**Open redirect in `/auth/callback`**~~ — **RESOLVED** (`safeNextPath` in `utils/auth.ts` compares the resolved origin — covers `\`, tab and newline injection; tested). | — |
-| 2 | M | ~~Fresh Supabase project cannot run this repo~~ — **RESOLVED** (`202610151100_base_schema.sql` bootstrap migration creates the three base tables). | — |
-| 3 | M | ~~No Node.js pin~~ — **RESOLVED** (`engines` `>=20.9.0` + `.nvmrc` pinning 22). | — |
-| 4 | O | ~~**Zero test infrastructure**~~ — **RESOLVED**: Vitest covers the pure utils; pgTAP (`supabase test db`) covers bracket math, winner advance, result locks and core RLS — and immediately caught a real `generate_bracket` mis-seeding regression (fixed in `202610181800`). CI (`.github/workflows/test.yml`) runs tsc/eslint/vitest + `supabase test db` + a `gen types` drift check. | `vitest.config.ts`, `supabase/tests/`, `.github/workflows/test.yml`; findings-o |
-| 5 | N | ~~README boilerplate~~ — **RESOLVED** (rewritten with real setup). | — |
+| 1 | B | ~~**Open redirect in `/auth/callback`**~~. **RESOLVED** (`safeNextPath` in `utils/auth.ts` compares the resolved origin, covering `\`, tab and newline injection; tested). | n/a |
+| 2 | M | ~~Fresh Supabase project cannot run this repo~~. **RESOLVED** (`202610151100_base_schema.sql` bootstrap migration creates the three base tables). | n/a |
+| 3 | M | ~~No Node.js pin~~. **RESOLVED** (`engines` `>=20.9.0` + `.nvmrc` pinning 22). | n/a |
+| 4 | O | ~~**Zero test infrastructure**~~. **RESOLVED**: Vitest covers the pure utils; pgTAP (`supabase test db`) covers bracket math, winner advance, result locks and core RLS, and immediately caught a real `generate_bracket` mis-seeding regression (fixed in `202610181800`). CI (`.github/workflows/test.yml`) runs tsc/eslint/vitest + `supabase test db` + a `gen types` drift check. | `vitest.config.ts`, `supabase/tests/`, `.github/workflows/test.yml`; findings-o |
+| 5 | N | ~~README boilerplate~~. **RESOLVED** (rewritten with real setup). | n/a |
 
-## Required findings (condensed — details in area files)
+## Required findings (condensed: details in area files)
 
-**Data integrity & races** (C, D1, D2) — **largely RESOLVED in `202610181200_integrity_hardening`** (applied + smoke-tested on the dev project):
-- ~~NULL-boolean args bypass "reason required"~~ — all four RPCs (`review_student_verification`, `respond_to_match_result`, `review_match_result`, `respond_to_team_invite`) now raise on NULL.
-- ~~`review_match_result` never checks `matches.status`~~ — completed matches reject approve/override (reject stays for clearing stale rows); `declare_forfeit` auto-rejects open submissions.
-- ~~Bracket regen deletes unreviewed results; `next_match_id` unchecked~~ — regen refuses while submissions are open; `check_match` enforces same-tournament/not-self/scheduled-target.
-- ~~One-team-per-game race; case/whitespace team names; client-writable `registered_at`/`predictions.created_at`~~ — profile-row lock, `lower(btrim(name))` index, server-side pinning.
-- ~~`tournaments.status` nullable; `topics ≤3` no CHECK; email leak in `unverified_team_members()`; approved registration vanishing on team delete~~ — all fixed (NOT NULL, cardinality CHECK, name fallback, delete blocked while registered).
-- **Remaining:** `give_privacy_consent` accepts any version string (fail-closed — bogus version just keeps the gate locked); captain needs no game profile for the team's game (spec unclear); `gemini_calls.user_id` index; staff can still remove a captain's member row.
+**Data integrity & races** (C, D1, D2): **largely RESOLVED in `202610181200_integrity_hardening`** (applied + smoke-tested on the dev project):
+- ~~NULL-boolean args bypass "reason required"~~. All four RPCs (`review_student_verification`, `respond_to_match_result`, `review_match_result`, `respond_to_team_invite`) now raise on NULL.
+- ~~`review_match_result` never checks `matches.status`~~. Completed matches reject approve/override (reject stays for clearing stale rows); `declare_forfeit` auto-rejects open submissions.
+- ~~Bracket regen deletes unreviewed results; `next_match_id` unchecked~~. Regen refuses while submissions are open; `check_match` enforces same-tournament/not-self/scheduled-target.
+- ~~One-team-per-game race; case/whitespace team names; client-writable `registered_at`/`predictions.created_at`~~: profile-row lock, `lower(btrim(name))` index, server-side pinning.
+- ~~`tournaments.status` nullable; `topics ≤3` no CHECK; email leak in `unverified_team_members()`; approved registration vanishing on team delete~~: all fixed (NOT NULL, cardinality CHECK, name fallback, delete blocked while registered).
+- **Remaining:** `give_privacy_consent` accepts any version string (fail-closed: a bogus version just keeps the gate locked); captain needs no game profile for the team's game (spec unclear); `gemini_calls.user_id` index; staff can still remove a captain's member row.
 
 **Live/engagement** (G, F)
-- ~~Presence "Watching now" is spoofable~~ — **RESOLVED (202610181300):** `stream_presence`
+- ~~Presence "Watching now" is spoofable~~. **RESOLVED (202610181300):** `stream_presence`
   heartbeat table (no SELECT policy, IDs stay in DB) + admin/staff-only `get_live_viewer_counts`.
-- ~~Facebook URL validation accepts `facebook.com/<anything>`~~ — **RESOLVED (202610181310):**
+- ~~Facebook URL validation accepts `facebook.com/<anything>`~~. **RESOLVED (202610181310):**
   DB CHECK + `utils/streams.ts` require video-renderable paths (/watch, /videos/, /reel/, /live, story.php?).
-- ~~`analysis_attempts` never read~~ — **RESOLVED (202610181400):** retry cap of 5
+- ~~`analysis_attempts` never read~~. **RESOLVED (202610181400):** retry cap of 5
   (shared `isFeedbackRetryable`), admins exempt from the per-user claim cap,
   honest limit messages; "Gave up" state in the admin list.
 
-**Notifications & audit** (I) — **RESOLVED in `202610181500_notification_audit_gaps`** (applied + smoke-tested live):
-- ~~Tournament cancelled → no notification~~ — `tournament_cancelled` type + notify trigger.
-- ~~Admin-deleted registration → captain never told~~ — `registration_removed` on AFTER DELETE.
-- ~~Reschedule/status edits unaudited; result decisions half-audited~~ — `match.edited` +
+**Notifications & audit** (I): **RESOLVED in `202610181500_notification_audit_gaps`** (applied + smoke-tested live):
+- ~~Tournament cancelled → no notification~~: `tournament_cancelled` type + notify trigger.
+- ~~Admin-deleted registration → captain never told~~: `registration_removed` on AFTER DELETE.
+- ~~Reschedule/status edits unaudited; result decisions half-audited~~: `match.edited` +
   `result.<status>` rows for every submission status change.
 
 **Reports** (H)
 - ~~`report_activity` per-tournament team counts are unfiltered lifetime numbers next
-  to date-filtered match counts — internally inconsistent rows under a date range.~~
+  to date-filtered match counts: internally inconsistent rows under a date range.~~
   RESOLVED: `approved_teams`/`pending_teams` now count from the filtered `r` CTE;
   `prediction_participation` divides by accounts that existed by `p_to`; CSV
   filenames and date presets use Manila dates; `stream_views(viewed_on)` indexed.
@@ -75,7 +75,7 @@ find.
 - ~~DPO contact is an explicit placeholder (`utils/privacy.ts`).~~ RESOLVED:
   env-configurable via `NEXT_PUBLIC_PRIVACY_CONTACT_*`; real values still to be
   set before launch.
-- ~~Consent gate is dashboard-only — other authenticated routes collect data without
+- ~~Consent gate is dashboard-only. Other authenticated routes collect data without
   checking current-version consent.~~ RESOLVED: `proxy.ts` enforces consent on
   every protected page.
 - ~~Match-proof screenshots retained indefinitely, not deletable, undisclosed;
@@ -83,36 +83,36 @@ find.
   understated.~~ RESOLVED: all disclosed in the notice; version bumped to
   `2026-10-18.2` so everyone re-consents.
 
-**Accessibility** (J) — all Required items resolved:
-- ~~Unlabeled inputs / ghost labels / unreachable file inputs~~ — every control is
+**Accessibility** (J): all Required items resolved:
+- ~~Unlabeled inputs / ghost labels / unreachable file inputs~~. Every control is
   programmatically labeled (aria-label or htmlFor).
-- ~~Form errors never announced~~ — `role="alert"`/`role="status"` throughout.
-- ~~No skip link / no `<main>` / missing `<h1>` / shared tab title~~ — skip link +
+- ~~Form errors never announced~~: `role="alert"`/`role="status"` throughout.
+- ~~No skip link / no `<main>` / missing `<h1>` / shared tab title~~: skip link +
   `<main id="main-content">` on every page, h1s added, per-page titles via
   `usePageTitle` + the `%s – DALTA Esports` metadata template.
-- ~~Contrast combos fail WCAG AA~~ — bumped to passing shades.
-- ~~Carousel auto-advances~~ — pauses on focus/touch, honors reduced-motion.
+- ~~Contrast combos fail WCAG AA~~: bumped to passing shades.
+- ~~Carousel auto-advances~~: pauses on focus/touch, honors reduced-motion.
 - Remaining nits: bell focus management, dot target size, realtime `aria-live`.
 
 **Performance** (K)
-- ~~Every authenticated page is a client component with a 4–9-query serial waterfall.~~ Fixed — independent queries run in `Promise.all` (worst page: 8 RTTs → 3 rounds).
-- ~~`proxy.ts` runs a remote `auth.getUser()` on every request incl. public pages/API.~~ Fixed — skipped for cookie-less and `/api/*` requests; handlers verify themselves.
-- ~~All site images ship unoptimized up to 5 MB.~~ Fixed — `remotePatterns` for `**.supabase.co`, `unoptimized` removed (kept only on signed match proofs), `sizes` on `fill` images.
+- ~~Every authenticated page is a client component with a 4–9-query serial waterfall.~~ Fixed: independent queries run in `Promise.all` (worst page: 8 RTTs → 3 rounds).
+- ~~`proxy.ts` runs a remote `auth.getUser()` on every request incl. public pages/API.~~ Fixed: skipped for cookie-less and `/api/*` requests; handlers verify themselves.
+- ~~All site images ship unoptimized up to 5 MB.~~ Fixed: `remotePatterns` for `**.supabase.co`, `unoptimized` removed (kept only on signed match proofs), `sizes` on `fill` images.
 - Also fixed: realtime debounce, role-only selects, unused Geist fonts, lazy Facebook iframe, engagement debounce, `fetchRoundCounts` head-row queries.
 - Remaining nits: unbounded list growth (no pagination ceilings), Chart.js `chart.js/auto` bundle.
 
 **Deploy** (M)
-- ~~pg_cron must be enabled before `202610171400`~~ — documented in README step 4.
-- ~~`NEXT_PUBLIC_*` vars inlined at build~~ — documented in README (host changes need rebuild).
-- ~~Missing Supabase env = 500 on every route **and** build failure (both verified)~~ — warned in README env table; the fragility itself is inherent to the matcher-wide proxy.
+- ~~pg_cron must be enabled before `202610171400`~~: documented in README step 4.
+- ~~`NEXT_PUBLIC_*` vars inlined at build~~: documented in README (host changes need rebuild).
+- ~~Missing Supabase env = 500 on every route **and** build failure (both verified)~~: warned in README env table; the fragility itself is inherent to the matcher-wide proxy.
 
 **Docs** (N)
-- ~~No doc admits the base tables aren't in migrations~~ — resolved outright by the `202610151100_base_schema.sql` bootstrap migration.
-- ~~`AGENTS.md` is a stub~~ — resolved: hard rules + CLAUDE.md pointer added; flags list, verification-reset and resend-attribution nits fixed.
+- ~~No doc admits the base tables aren't in migrations~~: resolved outright by the `202610151100_base_schema.sql` bootstrap migration.
+- ~~`AGENTS.md` is a stub~~. Resolved: hard rules + CLAUDE.md pointer added; flags list, verification-reset and resend-attribution nits fixed.
 
 **Testing** (O)
-- ~~Hand-maintained `utils/types.ts` is a silent-drift risk across 25 migrations.~~ Resolved — `utils/database.types.ts` generated via `npm run db:types`; CI regenerates and fails on drift.
-- ~~pgTAP for bracket math is the highest-value DB coverage~~ — done: `supabase/tests/` (23 assertions) + `.github/workflows/test.yml`. Remaining DB paths without coverage: check-in/forfeit, result RPCs, prediction trigger, Gemini rate limits.
+- ~~Hand-maintained `utils/types.ts` is a silent-drift risk across 25 migrations.~~ Resolved: `utils/database.types.ts` generated via `npm run db:types`; CI regenerates and fails on drift.
+- ~~pgTAP for bracket math is the highest-value DB coverage~~. Done: `supabase/tests/` (23 assertions) + `.github/workflows/test.yml`. Remaining DB paths without coverage: check-in/forfeit, result RPCs, prediction trigger, Gemini rate limits.
 
 ## Verified strengths
 
@@ -124,28 +124,28 @@ find.
 - **Sentiment pipeline (F):** three-layer validation (schema→JS→DB); every failure
   degrades to "pending analysis"; staff provably cannot read comment text.
 - **Registration capacity** (D2): properly serialized with tournament row locks.
-- **Notifications types** (I): every emitted type is inside the CHECK constraint —
+- **Notifications types** (I): every emitted type is inside the CHECK constraint, so
   no runtime crash path.
 - **Public site performance** (K): `'use cache'` + `cacheTag` invalidation done right.
-- **Docs (N):** CLAUDE.md verified against code — ~33 RPCs, 18 tables, realtime list,
+- **Docs (N):** CLAUDE.md verified against code: ~33 RPCs, 18 tables, realtime list,
   model defaults all accurate.
 
 ## Runtime verification results
 
 | Check | Result |
 |---|---|
-| `npm install` | Clean, 382 pkgs; 5 high-sev audit findings — all dev-only transitive (`braces`/`micromatch` inside eslint tooling); no autofix without breaking eslint-config-next |
+| `npm install` | Clean, 382 pkgs; 5 high-sev audit findings: all dev-only transitive (`braces`/`micromatch` inside eslint tooling); no autofix without breaking eslint-config-next |
 | `npx tsc --noEmit` (after `next typegen`) | **Zero errors** |
 | `npm run lint` | **Zero warnings** |
-| `next dev` without env | 500 on every route — `createServerClient` throws at `proxy.ts:28` (findings-m R5 verified) |
-| `npm run build` without env | Fails at prerender — `supabaseUrl is required` (findings-m FYI verified) |
-| `https://dalta-esports.up.railway.app` | **404** — deployment down/decommissioned |
+| `next dev` without env | 500 on every route: `createServerClient` throws at `proxy.ts:28` (findings-m R5 verified) |
+| `npm run build` without env | Fails at prerender: `supabaseUrl is required` (findings-m FYI verified) |
+| `https://dalta-esports.up.railway.app` | **404**: deployment down/decommissioned |
 | Supabase MCP project list | 8 projects, all INACTIVE, none matching this app |
 
 ## Still unverifiable
 
 Interactive demo-critical flows (bracket generation, check-in, result submission,
-predictions, live pages, realtime presence) — requires `.env.local` + seeded test
+predictions, live pages, realtime presence), requiring `.env.local` + seeded test
 data. Also: live Vault secret, pg_cron enabled state, deployed migration order, RLS
 enforcement on `postgres_changes`, Realtime channel privacy config, SMTP/email
 delivery, Gemini API behavior, Railway builder (Nixpacks vs Railpack), screen-reader
@@ -153,21 +153,21 @@ behavior, actual DB query plans/row counts.
 
 ## Remediation priority (recommended order)
 
-1. ~~**Deploy blockers**~~ — done: Node pinned (`engines` + `.nvmrc`) and base tables
+1. ~~**Deploy blockers**~~. Done: Node pinned (`engines` + `.nvmrc`) and base tables
    covered by `202610151100_base_schema.sql`.
-2. ~~**Security fix** — tighten the `/auth/callback` `next` allowlist~~ — done:
+2. ~~**Security fix**: tighten the `/auth/callback` `next` allowlist~~. Done:
    `safeNextPath()` compares the resolved origin.
-3. ~~**Data-integrity races**~~ — done: `202610181200_integrity_hardening.sql`.
-4. ~~**Privacy compliance**~~ — done: env-configurable contact, `proxy.ts` consent
+3. ~~**Data-integrity races**~~. Done: `202610181200_integrity_hardening.sql`.
+4. ~~**Privacy compliance**~~. Done: env-configurable contact, `proxy.ts` consent
    gate, disclosures added + version bump. Residual: set the real
    `NEXT_PUBLIC_PRIVACY_CONTACT_*` values before launch.
-5. ~~**Notification/audit gaps**~~ — done: `202610181500_notification_audit_gaps.sql`.
-6. ~~**A11y quick wins**~~ — done: labels everywhere, announced errors, skip link +
+5. ~~**Notification/audit gaps**~~. Done: `202610181500_notification_audit_gaps.sql`.
+6. ~~**A11y quick wins**~~. Done: labels everywhere, announced errors, skip link +
    `<main>`, contrast bumps, titles, carousel pause.
-7. **Perf** — `Promise.all` the independent page queries; skip `getUser()` in
+7. **Perf**: `Promise.all` the independent page queries; skip `getUser()` in
    `proxy.ts` for cookie-less/public requests; `images.remotePatterns` + drop
    `unoptimized` for the public bucket.
-8. **Test floor** — ~~Vitest on the pure utils~~ (done: `npm test`, 56 tests).
+8. **Test floor**: ~~Vitest on the pure utils~~ (done: `npm test`, 56 tests).
    Remaining: `supabase gen types` to replace hand-maintained `types.ts`;
    pgTAP for `generate_bracket`.
 

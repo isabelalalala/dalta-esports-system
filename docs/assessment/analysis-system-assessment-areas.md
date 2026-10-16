@@ -1,10 +1,10 @@
-# Analysis — Comprehensive Assessment Areas for DALTA Esports System
+# Analysis: Comprehensive Assessment Areas for DALTA Esports System
 
 Scope overview for the audit documented in this folder, grounded in the actual files, tables, and RPCs present. Each entry names what to check, where to look, and how to verify. The per-area results are in `findings-*.md`; the consolidated report is `assessment-summary.md`.
 
 ## Assumptions
 
-1. "Comprehensive assessment" means a capstone-level review for correctness, security, and defense readiness — not a marketing/SEO review of the public site.
+1. "Comprehensive assessment" means a capstone-level review for correctness, security, and defense readiness, not a marketing/SEO review of the public site.
 2. Assessment covers both the Next.js app (`app/`, `components/`, `utils/`) and the Supabase layer (26 migrations in `supabase/migrations/`).
 3. `docs/requirements.md` and `docs/new-features-summary.md` are the source of truth for what the system is supposed to do; CLAUDE.md documents what was built.
 4. There is no automated test suite (`package.json` has only dev/build/lint), so "assessment" is code review + manual/browser verification + SQL probes the user runs in the Supabase SQL Editor.
@@ -40,8 +40,8 @@ What: the flows that can silently corrupt tournament data:
 - Prediction lock (`check_prediction` trigger: match started or teams unknown, no self-team picks, no staff picks), `mark_predictions` scoring and clearing
 - Team invite flow (`respond_to_team_invite` cancels other open invites for the game, roster size vs `games.min/max_players`, solo-game block)
 
-Where: `utils/matches.ts`, `utils/checkin.ts`, `utils/predictions.ts`, `utils/tournaments.ts`, migrations 1700–1800, 1300–1500, 181100.
-How: trace each trigger/RPC; browser-test happy path + the edge the code guards (e.g., approve a 7th member, pick after match start, submit duplicate result). Highest-value area — this is where defense questions will go.
+Where: `utils/matches.ts`, `utils/checkin.ts`, `utils/predictions.ts`, `utils/tournaments.ts`, migrations 1700-1800, 1300-1500, 181100.
+How: trace each trigger/RPC; browser-test happy path + the edge the code guards (e.g., approve a 7th member, pick after match start, submit duplicate result). Highest-value area: this is where defense questions will go.
 
 ### E. Security beyond RLS
 What: no service-role key anywhere; `GEMINI_API_KEY`/`FEEDBACK_SERVER_KEY` server-only (not `NEXT_PUBLIC_`); `match-proofs` bucket private with correct upload/read policies; `feedback` sentiment fields writable only by admins (trigger); feedback Vault secret setup; input validation at RPC boundaries; the public tournament pages (`(site)`) don't leak logged-in-only data; `get_prediction_split` returns aggregates only.
@@ -49,7 +49,7 @@ Where: `utils/supabase/`, `app/api/*`, `utils/gemini.ts`, `utils/feedback-analys
 How: grep for service key and `NEXT_PUBLIC` misuse; review each `app/api/` route handler for auth checks; probe storage policies; check public pages with a logged-out browser.
 
 ### F. AI sentiment pipeline (Module 5)
-What: `utils/gemini.ts` + `utils/feedback-analysis.ts` — classification runs only with `FEEDBACK_SERVER_KEY`, fallback leaves feedback "pending analysis", rate limit respected, topics capped at 3 lowercase labels, score in -1..1, `classified_at` set. Staff see only aggregates via `report_engagement()`, never raw feedback.
+What: `utils/gemini.ts` + `utils/feedback-analysis.ts`: classification runs only with `FEEDBACK_SERVER_KEY`, fallback leaves feedback "pending analysis", rate limit respected, topics capped at 3 lowercase labels, score in -1..1, `classified_at` set. Staff see only aggregates via `report_engagement()`, never raw feedback.
 Where: `utils/gemini.ts`, `utils/feedback-analysis.ts`, `app/api/feedback/`, `app/admin/feedback/`, `202610181000_feedback_protection.sql`.
 How: submit feedback with and without the key; check Gemini model config (`GEMINI_MODEL`, default `gemini-3.5-flash-lite`) and error handling on API failure.
 
@@ -59,12 +59,12 @@ Where: `app/matches/[id]/`, `app/live/[id]/`, `app/schedule/`, `components/Notif
 How: two-browser test (staff scores vs spectator view); confirm cron job exists in Supabase; verify presence doesn't count organizers in reports.
 
 ### H. Reports, analytics, exports (Module 6)
-What: `utils/reports.ts` + `app/analytics/` — engagement/sentiment/activity sections, Chart.js (`components/ReportChart.tsx`), stream views dedupe (one row per user per stream per Philippine date), organizers' visits excluded from reports, match-level views only when `streams.match_id` set. Export correctness: `utils/exports.ts`, `utils/csv.ts`, `app/api/exports/`, `export_log` table, `write-excel-file`.
+What: `utils/reports.ts` + `app/analytics/`: engagement/sentiment/activity sections, Chart.js (`components/ReportChart.tsx`), stream views dedupe (one row per user per stream per Philippine date), organizers' visits excluded from reports, match-level views only when `streams.match_id` set. Export correctness: `utils/exports.ts`, `utils/csv.ts`, `app/api/exports/`, `export_log` table, `write-excel-file`.
 Where: `app/analytics/*`, `utils/reports.ts`, `utils/exports.ts`, `app/api/exports/`.
 How: seed-known data, compare report numbers to hand-computed SQL; download each export format and verify contents; check `export_log` records each export.
 
 ### I. Notifications and activity log
-What: `utils/notifications.ts`, `utils/activity.ts`, `202610171200_notifications.sql`, `202610171100_activity_log.sql`, `components/NotificationBell.tsx`, `app/notifications/`, `app/admin/activity/` — delivery, read state, who sees which events, check-in notifications from the cron job.
+What: `utils/notifications.ts`, `utils/activity.ts`, `202610171200_notifications.sql`, `202610171100_activity_log.sql`, `components/NotificationBell.tsx`, `app/notifications/`, `app/admin/activity/`: delivery, read state, who sees which events, check-in notifications from the cron job.
 How: trigger each event type, confirm recipient + timing; check activity log captures admin actions.
 
 ### J. UI/UX, accessibility, public site
@@ -72,7 +72,7 @@ What: responsive layout, loading/error states (`components/PageError.tsx`, `Page
 How: desktop + mobile pass on key flows (tournament page, bracket, match page, live page, dashboard); run an a11y check; verify OG cards and ICS files.
 
 ### K. Performance
-What: obvious query waste — `get_prediction_split` batching vs per-match calls, `get_my_team_invites`/`get_team_invites` name lookups, N+1 in server components, missing indexes on hot paths (`matches.tournament_id`, `match_checkins`, `predictions.match_id`, `feedback.tournament_id`), bundle size (Chart.js), Realtime subscription count per page.
+What: obvious query waste: `get_prediction_split` batching vs per-match calls, `get_my_team_invites`/`get_team_invites` name lookups, N+1 in server components, missing indexes on hot paths (`matches.tournament_id`, `match_checkins`, `predictions.match_id`, `feedback.tournament_id`), bundle size (Chart.js), Realtime subscription count per page.
 Where: `utils/*.ts` query helpers, migrations for index statements, heavy pages (`/schedule`, `/tournaments/[id]`, dashboard).
 How: read the query code, check migrations for indexes, spot-check page loads.
 
@@ -91,20 +91,20 @@ What: `requirements.md` ↔ `new-features-summary.md` ↔ CLAUDE.md ↔ actual c
 How: cross-read the docs against the schema list in CLAUDE.md; flag drift.
 
 ### O. Testing posture
-What: no test scripts exist — assess what minimal coverage is worth adding before defense (e.g., one self-check for bracket/advancement logic, one for status calculation in `getTournamentStatus`), plus a manual UAT script per role.
+What: no test scripts exist: assess what minimal coverage is worth adding before defense (e.g., one self-check for bracket/advancement logic, one for status calculation in `getTournamentStatus`), plus a manual UAT script per role.
 How: decide which pure functions in `utils/` are cheap to test (tournaments, predictions rules, csv/ics generation).
 
 ## Suggested priority
 
-1. D (business logic) — highest defense risk, most complex triggers.
-2. C + E (RLS and security) — capstone graders probe this; also real risk.
-3. A (requirements coverage) — produces the checklist everything else verifies against.
-4. F + G (AI + realtime) — the "AI-powered" claim and live demo need to work on stage.
-5. B, H, I, L — feature-complete verification per module.
-6. J, K, M, N, O — polish, perf, deploy, docs, tests.
+1. D (business logic): highest defense risk, most complex triggers.
+2. C + E (RLS and security): capstone graders probe this; also real risk.
+3. A (requirements coverage): produces the checklist everything else verifies against.
+4. F + G (AI + realtime): the "AI-powered" claim and live demo need to work on stage.
+5. B, H, I, L: feature-complete verification per module.
+6. J, K, M, N, O: polish, perf, deploy, docs, tests.
 
 ## Decisions
 
-1. **Scope: full equal-depth audit.** All 15 areas get the same depth; the priority list above is an execution order, not a triage — nothing gets skipped.
-2. **Environment: local only.** M (deployment readiness) shrinks to what local evidence supports: env-var documentation completeness, graceful degradation when vars are unset, `proxy.ts` correctness. Railway env config, Supabase dashboard settings (SMTP, redirect URLs, email templates), the live pg_cron job, and the Vault secret cannot be verified locally — they get logged in the findings as "unverifiable locally, check on deployed instance" items rather than assessed.
+1. **Scope: full equal-depth audit.** All 15 areas get the same depth; the priority list above is an execution order, not a triage. Nothing gets skipped.
+2. **Environment: local only.** M (deployment readiness) shrinks to what local evidence supports: env-var documentation completeness, graceful degradation when vars are unset, `proxy.ts` correctness. Railway env config, Supabase dashboard settings (SMTP, redirect URLs, email templates), the live pg_cron job, and the Vault secret cannot be verified locally. They get logged in the findings as "unverifiable locally, check on deployed instance" items rather than assessed.
 3. **Reporting: per-area files + summary.** Each area produces `docs/assessment/findings-<area>.md` on this branch, so parallel subagents can assess disjoint areas without file collisions. A final consolidated report (`docs/assessment/assessment-summary.md`) ranks every finding by severity across all areas.
