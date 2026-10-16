@@ -27,7 +27,7 @@ find.
 |---|------|---------|----------|
 | 1 | B | **Open redirect in `/auth/callback`** — `next=/\evil.com` passes the `startsWith('/')` + `!startsWith('//')` check; WHATWG URL parsing treats `\` as a separator → off-site redirect after any email link. | `app/auth/callback/route.ts:21,33` — findings-b |
 | 2 | M | ~~Fresh Supabase project cannot run this repo~~ — **RESOLVED** (`202610151100_base_schema.sql` bootstrap migration creates the three base tables). | — |
-| 3 | M | **No Node.js pin** — Nixpacks defaults to Node 18; Next 16 requires ≥20.9 → Railway build fails. | `package.json` (no engines/.nvmrc) — findings-m |
+| 3 | M | ~~No Node.js pin~~ — **RESOLVED** (`engines` `>=20.9.0` + `.nvmrc` pinning 22). | — |
 | 4 | O | **Zero test infrastructure** — no test runner, no CI, no seed/harness; all tournament-integrity logic (bracket gen, winner advance, result lock, pick'em, RLS) lives in untested Postgres. Five TS functions duplicate DB rules with only a comment as contract. | `package.json`; findings-o |
 | 5 | N | ~~README boilerplate~~ — **RESOLVED** (rewritten with real setup). | — |
 
@@ -143,8 +143,8 @@ behavior, actual DB query plans/row counts.
 
 ## Remediation priority (recommended order)
 
-1. **Deploy blockers** — add `engines` or `.nvmrc` (Node ≥20.9). ~~document or migrate
-   the three base tables~~ — done: `202610151100_base_schema.sql` bootstrap migration.
+1. ~~**Deploy blockers**~~ — done: Node pinned (`engines` + `.nvmrc`) and base tables
+   covered by `202610151100_base_schema.sql`.
 2. **Security fix** — tighten the `/auth/callback` `next` allowlist (reject `\`,
    or parse+compare `URL` origin).
 3. **Data-integrity races** — NULL-guard the boolean RPC params; check `m.status`

@@ -2,7 +2,7 @@
 
 ## Verdict
 
-Deployable on Railway but **not turnkey**: one repo-level blocker remains (no Node.js pin — Nixpacks defaults to Node 18 while Next 16 needs ≥20.9) plus several dashboard-only prerequisites (pg_cron before `202610171400`, Vault secret, SMTP, auth redirect URLs) that are documented but must be executed manually and in order. *(The second original blocker — base tables missing from migrations — is resolved by `202610151100_base_schema.sql`; see Critical 1.)*
+Deployable on Railway but **not turnkey**: the two repo-level blockers are both resolved (Node now pinned via `.nvmrc` + `engines`; base tables via `202610151100_base_schema.sql`) — what remains is several dashboard-only prerequisites (pg_cron before `202610171400`, Vault secret, SMTP, auth redirect URLs) that are documented but must be executed manually and in order.
 
 ## Checked
 
@@ -44,7 +44,7 @@ Auth redirects do **not** depend on `NEXT_PUBLIC_SITE_URL` — they use `window.
 
 1. ~~**Fresh Supabase project cannot run this repo end-to-end.**~~ **RESOLVED** — `supabase/migrations/202610151100_base_schema.sql` now creates the three base tables (`profiles`, `tournaments`, `tournament_registrations`) ahead of every migration; `if not exists` makes it a no-op on existing databases. Original finding: no `CREATE TABLE` anywhere; the first migration died at `202610151200:44` (`language sql` function selecting `public.profiles`, validated at CREATE under `check_function_bodies`, inside `begin;`/`commit;` → full rollback). *(Core fact also recorded in findings-a.)*
 
-2. **No Node.js version pin — Railway Nixpacks will install Node 18, which cannot build Next 16.** `package.json` has no `engines`; no `.nvmrc`/`.node-version`; no `nixpacks.toml`/`railway.*`. Nixpacks' `DEFAULT_NODE_VERSION` is 18; Next.js 16 requires ≥20.9.0 (consistent with the `node >=20.9.0` engines throughout `package-lock.json`, e.g. sharp entries). Build fails on the Nixpacks builder; it survives only if Railway uses Railpack (defaults to Node 22). Fix: `"engines": {"node": ">=20.9.0"}` or `.nvmrc`. (`package.json:1–33`)
+2. ~~**No Node.js version pin — Railway Nixpacks will install Node 18, which cannot build Next 16.**~~ **RESOLVED** — `"engines": {"node": ">=20.9.0"}` added to `package.json` and `.nvmrc` pins 22. Original finding: no pin anywhere, Nixpacks' `DEFAULT_NODE_VERSION` is 18, Next 16 requires ≥20.9 — build would have failed on the Nixpacks builder (survives only under Railpack, which defaults to Node 22).
 
 **Required:**
 
