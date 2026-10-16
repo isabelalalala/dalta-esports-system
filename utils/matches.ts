@@ -21,15 +21,18 @@ export async function fetchTeamNames(supabase: SupabaseClient, matches: Match[])
 export async function fetchRoundCounts(supabase: SupabaseClient, tournamentIds: string[]) {
   if (tournamentIds.length === 0) return {};
 
-  const { data, error } = await supabase
-    .from('matches')
-    .select('tournament_id, round')
-    .in('tournament_id', tournamentIds);
-  if (error) throw error;
-
+  // One head-row query per tournament instead of pulling every match row
   const counts: Record<string, number> = {};
-  for (const r of data || []) {
-    counts[r.tournament_id] = Math.max(counts[r.tournament_id] || 0, r.round);
-  }
+  await Promise.all(tournamentIds.map(async (tournamentId) => {
+    const { data, error } = await supabase
+      .from('matches')
+      .select('round')
+      .eq('tournament_id', tournamentId)
+      .order('round', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (error) throw error;
+    counts[tournamentId] = data?.round ?? 0;
+  }));
   return counts;
 }

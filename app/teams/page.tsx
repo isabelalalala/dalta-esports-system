@@ -30,20 +30,21 @@ export default function TeamsPage() {
         const { data: { session } } = await supabase.auth.getSession();
         if (!session) return;
 
-        const { data: gamesData, error: gamesError } = await supabase
-          .from('games')
-          .select('*')
-          .order('name');
-        if (gamesError) throw gamesError;
-        setGames(gamesData || []);
-
-        // Teams I'm a member of (as captain or player), with the game and member count
-        const { data: memberRows, error: teamsError } = await supabase
-          .from('team_members')
-          .select('teams(*, games(*), team_members(count))')
-          .eq('user_id', session.user.id);
-        if (teamsError) throw teamsError;
-        setTeams((memberRows || []).map((row) => row.teams as unknown as Team));
+        const [gamesRes, teamsRes] = await Promise.all([
+          supabase
+            .from('games')
+            .select('*')
+            .order('name'),
+          // Teams I'm a member of (as captain or player), with the game and member count
+          supabase
+            .from('team_members')
+            .select('teams(*, games(*), team_members(count))')
+            .eq('user_id', session.user.id),
+        ]);
+        if (gamesRes.error) throw gamesRes.error;
+        if (teamsRes.error) throw teamsRes.error;
+        setGames(gamesRes.data || []);
+        setTeams((teamsRes.data || []).map((row) => row.teams as unknown as Team));
       } catch (err) {
         setError(getErrorMessage(err, 'Failed to load teams'));
       } finally {

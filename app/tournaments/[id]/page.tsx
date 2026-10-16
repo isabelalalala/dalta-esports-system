@@ -68,37 +68,55 @@ export default function TournamentDetailsPage() {
         if (profileError) throw profileError;
         setProfile(profileData);
 
-        const { data, error } = await supabase
-          .from('tournaments')
-          .select('*')
-          .eq('id', id)
-          .single();
+        const [tournRes, regsRes, matchesRes, annRes, streamsRes] = await Promise.all([
+          supabase
+            .from('tournaments')
+            .select('*')
+            .eq('id', id)
+            .single(),
+          // Registrations that take up a slot, with team name and captain
+          // (the captain's name is only readable by admin/staff).
+          supabase
+            .from('tournament_registrations')
+            .select('*, teams(*, captain:profiles(full_name, email))')
+            .eq('tournament_id', id)
+            .in('status', ACTIVE_REGISTRATION_STATUSES)
+            .order('registered_at'),
+          // Bracket matches (empty until an organizer generates the bracket)
+          supabase
+            .from('matches')
+            .select('*')
+            .eq('tournament_id', id)
+            .order('round')
+            .order('match_number'),
+          // Announcements for this tournament, pinned first
+          supabase
+            .from('announcements')
+            .select('*')
+            .eq('tournament_id', id)
+            .order('pinned', { ascending: false })
+            .order('created_at', { ascending: false }),
+          // Streams of this tournament that are live right now (for the "Watch live" banner)
+          supabase
+            .from('streams')
+            .select('*')
+            .eq('tournament_id', id)
+            .eq('status', 'live'),
+        ]);
 
-        if (error) throw error;
+        if (tournRes.error) throw tournRes.error;
+        if (regsRes.error) throw regsRes.error;
+        if (matchesRes.error) throw matchesRes.error;
+        if (annRes.error) throw annRes.error;
+        if (streamsRes.error) throw streamsRes.error;
+
+        const data = tournRes.data;
+        const matchesData = matchesRes.data;
         setTournament(data);
-
-        // Registrations that take up a slot, with team name and captain
-        // (the captain's name is only readable by admin/staff).
-        const { data: regsData, error: regsError } = await supabase
-          .from('tournament_registrations')
-          .select('*, teams(*, captain:profiles(full_name, email))')
-          .eq('tournament_id', id)
-          .in('status', ACTIVE_REGISTRATION_STATUSES)
-          .order('registered_at');
-
-        if (regsError) throw regsError;
-        setRegistrations(regsData || []);
-
-        // Bracket matches (empty until an organizer generates the bracket)
-        const { data: matchesData, error: matchesError } = await supabase
-          .from('matches')
-          .select('*')
-          .eq('tournament_id', id)
-          .order('round')
-          .order('match_number');
-
-        if (matchesError) throw matchesError;
+        setRegistrations(regsRes.data || []);
         setMatches(matchesData || []);
+        setAnnouncements(annRes.data || []);
+        setLiveStreams(streamsRes.data || []);
 
         // Names of every team in the bracket, in one query
         const bracketTeamIds = new Set<string>();
@@ -106,46 +124,27 @@ export default function TournamentDetailsPage() {
           if (m.team_a_id) bracketTeamIds.add(m.team_a_id);
           if (m.team_b_id) bracketTeamIds.add(m.team_b_id);
         }
-        if (bracketTeamIds.size > 0) {
-          const { data: namesData, error: namesError } = await supabase
-            .from('teams')
-            .select('id, name')
-            .in('id', [...bracketTeamIds]);
-          if (namesError) throw namesError;
-          setTeamNames(Object.fromEntries((namesData || []).map((t) => [t.id, t.name])));
-        }
-
-        // Announcements for this tournament, pinned first
-        const { data: annData, error: annError } = await supabase
-          .from('announcements')
-          .select('*')
-          .eq('tournament_id', id)
-          .order('pinned', { ascending: false })
-          .order('created_at', { ascending: false });
-        if (annError) throw annError;
-        setAnnouncements(annData || []);
-
-        // Streams of this tournament that are live right now (for the "Watch live" banner)
-        const { data: streamsData, error: streamsError } = await supabase
-          .from('streams')
-          .select('*')
-          .eq('tournament_id', id)
-          .eq('status', 'live');
-        if (streamsError) throw streamsError;
-        setLiveStreams(streamsData || []);
-
-        // Teams I captain for this tournament's game (only captains can register)
-        if (data.game_id) {
-          const { data: teamsData, error: teamsError } = await supabase
-            .from('teams')
-            .select('*, games(*), team_members(count)')
-            .eq('captain_id', session.user.id)
-            .eq('game_id', data.game_id)
-            .order('created_at', { ascending: false });
-
-          if (teamsError) throw teamsError;
-          setTeams(teamsData || []);
-        }
+        const [namesRes, myTeamsRes] = await Promise.all([
+          bracketTeamIds.size > 0
+            ? supabase
+                .from('teams')
+                .select('id, name')
+                .in('id', [...bracketTeamIds])
+            : null,
+          // Teams I captain for this tournament's game (only captains can register)
+          data.game_id
+            ? supabase
+                .from('teams')
+                .select('*, games(*), team_members(count)')
+                .eq('captain_id', session.user.id)
+                .eq('game_id', data.game_id)
+                .order('created_at', { ascending: false })
+            : null,
+        ]);
+        if (namesRes?.error) throw namesRes.error;
+        if (namesRes) setTeamNames(Object.fromEntries((namesRes.data || []).map((t) => [t.id, t.name])));
+        if (myTeamsRes?.error) throw myTeamsRes.error;
+        if (myTeamsRes) setTeams(myTeamsRes.data || []);
       } catch (err) {
         setError(getErrorMessage(err, 'Failed to load tournament'));
       } finally {

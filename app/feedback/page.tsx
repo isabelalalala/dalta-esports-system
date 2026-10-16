@@ -52,21 +52,22 @@ export default function FeedbackPage() {
         const { data: { session } } = await supabase.auth.getSession();
         if (!session) return;
 
-        const { data: tournamentsData, error: tourError } = await supabase
-          .from('tournaments')
-          .select('id, name')
-          .order('start_date', { ascending: false });
-        if (tourError) throw tourError;
-        setTournaments(tournamentsData || []);
-
-        // RLS returns only this user's own feedback
-        const { data, error: fbError } = await supabase
-          .from('feedback')
-          .select('*, tournaments(id, name), matches(id, round, match_number)')
-          .eq('user_id', session.user.id)
-          .order('created_at', { ascending: false });
-        if (fbError) throw fbError;
-        setMyFeedback(data || []);
+        const [tourRes, fbRes] = await Promise.all([
+          supabase
+            .from('tournaments')
+            .select('id, name')
+            .order('start_date', { ascending: false }),
+          // RLS returns only this user's own feedback
+          supabase
+            .from('feedback')
+            .select('*, tournaments(id, name), matches(id, round, match_number)')
+            .eq('user_id', session.user.id)
+            .order('created_at', { ascending: false }),
+        ]);
+        if (tourRes.error) throw tourRes.error;
+        if (fbRes.error) throw fbRes.error;
+        setTournaments(tourRes.data || []);
+        setMyFeedback(fbRes.data || []);
       } catch (err) {
         setError(getErrorMessage(err, 'Failed to load the feedback page'));
       } finally {

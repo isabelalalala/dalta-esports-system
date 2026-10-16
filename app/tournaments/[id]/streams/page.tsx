@@ -50,32 +50,28 @@ export default function ManageStreamsPage() {
         if (profileError) throw profileError;
         setProfile(profileData);
 
-        const { data: tournamentData, error: tournError } = await supabase
-          .from('tournaments')
-          .select('*')
-          .eq('id', id)
-          .single();
-        if (tournError) throw tournError;
-        setTournament(tournamentData);
+        const [tournRes, streamsRes, matchesRes] = await Promise.all([
+          supabase.from('tournaments').select('*').eq('id', id).single(),
+          supabase
+            .from('streams')
+            .select('*')
+            .eq('tournament_id', id)
+            .order('created_at', { ascending: false }),
+          // Matches with both teams known, for linking a stream to one match
+          supabase
+            .from('matches')
+            .select('*')
+            .eq('tournament_id', id)
+            .order('round')
+            .order('match_number'),
+        ]);
+        if (tournRes.error) throw tournRes.error;
+        setTournament(tournRes.data);
+        if (streamsRes.error) throw streamsRes.error;
+        setStreams(streamsRes.data || []);
+        if (matchesRes.error) throw matchesRes.error;
 
-        const { data: streamsData, error: streamsError } = await supabase
-          .from('streams')
-          .select('*')
-          .eq('tournament_id', id)
-          .order('created_at', { ascending: false });
-        if (streamsError) throw streamsError;
-        setStreams(streamsData || []);
-
-        // Matches with both teams known, for linking a stream to one match
-        const { data: matchesData, error: matchesError } = await supabase
-          .from('matches')
-          .select('*')
-          .eq('tournament_id', id)
-          .order('round')
-          .order('match_number');
-        if (matchesError) throw matchesError;
-
-        const matches = (matchesData || []) as Match[];
+        const matches = (matchesRes.data || []) as Match[];
         const names = await fetchTeamNames(supabase, matches);
         const roundCount = matches.reduce((max, m) => Math.max(max, m.round), 0);
         const labels: Record<string, string> = {};

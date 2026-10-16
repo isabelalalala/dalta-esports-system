@@ -17,7 +17,7 @@ export default function TournamentsPage() {
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [profile, setProfile] = useState<Profile | null>(null);
+  const [profile, setProfile] = useState<Pick<Profile, 'id' | 'role'> | null>(null);
 
   const router = useRouter();
 
@@ -33,7 +33,7 @@ export default function TournamentsPage() {
         // Get user profile for role check
         const { data: profileData, error: profileError } = await supabase
           .from('profiles')
-          .select('*')
+          .select('id, role')
           .eq('id', session.user.id)
           .single();
         if (profileError) throw profileError;

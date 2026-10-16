@@ -65,19 +65,20 @@ export default function FeedbackAnalysisPage() {
         // New feedback is classified when it's sent, so opening this page doesn't call Gemini
         // (that used to spend the free quota on every visit). Pending ones are retried with the button.
 
-        const { data: tournamentsData, error: tourError } = await supabase
-          .from('tournaments')
-          .select('id, name')
-          .order('start_date', { ascending: false });
-        if (tourError) throw tourError;
-        setTournaments(tournamentsData || []);
-
-        const { data, error: fbError } = await supabase
-          .from('feedback')
-          .select('*, tournaments(id, name), matches(id, round, match_number)')
-          .order('created_at', { ascending: false });
-        if (fbError) throw fbError;
-        setFeedback(data || []);
+        const [tourRes, fbRes] = await Promise.all([
+          supabase
+            .from('tournaments')
+            .select('id, name')
+            .order('start_date', { ascending: false }),
+          supabase
+            .from('feedback')
+            .select('*, tournaments(id, name), matches(id, round, match_number)')
+            .order('created_at', { ascending: false }),
+        ]);
+        if (tourRes.error) throw tourRes.error;
+        if (fbRes.error) throw fbRes.error;
+        setTournaments(tourRes.data || []);
+        setFeedback(fbRes.data || []);
       } catch (err) {
         setError(getErrorMessage(err, 'Failed to load feedback'));
       } finally {

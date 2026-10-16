@@ -47,21 +47,14 @@ export default function MatchManagementPage() {
         if (profileError) throw profileError;
         setProfile(profileData);
 
-        const { data: tournamentData, error: tournError } = await supabase
-          .from('tournaments')
-          .select('*')
-          .eq('id', id)
-          .single();
-        if (tournError) throw tournError;
-        setTournament(tournamentData);
-
-        const { data: matchesData, error: matchesError } = await supabase
-          .from('matches')
-          .select('*')
-          .eq('tournament_id', id)
-          .order('round')
-          .order('match_number');
-        if (matchesError) throw matchesError;
+        const [tournRes, matchesRes] = await Promise.all([
+          supabase.from('tournaments').select('*').eq('id', id).single(),
+          supabase.from('matches').select('*').eq('tournament_id', id).order('round').order('match_number'),
+        ]);
+        if (tournRes.error) throw tournRes.error;
+        setTournament(tournRes.data);
+        const matchesData = matchesRes.data;
+        if (matchesRes.error) throw matchesRes.error;
         setMatches(matchesData || []);
 
         // Look up the names of every team in the bracket in one query
@@ -70,24 +63,21 @@ export default function MatchManagementPage() {
           if (m.team_a_id) teamIds.add(m.team_a_id);
           if (m.team_b_id) teamIds.add(m.team_b_id);
         }
-        if (teamIds.size > 0) {
-          const { data: teamsData, error: teamsError } = await supabase
-            .from('teams')
-            .select('id, name')
-            .in('id', [...teamIds]);
-          if (teamsError) throw teamsError;
-          setTeamNames(Object.fromEntries((teamsData || []).map((t) => [t.id, t.name])));
-        }
-
         const matchIds = (matchesData || []).map((m) => m.id);
-        if (matchIds.length > 0) {
-          const { data: checkinsData, error: checkinsError } = await supabase
-            .from('match_checkins')
-            .select('match_id')
-            .in('match_id', matchIds);
-          if (checkinsError) throw checkinsError;
+        const [teamsRes, checkinsRes] = await Promise.all([
+          teamIds.size > 0
+            ? supabase.from('teams').select('id, name').in('id', [...teamIds])
+            : null,
+          matchIds.length > 0
+            ? supabase.from('match_checkins').select('match_id').in('match_id', matchIds)
+            : null,
+        ]);
+        if (teamsRes?.error) throw teamsRes.error;
+        if (teamsRes) setTeamNames(Object.fromEntries((teamsRes.data || []).map((t) => [t.id, t.name])));
+        if (checkinsRes?.error) throw checkinsRes.error;
+        if (checkinsRes) {
           const counts: Record<string, number> = {};
-          for (const c of checkinsData || []) counts[c.match_id] = (counts[c.match_id] || 0) + 1;
+          for (const c of checkinsRes.data || []) counts[c.match_id] = (counts[c.match_id] || 0) + 1;
           setCheckinCounts(counts);
         }
       } catch (err) {
