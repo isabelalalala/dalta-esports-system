@@ -28,7 +28,7 @@ find.
 | 1 | B | **Open redirect in `/auth/callback`** — `next=/\evil.com` passes the `startsWith('/')` + `!startsWith('//')` check; WHATWG URL parsing treats `\` as a separator → off-site redirect after any email link. | `app/auth/callback/route.ts:21,33` — findings-b |
 | 2 | M | ~~Fresh Supabase project cannot run this repo~~ — **RESOLVED** (`202610151100_base_schema.sql` bootstrap migration creates the three base tables). | — |
 | 3 | M | ~~No Node.js pin~~ — **RESOLVED** (`engines` `>=20.9.0` + `.nvmrc` pinning 22). | — |
-| 4 | O | **Zero test infrastructure** — no test runner, no CI, no seed/harness; all tournament-integrity logic (bracket gen, winner advance, result lock, pick'em, RLS) lives in untested Postgres. Five TS functions duplicate DB rules with only a comment as contract. | `package.json`; findings-o |
+| 4 | O | **Zero test infrastructure** — **PARTIALLY RESOLVED**: Vitest + 56 tests now cover all five TS/DB rule duplications (status, check-in, pick'em, dates, Facebook URL) plus CSV/ICS/error mapping. Still missing: CI, `gen types`, pgTAP for `generate_bracket`/RLS — the DB layer stays live-verifiable only. | `vitest.config.ts`; findings-o |
 | 5 | N | ~~README boilerplate~~ — **RESOLVED** (rewritten with real setup). | — |
 
 ## Required findings (condensed — details in area files)
@@ -161,8 +161,9 @@ behavior, actual DB query plans/row counts.
 7. **Perf** — `Promise.all` the independent page queries; skip `getUser()` in
    `proxy.ts` for cookie-less/public requests; `images.remotePatterns` + drop
    `unoptimized` for the public bucket.
-8. **Test floor** — Vitest on the pure utils; `supabase gen types` to replace
-   hand-maintained `types.ts`; pgTAP for `generate_bracket`.
+8. **Test floor** — ~~Vitest on the pure utils~~ (done: `npm test`, 56 tests).
+   Remaining: `supabase gen types` to replace hand-maintained `types.ts`;
+   pgTAP for `generate_bracket`.
 
 ## File index
 

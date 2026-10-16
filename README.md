@@ -97,6 +97,7 @@ npm run dev    # http://localhost:3000
 npm run build  # production build (needs the env vars above)
 npm start      # production server
 npm run lint   # eslint
+npm test       # vitest (utils/*.test.ts)
 ```
 
 ## Deploying (Railway)

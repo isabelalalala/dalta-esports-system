@@ -2,7 +2,7 @@
 
 ## Verdict
 
-Zero automated tests, zero CI, no seed/harness — every safety-critical behavior (bracket generation, winner advancement, result locking, pick'em rules, RLS) lives in untested SQL and is verifiable only by manual live probing; TS-side hygiene is clean but nothing enforces it.
+~~Zero automated tests, zero CI, no seed/harness~~ — **PARTIALLY RESOLVED:** Vitest is wired (`npm test`, 56 tests across 7 `utils/*.test.ts` files) covering every TS function that duplicates a DB rule (status/checkin/pick'em/date/Facebook-URL validation) plus CSV formula escaping, ICS generation and the error-code map. Still absent: CI, seed.sql, and any DB-layer coverage — `generate_bracket`, winner advancement, result locking and RLS remain verifiable only by manual live probing.
 
 ## Checked
 
@@ -21,12 +21,12 @@ Zero automated tests, zero CI, no seed/harness — every safety-critical behavio
 
 ## Findings
 
-**Critical:** No test infrastructure exists — the codebase's highest-risk logic is 100% unverifiable except live.
+**Critical:** ~~No test infrastructure exists~~ — **RESOLVED for the JS surface** (Vitest + 56 tests, `vitest.config.ts`, `npm test`). The DB half stands: the codebase's highest-risk logic is still 100% unverifiable except live.
 
 - All tournament-integrity logic is in Postgres, unreachable by any JS test runner even if one were added: `generate_bracket` (`supabase/migrations/202610161800_generate_bracket.sql` — shuffle, power-of-2 bracket, byes), winner-advance trigger + result lock (`202610161700_matches.sql`), `check_in_match`/`declare_forfeit` (`202610171400_match_checkin.sql`), `submit_match_result`/`respond_to_match_result`/`review_match_result` (`202610171500_match_results.sql`), `check_prediction`/`mark_predictions` (`202610181100_predictions.sql`), `claim_gemini_call` rate limit (`202610181000_feedback_protection.sql`). There is no `supabase/config.toml`, no `seed.sql`, no pgTAP — so even a Supabase-local DB test harness could not start without authoring one.
 - No `.github/` → nothing gates a push; CLAUDE.md:448 instructs "run `npm run lint` and `npm run build`" manually — the only documented verification step.
 
-**Critical (capstone-defense risk):** Client/DB rule duplication with no test to keep them honest. Five places implement "the same rule as the database" in TS with only a comment as the contract:
+**Critical (capstone-defense risk):** ~~Client/DB rule duplication with no test~~ — **ALL FIVE NOW TESTED** (`utils/tournaments.test.ts`, `utils/checkin.test.ts`, `utils/predictions.test.ts`, `utils/streams.test.ts`). A migration-side rule change now fails `npm test` instead of silently desyncing the UI — provided the tests are kept in sync, same human-link caveat as `types.ts`. Five places implement "the same rule as the database" in TS with only a comment as the contract:
 
 - `getTournamentStatus` `utils/tournaments.ts:56-72` vs DB status rules
 - `getCheckinState` `utils/checkin.ts:18-25` vs `check_in_match()`
