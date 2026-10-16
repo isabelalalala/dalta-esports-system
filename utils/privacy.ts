@@ -6,9 +6,12 @@
 // 2026-10-17: added student verification (student ID, school, course/year).
 // 2026-10-17.2: added the activity log. (Only the first 10 characters are shown as the date.)
 // 2026-10-18: added pick'em predictions and leaderboards (first name + initial shown to logged-in users).
-export const PRIVACY_NOTICE_VERSION = '2026-10-18';
+// 2026-10-18.2: disclosed match-proof retention, exports, public rosters/officers, check-ins.
+export const PRIVACY_NOTICE_VERSION = '2026-10-18.2';
 
-// Where people send privacy requests and questions.
-// TODO: replace with the organization's real contact before going live.
-export const PRIVACY_CONTACT_EMAIL = 'its.molino@perpetualdalta.edu.ph';
-export const PRIVACY_CONTACT_PERSON = 'DALTA Esports Data Privacy Officer';
+// Where people send privacy requests and questions. Set the real contact in
+// NEXT_PUBLIC_PRIVACY_CONTACT_* before going live; the fallbacks are placeholders.
+export const PRIVACY_CONTACT_EMAIL =
+  process.env.NEXT_PUBLIC_PRIVACY_CONTACT_EMAIL || 'its.molino@perpetualdalta.edu.ph';
+export const PRIVACY_CONTACT_PERSON =
+  process.env.NEXT_PUBLIC_PRIVACY_CONTACT_PERSON || 'DALTA Esports Data Privacy Officer';

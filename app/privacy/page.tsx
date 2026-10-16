@@ -86,13 +86,15 @@ export default function PrivacyNoticePage() {
           <ul className="list-disc pl-6 space-y-1">
             <li><strong className="text-white">Anyone, even without an account:</strong> tournament details,
               brackets and match results, which include team names, and the percentage of pick&apos;em picks for
-              each team (never who picked what).</li>
+              each team (never who picked what). The public pages also show our officers&apos; and official
+              players&apos; names, positions, in-game roles and photos.</li>
             <li><strong className="text-white">Pick&apos;em leaderboards (logged-in users):</strong> your first name
               and the first letter of your last name (e.g. &quot;Juan C.&quot;) with your number of correct picks, once
               you make a pick in that tournament. Nobody else sees your individual picks.</li>
             <li><strong className="text-white">Logged-in users:</strong> teams and their members (name, IGN and
-              in-game role), player game profiles (IGN, in-game role, rank), team registrations and announcements.
-              Team captains can search players by name or IGN to add them to a team.</li>
+              in-game role), player game profiles (IGN, in-game role, rank), team registrations, announcements,
+              and who checked in for a match and when. Team captains can search players by name or IGN to add
+              them to a team.</li>
             <li><strong className="text-white">Tournament staff and administrators:</strong> all accounts,
               including email addresses, student details and viewing activity, to manage the system, verify students
               and prepare reports.</li>
@@ -103,8 +105,10 @@ export default function PrivacyNoticePage() {
             <li>Your own feedback is visible to you and to administrators, not to other users.</li>
             <li>Result screenshots are visible only to the members of the two teams in that match and to tournament
               staff.</li>
-            <li>Organizers may download lists (registrations, team rosters, schedules and results) to run tournaments.
-              Every download is recorded in the activity log.</li>
+            <li>Organizers may download files to run tournaments: registrations (which include each member&apos;s
+              student ID, school and course/year), team rosters, schedules and results. Administrators can also
+              download the full account list (names, email addresses, student details, consent date) and all
+              feedback including comment text. Every download is recorded in the activity log.</li>
             <li>The activity log is visible to administrators only. It helps keep tournaments fair and lets us see
               who made a change.</li>
           </ul>
@@ -137,8 +141,11 @@ export default function PrivacyNoticePage() {
             <li><strong className="text-white">Kept without your name:</strong> your feedback (rating, comment and
               sentiment), so event statistics stay correct. It is no longer linked to you. Saved reports may contain
               totals and short examples of feedback comments.</li>
-            <li><strong className="text-white">Kept as event records:</strong> tournaments, brackets and match
-              results, which show team names, not personal data.</li>
+            <li><strong className="text-white">Kept as event records:</strong> tournaments, brackets, match
+              results, and the screenshots submitted as match proof — these stay part of the event&apos;s records
+              even after an account is deleted, and may still show in-game names. Organizers can remove the
+              image files manually from storage when they are no longer needed. Answered team invitations are
+              also kept as history.</li>
           </ul>
           <p>
             <strong className="text-white">Activity log:</strong> entries are kept for one year, even after an account is
