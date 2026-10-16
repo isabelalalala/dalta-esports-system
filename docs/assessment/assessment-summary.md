@@ -28,7 +28,7 @@ find.
 | 1 | B | ~~**Open redirect in `/auth/callback`**~~ — **RESOLVED** (`safeNextPath` in `utils/auth.ts` compares the resolved origin — covers `\`, tab and newline injection; tested). | — |
 | 2 | M | ~~Fresh Supabase project cannot run this repo~~ — **RESOLVED** (`202610151100_base_schema.sql` bootstrap migration creates the three base tables). | — |
 | 3 | M | ~~No Node.js pin~~ — **RESOLVED** (`engines` `>=20.9.0` + `.nvmrc` pinning 22). | — |
-| 4 | O | **Zero test infrastructure** — **PARTIALLY RESOLVED**: Vitest + 56 tests now cover all five TS/DB rule duplications (status, check-in, pick'em, dates, Facebook URL) plus CSV/ICS/error mapping. Still missing: CI, `gen types`, pgTAP for `generate_bracket`/RLS — the DB layer stays live-verifiable only. | `vitest.config.ts`; findings-o |
+| 4 | O | ~~**Zero test infrastructure**~~ — **RESOLVED**: Vitest covers the pure utils; pgTAP (`supabase test db`) covers bracket math, winner advance, result locks and core RLS — and immediately caught a real `generate_bracket` mis-seeding regression (fixed in `202610181800`). CI (`.github/workflows/test.yml`) runs tsc/eslint/vitest + `supabase test db` + a `gen types` drift check. | `vitest.config.ts`, `supabase/tests/`, `.github/workflows/test.yml`; findings-o |
 | 5 | N | ~~README boilerplate~~ — **RESOLVED** (rewritten with real setup). | — |
 
 ## Required findings (condensed — details in area files)
@@ -111,9 +111,8 @@ find.
 - ~~`AGENTS.md` is a stub~~ — resolved: hard rules + CLAUDE.md pointer added; flags list, verification-reset and resend-attribution nits fixed.
 
 **Testing** (O)
-- Hand-maintained `utils/types.ts` is a silent-drift risk across 25 migrations.
-- Recommendation recorded: Vitest covers ~10 pure-function utils with zero mocking;
-  pgTAP/`supabase test db` for bracket math is the highest-value DB coverage.
+- ~~Hand-maintained `utils/types.ts` is a silent-drift risk across 25 migrations.~~ Resolved — `utils/database.types.ts` generated via `npm run db:types`; CI regenerates and fails on drift.
+- ~~pgTAP for bracket math is the highest-value DB coverage~~ — done: `supabase/tests/` (23 assertions) + `.github/workflows/test.yml`. Remaining DB paths without coverage: check-in/forfeit, result RPCs, prediction trigger, Gemini rate limits.
 
 ## Verified strengths
 

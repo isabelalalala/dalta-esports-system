@@ -32,10 +32,10 @@ npm install
 migration (`202610171400`) calls `cron.schedule` and fails without it.
 
 **5. Run the migrations.** In the Supabase SQL Editor, run every file in
-`supabase/migrations/` in filename order (`202610151100` … `202610181700`). The
+`supabase/migrations/` in filename order (`202610151100` … `202610181800`). The
 first file, `202610151100_base_schema.sql`, creates the three base tables the rest
-build on — everything is automatic from here. There is no `supabase/config.toml` —
-migrations are run manually, not pushed via CLI.
+build on — everything is automatic from here. Migrations are run manually, not
+pushed via CLI (`supabase/config.toml` exists only for the local test stack).
 
 **6. Create the Vault secret.** Run `vault.create_secret` to add `feedback_server_key`
 — the exact steps are at the top of `supabase/migrations/202610181000_feedback_protection.sql`.
@@ -98,6 +98,8 @@ npm run build  # production build (needs the env vars above)
 npm start      # production server
 npm run lint   # eslint
 npm test       # vitest (utils/*.test.ts)
+npm run db:test   # pgTAP tests — needs Docker + `supabase start` first
+npm run db:types  # regenerate utils/database.types.ts from the local schema
 ```
 
 ## Deploying (Railway)
