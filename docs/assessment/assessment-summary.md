@@ -95,9 +95,11 @@ find.
 - Remaining nits: bell focus management, dot target size, realtime `aria-live`.
 
 **Performance** (K)
-- Every authenticated page is a client component with a 4–9-query serial waterfall.
-- `proxy.ts` runs a remote `auth.getUser()` on every request incl. public pages/API.
-- All site images ship unoptimized up to 5 MB.
+- ~~Every authenticated page is a client component with a 4–9-query serial waterfall.~~ Fixed — independent queries run in `Promise.all` (worst page: 8 RTTs → 3 rounds).
+- ~~`proxy.ts` runs a remote `auth.getUser()` on every request incl. public pages/API.~~ Fixed — skipped for cookie-less and `/api/*` requests; handlers verify themselves.
+- ~~All site images ship unoptimized up to 5 MB.~~ Fixed — `remotePatterns` for `**.supabase.co`, `unoptimized` removed (kept only on signed match proofs), `sizes` on `fill` images.
+- Also fixed: realtime debounce, role-only selects, unused Geist fonts, lazy Facebook iframe, engagement debounce, `fetchRoundCounts` head-row queries.
+- Remaining nits: unbounded list growth (no pagination ceilings), Chart.js `chart.js/auto` bundle.
 
 **Deploy** (M)
 - pg_cron must be enabled before `202610171400` (whole migration rolls back otherwise).
