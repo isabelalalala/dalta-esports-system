@@ -93,7 +93,8 @@ export default function TournamentsPage() {
         )}
 
         {/* Tournaments Grid */}
-        {tournaments.length === 0 ? (
+        {/* A failed load shows the error above, not "nothing here" */}
+        {tournaments.length === 0 && error ? null : tournaments.length === 0 ? (
           <div className="text-center text-gray-500 py-20 px-4 border-2 border-dashed border-brown space-y-2">
             <p>No tournaments yet.</p>
             {(profile?.role === 'admin' || profile?.role === 'staff') ? (

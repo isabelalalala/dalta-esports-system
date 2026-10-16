@@ -150,7 +150,7 @@ export default function WatchStreamPage() {
 
         <div>
           <div className="flex flex-wrap items-center gap-2">
-            <h1 className="text-3xl font-bold text-gold">{stream.title}</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold text-gold break-words min-w-0">{stream.title}</h1>
             <span className={`px-2 py-0.5 rounded-full border text-[10px] font-bold uppercase ${streamStatusStyles[stream.status]}`}>
               {stream.status === 'live' ? '● Live' : stream.status === 'ended' ? 'Replay' : 'Scheduled'}
             </span>
@@ -174,8 +174,8 @@ export default function WatchStreamPage() {
         <FacebookPlayer url={stream.facebook_url} title={stream.title} />
 
         {/* Scoreboard */}
-        <section className="bg-sitecard border border-brownlight p-6">
-          <div className="flex justify-between items-center mb-3">
+        <section className="bg-sitecard border border-brownlight p-4 sm:p-6">
+          <div className="flex flex-wrap justify-between items-center gap-2 mb-3">
             <h2 className="text-xl font-bold">{matchId ? 'Match' : 'Live matches'}</h2>
             <span className={`text-xs ${realtimeOn ? 'text-green-400' : 'text-gray-500'}`}>
               {realtimeOn ? '● Updates automatically' : 'Connecting...'}

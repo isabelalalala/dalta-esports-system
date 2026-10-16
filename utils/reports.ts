@@ -107,6 +107,12 @@ export interface EngagementReport {
     unique_viewers: number;
     feedback: number;
     avg_rating: number | null;
+    // Pick'em (since 202610181100; missing in reports saved before that)
+    predictions?: number;
+    predictors?: number;              // people who picked at least once
+    prediction_accuracy?: number | null;  // % of decided picks that were right
+    audience_accounts?: number;       // player + spectator accounts
+    prediction_participation?: number | null;  // % of those accounts that picked at least once
   };
   streams: {
     id: string;
@@ -123,6 +129,14 @@ export interface EngagementReport {
   }[];
   views_by_day: { day: string; views: number; unique_viewers: number }[];
   feedback_by_tournament: { tournament_name: string | null; count: number; avg_rating: number | null }[];
+  // Missing in reports saved before pick'em existed
+  predictions_by_tournament?: {
+    tournament_name: string;
+    predictions: number;
+    predictors: number;
+    decided: number;
+    accuracy: number | null;
+  }[];
 }
 
 // Everything an admin's generated report contains (saved in analytics_reports.data)
@@ -298,6 +312,19 @@ export function engagementCsv(r: EngagementReport): CsvSection[] {
       columns: ['Tournament', 'Feedback', 'Average rating'],
       rows: r.feedback_by_tournament.map((f) => [f.tournament_name ?? 'General', f.count, f.avg_rating]),
     },
+    // Only in reports made after pick'em was added
+    ...(r.predictions_by_tournament ? [
+      {
+        title: "Pick'em totals",
+        columns: ['Predictions', 'Predictors', 'Accuracy %', 'Audience accounts', 'Participation %'],
+        rows: [[t.predictions ?? 0, t.predictors ?? 0, t.prediction_accuracy ?? null, t.audience_accounts ?? 0, t.prediction_participation ?? null]],
+      },
+      {
+        title: "Pick'em per tournament",
+        columns: ['Tournament', 'Predictions', 'Predictors', 'Decided', 'Accuracy %'],
+        rows: r.predictions_by_tournament.map((p) => [p.tournament_name, p.predictions, p.predictors, p.decided, p.accuracy]),
+      },
+    ] : []),
   ];
 }
 

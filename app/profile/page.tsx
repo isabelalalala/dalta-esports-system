@@ -206,7 +206,7 @@ export default function ProfilePage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
             <div>
               <span className="block text-gray-400">Email</span>
-              <span>{profile.email}</span>
+              <span className="break-all">{profile.email}</span>
             </div>
             <div>
               <span className="block text-gray-400">Role</span>
@@ -302,7 +302,7 @@ export default function ProfilePage() {
                 return (
                   <div
                     key={game.id}
-                    className="bg-sitebg border border-brown p-4 flex justify-between items-center gap-4"
+                    className="bg-sitebg border border-brown p-4 flex flex-wrap justify-between items-center gap-4"
                   >
                     <div>
                       <h3 className="font-bold text-gold">{game.name}</h3>

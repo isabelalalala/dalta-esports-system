@@ -11,6 +11,8 @@ import CalendarLinks from '@/components/CalendarLinks';
 import LiveRefresher from '@/components/site/LiveRefresher';
 import { SectionTitle } from '@/components/site/SiteParts';
 import { SectionLoading } from '@/components/PageLoading';
+import PredictionsProvider from '@/components/PredictionsProvider';
+import PredictionPicker from '@/components/PredictionPicker';
 
 const TZ = 'Asia/Manila';
 
@@ -94,6 +96,18 @@ async function MatchContent({ params }: { params: PageProps<'/t/[id]/match/[matc
           {match.scheduled_at && !done && <CalendarLinks kind="match" id={match.id} />}
         </div>
       </section>
+
+      {/* Pick'em: community split for everyone, pick buttons for logged-in audience members */}
+      {match.team_a_id && match.team_b_id && (
+        <section className="space-y-3">
+          <SectionTitle>🎯 Who will win?</SectionTitle>
+          <div className="border-2 border-brownlight bg-sitecard p-4">
+            <PredictionsProvider matches={[match]}>
+              <PredictionPicker match={match} teamNames={teamNameMap(data)} />
+            </PredictionsProvider>
+          </div>
+        </section>
+      )}
 
       {stream && (
         <section className="space-y-3">

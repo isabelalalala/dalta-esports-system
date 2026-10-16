@@ -85,13 +85,13 @@ export default function TeamsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-sitebg text-white p-8">
+    <div className="min-h-screen bg-sitebg text-white px-4 py-6 sm:p-8">
       <div className="max-w-5xl mx-auto">
         <Link href="/dashboard" className="text-gold hover:underline mb-6 inline-block">
           ← Back to Dashboard
         </Link>
 
-        <div className="flex justify-between items-center mb-8">
+        <div className="flex flex-wrap justify-between items-center gap-4 mb-8">
           <h1 className="font-pixel text-xl sm:text-2xl leading-relaxed text-gold">My Teams</h1>
           <button
             onClick={() => setShowCreate(!showCreate)}
@@ -111,7 +111,7 @@ export default function TeamsPage() {
         )}
 
         {showCreate && (
-          <form onSubmit={handleCreateTeam} className="mb-8 p-6 bg-sitecard border-2 border-gold shadow-[6px_6px_0_var(--color-brown)]">
+          <form onSubmit={handleCreateTeam} className="mb-8 p-4 sm:p-6 bg-sitecard border-2 border-gold shadow-[6px_6px_0_var(--color-brown)]">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <input
                 type="text" placeholder="Team Name"
@@ -149,17 +149,17 @@ export default function TeamsPage() {
 
         {loading && <SectionLoading label="Loading teams..." />}
 
-        {!loading && teams.length === 0 && (
+        {!loading && !error && teams.length === 0 && (
           <p className="text-gray-400">You&apos;re not on any team yet. Create one, or ask a captain to add you. Captains can only add players who have a game profile for that game on their My Profile page.</p>
         )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {teams.map(team => (
-            <div key={team.id} className="bg-sitecard border-2 border-brownlight p-6 shadow-[4px_4px_0_var(--color-brown)] hover:border-gold transition-colors">
-              <h2 className="text-2xl font-bold text-gold">{team.name}</h2>
+            <div key={team.id} className="bg-sitecard border-2 border-brownlight p-4 sm:p-6 shadow-[4px_4px_0_var(--color-brown)] hover:border-gold transition-colors">
+              <h2 className="text-xl sm:text-2xl font-bold text-gold break-words">{team.name}</h2>
               <p className="text-gray-400 mt-1 uppercase text-xs font-bold tracking-widest">{team.games?.name}</p>
               {team.description && <p className="text-gray-300 mt-3 text-sm">{team.description}</p>}
-              <div className="mt-4 flex justify-between items-center text-sm">
+              <div className="mt-4 flex flex-wrap justify-between items-center gap-2 text-sm">
                 <span className="text-gray-500">
                   Members: {team.team_members?.[0]?.count || 0} / {team.games?.max_players}
                 </span>

@@ -11,6 +11,11 @@ interface Props {
   liveCounts?: Record<string, number>;
 }
 
+// "62.5%", or "–" when there's nothing to divide by
+function formatPercent(value: number | null | undefined) {
+  return value === null || value === undefined ? '–' : `${Number(value)}%`;
+}
+
 // "Viewership & Audience Engagement Stats" (Tournament Staff, also part of the admin's report)
 export default function EngagementSection({ report, liveCounts }: Props) {
   const t = report.totals;
@@ -78,6 +83,33 @@ export default function EngagementSection({ report, liveCounts }: Props) {
           rows={report.feedback_by_tournament.map((f) => [f.tournament_name ?? 'General', f.count, formatRating(f.avg_rating)])}
         />
       </ReportCard>
+
+      {/* Pick'em predictions (reports saved before this feature don't have them) */}
+      <h3 className="text-xl font-bold text-gold print:text-black pt-2">Pick&apos;em Predictions</h3>
+      {report.predictions_by_tournament === undefined ? (
+        <NoData text="No prediction data in this report (it was saved before pick'em was added)." />
+      ) : (
+        <>
+          <p className="text-sm text-gray-400 print:text-gray-600">
+            Participation = player and spectator accounts that made at least one pick. Accuracy = share of picks on
+            finished matches that were right.
+          </p>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <StatTile label="Predictions" value={t.predictions ?? 0} />
+            <StatTile label="Predictors" value={t.predictors ?? 0} note={`of ${t.audience_accounts ?? 0} audience accounts`} />
+            <StatTile label="Participation" value={formatPercent(t.prediction_participation)} />
+            <StatTile label="Accuracy" value={formatPercent(t.prediction_accuracy)} />
+          </div>
+          <ReportCard title="Predictions per tournament">
+            {report.predictions_by_tournament.length === 0 ? <NoData /> : (
+              <ReportTable
+                columns={['Tournament', 'Predictions', 'Predictors', 'Decided', 'Accuracy']}
+                rows={report.predictions_by_tournament.map((p) => [p.tournament_name, p.predictions, p.predictors, p.decided, formatPercent(p.accuracy)])}
+              />
+            )}
+          </ReportCard>
+        </>
+      )}
     </section>
   );
 }

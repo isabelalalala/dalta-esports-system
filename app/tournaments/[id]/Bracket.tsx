@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import Link from 'next/link';
 import type { Match } from '@/utils/types';
 import { formatDateTime, isBye, roundLabel } from '@/utils/tournaments';
@@ -9,6 +10,7 @@ export default function Bracket({
   teamNames,
   timeZone,
   matchHref,
+  renderBelow,
 }: {
   matches: Match[];
   teamNames: Record<string, string>;
@@ -16,6 +18,8 @@ export default function Bracket({
   timeZone?: string;
   // Makes each match a link (the public match page)
   matchHref?: (match: Match) => string;
+  // Extra content under each match box (the pick'em picker), outside the match link
+  renderBelow?: (match: Match) => ReactNode;
 }) {
   const roundCount = matches.reduce((max, m) => Math.max(max, m.round), 0);
   const rounds = Array.from({ length: roundCount }, (_, i) => i + 1);
@@ -43,13 +47,16 @@ export default function Bracket({
                 {matches
                   .filter((m) => m.round === round)
                   .map((match) => (
-                    matchHref && !isBye(match) ? (
-                      <Link key={match.id} href={matchHref(match)} className="block hover:opacity-80">
+                    <div key={match.id}>
+                      {matchHref && !isBye(match) ? (
+                        <Link href={matchHref(match)} className="block hover:opacity-80">
+                          <MatchBox match={match} teamNames={teamNames} timeZone={timeZone} />
+                        </Link>
+                      ) : (
                         <MatchBox match={match} teamNames={teamNames} timeZone={timeZone} />
-                      </Link>
-                    ) : (
-                      <MatchBox key={match.id} match={match} teamNames={teamNames} timeZone={timeZone} />
-                    )
+                      )}
+                      {renderBelow?.(match)}
+                    </div>
                   ))}
               </div>
             </div>

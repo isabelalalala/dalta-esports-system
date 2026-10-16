@@ -1,6 +1,7 @@
 'use client'; // Error boundaries must be Client Components
 
 import { useEffect } from 'react';
+import Link from 'next/link';
 import './globals.css';
 
 // Last safety net: shown when the root layout itself (header/footer) fails.
@@ -24,8 +25,7 @@ export default function GlobalError({ error, retry }: { error: Error & { digest?
             <button onClick={() => retry()} className="bg-gold text-black px-5 py-2 font-bold hover:bg-golddark">
               Try again
             </button>
-            {/* A plain link (full reload), since the app itself failed */}
-            <a href="/" className="border-2 border-gold text-gold px-5 py-2 font-bold hover:bg-gold/10">Home</a>
+            <Link href="/" className="border-2 border-gold text-gold px-5 py-2 font-bold hover:bg-gold/10">Home</Link>
           </div>
         </div>
       </body>

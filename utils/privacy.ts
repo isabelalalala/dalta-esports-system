@@ -5,7 +5,8 @@
 // If the notice changes in an important way, update this date.
 // 2026-10-17: added student verification (student ID, school, course/year).
 // 2026-10-17.2: added the activity log. (Only the first 10 characters are shown as the date.)
-export const PRIVACY_NOTICE_VERSION = '2026-10-17.2';
+// 2026-10-18: added pick'em predictions and leaderboards (first name + initial shown to logged-in users).
+export const PRIVACY_NOTICE_VERSION = '2026-10-18';
 
 // Where people send privacy requests and questions.
 // TODO: replace with the organization's real contact before going live.

@@ -9,6 +9,9 @@ import { ACTIVE_REGISTRATION_STATUSES } from '@/utils/types';
 import type { Announcement, Match, Profile, Registration, RosterMember, Stream, Team, Tournament } from '@/utils/types';
 import { formatDate, getTournamentStatus, statusLabels, statusStyles } from '@/utils/tournaments';
 import Bracket from './Bracket';
+import PickemLeaderboard from './PickemLeaderboard';
+import PredictionsProvider from '@/components/PredictionsProvider';
+import PredictionPicker from '@/components/PredictionPicker';
 import AnnouncementCard from '@/components/AnnouncementCard';
 import VerifiedBadge from '@/components/VerifiedBadge';
 import ShareButton from '@/components/ShareButton';
@@ -379,13 +382,39 @@ export default function TournamentDetailsPage() {
           <div>
             <h2 className="text-xl font-bold mb-3">Bracket</h2>
             {matches.length > 0 ? (
-              <Bracket matches={matches} teamNames={teamNames} />
+              <>
+                {!isOrganizer && (
+                  <p className="text-sm text-gray-400 mb-3">
+                    🎯 Pick&apos;em: pick the winner under each match before it starts. Picks close at match time.
+                  </p>
+                )}
+                {/* Under each match: the community split and (for the audience) the pick buttons */}
+                <PredictionsProvider matches={matches}>
+                  <Bracket
+                    matches={matches}
+                    teamNames={teamNames}
+                    matchHref={(m) => `/matches/${m.id}`}
+                    renderBelow={(m) => <PredictionPicker match={m} teamNames={teamNames} compact />}
+                  />
+                </PredictionsProvider>
+              </>
             ) : (
               <p className="text-gray-500">
                 No bracket yet. It appears here once the organizers generate it from the approved teams.
               </p>
             )}
           </div>
+
+          {/* Pick'em leaderboard (top 3 here, the full list on its own page) */}
+          {matches.length > 0 && (
+            <div>
+              <div className="flex flex-wrap items-baseline justify-between gap-2 mb-3">
+                <h2 className="text-xl font-bold">🎯 Pick&apos;em Leaderboard</h2>
+                <Link href={`/tournaments/${id}/predictions`} className="text-sm text-gold hover:underline">Full leaderboard →</Link>
+              </div>
+              <PickemLeaderboard tournamentId={id} limit={3} />
+            </div>
+          )}
 
           {/* Approved teams */}
           <div>

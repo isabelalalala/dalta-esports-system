@@ -133,7 +133,8 @@ export default function MatchManagementPage() {
           <div className="mb-6 bg-red-500/10 border border-red-500 text-red-300 px-4 py-3">{error}</div>
         )}
 
-        {matches.length === 0 ? (
+        {/* A failed load shows the error above, not "nothing here" */}
+        {matches.length === 0 && error ? null : matches.length === 0 ? (
           <div className="text-center bg-sitecard border border-brown p-12 text-gray-400">
             No bracket yet. Generate it from the Admin Panel on the tournament page.
           </div>

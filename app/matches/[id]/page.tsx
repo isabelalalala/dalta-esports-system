@@ -13,6 +13,8 @@ import CalendarLinks from '@/components/CalendarLinks';
 import ResultSection from './ResultSection';
 import PageLoading from '@/components/PageLoading';
 import PageError from '@/components/PageError';
+import PredictionsProvider from '@/components/PredictionsProvider';
+import PredictionPicker from '@/components/PredictionPicker';
 
 interface MatchTournament {
   id: string;
@@ -133,18 +135,18 @@ export default function MatchPage() {
         </Link>
 
         {/* Match header */}
-        <div className="bg-sitecard border-2 border-gold shadow-[6px_6px_0_var(--color-brown)] p-6 space-y-4">
+        <div className="bg-sitecard border-2 border-gold shadow-[6px_6px_0_var(--color-brown)] p-4 sm:p-6 space-y-4">
           <p className="text-xs uppercase font-bold text-gray-400 tracking-widest">
             {tournament.game} · {roundLabel(match.round, roundCount)} · Match {match.match_number}
           </p>
-          <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-4 text-center">
-            <p className={`text-2xl font-bold ${teamClass(teamA?.id)}`}>{teamA?.name ?? <span className="italic text-gray-500">TBD</span>}</p>
-            <p className="text-3xl font-bold tabular-nums">
+          <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2 sm:gap-4 text-center">
+            <p className={`text-lg sm:text-2xl font-bold break-words ${teamClass(teamA?.id)}`}>{teamA?.name ?? <span className="italic text-gray-500">TBD</span>}</p>
+            <p className="text-2xl sm:text-3xl font-bold tabular-nums">
               {match.status === 'completed' && !match.is_forfeit
                 ? `${match.score_a ?? '-'} : ${match.score_b ?? '-'}`
                 : <span className="text-gray-500 text-xl">vs</span>}
             </p>
-            <p className={`text-2xl font-bold ${teamClass(teamB?.id)}`}>{teamB?.name ?? <span className="italic text-gray-500">TBD</span>}</p>
+            <p className={`text-lg sm:text-2xl font-bold break-words ${teamClass(teamB?.id)}`}>{teamB?.name ?? <span className="italic text-gray-500">TBD</span>}</p>
           </div>
           <div className="flex flex-wrap justify-center items-center gap-3 text-sm">
             <span className="text-gray-300">{formatDateTime(match.scheduled_at)}</span>
@@ -170,6 +172,16 @@ export default function MatchPage() {
         </div>
 
         {error && <div className="bg-red-500/10 border border-red-500 text-red-300 px-4 py-3">{error}</div>}
+
+        {/* Pick'em: the community split, and pick buttons for the audience (not the two teams) */}
+        {teamA && teamB && (
+          <section className="bg-sitecard border border-brownlight p-4 sm:p-6 space-y-3">
+            <h2 className="text-xl font-bold">🎯 Who will win?</h2>
+            <PredictionsProvider matches={[match]}>
+              <PredictionPicker match={match} teamNames={{ [teamA.id]: teamA.name, [teamB.id]: teamB.name }} />
+            </PredictionsProvider>
+          </section>
+        )}
 
         <CheckinSection
           match={match}

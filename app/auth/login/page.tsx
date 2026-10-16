@@ -68,7 +68,7 @@ export default function Login() {
     <div className="min-h-screen grid place-items-center bg-sitebg px-4">
       <form
         onSubmit={handleLogin}
-        className="w-full max-w-md bg-sitecard p-8 shadow-[6px_6px_0_var(--color-brown)] space-y-4"
+        className="w-full max-w-md bg-sitecard p-6 sm:p-8 shadow-[6px_6px_0_var(--color-brown)] space-y-4"
       >
         <h1 className="text-gold text-2xl font-bold text-center mb-4">Login</h1>
 

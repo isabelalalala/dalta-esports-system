@@ -42,7 +42,7 @@ export default function PrivacyConsentPage() {
     <div className="min-h-screen grid place-items-center bg-sitebg px-4 py-10">
       <form
         onSubmit={handleAgree}
-        className="w-full max-w-lg bg-sitecard p-8 shadow-[6px_6px_0_var(--color-brown)] space-y-5"
+        className="w-full max-w-lg bg-sitecard p-6 sm:p-8 shadow-[6px_6px_0_var(--color-brown)] space-y-5"
       >
         <h1 className="text-gold text-2xl font-bold text-center">Your privacy</h1>
         <p className="text-gray-300">

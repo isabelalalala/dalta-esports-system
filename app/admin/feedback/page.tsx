@@ -232,7 +232,8 @@ export default function FeedbackAnalysisPage() {
         )}
 
         {/* Feedback list */}
-        {visible.length === 0 ? (
+        {/* A failed load shows the error above, not "nothing here" */}
+        {visible.length === 0 && error ? null : visible.length === 0 ? (
           <p className="text-gray-500 border-2 border-dashed border-brown p-6 text-center">
             {feedback.length === 0 ? 'No feedback yet.' : 'No feedback matches these filters.'}
           </p>

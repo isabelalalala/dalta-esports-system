@@ -125,9 +125,9 @@ export default function RegistrationsPage() {
           ← Back to Tournament
         </Link>
 
-        <div className="flex items-center justify-between mb-8">
+        <div className="mb-8">
           <div>
-            <h1 className="font-pixel text-xl sm:text-2xl leading-relaxed text-gold">{tournament?.name}</h1>
+            <h1 className="font-pixel text-lg sm:text-2xl leading-relaxed text-gold break-words">{tournament?.name}</h1>
             <p className="text-gray-400 text-lg mt-2">Tournament Registrations</p>
           </div>
         </div>
@@ -144,7 +144,8 @@ export default function RegistrationsPage() {
           </div>
         )}
 
-        {registrations.length === 0 ? (
+        {/* A failed load shows the error above, not "nothing here" */}
+        {registrations.length === 0 && error ? null : registrations.length === 0 ? (
           <div className="text-center bg-sitecard border border-brown p-12">
             <p className="text-gray-400">No registrations yet.</p>
           </div>
@@ -166,7 +167,7 @@ export default function RegistrationsPage() {
                 const busy = busyId === reg.id;
 
                 return (
-                  <div key={reg.id} className="px-6 py-4 grid grid-cols-1 md:grid-cols-12 gap-4 items-center hover:bg-sitebg/50 transition">
+                  <div key={reg.id} className="px-4 sm:px-6 py-4 grid grid-cols-1 md:grid-cols-12 gap-4 items-center hover:bg-sitebg/50 transition">
                     <div className="md:col-span-3 font-semibold text-white">
                       {/* Older registrations have no team, only the typed team_name */}
                       {reg.teams?.name || reg.team_name || 'Unnamed Team'}
@@ -177,7 +178,7 @@ export default function RegistrationsPage() {
                         </span>
                       )}
                     </div>
-                    <div className="md:col-span-3 text-gray-300 text-sm">
+                    <div className="md:col-span-3 text-gray-300 text-sm break-all md:break-normal">
                       {captain ? captain.full_name || captain.email : '—'}
                     </div>
                     <div className="md:col-span-2">
@@ -221,7 +222,7 @@ export default function RegistrationsPage() {
             </div>
 
             {/* Footer */}
-            <div className="bg-sitebg px-6 py-4 border-t border-brown">
+            <div className="bg-sitebg px-4 sm:px-6 py-4 border-t border-brown">
               <p className="text-gray-400">
                 Participants (pending + approved): <span className="text-gold font-bold">{activeCount}</span> /{' '}
                 <span className="text-gray-300">{tournament?.max_participants || '∞'}</span>

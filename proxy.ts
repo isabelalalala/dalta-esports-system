@@ -8,7 +8,7 @@ const protectedRoutes = [
   /^\/teams(\/.*)?$/,
   /^\/profile(\/.*)?$/,
   /^\/tournaments\/create$/,
-  /^\/tournaments\/[^/]+\/(edit|registrations|matches|streams)$/,
+  /^\/tournaments\/[^/]+\/(edit|registrations|matches|streams|predictions)$/,
   /^\/matches(\/.*)?$/,
   /^\/admin(\/.*)?$/,
   /^\/registrations(\/.*)?$/,

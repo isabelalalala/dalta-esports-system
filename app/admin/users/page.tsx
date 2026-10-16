@@ -128,7 +128,8 @@ export default function ManageUsersPage() {
             <div className="col-span-3 text-right">Actions</div>
           </div>
 
-          {visibleUsers.length === 0 ? (
+          {/* A failed load shows the error above, not "nothing here" */}
+        {visibleUsers.length === 0 && error ? null : visibleUsers.length === 0 ? (
             <p className="px-6 py-8 text-center text-gray-400">No users match.</p>
           ) : (
             <div className="divide-y divide-brown">

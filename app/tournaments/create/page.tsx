@@ -102,7 +102,7 @@ export default function CreateTournamentPage() {
 
         <form
           onSubmit={handleCreate}
-          className="bg-sitecard border-2 border-gold shadow-[6px_6px_0_var(--color-brown)] p-8 shadow-xl space-y-5"
+          className="bg-sitecard border-2 border-gold shadow-[6px_6px_0_var(--color-brown)] p-4 sm:p-8 space-y-5"
         >
           {error && (
             <div className="bg-red-500/10 border border-red-500 text-red-400 px-4 py-3">

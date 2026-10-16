@@ -94,7 +94,7 @@ export default function Register() {
   if (sentTo) {
     return (
       <div className="min-h-screen grid place-items-center bg-sitebg px-4">
-        <div className="w-full max-w-md bg-sitecard p-8 shadow-[6px_6px_0_var(--color-brown)] text-center space-y-4">
+        <div className="w-full max-w-md bg-sitecard p-6 sm:p-8 shadow-[6px_6px_0_var(--color-brown)] text-center space-y-4">
           <h1 className="text-gold text-2xl font-bold">Check your email to confirm your account</h1>
           <p className="text-gray-300">
             We sent a confirmation link to <span className="text-white font-semibold">{sentTo}</span>.
@@ -117,7 +117,7 @@ export default function Register() {
     <div className="min-h-screen grid place-items-center bg-sitebg px-4 py-10">
       <form
         onSubmit={handleRegister}
-        className="w-full max-w-md bg-sitecard p-8 shadow-[6px_6px_0_var(--color-brown)] space-y-4"
+        className="w-full max-w-md bg-sitecard p-6 sm:p-8 shadow-[6px_6px_0_var(--color-brown)] space-y-4"
       >
         <h1 className="text-gold text-2xl font-bold text-center mb-4">Register</h1>
 

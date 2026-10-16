@@ -47,8 +47,12 @@ export default function PrivacyNoticePage() {
             <li><strong className="text-white">Teams and tournaments:</strong> the teams you create or join, the
               tournaments your team registers for, match check-ins, and the results and screenshots captains submit
               as proof of a match result (these can show in-game names).</li>
-            <li><strong className="text-white">Feedback:</strong> the ratings and comments you send, and the
-              sentiment (positive, neutral or negative) and topics we detect in them.</li>
+            <li><strong className="text-white">Feedback:</strong> the ratings and comments you send (one per
+              tournament, per match and one general), and the sentiment (positive, neutral or negative) and topics
+              we detect in them. To stay within the analysis limits, we also note when your feedback was analysed;
+              this note is deleted after one day.</li>
+            <li><strong className="text-white">Pick&apos;em predictions:</strong> which team you picked to win a
+              match, and whether the pick was right.</li>
             <li><strong className="text-white">Viewing activity:</strong> which live streams you opened and on which
               day. While a stream page is open, we also see that you are watching it right now; that is not saved.</li>
             <li><strong className="text-white">Consent:</strong> the date and time you agreed to this notice.</li>
@@ -81,7 +85,11 @@ export default function PrivacyNoticePage() {
         <Section title="4. Who can see it">
           <ul className="list-disc pl-6 space-y-1">
             <li><strong className="text-white">Anyone, even without an account:</strong> tournament details,
-              brackets and match results, which include team names.</li>
+              brackets and match results, which include team names, and the percentage of pick&apos;em picks for
+              each team (never who picked what).</li>
+            <li><strong className="text-white">Pick&apos;em leaderboards (logged-in users):</strong> your first name
+              and the first letter of your last name (e.g. &quot;Juan C.&quot;) with your number of correct picks, once
+              you make a pick in that tournament. Nobody else sees your individual picks.</li>
             <li><strong className="text-white">Logged-in users:</strong> teams and their members (name, IGN and
               in-game role), player game profiles (IGN, in-game role, rank), team registrations and announcements.
               Team captains can search players by name or IGN to add them to a team.</li>
@@ -124,7 +132,8 @@ export default function PrivacyNoticePage() {
           <ul className="list-disc pl-6 space-y-1">
             <li><strong className="text-white">Deleted:</strong> your account and profile (including your student
               details), player details, team
-              memberships, teams you captain alone, registrations you made and your viewing activity.</li>
+              memberships, teams you captain alone, registrations you made, your pick&apos;em picks and your viewing
+              activity.</li>
             <li><strong className="text-white">Kept without your name:</strong> your feedback (rating, comment and
               sentiment), so event statistics stay correct. It is no longer linked to you. Saved reports may contain
               totals and short examples of feedback comments.</li>

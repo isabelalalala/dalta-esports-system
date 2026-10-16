@@ -102,7 +102,8 @@ export default function MyRegistrationsPage() {
           <div className="mb-6 bg-red-500/10 border border-red-500 text-red-300 px-4 py-3">{error}</div>
         )}
 
-        {registrations.length === 0 ? (
+        {/* A failed load shows the error above, not "nothing here" */}
+        {registrations.length === 0 && error ? null : registrations.length === 0 ? (
           <div className="text-center bg-sitecard border border-brown p-12 text-gray-400">
             Your teams haven&apos;t registered for any tournament yet.{' '}
             <Link href="/tournaments" className="text-gold underline">Browse tournaments</Link>

@@ -115,7 +115,8 @@ export default function NotificationsPage() {
 
         {error && <div className="bg-red-500/10 border border-red-500 text-red-300 px-4 py-3">{error}</div>}
 
-        {items.length === 0 ? (
+        {/* A failed load shows the error above, not "nothing here" */}
+        {items.length === 0 && error ? null : items.length === 0 ? (
           <p className="text-gray-400 text-center py-12">
             {unreadOnly ? 'You have no unread notifications.' : 'No notifications yet.'}
           </p>

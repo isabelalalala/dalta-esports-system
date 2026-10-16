@@ -142,7 +142,8 @@ export default function AnnouncementsPage() {
           ))}
         </select>
 
-        {visible.length === 0 ? (
+        {/* A failed load shows the error above, not "nothing here" */}
+        {visible.length === 0 && error ? null : visible.length === 0 ? (
           <p className="text-gray-400 text-center py-12">No announcements yet.</p>
         ) : (
           <div className="space-y-4">

@@ -183,7 +183,8 @@ export default function ActivityLogPage() {
 
         {error && <div className="bg-red-500/10 border border-red-500 text-red-300 px-4 py-3">{error}</div>}
 
-        {logs.length === 0 ? (
+        {/* A failed load shows the error above, not "nothing here" */}
+        {logs.length === 0 && error ? null : logs.length === 0 ? (
           <p className="text-gray-400 text-center py-12">No activity matches these filters.</p>
         ) : (
           <ul className="bg-sitecard border border-brown divide-y divide-brown">

@@ -28,6 +28,9 @@ Full title: "DALTA Esports: Tournament Management System with AI-Powered Feedbac
 - `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`: Supabase (safe for the browser).
 - `GEMINI_API_KEY`: server only, never `NEXT_PUBLIC_`. Free key from Google AI Studio.
 - `GEMINI_MODEL`: optional, default `gemini-3.5-flash-lite`.
+- `FEEDBACK_SERVER_KEY`: server only. Must equal the Vault secret `feedback_server_key` (see
+  `202610181000_feedback_protection.sql`); lets the server save sentiment and use the Gemini rate limit.
+  Without it, feedback is saved but stays "pending analysis".
 - `NEXT_PUBLIC_SITE_URL`: the app's public address, e.g. `https://<app>.up.railway.app` (no trailing slash). Used
   for link previews (metadataBase), shared links and calendar files. Defaults to http://localhost:3000.
 - All of them live in `.env.local` (git-ignored) and must also be set in Railway when deploying.
@@ -72,6 +75,7 @@ Enforced by a CHECK constraint on `profiles.role` (migration `202610161200_role_
 
 ## Current schema (public)
 All migrations are in `supabase/migrations/` and have been run, in filename order (202610151200 … 202610171800).
+`202610181000_feedback_protection` (plus its Vault setup steps) and `202610181100_predictions` are new and must be run.
 Readers: "anyone" = also logged out; "logged-in" = any role; "admin/staff" = organizers only.
 
 **Accounts (Module 1)**
@@ -145,6 +149,23 @@ Readers: "anyone" = also logged out; "logged-in" = any role; "admin/staff" = org
   match upload; the two teams and staff read (signed URLs); no update/delete from the app. Deleting a match or
   tournament does NOT delete its files (remove them in Supabase Storage if needed).
 
+**Pick'em predictions** (audience engagement, `202610181100_predictions`)
+- `predictions`: id, user_id (→ profiles, cascade), match_id (→ matches, cascade: regenerating a bracket deletes
+  its picks), predicted_winner_team_id (→ teams), is_correct (null until the match has a winner), created_at,
+  updated_at. UNIQUE (user_id, match_id). Users read/insert/update/delete only their own rows.
+- `check_prediction()` trigger: picks lock when the match is not `scheduled` OR scheduled_at has passed; both teams
+  must be known; the pick must be team A or B; admin/staff can't pick; players can't pick their own team's match;
+  users never set is_correct.
+- `mark_predictions()` (AFTER UPDATE OF winner_team_id on matches, flag `app.marking_predictions`) marks every pick
+  of the match when a winner is set/changed (approve, override, forfeit, direct edit) and clears it when removed.
+- `get_prediction_split(match_ids[])` (anon + authenticated): totals per match and team only.
+  `get_prediction_leaderboard(tournament)` (logged-in): top 20 + your row, names as "first name + initial",
+  ranked by correct desc, then decided asc.
+- UI: `components/PredictionsProvider.tsx` (loads splits + own picks for many matches at once) and
+  `components/PredictionPicker.tsx` (full on `/matches/[id]` and `/t/[id]/match/[matchId]`, `compact` under each
+  bracket box through `Bracket`'s `renderBelow`), leaderboard `app/tournaments/[id]/PickemLeaderboard.tsx`
+  (top 3 on `/tournaments/[id]`, full on `/tournaments/[id]/predictions`). Types/rules in `utils/predictions.ts`.
+
 **Event information (Module 3)**
 - `announcements`: id, title, body, tournament_id (empty = general; deleted with the tournament), pinned,
   created_by, created_at, updated_at. Logged-in read; only admins post, edit and delete.
@@ -169,9 +190,18 @@ Readers: "anyone" = also logged out; "logged-in" = any role; "admin/staff" = org
   created_at. Users insert their own (without sentiment) and read their own; admins read all and write ONLY the
   sentiment fields (trigger); admins delete. Staff can't read feedback (since 202610162300); they only get counts
   and average ratings through `report_engagement()`.
-- Notes for reports: a user can send any number of feedback rows (no unique constraint). `topics` mix praise and
-  complaints; "common concerns" = topics on negative feedback. Unclassified rows still have a rating.
-  Opening `/admin/feedback` classifies one batch automatically.
+- Since 202610181000: match_id (optional, → matches, set null; the tournament is filled in from the match),
+  target_removed (set when its tournament/match is deleted), analysis_attempts, analysis_error, analysis_attempted_at.
+  One feedback per user per tournament, per match, and one general (unique index `feedback_one_per_target`,
+  nulls not distinct, ignores target_removed rows).
+- Sending: POST `/api/feedback` saves as the user, then classifies right away through `utils/feedback-analysis.ts`
+  (server only): `claim_gemini_call()` rate limit (10/min, 500/day app-wide, 5 per user per 10 min, table
+  `gemini_calls`, rows kept 1 day) → Gemini (15 s timeout) → `save_feedback_sentiment()`; on any failure
+  `mark_feedback_pending()` records the reason ("pending analysis" = sentiment is null). These three functions
+  require FEEDBACK_SERVER_KEY (checked against Vault by `feedback_server_key_ok()`). `/admin/feedback` no longer
+  calls Gemini on open; "Retry pending analysis" (POST `/api/feedback/classify`, admin) retries 20 at a time.
+- Notes for reports: `topics` mix praise and complaints; "common concerns" = topics on negative feedback.
+  Pending rows still have a rating.
 
 **Administrative reports (Module 6)**, DFD store D5 "Analytics & Engagement DB"
 - `analytics_reports`: id, filters (jsonb, readable names: tournament, game, from, to), data (jsonb:
@@ -244,7 +274,8 @@ Readers: "anyone" = also logged out; "logged-in" = any role; "admin/staff" = org
 `purge_old_activity_logs()`, `purge_old_notifications()` (SQL Editor only), `respond_to_team_invite()`,
 `transfer_team_captaincy()`, `get_my_team_invites()`, `get_team_invites()`, `check_in_match()`, `declare_forfeit()`,
 `get_needs_attention()`, `log_export()`, `get_public_tournament()`, `get_public_calendar()`, `send_checkin_open_notifications()` (pg_cron only), `submit_match_result()`,
-`respond_to_match_result()`, `review_match_result()`.
+`respond_to_match_result()`, `review_match_result()`, `claim_gemini_call()`, `save_feedback_sentiment()`,
+`mark_feedback_pending()` (server key only), `get_prediction_split()`, `get_prediction_leaderboard()`.
 Business rules (roster size, registration checks, match results) are enforced by
 triggers with readable error messages.
 
@@ -252,7 +283,7 @@ triggers with readable error messages.
 - Auth: `/auth/*` (see above). Account: `/profile` (name, game profiles, password, delete account).
 - Players: `/teams`, `/teams/[id]`, `/registrations` (My Registrations), dashboard "My Matches", `/matches/[id]`.
 - Tournaments: `/tournaments`, `/tournaments/create`, `/tournaments/[id]` (details, bracket, announcements,
-  watch-live banner, Admin Panel), `/tournaments/[id]/edit`, `.../registrations`, `.../matches`, `.../streams`.
+  watch-live banner, Admin Panel), `/tournaments/[id]/edit`, `.../registrations`, `.../matches`, `.../streams`, `.../predictions` (pick'em leaderboard).
 - Organizers: `/matches` (Match Management overview), `/admin/users` (admin only), `/admin/feedback` (admin only),
   `/admin/verification` (admin/staff: pending / rejected / verified students), `/admin/website` (admin only: public site editor), `/admin/activity` (admin only:
   activity log, 50 per page, filters by action, user and date).
@@ -284,8 +315,9 @@ triggers with readable error messages.
   `export.<type>`) BEFORE sending; no log, no file. Excel via `write-excel-file` (text cells are always strings,
   so nothing becomes a formula); CSV via `utils/csv.ts`. Times in Philippine time (UTC+8, no DST).
   Buttons: `components/ExportButtons.tsx`.
-- API: POST `/api/feedback/classify` (admin only) sends up to 20 unclassified comments to Gemini in one request
-  (`utils/gemini.ts`, server only) and saves the results as the logged-in organizer.
+- API: POST `/api/feedback` (send + classify) and POST `/api/feedback/classify` (admin retry of pending ones).
+  `utils/gemini.ts` and `utils/feedback-analysis.ts` start with `import 'server-only'` (build fails if a client
+  file imports them).
 - Shared: `components/` (AnnouncementCard, FacebookPlayer, StarRating, VerifiedBadge, PrivacyConsentCheckbox, TeamInvites, ReportChart (Chart.js), ReportFilters);
   `utils/types.ts` (row types), `utils/reports.ts` (report types, chart colors, CSV export),
   `utils/verification.ts` (status labels, school suggestions), `utils/activity.ts` (activity log sentences),
@@ -293,6 +325,10 @@ triggers with readable error messages.
   `utils/tournaments.ts` (dates, status, round labels), `utils/matches.ts` (team names, round counts),
   `utils/streams.ts` (Facebook link check and embed URL), `utils/errors.ts` (`getErrorMessage`).
 - `proxy.ts` lists every page that requires login; add new protected pages there.
+- States: `components/PageLoading.tsx` (`PageLoading` full page, `SectionLoading` inline), `components/PageError.tsx`
+  (page couldn't load), `app/not-found.tsx`, `app/error.tsx`, `app/global-error.tsx` (Next 16: props `error, retry`).
+  `getErrorMessage()` turns raw Postgres/PostgREST/network errors into plain sentences and keeps our own trigger
+  messages. Show the error instead of "No X yet" when a list failed to load.
 
 ## Conventions that apply to every module
 - Pages that use `useParams()` or `useSearchParams()` need a `layout.tsx` with `<Suspense>` (Cache Components is on).
@@ -302,6 +338,9 @@ triggers with readable error messages.
   that a row came back, then show a clear message.
 - Dates without a time (tournament dates) are stored as midnight UTC: use `toDateInput()` and `formatDate()`.
   Real moments (`created_at`, `scheduled_at`) are shown in the viewer's local time.
+- Mobile (375px): no page may scroll sideways. Page padding `px-4` (`sm:p-6/8`), cards `p-4 sm:p-6`, rows with
+  buttons use `flex-col sm:flex-row` or `flex-wrap`, long names get `break-words` (emails `break-all`), wide content
+  (bracket, tables) scrolls inside its own `overflow-x-auto` box.
 - New UI uses Tailwind classes, not inline styles (only exception: `utils/og-card.tsx`, because `next/og` can't
   use Tailwind).
 - One look for the whole app, public and logged in: the logo's yellow and brown on a dark background (the
@@ -365,10 +404,13 @@ Also done: the yellow/brown restyle of every page (one look for public and logge
   → `202610171000_student_verification`; `check_team_member` → `202610171000`; `get_team_roster` → `202610171000`;
   `search_players` → `202610171300_team_invites`; `protect_team_fields` → `202610171300`; `protect_profile_role`,
   `handle_new_user` → `202610170900_privacy_consent`; `log_match` → `202610171400_match_checkin`;
-  `get_needs_attention` → `202610171500_match_results`; `notifications_type_check` → `202610171500`.
+  `get_needs_attention` → `202610171500_match_results`; `notifications_type_check` → `202610171500`;
+  `report_engagement` → `202610181100_predictions` (adds predictions, predictors, prediction_accuracy,
+  audience_accounts, prediction_participation and predictions_by_tournament; older saved reports lack them);
+  `protect_feedback` → `202610181000_feedback_protection`.
 - **Scheduled jobs (pg_cron, enabled)**: `dalta-checkin-open-notifications` every 5 minutes. Manual cleanups run in
   the SQL Editor: `purge_old_activity_logs()` (1 year), `purge_old_notifications()` (read, 90 days).
-- **Privacy Notice**: current version `2026-10-17.2` (`utils/privacy.ts`). A new kind of personal data, or a new
+- **Privacy Notice**: current version `2026-10-18` (`utils/privacy.ts`; pick'em leaderboards). A new kind of personal data, or a new
   group who can see it, means updating `/privacy` and the version (everyone agrees again); small clarifications
   don't change the version.
 - **Logged-out data** comes only from published website rows and the `get_public_tournament()` /

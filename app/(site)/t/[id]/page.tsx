@@ -13,6 +13,8 @@ import CalendarLinks from '@/components/CalendarLinks';
 import LiveRefresher from '@/components/site/LiveRefresher';
 import { EmptyNote, Paragraphs, SectionTitle, SiteBox } from '@/components/site/SiteParts';
 import { SectionLoading } from '@/components/PageLoading';
+import PredictionsProvider from '@/components/PredictionsProvider';
+import PredictionPicker from '@/components/PredictionPicker';
 
 // The server's clock is UTC, so times on this server-rendered page are shown in PH time
 const TZ = 'Asia/Manila';
@@ -146,8 +148,21 @@ async function TournamentContent({ params }: { params: PageProps<'/t/[id]'>['par
         {data.matches.length === 0 ? (
           <EmptyNote>The bracket appears once registration closes and the organizers create it.</EmptyNote>
         ) : (
-          <div className="border-2 border-brownlight bg-sitecard p-4">
-            <Bracket matches={data.matches} teamNames={names} timeZone={TZ} matchHref={(m) => publicMatchPath(t.id, m.id)} />
+          <div className="border-2 border-brownlight bg-sitecard p-4 space-y-3">
+            <p className="text-sm text-gray-400">
+              🎯 Pick&apos;em: pick the winner of each match before it starts (log in first).{' '}
+              <Link href={`/tournaments/${t.id}/predictions`} className="text-gold hover:underline">Leaderboard →</Link>
+            </p>
+            {/* Under each match: the community split, and pick buttons for logged-in audience members */}
+            <PredictionsProvider matches={data.matches}>
+              <Bracket
+                matches={data.matches}
+                teamNames={names}
+                timeZone={TZ}
+                matchHref={(m) => publicMatchPath(t.id, m.id)}
+                renderBelow={(m) => <PredictionPicker match={m} teamNames={names} compact />}
+              />
+            </PredictionsProvider>
           </div>
         )}
       </section>

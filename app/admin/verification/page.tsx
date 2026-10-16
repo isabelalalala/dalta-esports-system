@@ -122,7 +122,7 @@ export default function VerificationPage() {
         {message && <div className="bg-green-500/10 border border-green-500 text-green-300 px-4 py-3">{message}</div>}
 
         <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             {TABS.map((t) => (
               <button
                 key={t}
@@ -143,7 +143,8 @@ export default function VerificationPage() {
           />
         </div>
 
-        {visible.length === 0 ? (
+        {/* A failed load shows the error above, not "nothing here" */}
+        {visible.length === 0 && error ? null : visible.length === 0 ? (
           <p className="text-gray-400 text-center py-12">
             {tab === 'pending' ? 'No players are waiting for verification.' : 'No players here.'}
           </p>
@@ -156,15 +157,13 @@ export default function VerificationPage() {
                   <div className="flex flex-wrap justify-between gap-4">
                     <div>
                       <p className="font-bold">{p.full_name || <span className="italic text-gray-500">No name</span>}</p>
-                      <p className="text-sm text-gray-400">{p.email}</p>
+                      <p className="text-sm text-gray-400 break-all">{p.email}</p>
                     </div>
-                    <dl className="grid grid-cols-3 gap-x-6 gap-y-1 text-sm">
-                      <dt className="text-gray-500">Student ID</dt>
-                      <dt className="text-gray-500">School</dt>
-                      <dt className="text-gray-500">Course / Year</dt>
-                      <dd className="font-semibold">{p.student_id}</dd>
-                      <dd>{p.school}</dd>
-                      <dd>{p.course_year}</dd>
+                    {/* One column on phones, three side by side on larger screens */}
+                    <dl className="grid grid-cols-1 sm:grid-cols-3 gap-x-6 gap-y-2 text-sm">
+                      <div><dt className="text-gray-500">Student ID</dt><dd className="font-semibold break-all">{p.student_id}</dd></div>
+                      <div><dt className="text-gray-500">School</dt><dd>{p.school}</dd></div>
+                      <div><dt className="text-gray-500">Course / Year</dt><dd>{p.course_year}</dd></div>
                     </dl>
                   </div>
 

@@ -252,13 +252,13 @@ export default function ManageTeamPage() {
   const isSolo = maxPlayers <= 1;
 
   return (
-    <div className="min-h-screen bg-sitebg text-white p-8">
+    <div className="min-h-screen bg-sitebg text-white px-4 py-6 sm:p-8">
       <div className="max-w-3xl mx-auto">
         <Link href="/teams" className="text-gold hover:underline mb-6 inline-block">
           ← Back to My Teams
         </Link>
 
-        <div className="bg-sitecard border-2 border-gold shadow-[6px_6px_0_var(--color-brown)] p-8">
+        <div className="bg-sitecard border-2 border-gold shadow-[6px_6px_0_var(--color-brown)] p-4 sm:p-8">
           {editing ? (
             <form onSubmit={handleSaveTeam} className="space-y-3">
               <input
@@ -285,9 +285,9 @@ export default function ManageTeamPage() {
               </div>
             </form>
           ) : (
-            <div className="flex justify-between items-start gap-4">
+            <div className="flex flex-wrap justify-between items-start gap-4">
               <div>
-                <h1 className="font-pixel text-xl sm:text-2xl leading-relaxed text-gold">{team.name}</h1>
+                <h1 className="font-pixel text-lg sm:text-2xl leading-relaxed text-gold break-words">{team.name}</h1>
                 <p className="text-gray-400 mt-1 uppercase text-xs font-bold tracking-widest">{team.games?.name}</p>
                 {team.description && <p className="text-gray-300 mt-4">{team.description}</p>}
               </div>
@@ -310,7 +310,7 @@ export default function ManageTeamPage() {
             </div>
           )}
 
-          <div className="mt-8 flex justify-between items-baseline">
+          <div className="mt-8 flex flex-wrap justify-between items-baseline gap-2">
             <h2 className="text-xl font-bold">Roster</h2>
             <span className="text-gray-400 text-sm">
               {roster.length} / {maxPlayers} players
@@ -325,7 +325,7 @@ export default function ManageTeamPage() {
 
           <ul className="mt-4 divide-y divide-brown">
             {roster.map((member) => (
-              <li key={member.user_id} className="py-3 flex justify-between items-center gap-4">
+              <li key={member.user_id} className="py-3 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 sm:gap-4">
                 <div>
                   <p className="font-semibold">
                     {member.ign || <span className="text-gray-500 italic">No IGN</span>}
@@ -372,14 +372,14 @@ export default function ManageTeamPage() {
                     Search by IGN or name. Only players with a {team.games?.name} game profile who
                     aren&apos;t on a {team.games?.name} team are shown. They join when they accept your invite.
                   </p>
-                  <form onSubmit={handleSearch} className="flex gap-2">
+                  <form onSubmit={handleSearch} className="flex flex-col sm:flex-row gap-2">
                     <input
                       type="text" value={search} onChange={(e) => setSearch(e.target.value)}
                       placeholder="IGN or name" className={inputClass} required
                     />
                     <button
                       type="submit" disabled={busy}
-                      className="bg-gold text-black px-6 font-bold hover:bg-golddark transition disabled:opacity-50"
+                      className="bg-gold text-black px-6 py-2 font-bold hover:bg-golddark transition disabled:opacity-50"
                     >
                       Search
                     </button>
@@ -392,7 +392,7 @@ export default function ManageTeamPage() {
                   {results && results.length > 0 && (
                     <ul className="mt-3 divide-y divide-brown">
                       {results.map((player) => (
-                        <li key={player.user_id} className="py-2 flex justify-between items-center gap-4">
+                        <li key={player.user_id} className="py-2 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1 sm:gap-4">
                           <div>
                             <p className="font-semibold">
                               {player.ign}
@@ -425,7 +425,7 @@ export default function ManageTeamPage() {
                   <h4 className="font-semibold text-sm text-gray-300 mb-2">Waiting for an answer</h4>
                   <ul className="divide-y divide-brown">
                     {pendingInvites.map((invite) => (
-                      <li key={invite.invite_id} className="py-2 flex justify-between items-center gap-4">
+                      <li key={invite.invite_id} className="py-2 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1 sm:gap-4">
                         <div>
                           <p className="font-semibold">{invite.ign || <span className="text-gray-500 italic">No IGN</span>}</p>
                           {invite.full_name && <p className="text-gray-500 text-sm">{invite.full_name}</p>}

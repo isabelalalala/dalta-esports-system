@@ -182,7 +182,8 @@ export default function ManageStreamsPage() {
           />
         )}
 
-        {streams.length === 0 ? (
+        {/* A failed load shows the error above, not "nothing here" */}
+        {streams.length === 0 && error ? null : streams.length === 0 ? (
           <p className="text-gray-400 text-center py-12">No streams yet. Add the Facebook Live link of your broadcast.</p>
         ) : (
           <div className="space-y-4">
