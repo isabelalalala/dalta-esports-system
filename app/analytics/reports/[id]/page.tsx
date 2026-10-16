@@ -11,6 +11,8 @@ import EngagementSection from '../../EngagementSection';
 import {
   activityCsv, buildCsv, describeFilters, downloadCsv, engagementCsv, sentimentCsv, type SavedReport,
 } from '@/utils/reports';
+import PageLoading from '@/components/PageLoading';
+import PageError from '@/components/PageError';
 
 // A generated report, shown from its saved copy ("display after report": print or export).
 export default function SavedReportPage() {
@@ -42,14 +44,9 @@ export default function SavedReportPage() {
     if (id) load();
   }, [supabase, id]);
 
-  if (loading) return <div className="min-h-screen bg-sitebg text-white p-10 text-center">Loading...</div>;
+  if (loading) return <PageLoading />;
   if (!report) {
-    return (
-      <div className="min-h-screen bg-sitebg text-red-400 p-10 text-center">
-        {error}{' '}
-        <Link href="/dashboard" className="text-gold underline">Back to Dashboard</Link>
-      </div>
-    );
+    return <PageError message={error || 'Report not found. It may have been deleted.'} backHref="/analytics" backLabel="Back to Analytics" />;
   }
 
   const generatedAt = new Date(report.generated_at).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' });

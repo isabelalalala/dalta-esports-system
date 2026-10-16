@@ -10,6 +10,8 @@ import { roundLabel } from '@/utils/tournaments';
 import { fetchRoundCounts, fetchTeamNames } from '@/utils/matches';
 import { streamStatusStyles } from '@/utils/streams';
 import FacebookPlayer from '@/components/FacebookPlayer';
+import PageLoading from '@/components/PageLoading';
+import PageError from '@/components/PageError';
 
 // Watch page: Facebook player + a scoreboard that updates in real time
 export default function WatchStreamPage() {
@@ -132,9 +134,9 @@ export default function WatchStreamPage() {
     };
   }, [supabase, tournamentId, matchId]);
 
-  if (loading) return <div className="min-h-screen bg-sitebg text-white p-10 text-center">Loading...</div>;
+  if (loading) return <PageLoading />;
   if (!stream) {
-    return <div className="min-h-screen bg-sitebg text-red-500 p-10 text-center">{error || 'Stream not found.'}</div>;
+    return <PageError message={error || 'Stream not found. It may have been deleted.'} backHref="/live" backLabel="Back to Live Streams" />;
   }
 
   const name = (teamId: string | null) => (teamId ? teamNames[teamId] ?? 'Unknown team' : 'TBD');

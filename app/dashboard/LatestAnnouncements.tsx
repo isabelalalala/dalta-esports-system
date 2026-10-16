@@ -6,6 +6,7 @@ import { createClient } from '@/utils/supabase/client';
 import { getErrorMessage } from '@/utils/errors';
 import type { Announcement } from '@/utils/types';
 import AnnouncementCard from '@/components/AnnouncementCard';
+import { SectionLoading } from '@/components/PageLoading';
 
 // The 3 newest announcements (pinned first), shown on every role's dashboard
 export default function LatestAnnouncements() {
@@ -43,7 +44,7 @@ export default function LatestAnnouncements() {
       </div>
 
       {loading ? (
-        <p className="text-gray-400">Loading...</p>
+        <SectionLoading />
       ) : error ? (
         <p className="text-red-300">{error}</p>
       ) : announcements.length === 0 ? (

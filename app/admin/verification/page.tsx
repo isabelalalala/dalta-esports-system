@@ -6,6 +6,8 @@ import { createClient } from '@/utils/supabase/client';
 import { getErrorMessage } from '@/utils/errors';
 import type { Profile, VerificationStatus } from '@/utils/types';
 import { verificationLabels } from '@/utils/verification';
+import PageLoading from '@/components/PageLoading';
+import PageError from '@/components/PageError';
 
 const inputClass =
   'border border-brownlight bg-sitebg px-4 py-2 text-white outline-none focus:border-gold';
@@ -35,7 +37,8 @@ export default function VerificationPage() {
       try {
         const { data: { session } } = await supabase.auth.getSession();
         if (!session) return;
-        const { data: myRole } = await supabase.rpc('get_my_role');
+        const { data: myRole, error: roleError } = await supabase.rpc('get_my_role');
+        if (roleError) throw roleError;
         setRole(myRole ?? '');
         if (myRole !== 'admin' && myRole !== 'staff') return;
 
@@ -81,9 +84,11 @@ export default function VerificationPage() {
     }
   };
 
-  if (loading) return <div className="min-h-screen bg-sitebg text-white p-10 text-center">Loading...</div>;
+  if (loading) return <PageLoading />;
 
   // Hiding the page is only for convenience; RLS and review_student_verification() also check the role.
+  // The role couldn't be loaded: show why, not "only admins"
+  if (!role && error) return <PageError message={error} />;
   if (role !== 'admin' && role !== 'staff') {
     return (
       <div className="min-h-screen bg-sitebg text-white p-10 text-center">

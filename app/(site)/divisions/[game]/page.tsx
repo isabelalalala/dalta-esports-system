@@ -5,12 +5,13 @@ import { notFound } from 'next/navigation';
 import { getDivisions, getOfficialTeams } from '@/utils/site-data';
 import { siteImageUrl } from '@/utils/site';
 import { EmptyNote, PageTitle, Paragraphs, SiteBox } from '@/components/site/SiteParts';
+import { SectionLoading } from '@/components/PageLoading';
 
 // One game division and its official teams.
 // The game comes from the URL (only known at request time), so the content is inside Suspense.
 export default function DivisionPage({ params }: PageProps<'/divisions/[game]'>) {
   return (
-    <Suspense fallback={<p className="text-gray-500">Loading...</p>}>
+    <Suspense fallback={<SectionLoading />}>
       <Division params={params} />
     </Suspense>
   );

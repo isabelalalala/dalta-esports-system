@@ -28,9 +28,9 @@ export default function SentimentSection({ report }: { report: SentimentReport }
 
       {t.pending > 0 && (
         <div className="bg-yellow-500/10 border border-yellow-500 text-yellow-200 px-4 py-3 print:hidden">
-          {t.pending} feedback {t.pending === 1 ? 'is' : 'are'} not classified yet, so they only count towards the
+          {t.pending} feedback {t.pending === 1 ? 'is' : 'are'} pending analysis, so they only count towards the
           rating.{' '}
-          <Link href="/admin/feedback" className="underline">Classify them on Feedback Analysis</Link>, then generate again.
+          <Link href="/admin/feedback" className="underline">Retry them on Feedback Analysis</Link>, then generate again.
         </div>
       )}
 
@@ -40,7 +40,7 @@ export default function SentimentSection({ report }: { report: SentimentReport }
         <StatTile label="Positive" value={t.positive} note={percent(t.positive)} />
         <StatTile label="Neutral" value={t.neutral} note={percent(t.neutral)} />
         <StatTile label="Negative" value={t.negative} note={percent(t.negative)} />
-        <StatTile label="Not classified" value={t.pending} />
+        <StatTile label="Pending analysis" value={t.pending} />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -79,7 +79,7 @@ export default function SentimentSection({ report }: { report: SentimentReport }
 
       <ReportCard title="Per tournament" note="Score: -1 very negative … 1 very positive.">
         <ReportTable
-          columns={['Tournament', 'Feedback', 'Positive', 'Neutral', 'Negative', 'Not classified', 'Avg rating', 'Avg score']}
+          columns={['Tournament', 'Feedback', 'Positive', 'Neutral', 'Negative', 'Pending analysis', 'Avg rating', 'Avg score']}
           rows={report.by_tournament.map((x) => [
             x.tournament_name ?? 'General', x.total, x.positive, x.neutral, x.negative, x.pending,
             formatRating(x.avg_rating), x.avg_score === null ? '–' : Number(x.avg_score).toFixed(2),

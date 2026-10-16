@@ -6,6 +6,7 @@ import { createClient } from '@/utils/supabase/client';
 import { getErrorMessage } from '@/utils/errors';
 import type { NeedsAttentionItem } from '@/utils/types';
 import { formatDateTime, roundLabel } from '@/utils/tournaments';
+import { SectionLoading } from '@/components/PageLoading';
 
 // What each kind of item is called, in the order they're shown (most urgent first)
 const kindLabels: Record<string, string> = {
@@ -47,13 +48,12 @@ export default function NeedsAttention() {
     load();
   }, [supabase]);
 
-  if (!loaded) return null;
-
   return (
     <section className="bg-sitecard border-2 border-gold shadow-[6px_6px_0_var(--color-brown)] p-6 mt-8 space-y-3">
       <h2 className="text-xl font-bold text-gold">⚠️ Needs attention {items.length > 0 && `(${items.length})`}</h2>
-      {error && <p className="text-red-300 text-sm">{error}</p>}
-      {!error && items.length === 0 && <p className="text-gray-400 text-sm">Nothing needs attention right now.</p>}
+      {!loaded && <SectionLoading />}
+      {error && <p role="alert" className="text-red-300 text-sm">{error}</p>}
+      {loaded && !error && items.length === 0 && <p className="text-gray-400 text-sm">Nothing needs attention right now.</p>}
       {items.length > 0 && (
         <ul className="divide-y divide-brown">
           {items.map((item) => (

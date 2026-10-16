@@ -6,6 +6,7 @@ import { createClient } from '@/utils/supabase/client';
 import { getErrorMessage } from '@/utils/errors';
 import type { Match } from '@/utils/types';
 import { formatDateTime, roundLabel } from '@/utils/tournaments';
+import { SectionLoading } from '@/components/PageLoading';
 
 type UpcomingMatch = Match & { tournaments: { name: string } | null };
 
@@ -89,7 +90,7 @@ export default function MyMatches({ userId }: { userId: string }) {
       <h2 className="text-xl font-bold text-gold mb-4">⚔️ My Matches</h2>
 
       {loading ? (
-        <p className="text-gray-400">Loading...</p>
+        <SectionLoading label="Loading your matches..." />
       ) : error ? (
         <p className="text-red-300">{error}</p>
       ) : matches.length === 0 ? (

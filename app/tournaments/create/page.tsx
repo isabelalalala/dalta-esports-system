@@ -31,7 +31,9 @@ export default function CreateTournamentPage() {
   // Load the supported games for the dropdown
   useEffect(() => {
     const fetchGames = async () => {
-      const { data } = await supabase.from('games').select('*').order('name');
+      const { data, error: gamesError } = await supabase.from('games').select('*').order('name');
+      // Without the games the form can't be filled in, so say so instead of showing an empty list
+      if (gamesError) setError(getErrorMessage(gamesError, 'Could not load the list of games. Please reload the page.'));
       setGames(data || []);
     };
     fetchGames();

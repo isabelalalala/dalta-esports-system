@@ -261,14 +261,24 @@ export interface Feedback {
   user_id: string | null;
   // null = general feedback
   tournament_id: string | null;
+  // Set = feedback about one match (tournament_id is then that match's tournament)
+  match_id: string | null;
+  // The tournament or match was deleted (the feedback is kept for reports)
+  target_removed: boolean;
   rating: number;
   comment: string;
-  // Empty until an organizer runs the classification
+  // Empty = "pending analysis" (classified when sent; admins retry the ones that failed)
   sentiment: Sentiment | null;
   sentiment_score: number | null;
   topics: string[];
   classified_at: string | null;
+  analysis_attempts: number;
+  // Why the last classification try failed (Gemini down, limit reached, ...)
+  analysis_error: string | null;
+  analysis_attempted_at: string | null;
   created_at: string;
   // Only present when selected with `tournaments(...)`
   tournaments?: { id: string; name: string } | null;
+  // Only present when selected with `matches(...)`
+  matches?: { id: string; round: number; match_number: number } | null;
 }

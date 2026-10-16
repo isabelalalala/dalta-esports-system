@@ -7,6 +7,8 @@ import Link from 'next/link';
 import { getErrorMessage } from '@/utils/errors';
 import type { PendingTeamInvite, PlayerSearchResult, RosterMember, Team } from '@/utils/types';
 import VerifiedBadge from '@/components/VerifiedBadge';
+import PageLoading from '@/components/PageLoading';
+import PageError from '@/components/PageError';
 
 const inputClass =
   'w-full bg-sitebg border border-gray-700 p-3 text-white outline-none focus:border-gold';
@@ -234,12 +236,10 @@ export default function ManageTeamPage() {
     }
   };
 
-  if (loading) return <div className="min-h-screen bg-sitebg text-white p-10 text-center">Loading...</div>;
+  if (loading) return <PageLoading />;
   if (!team) {
     return (
-      <div className="min-h-screen bg-sitebg text-red-500 p-10 text-center">
-        {error || 'Team not found.'}
-      </div>
+      <PageError message={error || 'Team not found. It may have been deleted.'} backHref="/teams" backLabel="Back to My Teams" />
     );
   }
 

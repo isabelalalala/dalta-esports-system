@@ -8,6 +8,8 @@ import { getErrorMessage } from '@/utils/errors';
 import type { Match, MatchStatus, Profile, Tournament } from '@/utils/types';
 import { formatDateTime, fromDateTimeInput, isBye, roundLabel, toDateTimeInput } from '@/utils/tournaments';
 import ExportButtons from '@/components/ExportButtons';
+import PageLoading from '@/components/PageLoading';
+import PageError from '@/components/PageError';
 
 const inputClass =
   'w-full border border-brownlight bg-sitebg px-3 py-2 text-white outline-none focus:border-gold disabled:opacity-50';
@@ -35,11 +37,12 @@ export default function MatchManagementPage() {
         const { data: { session } } = await supabase.auth.getSession();
         if (!session) return;
 
-        const { data: profileData } = await supabase
+        const { data: profileData, error: profileError } = await supabase
           .from('profiles')
           .select('*')
           .eq('id', session.user.id)
           .single();
+        if (profileError) throw profileError;
         setProfile(profileData);
 
         const { data: tournamentData, error: tournError } = await supabase
@@ -95,9 +98,9 @@ export default function MatchManagementPage() {
     if (id) fetchData();
   }, [id, supabase, reloadCount]);
 
-  if (loading) return <div className="min-h-screen bg-sitebg text-white p-10 text-center">Loading...</div>;
+  if (loading) return <PageLoading />;
   if (!tournament) {
-    return <div className="min-h-screen bg-sitebg text-red-500 p-10 text-center">{error || 'Tournament not found.'}</div>;
+    return <PageError message={error || 'Tournament not found. It may have been deleted.'} backHref="/tournaments" backLabel="Back to Tournaments" />;
   }
 
   // Hiding the page is only for convenience; the database refuses changes from other roles.

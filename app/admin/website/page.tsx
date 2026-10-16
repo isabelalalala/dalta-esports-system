@@ -6,6 +6,9 @@ import { createClient } from '@/utils/supabase/client';
 import { officerCategoryLabels, type OfficerCategory } from '@/utils/site';
 import ListEditor, { type FieldConfig, type Row } from './ListEditor';
 import SiteTextEditor from './SiteTextEditor';
+import PageLoading from '@/components/PageLoading';
+import PageError from '@/components/PageError';
+import { getErrorMessage } from '@/utils/errors';
 
 const TABS = ['Site text', 'Carousel', 'Campaigns', 'Events', 'Divisions', 'Officers', 'Official teams'] as const;
 type Tab = (typeof TABS)[number];
@@ -26,28 +29,38 @@ export default function WebsiteAdminPage() {
   const supabase = createClient();
   const [role, setRole] = useState('');
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
   const [tab, setTab] = useState<Tab>('Site text');
   const [games, setGames] = useState<{ value: string; label: string }[]>([]);
   const [tournaments, setTournaments] = useState<{ value: string; label: string }[]>([]);
 
   useEffect(() => {
     const load = async () => {
-      const { data: myRole } = await supabase.rpc('get_my_role');
-      setRole(myRole ?? '');
-      if (myRole === 'admin') {
-        const [gamesRes, toursRes] = await Promise.all([
-          supabase.from('games').select('id, name').order('name'),
-          supabase.from('tournaments').select('id, name').order('start_date', { ascending: false }),
-        ]);
-        setGames((gamesRes.data || []).map((g) => ({ value: g.id, label: g.name })));
-        setTournaments((toursRes.data || []).map((t) => ({ value: t.id, label: t.name })));
+      try {
+        const { data: myRole, error: roleError } = await supabase.rpc('get_my_role');
+        if (roleError) throw roleError;
+        setRole(myRole ?? '');
+        if (myRole === 'admin') {
+          const [gamesRes, toursRes] = await Promise.all([
+            supabase.from('games').select('id, name').order('name'),
+            supabase.from('tournaments').select('id, name').order('start_date', { ascending: false }),
+          ]);
+          if (gamesRes.error) throw gamesRes.error;
+          if (toursRes.error) throw toursRes.error;
+          setGames((gamesRes.data || []).map((g) => ({ value: g.id, label: g.name })));
+          setTournaments((toursRes.data || []).map((t) => ({ value: t.id, label: t.name })));
+        }
+      } catch (err) {
+        setLoadError(getErrorMessage(err, 'Failed to load the website editor'));
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
     load();
   }, [supabase]);
 
-  if (loading) return <div className="min-h-screen bg-sitebg text-white p-10 text-center">Loading...</div>;
+  if (loading) return <PageLoading />;
+  if (loadError) return <PageError message={loadError} />;
   if (role !== 'admin') {
     return (
       <div className="min-h-screen bg-sitebg text-white p-10 text-center">

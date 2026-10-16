@@ -12,6 +12,7 @@ import ShareButton from '@/components/ShareButton';
 import CalendarLinks from '@/components/CalendarLinks';
 import LiveRefresher from '@/components/site/LiveRefresher';
 import { EmptyNote, Paragraphs, SectionTitle, SiteBox } from '@/components/site/SiteParts';
+import { SectionLoading } from '@/components/PageLoading';
 
 // The server's clock is UTC, so times on this server-rendered page are shown in PH time
 const TZ = 'Asia/Manila';
@@ -36,7 +37,7 @@ export async function generateMetadata({ params }: PageProps<'/t/[id]'>): Promis
 // The id comes from the URL (only known at request time), so the content is inside Suspense.
 export default function PublicTournamentPage({ params }: PageProps<'/t/[id]'>) {
   return (
-    <Suspense fallback={<p className="text-gray-500">Loading...</p>}>
+    <Suspense fallback={<SectionLoading />}>
       <TournamentContent params={params} />
     </Suspense>
   );

@@ -5,6 +5,8 @@ import Link from 'next/link';
 import { createClient } from '@/utils/supabase/client';
 import { getErrorMessage } from '@/utils/errors';
 import { ACTION_GROUPS, describeActivity, type ActivityLog } from '@/utils/activity';
+import PageLoading from '@/components/PageLoading';
+import PageError from '@/components/PageError';
 
 const PAGE_SIZE = 50;
 
@@ -72,7 +74,8 @@ export default function ActivityLogPage() {
       try {
         const { data: { session } } = await supabase.auth.getSession();
         if (!session) return;
-        const { data: myRole } = await supabase.rpc('get_my_role');
+        const { data: myRole, error: roleError } = await supabase.rpc('get_my_role');
+        if (roleError) throw roleError;
         setRole(myRole ?? '');
         if (myRole !== 'admin') return;
 
@@ -108,9 +111,11 @@ export default function ActivityLogPage() {
     }
   };
 
-  if (loading) return <div className="min-h-screen bg-sitebg text-white p-10 text-center">Loading...</div>;
+  if (loading) return <PageLoading />;
 
   // Hiding the page is only for convenience; RLS returns nothing to other roles.
+  // The role couldn't be loaded: show why, not "only admins"
+  if (!role && error) return <PageError message={error} />;
   if (role !== 'admin') {
     return (
       <div className="min-h-screen bg-sitebg text-white p-10 text-center">

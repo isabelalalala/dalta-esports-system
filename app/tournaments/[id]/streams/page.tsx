@@ -10,6 +10,8 @@ import { roundLabel } from '@/utils/tournaments';
 import { fetchTeamNames } from '@/utils/matches';
 import { streamStatusStyles, validateFacebookUrl } from '@/utils/streams';
 import FacebookPlayer from '@/components/FacebookPlayer';
+import PageLoading from '@/components/PageLoading';
+import PageError from '@/components/PageError';
 
 const inputClass =
   'w-full border border-brownlight bg-sitebg px-4 py-3 text-white placeholder-gray-500 outline-none focus:border-gold';
@@ -38,11 +40,12 @@ export default function ManageStreamsPage() {
         const { data: { session } } = await supabase.auth.getSession();
         if (!session) return;
 
-        const { data: profileData } = await supabase
+        const { data: profileData, error: profileError } = await supabase
           .from('profiles')
           .select('id, role')
           .eq('id', session.user.id)
           .single();
+        if (profileError) throw profileError;
         setProfile(profileData);
 
         const { data: tournamentData, error: tournError } = await supabase
@@ -130,9 +133,9 @@ export default function ManageStreamsPage() {
     setReloadCount((n) => n + 1);
   };
 
-  if (loading) return <div className="min-h-screen bg-sitebg text-white p-10 text-center">Loading...</div>;
+  if (loading) return <PageLoading />;
   if (!tournament) {
-    return <div className="min-h-screen bg-sitebg text-red-500 p-10 text-center">{error || 'Tournament not found.'}</div>;
+    return <PageError message={error || 'Tournament not found. It may have been deleted.'} backHref="/tournaments" backLabel="Back to Tournaments" />;
   }
 
   // Hiding the page is only for convenience; the database refuses changes from other roles.

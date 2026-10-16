@@ -13,6 +13,8 @@ import AnnouncementCard from '@/components/AnnouncementCard';
 import VerifiedBadge from '@/components/VerifiedBadge';
 import ShareButton from '@/components/ShareButton';
 import CalendarLinks from '@/components/CalendarLinks';
+import PageLoading from '@/components/PageLoading';
+import PageError from '@/components/PageError';
 
 export default function TournamentDetailsPage() {
   const supabase = createClient();
@@ -53,12 +55,12 @@ export default function TournamentDetailsPage() {
           return;
         }
 
-        const { data: profileData } = await supabase
+        const { data: profileData, error: profileError } = await supabase
           .from('profiles')
           .select('*')
           .eq('id', session.user.id)
           .single();
-
+        if (profileError) throw profileError;
         setProfile(profileData);
 
         const { data, error } = await supabase
@@ -252,12 +254,10 @@ export default function TournamentDetailsPage() {
     }
   };
 
-  if (loading) return <div className="min-h-screen bg-sitebg text-white p-10 text-center">Loading...</div>;
+  if (loading) return <PageLoading />;
   if (!tournament) {
     return (
-      <div className="min-h-screen bg-sitebg text-red-500 p-10 text-center">
-        {error || 'Tournament not found.'}
-      </div>
+      <PageError message={error || 'Tournament not found. It may have been deleted.'} backHref="/tournaments" backLabel="Back to Tournaments" />
     );
   }
 
@@ -287,17 +287,17 @@ export default function TournamentDetailsPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-sitebg text-white p-6">
+    <div className="min-h-screen bg-sitebg text-white px-4 py-6 sm:p-6">
       <div className="max-w-4xl mx-auto">
         <Link href="/tournaments" className="text-gold hover:underline mb-6 inline-block">
           ← Back to Tournaments
         </Link>
 
-        <div className="bg-sitecard border-2 border-gold shadow-[6px_6px_0_var(--color-brown)] p-8 shadow-lg space-y-8">
+        <div className="bg-sitecard border-2 border-gold shadow-[6px_6px_0_var(--color-brown)] p-4 sm:p-8 space-y-8">
           {/* Title and status */}
           <div>
             <div className="flex flex-wrap items-center gap-3 mb-4">
-              <h1 className="font-pixel text-xl sm:text-2xl leading-relaxed text-gold">{tournament.name}</h1>
+              <h1 className="font-pixel text-lg sm:text-2xl leading-relaxed text-gold break-words min-w-0">{tournament.name}</h1>
               <span className={`px-3 py-1 rounded-full border text-xs font-bold uppercase ${statusStyles[status]}`}>
                 {statusLabels[status]}
               </span>
@@ -308,7 +308,7 @@ export default function TournamentDetailsPage() {
               )}
             </div>
             {tournament.description && (
-              <p className="text-gray-300 text-lg whitespace-pre-wrap">{tournament.description}</p>
+              <p className="text-gray-300 text-lg whitespace-pre-wrap break-words">{tournament.description}</p>
             )}
             {/* The public page works without logging in, so it's the one to share */}
             <div className="mt-4 flex flex-wrap items-center gap-3">
@@ -332,8 +332,8 @@ export default function TournamentDetailsPage() {
               href={`/live/${s.id}`}
               className="flex items-center justify-between gap-3 bg-red-600/15 border border-red-500 px-4 py-3 hover:bg-red-600/25 transition"
             >
-              <span className="font-bold text-red-300">📺 Watch live: {s.title}</span>
-              <span className="text-red-300 text-sm">● LIVE →</span>
+              <span className="font-bold text-red-300 min-w-0 break-words">📺 Watch live: {s.title}</span>
+              <span className="text-red-300 text-sm shrink-0">● LIVE →</span>
             </Link>
           ))}
 
@@ -342,7 +342,7 @@ export default function TournamentDetailsPage() {
             {details.map((d) => (
               <div key={d.label} className="bg-sitebg p-4 border border-brown">
                 <span className="text-gray-400 block text-xs uppercase font-bold">{d.label}</span>
-                <span className="text-lg font-semibold">{d.value}</span>
+                <span className="text-lg font-semibold break-words">{d.value}</span>
               </div>
             ))}
           </div>
@@ -367,7 +367,7 @@ export default function TournamentDetailsPage() {
           <div>
             <h2 className="text-xl font-bold mb-2">Rules</h2>
             {tournament.rules ? (
-              <p className="text-gray-300 whitespace-pre-wrap bg-sitebg p-4 border border-brown">
+              <p className="text-gray-300 whitespace-pre-wrap break-words bg-sitebg p-4 border border-brown">
                 {tournament.rules}
               </p>
             ) : (
@@ -375,13 +375,17 @@ export default function TournamentDetailsPage() {
             )}
           </div>
 
-          {/* Bracket */}
-          {matches.length > 0 && (
-            <div>
-              <h2 className="text-xl font-bold mb-3">Bracket</h2>
+          {/* Bracket (scrolls sideways inside its own box on phones) */}
+          <div>
+            <h2 className="text-xl font-bold mb-3">Bracket</h2>
+            {matches.length > 0 ? (
               <Bracket matches={matches} teamNames={teamNames} />
-            </div>
-          )}
+            ) : (
+              <p className="text-gray-500">
+                No bracket yet. It appears here once the organizers generate it from the approved teams.
+              </p>
+            )}
+          </div>
 
           {/* Approved teams */}
           <div>
@@ -391,13 +395,13 @@ export default function TournamentDetailsPage() {
             ) : (
               <ul className="divide-y divide-brown bg-sitebg border border-brown">
                 {approvedTeams.map((reg) => (
-                  <li key={reg.id} className="px-4 py-3 flex justify-between items-center">
-                    <span className="font-semibold">
+                  <li key={reg.id} className="px-4 py-3 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1">
+                    <span className="font-semibold break-words min-w-0">
                       {/* Older registrations have no team, only the typed team_name */}
                       {reg.teams?.name || reg.team_name || 'Unnamed Team'}
                     </span>
                     {reg.teams?.captain && (
-                      <span className="text-gray-400 text-sm">
+                      <span className="text-gray-400 text-sm break-all sm:break-normal">
                         Captain: {reg.teams.captain.full_name || reg.teams.captain.email}
                       </span>
                     )}
@@ -521,7 +525,7 @@ export default function TournamentDetailsPage() {
                 </div>
               )}
 
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-2">
                 <button
                   type="submit"
                   disabled={registering || teams.length === 0 || blockingMembers.length > 0}

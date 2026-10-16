@@ -10,6 +10,8 @@ import {
   describeFilters, emptyFilters, fetchFullReport, validateFilters,
   type ReportFilters as Filters, type SavedReport,
 } from '@/utils/reports';
+import PageLoading from '@/components/PageLoading';
+import PageError from '@/components/PageError';
 
 type ReportListItem = Pick<SavedReport, 'id' | 'filters' | 'generated_at'> & {
   generator: { full_name: string | null; email: string } | null;
@@ -35,7 +37,8 @@ export default function AnalyticsPage() {
       try {
         const { data: { session } } = await supabase.auth.getSession();
         if (!session) return;
-        const { data: myRole } = await supabase.rpc('get_my_role');
+        const { data: myRole, error: roleError } = await supabase.rpc('get_my_role');
+        if (roleError) throw roleError;
         setRole(myRole ?? '');
 
         // Staff only get the engagement stats
@@ -101,10 +104,12 @@ export default function AnalyticsPage() {
   };
 
   if (loading || role === 'staff') {
-    return <div className="min-h-screen bg-sitebg text-white p-10 text-center">Loading...</div>;
+    return <PageLoading />;
   }
 
   // Hiding the page is only for convenience; RLS and the report functions also refuse other roles.
+  // The role couldn't be loaded: show why, not "only admins"
+  if (!role && error) return <PageError message={error} />;
   if (role !== 'admin') {
     return (
       <div className="min-h-screen bg-sitebg text-white p-10 text-center">

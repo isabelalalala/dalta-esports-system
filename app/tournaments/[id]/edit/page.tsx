@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { getErrorMessage } from '@/utils/errors';
 import { toDateInput, validateTournamentDates } from '@/utils/tournaments';
 import type { Game } from '@/utils/types';
+import PageLoading from '@/components/PageLoading';
 
 export default function EditTournamentPage() {
   const supabase = createClient();
@@ -35,7 +36,8 @@ export default function EditTournamentPage() {
   useEffect(() => {
     const fetchTournament = async () => {
       try {
-        const { data: gamesData } = await supabase.from('games').select('*').order('name');
+        const { data: gamesData, error: gamesError } = await supabase.from('games').select('*').order('name');
+        if (gamesError) throw gamesError;
         setGames(gamesData || []);
 
         const { data, error: fetchError } = await supabase
@@ -114,11 +116,7 @@ export default function EditTournamentPage() {
   };
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-sitebg text-white flex items-center justify-center">
-        <p>Loading tournament...</p>
-      </div>
-    );
+    return <PageLoading label="Loading tournament..." />;
   }
 
   return (

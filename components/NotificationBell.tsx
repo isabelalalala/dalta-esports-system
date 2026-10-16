@@ -82,7 +82,7 @@ export default function NotificationBell({ userId }: { userId: string }) {
       >
         🔔
         {unread > 0 && (
-          <span className="absolute -top-0.5 -right-0.5 min-w-5 h-5 px-1 rounded-full bg-[#ff4444] text-white text-[11px] font-bold grid place-items-center">
+          <span className="absolute -top-0.5 -right-0.5 min-w-5 h-5 px-1 rounded-full bg-red-500 text-white text-[11px] font-bold grid place-items-center">
             {unread > 99 ? '99+' : unread}
           </span>
         )}
@@ -93,7 +93,9 @@ export default function NotificationBell({ userId }: { userId: string }) {
           {/* Clicking anywhere outside closes the list */}
           <button className="fixed inset-0 z-40 cursor-default" onClick={() => setOpen(false)} aria-label="Close notifications" />
 
-          <div className="absolute right-0 mt-2 z-50 w-[22rem] max-w-[calc(100vw-2rem)] bg-sitecard border border-brownlight shadow-[6px_6px_0_var(--color-brown)] overflow-hidden">
+          {/* Phones: a full-width panel under the header (the bell isn't at the screen edge, so a
+              dropdown anchored to it would stick out on the left). Larger screens: under the bell. */}
+          <div className="fixed inset-x-4 top-20 z-50 sm:absolute sm:inset-x-auto sm:top-auto sm:right-0 sm:mt-2 sm:w-[22rem] bg-sitecard border border-brownlight shadow-[6px_6px_0_var(--color-brown)] overflow-hidden">
             <div className="flex items-center justify-between px-4 py-3 border-b border-brown">
               <span className="font-bold text-white">Notifications</span>
               <button onClick={handleMarkAll} disabled={unread === 0} className="text-xs text-gold hover:underline disabled:opacity-40 disabled:no-underline">
@@ -104,7 +106,7 @@ export default function NotificationBell({ userId }: { userId: string }) {
             {items.length === 0 ? (
               <p className="px-4 py-8 text-center text-sm text-gray-400">No notifications yet.</p>
             ) : (
-              <ul className="max-h-96 overflow-y-auto divide-y divide-brown">
+              <ul className="max-h-[60vh] sm:max-h-96 overflow-y-auto divide-y divide-brown">
                 {items.map((n) => (
                   <li key={n.id}>
                     <button
@@ -114,7 +116,7 @@ export default function NotificationBell({ userId }: { userId: string }) {
                       <span className="text-lg leading-none mt-0.5">{notificationIcons[n.type]}</span>
                       <span className="flex-1 min-w-0">
                         <span className="flex items-center gap-2">
-                          <span className="font-semibold text-white text-sm">{n.title}</span>
+                          <span className="font-semibold text-white text-sm min-w-0 break-words">{n.title}</span>
                           {!n.is_read && <span className="w-2 h-2 rounded-full bg-gold shrink-0" aria-label="unread" />}
                         </span>
                         <span className="block text-sm text-gray-300 line-clamp-2">{n.message}</span>

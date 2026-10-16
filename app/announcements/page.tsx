@@ -6,6 +6,7 @@ import { createClient } from '@/utils/supabase/client';
 import { getErrorMessage } from '@/utils/errors';
 import type { Announcement, Tournament } from '@/utils/types';
 import AnnouncementCard from '@/components/AnnouncementCard';
+import PageLoading from '@/components/PageLoading';
 
 const inputClass =
   'w-full border border-brownlight bg-sitebg px-4 py-3 text-white placeholder-gray-500 outline-none focus:border-gold';
@@ -34,11 +35,12 @@ export default function AnnouncementsPage() {
         if (!session) return;
         setUserId(session.user.id);
 
-        const { data: profileData } = await supabase
+        const { data: profileData, error: profileError } = await supabase
           .from('profiles')
           .select('role')
           .eq('id', session.user.id)
           .single();
+        if (profileError) throw profileError;
         setIsAdmin(profileData?.role === 'admin');
 
         const { data: tournamentsData, error: tourError } = await supabase
@@ -91,7 +93,7 @@ export default function AnnouncementsPage() {
     setReloadCount((n) => n + 1);
   };
 
-  if (loading) return <div className="min-h-screen bg-sitebg text-white p-10 text-center">Loading...</div>;
+  if (loading) return <PageLoading />;
 
   const visible = announcements.filter((a) => {
     if (filter === 'all') return true;

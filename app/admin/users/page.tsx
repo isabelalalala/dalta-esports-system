@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { getErrorMessage } from '@/utils/errors';
 import type { Profile } from '@/utils/types';
 import ExportButtons from '@/components/ExportButtons';
+import PageLoading from '@/components/PageLoading';
 
 const ROLES = ['admin', 'staff', 'player', 'spectator'] as const;
 
@@ -56,7 +57,7 @@ export default function ManageUsersPage() {
     fetchData();
   }, [supabase, reloadCount]);
 
-  if (loading) return <div className="min-h-screen bg-sitebg text-white p-10 text-center">Loading...</div>;
+  if (loading) return <PageLoading />;
 
   // Hiding the page is only for convenience; the database refuses these changes from non-admins.
   if (me?.role !== 'admin') {

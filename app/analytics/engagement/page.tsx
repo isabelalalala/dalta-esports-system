@@ -10,6 +10,8 @@ import {
   buildCsv, describeFilters, downloadCsv, emptyFilters, engagementCsv, fetchEngagementReport, validateFilters,
   type EngagementReport, type ReportFilters as Filters,
 } from '@/utils/reports';
+import PageLoading from '@/components/PageLoading';
+import PageError from '@/components/PageError';
 
 // "View engagement stats" (use case, Tournament Staff). Admins can open it too.
 export default function EngagementPage() {
@@ -33,7 +35,8 @@ export default function EngagementPage() {
       try {
         const { data: { session } } = await supabase.auth.getSession();
         if (!session) return;
-        const { data: myRole } = await supabase.rpc('get_my_role');
+        const { data: myRole, error: roleError } = await supabase.rpc('get_my_role');
+        if (roleError) throw roleError;
         setRole(myRole ?? '');
         if (myRole !== 'admin' && myRole !== 'staff') return;
         if (filterError) return;
@@ -78,9 +81,11 @@ export default function EngagementPage() {
     downloadCsv(`engagement-${new Date().toISOString().slice(0, 10)}.csv`, buildCsv(engagementCsv(report)));
   };
 
-  if (loading) return <div className="min-h-screen bg-sitebg text-white p-10 text-center">Loading...</div>;
+  if (loading) return <PageLoading />;
 
   // Hiding the page is only for convenience; report_engagement() also refuses other roles.
+  // The role couldn't be loaded: show why, not "only admins"
+  if (!role && error) return <PageError message={error} />;
   if (role !== 'admin' && role !== 'staff') {
     return (
       <div className="min-h-screen bg-sitebg text-white p-10 text-center">

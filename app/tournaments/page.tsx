@@ -8,6 +8,7 @@ import { getErrorMessage } from '@/utils/errors';
 import { ACTIVE_REGISTRATION_STATUSES } from '@/utils/types';
 import { formatDate, getTournamentStatus, statusLabels, statusStyles } from '@/utils/tournaments';
 import type { Profile, Tournament } from '@/utils/types';
+import PageLoading from '@/components/PageLoading';
 
 export default function TournamentsPage() {
   const supabase = createClient();
@@ -28,11 +29,12 @@ export default function TournamentsPage() {
         }
 
         // Get user profile for role check
-        const { data: profileData } = await supabase
+        const { data: profileData, error: profileError } = await supabase
           .from('profiles')
           .select('*')
           .eq('id', session.user.id)
           .single();
+        if (profileError) throw profileError;
         setProfile(profileData);
 
         // Fetch tournaments with a count of their registrations.
@@ -59,18 +61,14 @@ export default function TournamentsPage() {
   }, [router, supabase]);
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-sitebg text-white flex items-center justify-center font-sans">
-        <p className="animate-pulse">Loading tournaments...</p>
-      </div>
-    );
+    return <PageLoading label="Loading tournaments..." />;
   }
 
   return (
-    <div className="min-h-screen bg-sitebg text-white p-6 font-sans">
+    <div className="min-h-screen bg-sitebg text-white px-4 py-6 sm:p-6 font-sans">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex flex-wrap items-end justify-between gap-4 mb-8">
           <div className="flex flex-col gap-2">
             <Link href="/dashboard" className="text-gold hover:underline text-sm flex items-center gap-1">
               ← Back to Dashboard
@@ -96,11 +94,16 @@ export default function TournamentsPage() {
 
         {/* Tournaments Grid */}
         {tournaments.length === 0 ? (
-          <div className="text-center text-gray-500 py-20 border-2 border-dashed border-brown">
+          <div className="text-center text-gray-500 py-20 px-4 border-2 border-dashed border-brown space-y-2">
             <p>No tournaments yet.</p>
+            {(profile?.role === 'admin' || profile?.role === 'staff') ? (
+              <p className="text-sm">Use &quot;+ Create Tournament&quot; to add the first one.</p>
+            ) : (
+              <p className="text-sm">Check back soon, or read the <Link href="/announcements" className="text-gold underline">announcements</Link>.</p>
+            )}
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
             {tournaments.map((tournament) => {
               // Extract the count from the joined table
               const registeredCount = tournament.tournament_registrations?.[0]?.count || 0;
@@ -116,11 +119,12 @@ export default function TournamentsPage() {
                       </span>
                     </div>
 
-                    <div className="p-6">
-                      <p className="text-gold text-xs font-bold tracking-widest mb-1 uppercase">
+                    <div className="p-5 sm:p-6">
+                      {/* pr-28 keeps the name clear of the status badge in the corner */}
+                      <p className="text-gold text-xs font-bold tracking-widest mb-1 uppercase pr-28">
                         {tournament.game}
                       </p>
-                      <h3 className="text-2xl font-black text-white mb-4 leading-tight group-hover:text-gold transition-colors">
+                      <h3 className="text-xl sm:text-2xl font-black text-white mb-4 leading-tight break-words group-hover:text-gold transition-colors">
                         {tournament.name}
                       </h3>
 

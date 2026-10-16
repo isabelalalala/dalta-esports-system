@@ -8,6 +8,7 @@ import { getErrorMessage } from '@/utils/errors';
 import { ACTIVE_REGISTRATION_STATUSES } from '@/utils/types';
 import type { Registration, RegistrationStatus, Team, Tournament } from '@/utils/types';
 import ExportButtons from '@/components/ExportButtons';
+import PageLoading from '@/components/PageLoading';
 
 const statusStyles: Record<RegistrationStatus, string> = {
   pending: 'bg-yellow-500/15 text-yellow-300 border-yellow-500/50',
@@ -111,11 +112,7 @@ export default function RegistrationsPage() {
   };
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-sitebg text-white flex items-center justify-center">
-        <p>Loading registrations...</p>
-      </div>
-    );
+    return <PageLoading label="Loading registrations..." />;
   }
 
   // Only pending + approved registrations take up a slot

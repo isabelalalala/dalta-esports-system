@@ -5,11 +5,12 @@ import { notFound } from 'next/navigation';
 import { getOfficialTeams } from '@/utils/site-data';
 import { siteImageUrl } from '@/utils/site';
 import { PageTitle, Paragraphs, PersonPhoto, SectionTitle, SiteBox } from '@/components/site/SiteParts';
+import { SectionLoading } from '@/components/PageLoading';
 
 // Official team page (wireframe: captain profile, player profiles with "IGN – role", team description).
 export default function OfficialTeamPage({ params }: PageProps<'/divisions/[game]/[team]'>) {
   return (
-    <Suspense fallback={<p className="text-gray-500">Loading...</p>}>
+    <Suspense fallback={<SectionLoading />}>
       <OfficialTeam params={params} />
     </Suspense>
   );

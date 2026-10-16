@@ -7,6 +7,7 @@ import { getErrorMessage } from '@/utils/errors';
 import type { Match, Tournament } from '@/utils/types';
 import { formatDateTime, roundLabel } from '@/utils/tournaments';
 import { fetchRoundCounts, fetchTeamNames } from '@/utils/matches';
+import { SectionLoading } from '@/components/PageLoading';
 
 type ScheduleMatch = Match & { tournaments: { name: string } | null };
 
@@ -152,7 +153,7 @@ export default function SchedulePage() {
         {error && <div className="bg-red-500/10 border border-red-500 text-red-300 px-4 py-3">{error}</div>}
 
         {loading ? (
-          <p className="text-gray-400 text-center py-12">Loading...</p>
+          <div className="py-12 grid place-items-center"><SectionLoading /></div>
         ) : (
           <>
             {live.length > 0 && section('🔴 Live now', live, '', true)}

@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { getErrorMessage } from '@/utils/errors';
 import type { Game, Team } from '@/utils/types';
 import TeamInvites from '@/components/TeamInvites';
+import { SectionLoading } from '@/components/PageLoading';
 
 export default function TeamsPage() {
   const supabase = createClient();
@@ -146,7 +147,7 @@ export default function TeamsPage() {
           </form>
         )}
 
-        {loading && <p className="text-gray-400 animate-pulse">Loading teams...</p>}
+        {loading && <SectionLoading label="Loading teams..." />}
 
         {!loading && teams.length === 0 && (
           <p className="text-gray-400">You&apos;re not on any team yet. Create one, or ask a captain to add you. Captains can only add players who have a game profile for that game on their My Profile page.</p>

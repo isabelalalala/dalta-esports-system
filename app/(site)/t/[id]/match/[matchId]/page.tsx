@@ -10,6 +10,7 @@ import ShareButton from '@/components/ShareButton';
 import CalendarLinks from '@/components/CalendarLinks';
 import LiveRefresher from '@/components/site/LiveRefresher';
 import { SectionTitle } from '@/components/site/SiteParts';
+import { SectionLoading } from '@/components/PageLoading';
 
 const TZ = 'Asia/Manila';
 
@@ -47,7 +48,7 @@ export async function generateMetadata({ params }: PageProps<'/t/[id]/match/[mat
 // Public match page (no login): teams, time, score, live stream, calendar and share.
 export default function PublicMatchPage({ params }: PageProps<'/t/[id]/match/[matchId]'>) {
   return (
-    <Suspense fallback={<p className="text-gray-500">Loading...</p>}>
+    <Suspense fallback={<SectionLoading />}>
       <MatchContent params={params} />
     </Suspense>
   );

@@ -6,6 +6,7 @@ import { createClient } from '@/utils/supabase/client';
 import { getErrorMessage } from '@/utils/errors';
 import type { Registration, RegistrationStatus, Tournament } from '@/utils/types';
 import { formatDate } from '@/utils/tournaments';
+import PageLoading from '@/components/PageLoading';
 
 type MyRegistration = Registration & {
   tournaments: Pick<Tournament, 'id' | 'name' | 'game' | 'start_date'> | null;
@@ -86,7 +87,7 @@ export default function MyRegistrationsPage() {
     }
   };
 
-  if (loading) return <div className="min-h-screen bg-sitebg text-white p-10 text-center">Loading...</div>;
+  if (loading) return <PageLoading />;
 
   return (
     <div className="min-h-screen bg-sitebg text-white px-4 py-10">

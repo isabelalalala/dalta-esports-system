@@ -11,6 +11,8 @@ import CheckinSection from './CheckinSection';
 import ShareButton from '@/components/ShareButton';
 import CalendarLinks from '@/components/CalendarLinks';
 import ResultSection from './ResultSection';
+import PageLoading from '@/components/PageLoading';
+import PageError from '@/components/PageError';
 
 interface MatchTournament {
   id: string;
@@ -48,7 +50,8 @@ export default function MatchPage() {
         const { data: { session } } = await supabase.auth.getSession();
         if (!session) return;
         setUserId(session.user.id);
-        const { data: myRole } = await supabase.rpc('get_my_role');
+        const { data: myRole, error: roleError } = await supabase.rpc('get_my_role');
+        if (roleError) throw roleError;
         setRole(myRole ?? '');
 
         const { data: matchData, error: matchError } = await supabase
@@ -106,9 +109,9 @@ export default function MatchPage() {
     };
   }, [supabase, id]);
 
-  if (loading) return <div className="min-h-screen bg-sitebg text-white p-10 text-center">Loading...</div>;
+  if (loading) return <PageLoading />;
   if (!match || !tournament) {
-    return <div className="min-h-screen bg-sitebg text-red-400 p-10 text-center">{error || 'Match not found.'}</div>;
+    return <PageError message={error || 'Match not found. It may have been deleted.'} backHref="/dashboard" backLabel="Back to Dashboard" />;
   }
 
   const teamA = teams.find((t) => t.id === match.team_a_id) ?? null;

@@ -385,7 +385,7 @@ async function feedbackExport(supabase: SupabaseClient, params: ExportParams): P
     ],
     rows: rows.map((f) => [
       f.created_at, f.tournaments?.name ?? 'General', f.rating, f.comment,
-      f.sentiment ? capitalize(f.sentiment) : 'Not classified', f.sentiment_score, f.topics.join(', '),
+      f.sentiment ? capitalize(f.sentiment) : 'Pending analysis', f.sentiment_score, f.topics.join(', '),
     ]),
     fileBase: `feedback-${slug(label)}-${todayInManila()}`,
     tournamentName: tournament?.name,

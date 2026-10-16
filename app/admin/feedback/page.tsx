@@ -7,6 +7,8 @@ import { getErrorMessage } from '@/utils/errors';
 import type { Feedback, Sentiment, Tournament } from '@/utils/types';
 import StarRating from '@/components/StarRating';
 import ExportButtons from '@/components/ExportButtons';
+import PageLoading from '@/components/PageLoading';
+import PageError from '@/components/PageError';
 
 const inputClass =
   'border border-brownlight bg-sitebg px-4 py-2 text-white outline-none focus:border-gold';
@@ -17,11 +19,12 @@ const sentimentStyles: Record<Sentiment, string> = {
   negative: 'bg-red-500/15 text-red-300 border-red-500/50',
 };
 
-// Asks the server to classify one batch of unclassified feedback with Gemini.
-async function runClassification(): Promise<{ classified: number; remaining: number }> {
+// Asks the server to retry one batch of "pending analysis" feedback with Gemini.
+// reason = why some are still pending (Gemini down, limit reached, ...), or null.
+async function runClassification(): Promise<{ classified: number; remaining: number; reason: string | null }> {
   const response = await fetch('/api/feedback/classify', { method: 'POST' });
-  const body = await response.json();
-  if (!response.ok) throw new Error(body.error || 'Classification failed.');
+  const body = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(body.error || 'The retry failed. Please try again.');
   return body;
 }
 
@@ -48,23 +51,16 @@ export default function FeedbackAnalysisPage() {
         const { data: { session } } = await supabase.auth.getSession();
         if (!session) return;
 
-        const { data: profileData } = await supabase
+        const { data: profileData, error: profileError } = await supabase
           .from('profiles')
           .select('role')
           .eq('id', session.user.id)
           .single();
+        if (profileError) throw profileError;
         setRole(profileData?.role ?? '');
         if (profileData?.role !== 'admin') return;
-
-        // On the first load, classify one batch of new feedback automatically
-        if (reloadCount === 0) {
-          try {
-            const result = await runClassification();
-            if (result.classified > 0) setMessage(`Classified ${result.classified} new feedback.`);
-          } catch (err) {
-            setError(getErrorMessage(err, 'Automatic classification failed'));
-          }
-        }
+        // New feedback is classified when it's sent, so opening this page doesn't call Gemini
+        // (that used to spend the free quota on every visit). Pending ones are retried with the button.
 
         const { data: tournamentsData, error: tourError } = await supabase
           .from('tournaments')
@@ -75,7 +71,7 @@ export default function FeedbackAnalysisPage() {
 
         const { data, error: fbError } = await supabase
           .from('feedback')
-          .select('*, tournaments(id, name)')
+          .select('*, tournaments(id, name), matches(id, round, match_number)')
           .order('created_at', { ascending: false });
         if (fbError) throw fbError;
         setFeedback(data || []);
@@ -95,11 +91,15 @@ export default function FeedbackAnalysisPage() {
     setMessage('');
     try {
       const result = await runClassification();
-      setMessage(
-        result.remaining > 0
-          ? `Classified ${result.classified}. ${result.remaining} still pending; click again for the next batch.`
-          : `Classified ${result.classified}. All feedback is classified.`
-      );
+      if (result.classified === 0 && result.reason) {
+        setError(`Nothing could be classified: ${result.reason}`);
+      } else {
+        setMessage(
+          result.remaining > 0
+            ? `Classified ${result.classified}. ${result.remaining} still pending${result.reason ? ` (${result.reason})` : ''}; click again for the next batch.`
+            : `Classified ${result.classified}. All feedback is classified.`
+        );
+      }
       setReloadCount((n) => n + 1);
     } catch (err) {
       setError(getErrorMessage(err, 'Classification failed'));
@@ -108,9 +108,11 @@ export default function FeedbackAnalysisPage() {
     }
   };
 
-  if (loading) return <div className="min-h-screen bg-sitebg text-white p-10 text-center">Loading...</div>;
+  if (loading) return <PageLoading />;
 
   // Hiding the page is only for convenience; RLS returns only their own feedback to other roles.
+  // The role couldn't be loaded: show why, not "only admins"
+  if (!role && error) return <PageError message={error} />;
   if (role !== 'admin') {
     return (
       <div className="min-h-screen bg-sitebg text-white p-10 text-center">
@@ -161,10 +163,13 @@ export default function FeedbackAnalysisPage() {
               disabled={classifying || pendingCount === 0}
               className="bg-gold text-black px-6 py-2 font-bold hover:bg-golddark transition disabled:opacity-50"
             >
-              {classifying ? 'Classifying...' : `Classify now (${pendingCount} pending)`}
+              {classifying ? 'Retrying...' : `Retry pending analysis (${pendingCount})`}
             </button>
           </div>
-          <p className="text-gray-400 text-sm mt-2">Sentiment is classified by Google Gemini.</p>
+          <p className="text-gray-400 text-sm mt-2">
+            Sentiment is classified by Google Gemini when feedback is sent. If Gemini was down or the limit was
+            reached, the feedback waits here as &quot;pending analysis&quot;.
+          </p>
           {/* Uses the tournament filter below; exports don't include who wrote the feedback */}
           <div className="mt-3">
             <ExportButtons
@@ -191,7 +196,7 @@ export default function FeedbackAnalysisPage() {
             <option value="positive">Positive</option>
             <option value="neutral">Neutral</option>
             <option value="negative">Negative</option>
-            <option value="pending">Not classified yet</option>
+            <option value="pending">Pending analysis</option>
           </select>
         </div>
 
@@ -228,7 +233,9 @@ export default function FeedbackAnalysisPage() {
 
         {/* Feedback list */}
         {visible.length === 0 ? (
-          <p className="text-gray-400 text-center py-12">No feedback matches.</p>
+          <p className="text-gray-500 border-2 border-dashed border-brown p-6 text-center">
+            {feedback.length === 0 ? 'No feedback yet.' : 'No feedback matches these filters.'}
+          </p>
         ) : (
           <ul className="space-y-3">
             {visible.map((f) => (
@@ -241,14 +248,21 @@ export default function FeedbackAnalysisPage() {
                     </span>
                   ) : (
                     <span className="px-2 py-0.5 rounded-full border border-yellow-500/50 text-yellow-300 text-[10px] font-bold uppercase">
-                      Pending
+                      Pending analysis
                     </span>
                   )}
                   <span className="text-xs text-gray-500 ml-auto">
-                    {f.tournaments?.name ?? 'General'} · {new Date(f.created_at).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })}
+                    {f.tournaments?.name ?? (f.target_removed ? 'Deleted tournament' : 'General')}
+                    {f.matches && ` · Match ${f.matches.match_number} (round ${f.matches.round})`}
+                    {' · '}{new Date(f.created_at).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })}
                   </span>
                 </div>
-                <p className="text-gray-200 whitespace-pre-wrap">{f.comment}</p>
+                <p className="text-gray-200 whitespace-pre-wrap break-words">{f.comment}</p>
+                {f.sentiment === null && f.analysis_error && (
+                  <p className="mt-1 text-xs text-yellow-300/80">
+                    Last try failed ({f.analysis_attempts}×): {f.analysis_error}
+                  </p>
+                )}
                 {f.topics.length > 0 && (
                   <div className="mt-2 flex flex-wrap gap-1">
                     {f.topics.map((t) => (

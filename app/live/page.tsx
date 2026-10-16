@@ -6,6 +6,7 @@ import { createClient } from '@/utils/supabase/client';
 import { getErrorMessage } from '@/utils/errors';
 import type { Stream } from '@/utils/types';
 import { streamStatusStyles } from '@/utils/streams';
+import PageLoading from '@/components/PageLoading';
 
 // "Watch live stream" (use case, Audience): every stream, live ones first
 export default function LiveStreamsPage() {
@@ -62,7 +63,7 @@ export default function LiveStreamsPage() {
     </section>
   );
 
-  if (loading) return <div className="min-h-screen bg-sitebg text-white p-10 text-center">Loading...</div>;
+  if (loading) return <PageLoading />;
 
   return (
     <div className="min-h-screen bg-sitebg text-white px-4 py-10">

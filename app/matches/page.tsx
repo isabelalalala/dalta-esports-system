@@ -7,6 +7,8 @@ import { getErrorMessage } from '@/utils/errors';
 import type { Profile, Tournament } from '@/utils/types';
 import { formatDate, getTournamentStatus, statusLabels, statusStyles } from '@/utils/tournaments';
 import ExportButtons from '@/components/ExportButtons';
+import PageLoading from '@/components/PageLoading';
+import PageError from '@/components/PageError';
 
 // Tournament with the number of matches in its bracket
 type TournamentWithMatches = Tournament & { matches: { count: number }[] };
@@ -24,11 +26,12 @@ export default function MatchesOverviewPage() {
         const { data: { session } } = await supabase.auth.getSession();
         if (!session) return;
 
-        const { data: profileData } = await supabase
+        const { data: profileData, error: profileError } = await supabase
           .from('profiles')
           .select('*')
           .eq('id', session.user.id)
           .single();
+        if (profileError) throw profileError;
         setProfile(profileData);
 
         const { data, error: tourError } = await supabase
@@ -47,9 +50,10 @@ export default function MatchesOverviewPage() {
     fetchData();
   }, [supabase]);
 
-  if (loading) return <div className="min-h-screen bg-sitebg text-white p-10 text-center">Loading...</div>;
+  if (loading) return <PageLoading />;
 
   // Hiding the page is only for convenience; the database refuses changes from other roles.
+  if (!profile && error) return <PageError message={error} />;
   if (profile?.role !== 'admin' && profile?.role !== 'staff') {
     return (
       <div className="min-h-screen bg-sitebg text-white p-10 text-center">

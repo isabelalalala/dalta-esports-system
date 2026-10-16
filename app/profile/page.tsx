@@ -8,6 +8,8 @@ import { getErrorMessage } from '@/utils/errors';
 import type { Game, PlayerGameProfile, Profile } from '@/utils/types';
 import VerifiedBadge from '@/components/VerifiedBadge';
 import StudentDetails from './StudentDetails';
+import PageLoading from '@/components/PageLoading';
+import PageError from '@/components/PageError';
 
 const inputClass =
   'w-full border border-brownlight bg-sitebg px-4 py-3 text-white placeholder-gray-500 outline-none focus:border-gold';
@@ -176,10 +178,10 @@ export default function ProfilePage() {
   };
 
   if (loading) {
-    return <div className="min-h-screen bg-sitebg text-white p-10 text-center">Loading...</div>;
+    return <PageLoading />;
   }
   if (!profile) {
-    return <div className="min-h-screen bg-sitebg text-red-500 p-10 text-center">{error || 'Profile not found.'}</div>;
+    return <PageError message={error || 'Profile not found. It may have been deleted.'} backHref="/dashboard" backLabel="Back to Dashboard" />;
   }
 
   return (

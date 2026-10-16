@@ -253,17 +253,17 @@ export function sentimentCsv(r: SentimentReport): CsvSection[] {
   return [
     {
       title: 'Sentiment totals',
-      columns: ['Feedback', 'Positive', 'Neutral', 'Negative', 'Not classified', 'Average rating', 'Average score'],
+      columns: ['Feedback', 'Positive', 'Neutral', 'Negative', 'Pending analysis', 'Average rating', 'Average score'],
       rows: [[t.total, t.positive, t.neutral, t.negative, t.pending, t.avg_rating, t.avg_score]],
     },
     {
       title: 'Sentiment by week',
-      columns: ['Week of', 'Feedback', 'Positive', 'Neutral', 'Negative', 'Not classified', 'Average rating'],
+      columns: ['Week of', 'Feedback', 'Positive', 'Neutral', 'Negative', 'Pending analysis', 'Average rating'],
       rows: r.by_week.map((w) => [w.week, w.total, w.positive, w.neutral, w.negative, w.pending, w.avg_rating]),
     },
     {
       title: 'Sentiment by tournament',
-      columns: ['Tournament', 'Feedback', 'Positive', 'Neutral', 'Negative', 'Not classified', 'Average rating', 'Average score'],
+      columns: ['Tournament', 'Feedback', 'Positive', 'Neutral', 'Negative', 'Pending analysis', 'Average rating', 'Average score'],
       rows: r.by_tournament.map((x) => [x.tournament_name ?? 'General', x.total, x.positive, x.neutral, x.negative,
         x.pending, x.avg_rating, x.avg_score]),
     },

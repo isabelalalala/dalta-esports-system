@@ -11,6 +11,9 @@ import NeedsAttention from './NeedsAttention'
 import type { User } from '@supabase/supabase-js'
 import type { Profile } from '@/utils/types'
 import { PRIVACY_NOTICE_VERSION } from '@/utils/privacy'
+import PageLoading from '@/components/PageLoading'
+import PageError from '@/components/PageError'
+import { getErrorMessage } from '@/utils/errors'
 
 interface DashCard {
   href: string
@@ -89,6 +92,7 @@ export default function Dashboard() {
   const [user, setUser] = useState<User | null>(null)
   const [profile, setProfile] = useState<Profile | null>(null)
   const [loading, setLoading] = useState(true)
+  const [loadError, setLoadError] = useState('')
   const router = useRouter()
 
   useEffect(() => {
@@ -102,15 +106,22 @@ export default function Dashboard() {
 
       setUser(data.session.user)
 
-      const { data: profileData } = await supabase
+      const { data: profileData, error: profileError } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', data.session.user.id)
         .single()
 
+      // Without the profile we don't know the role, so the dashboard would be empty
+      if (profileError || !profileData) {
+        setLoadError(getErrorMessage(profileError, 'Your profile could not be loaded.'))
+        setLoading(false)
+        return
+      }
+
       // Data Privacy Act: users who haven't agreed to the current Privacy Notice
       // (older or admin-added accounts, or the notice changed) are asked first.
-      if (profileData && (!profileData.privacy_consent_at || profileData.privacy_consent_version !== PRIVACY_NOTICE_VERSION)) {
+      if ((!profileData.privacy_consent_at || profileData.privacy_consent_version !== PRIVACY_NOTICE_VERSION)) {
         router.replace('/privacy/consent')
         return
       }
@@ -123,8 +134,10 @@ export default function Dashboard() {
   }, [router, supabase])
 
   if (loading) {
-    return <div className="min-h-screen bg-sitebg text-white p-10 text-center">Loading...</div>
+    return <PageLoading />
   }
+
+  if (loadError) return <PageError message={loadError} backHref="/" backLabel="Home" />
 
   const role = profile?.role
   const isOrganizer = role === 'admin' || role === 'staff'
