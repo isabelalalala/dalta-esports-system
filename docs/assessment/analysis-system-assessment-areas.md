@@ -83,7 +83,7 @@ How: version-bump test forces re-consent; confirm the notice lists everything th
 
 ### M. Deployment readiness
 What: env vars complete in Railway (all six from CLAUDE.md), Supabase dashboard config (Site URL, redirect URLs, custom SMTP, email-confirm ON, min password 8, reset template fix), pg_cron job scheduled, Vault secret set, `proxy.ts` behaving correctly on the deployed domain.
-Where: `proxy.ts`, `.env.local` (names only, not values), CLAUDE.md env section.
+Where: `proxy.ts`, `.env` (names only, not values), CLAUDE.md env section.
 How: checklist walk against a deployed instance; verify each env-dependent feature degrades gracefully when unset.
 
 ### N. Documentation and repo hygiene

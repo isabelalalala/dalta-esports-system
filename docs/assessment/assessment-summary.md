@@ -7,7 +7,7 @@ Sentiment Analytics"*. Capstone for UPHSD Molino / AcadArena SLEC.
 in the repository at `docs/assessment/findings-*.md`, plus a limited runtime pass.
 Static-code audit: complete. Runtime audit: build/lint/typecheck + missing-env paths
 verified; interactive flows (bracket gen, check-in, predictions, live) remain
-unverified: no `.env.local`, no active Supabase project in the connected account,
+unverified: no `.env`, no active Supabase project in the connected account,
 and the documented Railway URL `dalta-esports.up.railway.app` returns 404.
 
 ## Overall verdict
@@ -145,7 +145,7 @@ find.
 ## Still unverifiable
 
 Interactive demo-critical flows (bracket generation, check-in, result submission,
-predictions, live pages, realtime presence), requiring `.env.local` + seeded test
+predictions, live pages, realtime presence), requiring `.env` + seeded test
 data. Also: live Vault secret, pg_cron enabled state, deployed migration order, RLS
 enforcement on `postgres_changes`, Realtime channel privacy config, SMTP/email
 delivery, Gemini API behavior, Railway builder (Nixpacks vs Railpack), screen-reader

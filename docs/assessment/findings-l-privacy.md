@@ -17,7 +17,7 @@ Privacy design is genuinely solid (versioned consent, DB-enforced single write p
 
 **Required**
 
-1. ~~**Privacy contact is a confirmed placeholder.**~~ **PARTIALLY RESOLVED:** `utils/privacy.ts` now reads `NEXT_PUBLIC_PRIVACY_CONTACT_EMAIL`/`NEXT_PUBLIC_PRIVACY_CONTACT_PERSON` (documented in `.env.example`/`.env.local`/CLAUDE.md). The fallbacks remain placeholders, so the remaining task is operational: set the real values in `.env.local` and Railway before launch.
+1. ~~**Privacy contact is a confirmed placeholder.**~~ **PARTIALLY RESOLVED:** `utils/privacy.ts` now reads `NEXT_PUBLIC_PRIVACY_CONTACT_EMAIL`/`NEXT_PUBLIC_PRIVACY_CONTACT_PERSON` (documented in `.env.example`/`.env`/CLAUDE.md). The fallbacks remain placeholders, so the remaining task is operational: set the real values in `.env` and Railway before launch.
 
 2. ~~**Consent enforcement exists only on `/dashboard`.**~~ **RESOLVED:** `proxy.ts` now checks `profiles.privacy_consent_version` against `PRIVACY_NOTICE_VERSION` on every protected page (one PK lookup; `/privacy/consent` exempt to avoid a loop) and redirects to `/privacy/consent`. The dashboard check remains as a client-side fallback.
 

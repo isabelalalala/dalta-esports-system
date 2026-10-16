@@ -72,11 +72,11 @@ sentiment stays "pending analysis".
   so reset links work on any device
 - Custom SMTP: the built-in sender allows only a few emails/hour; needed for demos
 
-**6. Create `.env.local` in the repository root** (the same folder as
+**6. Create `.env` in the repository root** (the same folder as
 `package.json` / `next.config.ts`). Next.js only loads env files from the project
 root; a file in a parent folder or your home directory is silently ignored. It is
 git-ignored, so it will not show up in `git status`. Check for it with
-`ls .env.local` if unsure. Copy `.env.example` and fill in the values:
+`ls .env` if unsure. Copy `.env.example` and fill in the values:
 
 | Variable | Purpose |
 |---|---|
@@ -181,14 +181,11 @@ docker run -p 3000:3000 \
   dalta-esports
 ```
 
-Or with compose — it reads the same `.env.local` (one flag, no extra file):
+Or with compose — it reads the same `.env` automatically:
 
 ```bash
-docker compose --env-file .env.local up --build   # serves http://localhost:3000
+docker compose up --build   # serves http://localhost:3000
 ```
-
-(Plain `docker compose up --build` also works if you copy `.env.local` to `.env`;
-compose interpolates build args from `.env`/the shell, not `.env.local`.)
 
 Works on any container host: Railway (Dockerfile deploy), Render, Fly.io, Cloud Run,
 DigitalOcean, a VPS with Coolify/Dokploy, or plain Docker. Remember `NEXT_PUBLIC_*`
@@ -205,7 +202,7 @@ auth URLs with your Railway domain, SMTP).
 ## Troubleshooting
 
 - **Every page 500s / `next build` fails with "URL and Key are required"**:
-  `.env.local` is missing or in the wrong folder; it must sit next to `package.json`.
+  `.env` is missing or in the wrong folder; it must sit next to `package.json`.
 - **Migration fails at `cron.schedule`**: pg_cron is missing; the migration
   installs it itself since `202610171400`, but on very old snapshots enable it via
   Database → Extensions.

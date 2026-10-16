@@ -23,5 +23,5 @@ Full project rules, schema reference and conventions: `CLAUDE.md` (it also
   server components, route handlers and actions use `await createClient()`
   from `@/utils/supabase/server`.
 - Next.js 16 middleware is `proxy.ts` in the project root, not `middleware.ts`.
-- Secrets live in `.env.local` (git-ignored); the template is `.env.example`.
+- Secrets live in `.env` (git-ignored); the template is `.env.example`.
 - Verify with `npm test` (vitest), `npx tsc --noEmit` and `npx eslint .`.

@@ -5,7 +5,7 @@
 import 'server-only';
 import type { Sentiment } from '@/utils/types';
 
-// Fast, low-cost model by default; set GEMINI_MODEL in .env.local to use another one.
+// Fast, low-cost model by default; set GEMINI_MODEL in .env to use another one.
 const DEFAULT_MODEL = 'gemini-3.5-flash-lite';
 
 // Give up after this long, so a person sending feedback never waits forever
@@ -44,7 +44,7 @@ const responseSchema = {
 export async function classifyFeedback(items: FeedbackToClassify[]): Promise<SentimentResult[]> {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
-    throw new Error('GEMINI_API_KEY is not set. Add it to .env.local (and to Railway when deploying).');
+    throw new Error('GEMINI_API_KEY is not set. Add it to .env (and to Railway when deploying).');
   }
   const model = process.env.GEMINI_MODEL || DEFAULT_MODEL;
 
