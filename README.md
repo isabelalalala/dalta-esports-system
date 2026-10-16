@@ -53,7 +53,13 @@ sentiment stays "pending analysis".
   so reset links work on any device
 - Custom SMTP — the built-in sender allows only a few emails/hour; needed for demos
 
-**9. Create `.env.local`.** Copy `.env.example` and fill in the values:
+**9. Create `.env.local` in the repository root** — the same folder as
+`package.json` / `next.config.ts` (i.e. `C:\Projects\dalta-esports-system\.env.local`
+on this machine). Next.js only loads env files from the project root; a file in a
+parent folder, `Documents`, or your home directory is silently ignored. It is
+per-machine and git-ignored (`.env*` in `.gitignore`) — it will not show up in
+`git status`, so check for it with `ls .env.local` if unsure. Copy `.env.example`
+and fill in the values:
 
 | Variable | Purpose |
 |---|---|
