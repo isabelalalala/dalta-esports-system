@@ -1,4 +1,4 @@
-# Browser Test Journeys — DALTA Esports
+# Browser Test Journeys: DALTA Esports
 
 End-to-end user journeys for manual/agent browser testing (Playwright / Chrome DevTools MCP).
 Each journey lists the actor, preconditions, the exact clicks/pages, and the pass criteria.
@@ -18,15 +18,15 @@ profiles/incognito windows per actor when a journey needs two users at once.
 | `spectator@test.local` | register (role spectator) |
 | Team "Alpha" (game MLBB) captained by captain-a, with player-a as member | `/teams` → create → invite → accept |
 | Team "Bravo" captained by captain-b | same |
-| Tournament "Test Cup" (MLBB, registration open, `requires_verification` off for speed — or on, to test the rule) | `/tournaments/create` as admin |
+| Tournament "Test Cup" (MLBB, registration open, `requires_verification` off for speed, or on, to test the rule) | `/tournaments/create` as admin |
 | A scheduled match Alpha vs Bravo with both teams' registrations approved | approve on `/tournaments/[id]/registrations`, generate bracket, set `scheduled_at` on `/tournaments/[id]/matches` |
 
 > For two-actor steps (invite/accept, submit/confirm, dispute/review) open the second
-> user in a separate incognito window — cookies don't leak between profiles.
+> user in a separate incognito window. Cookies don't leak between profiles.
 
 ---
 
-## Journey group V — Visitor (no account)
+## Journey group V: Visitor (no account)
 
 ### V1. Browse the public website
 1. Open `/` (logged out) → hero, carousel, campaigns and events cards render.
@@ -47,7 +47,7 @@ profiles/incognito windows per actor when a journey needs two users at once.
 ### V3. View a public tournament + match (no login)
 1. `/t/[id]` on "Test Cup" → info, rules, bracket, schedule render; **no** login prompt.
 2. `/t/[id]/match/[matchId]` → team names, score area, prediction split percentages visible
-   (counts only — never who picked).
+   (counts only, never who picked).
 3. **Add to calendar** → `.ics` downloads (Google/Apple/webcal links present via
    `/calendar/[kind]/[id]`).
 4. **Share** → copy link; (optional) paste the URL into a link-preview checker → OG image/text.
@@ -62,7 +62,7 @@ profiles/incognito windows per actor when a journey needs two users at once.
 
 ---
 
-## Journey group A — Any logged-in actor
+## Journey group A: Any logged-in actor
 
 ### A1. Register → confirm email → consent → dashboard
 1. `/auth/register` → fill form; privacy-consent checkbox is required (submit blocked without it).
@@ -97,18 +97,18 @@ profiles/incognito windows per actor when a journey needs two users at once.
 
 ### A6. Profile edit + account deletion
 1. `/profile` → edit name → saved and reflected in header/pages.
-2. Delete own account → signed out; logging in again fails. *(Destructive — run last / on a throwaway account.)*
+2. Delete own account → signed out; logging in again fails. *(Destructive: run last / on a throwaway account.)*
 
 ---
 
-## Journey group S — Spectator / Audience
+## Journey group S: Spectator / Audience
 
 ### S1. Submit general + tournament feedback, see sentiment
 1. `/feedback` → submit rating + comment (general). Confirmation shown.
 2. Submit tournament-scoped feedback for "Test Cup" → accepted.
 3. Try a second general feedback → blocked (one per target).
 4. As admin on `/admin/feedback`: row shows sentiment + topics (or "pending analysis" with reason if
-   Gemini key/rate limit is off — both are valid observable states).
+   Gemini key/rate limit is off, both are valid observable states).
 
 **Verifies:** Module 5 collection + classification + the one-per-target rule.
 
@@ -134,7 +134,7 @@ profiles/incognito windows per actor when a journey needs two users at once.
 
 ---
 
-## Journey group P — Player
+## Journey group P: Player
 
 ### P1. Student verification
 1. `/profile` → submit student ID, school, course/year → status **pending**.
@@ -162,11 +162,11 @@ profiles/incognito windows per actor when a journey needs two users at once.
 
 ---
 
-## Journey group C — Team Captain
+## Journey group C: Team Captain
 
 ### C1. Create team + build roster
 1. `/teams` → create "Alpha" (MLBB) → captain auto-added.
-2. Invite by IGN search; roster shows members; roster size limits enforced (5–6 for MLBB).
+2. Invite by IGN search; roster shows members; roster size limits enforced (5-6 for MLBB).
 3. Remove a member → notification sent; transfer captaincy → roles swap.
 
 ### C2. Register team for a tournament
@@ -192,7 +192,7 @@ profiles/incognito windows per actor when a journey needs two users at once.
 
 ---
 
-## Journey group T — Tournament Staff
+## Journey group T: Tournament Staff
 
 ### T1. Create tournament + build bracket
 1. `/tournaments/create` → "Test Cup" (MLBB, dates, deadline, check-in window).
@@ -217,14 +217,14 @@ profiles/incognito windows per actor when a journey needs two users at once.
 
 ### T5. Staff restrictions
 1. As staff: `/admin/users`, `/admin/website`, `/admin/activity`, `/admin/feedback` → blocked/not
-   nav-visible (staff can't read feedback — only counts via reports).
+   nav-visible (staff can't read feedback, only counts via reports).
 2. Staff **can** reach `/analytics/engagement` and exports.
 
 **Verifies:** role gates enforced by RLS, not just hidden UI.
 
 ---
 
-## Journey group M — Admin (everything staff does, plus)
+## Journey group M: Admin (everything staff does, plus)
 
 ### M1. User management
 1. `/admin/users` → **Add account** → invited user gets a confirmation email that lands through
@@ -239,7 +239,7 @@ profiles/incognito windows per actor when a journey needs two users at once.
 
 ### M3. Reports & exports
 1. `/analytics` → generate activity/engagement reports for a date range → charts render
-   (respecting the date filter — not lifetime counts).
+   (respecting the date filter, not lifetime counts).
 2. Save a report → `/analytics/reports/[id]` reopens it; print/PDF view works.
 3. Export CSV/XLSX (registrations, accounts, feedback) → files download; export appears in
    `/admin/activity`.
@@ -260,7 +260,7 @@ profiles/incognito windows per actor when a journey needs two users at once.
 
 ---
 
-## Journey group X — Cross-cutting / end-to-end scenarios
+## Journey group X: Cross-cutting / end-to-end scenarios
 
 ### X1. Full match lifecycle (the capstone demo path)
 Fixtures → register teams → approve → bracket → schedule → check-in both teams → captain submits
@@ -290,20 +290,20 @@ Keyboard-only: skip link → main landmark → forms operable; labels announced;
 
 | Module / process | Journeys |
 |---|---|
-| 1 Accounts (auth, consent, verification) | A1–A6, P1, M1 |
-| 2 Registration & tournaments (invites, check-in, results) | P2–P4, C1–C5, T1–T3, X1 |
+| 1 Accounts (auth, consent, verification) | A1-A6, P1, M1 |
+| 2 Registration & tournaments (invites, check-in, results) | P2-P4, C1-C5, T1-T3, X1 |
 | 3 Event info (announcements, public pages, calendar, notifications) | S4, V3, A5, M6, X2 |
 | 4 Streaming (streams, presence) | S3, T4 |
 | 5 Feedback & sentiment | S1, M2 |
-| 6 Reports & exports | T5, M3–M4 |
-| 7 Public website | V1–V2, M5 |
+| 6 Reports & exports | T5, M3-M4 |
+| 7 Public website | V1-V2, M5 |
 | 8 Pick'em | S2, P4, X1 |
-| Cross-cutting (gates, RLS, realtime, a11y, mobile) | V4, T5, X2–X5 |
+| Cross-cutting (gates, RLS, realtime, a11y, mobile) | V4, T5, X2-X5 |
 
 ## Execution notes
 
 - Run order: V → A → S → P → C → T → M → X (fixtures build on each other). A6 (delete) last.
-- Gemini-dependent assertions accept either "classified" or "pending analysis + honest reason" —
+- Gemini-dependent assertions accept either "classified" or "pending analysis + honest reason":
   both are correct states; record which was observed.
-- Presence and debounced reloads need real timing — don't assert faster than ~1–2 s.
+- Presence and debounced reloads need real timing: don't assert faster than ~1-2 s.
 - Reset heavy state between runs: delete test tournament/matches/submissions/notifications.

@@ -1,4 +1,4 @@
-# DALTA Esports – Tournament Management System
+# DALTA Esports: Tournament Management System
 
 Full requirements (business case, CFD, DFD, use cases, wireframes): see docs/requirements.md. Read it before starting a new module.
 Everything added beyond the original 6 modules (actors, use cases, data flows, tables): docs/new-features-summary.md.
@@ -36,7 +36,7 @@ Full title: "DALTA Esports: Tournament Management System with AI-Powered Feedbac
 - `NEXT_PUBLIC_SITE_URL`: the app's public address, e.g. `https://<app>.up.railway.app` (no trailing slash). Used
   for link previews (metadataBase), shared links and calendar files. Defaults to http://localhost:3000.
 - `NEXT_PUBLIC_PRIVACY_CONTACT_EMAIL`, `NEXT_PUBLIC_PRIVACY_CONTACT_PERSON`: optional; the privacy notice's
-  data protection contact. The fallbacks in `utils/privacy.ts` are placeholders — set the real ones before launch.
+  data protection contact. The fallbacks in `utils/privacy.ts` are placeholders: set the real ones before launch.
 - All of them live in `.env.local` (git-ignored) and must also be set in Railway when deploying.
 
 ## Auth pages and Supabase settings
@@ -79,7 +79,7 @@ Enforced by a CHECK constraint on `profiles.role` (migration `202610161200_role_
 - RLS policies check roles with `public.get_my_role()`.
 
 ## Current schema (public)
-All migrations are in `supabase/migrations/`, run in filename order (202610151100 … 202610181800). `202610151100_base_schema` creates the three pre-migration base tables (`profiles`, `tournaments`, `tournament_registrations`) — it is `if not exists`, so it is a no-op on databases that already have them.
+All migrations are in `supabase/migrations/`, run in filename order (202610151100 … 202610181800). `202610151100_base_schema` creates the three pre-migration base tables (`profiles`, `tournaments`, `tournament_registrations`). It is `if not exists`, so it is a no-op on databases that already have them.
 `202610181000_feedback_protection` also needs its one-time Vault key setup (the `feedback_server_key` secret +
 `FEEDBACK_SERVER_KEY`); the steps are at the top of that file.
 Readers: "anyone" = also logged out; "logged-in" = any role; "admin/staff" = organizers only.
@@ -114,7 +114,7 @@ Readers: "anyone" = also logged out; "logged-in" = any role; "admin/staff" = org
 - `teams`: id, name, description, game_id (→ games), captain_id (→ profiles), created_at. UNIQUE (name, game_id).
   The captain can edit name and description; game and captain can't change. Teams in a bracket can't be deleted,
   and neither can teams with a pending/approved registration for a tournament that hasn't ended
-  (remove the registration first — 202610181200). Team names are unique per game ignoring case/whitespace.
+  (remove the registration first: 202610181200). Team names are unique per game ignoring case/whitespace.
 - `team_members`: id, team_id, user_id, role (`captain`/`player`), joined_at. The captain is added automatically;
   other players join only by accepting an invite (no insert policy). Members leave and the captain removes players
   (delete policy), except while the team is registered (pending/approved) for a tournament that hasn't ended
@@ -183,7 +183,7 @@ Readers: "anyone" = also logged out; "logged-in" = any role; "admin/staff" = org
 
 **Live streaming (Module 4)**, DFD store D3 "Streaming & Match Stat DB"
 - `streams`: id, tournament_id, match_id (optional, set null when the match is deleted), title, facebook_url
-  (must be an https facebook.com video link — /watch, /videos/, /reel/, /<page>/live or story.php? — checked in
+  (must be an https facebook.com video link (/watch, /videos/, /reel/, /<page>/live or story.php?), checked in
   the database because the embed only renders video posts), status (`scheduled`/`live`/`ended`), created_by,
   created_at, updated_at. Logged-in read; admin/staff write.
 - `stream_views`: id, stream_id, user_id, viewed_on (date), created_at. UNIQUE (stream_id, user_id, viewed_on):
@@ -215,7 +215,7 @@ Readers: "anyone" = also logged out; "logged-in" = any role; "admin/staff" = org
   three functions require FEEDBACK_SERVER_KEY (checked against Vault by `feedback_server_key_ok()`).
   `/admin/feedback` no longer calls Gemini on open; "Retry pending analysis" (POST `/api/feedback/classify`,
   admin) retries 20 at a time, skipping rows that already failed `MAX_FEEDBACK_ANALYSIS_ATTEMPTS` (5,
-  `utils/feedback.ts`) — those show "Gave up" and stay pending.
+  `utils/feedback.ts`): those show "Gave up" and stay pending.
 - Notes for reports: `topics` mix praise and complaints; "common concerns" = topics on negative feedback.
   Pending rows still have a rating.
 
@@ -386,7 +386,7 @@ triggers with readable error messages.
    with Chart.js charts, print/PDF and CSV; staff view engagement stats. Filters: tournament, game, date range.
    Also: activity (audit) log and Excel/CSV exports.
 7. (added) Public Website & Content Management: done. `app/(site)/`, edited on `/admin/website` (DFD 7.0, store D6).
-8. (added) Audience Engagement – Pick'em Predictions: done. Picks, community split, leaderboard (DFD 8.0, store D9).
+8. (added) Audience Engagement (Pick'em Predictions): done. Picks, community split, leaderboard (DFD 8.0, store D9).
 In the updated diagrams, notifications are store D7 and the activity log store D8 (see docs/requirements.md).
 The business case also lists a "Database Module". It is not a separate module: each module adds its own
 tables and migrations (see Current schema).
@@ -439,7 +439,7 @@ The final feature list for the documents is docs/new-features-summary.md.
   audience_accounts, prediction_participation and predictions_by_tournament; older saved reports lack them);
   `protect_feedback` → `202610181000_feedback_protection`; `generate_bracket` → `202610181800_bracket_seed_pairing`.
 - **Testing**: `npm test` runs Vitest on `utils/*.test.ts`. `npm run db:test` runs the pgTAP files in
-  `supabase/tests/` against the local stack (`supabase start` first — needs Docker; `supabase/config.toml`
+  `supabase/tests/` against the local stack (`supabase start` first: needs Docker; `supabase/config.toml`
   exists for the local stack only, production migrations stay manual). `npm run db:types` regenerates
   `utils/database.types.ts` from the local schema; CI diffs it to catch drift.
 - **Scheduled jobs (pg_cron, enabled)**: `dalta-checkin-open-notifications` every 5 minutes. Manual cleanups run in

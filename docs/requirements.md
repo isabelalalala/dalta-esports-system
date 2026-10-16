@@ -1,11 +1,11 @@
-# DALTA Esports – System Requirements (from the business case, CFD, DFD and use case diagrams)
+# DALTA Esports: System Requirements (from the business case, CFD, DFD and use case diagrams)
 
 > **Final system:** the sections below first describe the original documents (6 modules). Additions made during
 > development are marked **(added)** and summarized in "Final system: additions" at the end. The full list of new
 > features, with their actors, use cases, data flows and tables, is in `docs/new-features-summary.md`.
 
 ## Business case summary
-- **Client:** DALTA Esports (UPHSD Molino) and AcadArena South Luzon Esports Conference (SLEC) – Alliance Games
+- **Client:** DALTA Esports (UPHSD Molino) and AcadArena South Luzon Esports Conference (SLEC): Alliance Games
 - **Problem:** registration, schedules, announcements and match info are handled through separate, manual tools.
 - **General objective:** a web-based multi-game tournament management system.
 - **Specific objectives:**
@@ -14,7 +14,7 @@
   3. Collect and analyze participant/viewer feedback using sentiment analysis for committee decisions
   - **(added)** Public tournament pages without an account (with calendar and share links), an admin-editable
     public website, and audience engagement through pick'em predictions
-- **Budget:** ₱0–₱5,000, using free/open-source tools
+- **Budget:** ₱0-₱5,000, using free/open-source tools
 - **Games (divisions):** MLBB, Valorant, Tekken 8, League of Legends, CODM
 
 ## Actors
@@ -24,7 +24,7 @@
 | Tournament Staff / Game Administrator | staff |
 | Players | player |
 | Audience / Spectator | spectator |
-| **(added)** Visitor (not logged in) | – (no account) |
+| **(added)** Visitor (not logged in) | - (no account) |
 | **(added)** Team Captain (a Player who leads a team) | player (`teams.captain_id`) |
 
 ## Data stores (DFD Level 1)
@@ -145,17 +145,17 @@ System name: "DALTA Esports Tournament Management System with AI-Powered Feedbac
 | **(added)** Supabase pg_cron | Registration and Tournament Management (check-in reminders) |
 
 ## Public website (wireframe pages)
-- **Home:** hero ("DALTA ESPORTS", "The official esports organization of UPHSD – Molino Campus"), Join DALTA Esports / Explore Our Team buttons, event photo carousel, Campaigns cards, Events cards; side nav (About Us, Campaigns, Events, Tournaments); search bar; Log in / Sign in
+- **Home:** hero ("DALTA ESPORTS", "The official esports organization of UPHSD - Molino Campus"), Join DALTA Esports / Explore Our Team buttons, event photo carousel, Campaigns cards, Events cards; side nav (About Us, Campaigns, Events, Tournaments); search bar; Log in / Sign in
 - **About Us:** founded February 2025; Our Story; Mission; Vision; core belief "Game With Purpose"
-- **Game Divisions:** MLBB, VALO, Tekken 8, League, CODM → official teams per division → team page (captain profile, player profiles with IGN – role, team description)
+- **Game Divisions:** MLBB, VALO, Tekken 8, League, CODM → official teams per division → team page (captain profile, player profiles with IGN, role, team description)
 - **Events:** event cards
 - **The DALTA Community:** Members, Coaches/Managers, Core Officers, Game Division Heads, Committees
 - **Core Officers:**
-  - Izumi Yamamoto – Founder/President
-  - Sean Jihan Tandoc – VP Internal
-  - Alexander Jon Solis – VP External
+  - Izumi Yamamoto, Founder/President
+  - Sean Jihan Tandoc, VP Internal
+  - Alexander Jon Solis, VP External
 - **Division heads / coaches:** one per game
-- **Footer (every page):** "Game With Purpose", About Us – Esports Division – Community, © 2026 DALTA Esports, Connect With Us, logo
+- **Footer (every page):** "Game With Purpose", About Us, Esports Division, Community, © 2026 DALTA Esports, Connect With Us, logo
 - **Wireframe style:** white background, black outlines, pixel/retro font, logo in yellow and brown
   (final system: one dark theme in the logo's yellow and brown for public and logged-in pages, pixel headings)
 
