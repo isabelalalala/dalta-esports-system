@@ -1,5 +1,6 @@
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
+import { PRIVACY_NOTICE_VERSION } from './utils/privacy';
 
 // Pages that require a logged-in user.
 // [^/]+ matches a tournament id, e.g. /tournaments/123/edit
@@ -59,6 +60,22 @@ export async function proxy(request: NextRequest) {
     // Keep any refreshed/cleared session cookies on the redirect response.
     response.cookies.getAll().forEach((cookie) => redirect.cookies.set(cookie));
     return redirect;
+  }
+
+  // Logged-in users on protected pages must have agreed to the current Privacy
+  // Notice version — otherwise they are sent to re-consent before the app can
+  // collect more of their data. /privacy/consent is exempt to avoid a loop.
+  if (user && isProtected && path !== '/privacy/consent') {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('privacy_consent_version')
+      .eq('id', user.id)
+      .maybeSingle();
+    if (profile?.privacy_consent_version !== PRIVACY_NOTICE_VERSION) {
+      const redirect = NextResponse.redirect(new URL('/privacy/consent', request.url));
+      response.cookies.getAll().forEach((cookie) => redirect.cookies.set(cookie));
+      return redirect;
+    }
   }
 
   return response;
