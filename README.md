@@ -163,6 +163,34 @@ To add another skill, drop a folder with a `SKILL.md` into `.agents/skills/`, or
 it personal by installing it in your user-level skills dir instead of committing it.
 Journeys for the testing skills above: `docs/browser-test-journeys.md`.
 
+## Deploying with Docker (any host)
+
+`Dockerfile` builds a minimal standalone image (`output: 'standalone'` in
+`next.config.ts`) — the app only; Supabase stays hosted, so there is no DB service.
+
+```bash
+# one image per environment: NEXT_PUBLIC_* are baked in at build time
+docker build \
+  --build-arg NEXT_PUBLIC_SUPABASE_URL=https://<project>.supabase.co \
+  --build-arg NEXT_PUBLIC_SUPABASE_ANON_KEY=<anon-key> \
+  --build-arg NEXT_PUBLIC_SITE_URL=https://your-domain.example \
+  -t dalta-esports .
+
+docker run -p 3000:3000 \
+  -e GEMINI_API_KEY=... -e FEEDBACK_SERVER_KEY=... \
+  dalta-esports
+```
+
+Or with compose (`cp .env.local .env` first — compose reads `.env` for build args):
+
+```bash
+docker compose up --build   # serves http://localhost:3000
+```
+
+Works on any container host: Railway (Dockerfile deploy), Render, Fly.io, Cloud Run,
+DigitalOcean, a VPS with Coolify/Dokploy, or plain Docker. Remember `NEXT_PUBLIC_*`
+changes need a rebuild; `GEMINI_API_KEY`/`FEEDBACK_SERVER_KEY` are runtime env vars.
+
 ## Deploying (Railway)
 
 Set all env vars in Railway **before** the first build. `NEXT_PUBLIC_*` values are
