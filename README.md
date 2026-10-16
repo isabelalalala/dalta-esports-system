@@ -123,6 +123,7 @@ npm run db:types  # regenerate utils/database.types.ts from the local schema
 ## Project structure
 
 ```
+.agents/skills/   agent skills shared with everyone (AI-assistant workflows)
 app/              Next.js App Router — pages, layouts, route handlers
   (site)/         public cached pages (home, teams, posts, public tournament view)
   admin/          organizer pages (users, feedback, verification, website editor)
@@ -136,6 +137,31 @@ supabase/
 docs/             requirements, UML, and the full system assessment (docs/assessment/)
 proxy.ts          Next.js 16 middleware: session refresh, auth + privacy-consent gates
 ```
+
+## Agent skills (for AI-assisted development)
+
+The repo ships reusable **agent skills** under `.agents/skills/` — the vendor-neutral
+location read by Devin, Cursor, VS Code Open Plugin hosts, and other AI coding tools.
+Each folder is a self-contained skill (`SKILL.md` + supporting files); tools list them
+automatically, or invoke one by name (e.g. `/ponytail`).
+
+| Skill | Use it for |
+|---|---|
+| `using-agent-skills` | meta-skill — picks the right skill for the task |
+| `ponytail` | smallest-diff, no-over-engineering implementation mode |
+| `code-review-and-quality` | multi-axis review before merging |
+| `browser-testing-with-devtools` | real-browser checks via Chrome DevTools MCP |
+| `webapp-testing` | Playwright-driven testing of the running app |
+| `tdd` | test-first feature/bug work |
+| `debugging-and-error-recovery` | systematic root-cause debugging |
+| `git-workflow-and-versioning` | branching, atomic commits, PRs, releases |
+| `security-review` | OWASP-style vulnerability review |
+| `spec-driven-development` | spec/PRD before a large feature |
+| `documentation-and-adrs` | record decisions, write docs |
+
+To add another skill, drop a folder with a `SKILL.md` into `.agents/skills/` — or keep
+it personal by installing it in your user-level skills dir instead of committing it.
+Journeys for the testing skills above: `docs/browser-test-journeys.md`.
 
 ## Deploying (Railway)
 
