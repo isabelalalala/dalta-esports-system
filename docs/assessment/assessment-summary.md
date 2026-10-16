@@ -26,7 +26,7 @@ find.
 | # | Area | Finding | Evidence |
 |---|------|---------|----------|
 | 1 | B | **Open redirect in `/auth/callback`** — `next=/\evil.com` passes the `startsWith('/')` + `!startsWith('//')` check; WHATWG URL parsing treats `\` as a separator → off-site redirect after any email link. | `app/auth/callback/route.ts:21,33` — findings-b |
-| 2 | M | **Fresh Supabase project cannot run this repo** — `profiles`/`tournaments`/`tournament_registrations` have no `CREATE TABLE` anywhere; first migration fails (`language sql` function reading `profiles`, validated at CREATE under `check_function_bodies`, inside a transaction). Base schema exists nowhere in the repo. | `202610151200:44`; findings-a/m/n |
+| 2 | M | ~~Fresh Supabase project cannot run this repo~~ — **RESOLVED** (`202610151100_base_schema.sql` bootstrap migration creates the three base tables). | — |
 | 3 | M | **No Node.js pin** — Nixpacks defaults to Node 18; Next 16 requires ≥20.9 → Railway build fails. | `package.json` (no engines/.nvmrc) — findings-m |
 | 4 | O | **Zero test infrastructure** — no test runner, no CI, no seed/harness; all tournament-integrity logic (bracket gen, winner advance, result lock, pick'em, RLS) lives in untested Postgres. Five TS functions duplicate DB rules with only a comment as contract. | `package.json`; findings-o |
 | 5 | N | ~~README boilerplate~~ — **RESOLVED** (rewritten with real setup). | — |
@@ -96,7 +96,7 @@ find.
 - Missing Supabase env = 500 on every route **and** build failure (both verified).
 
 **Docs** (N)
-- No doc admits the base tables aren't in migrations (fixed via new README).
+- ~~No doc admits the base tables aren't in migrations~~ — resolved outright by the `202610151100_base_schema.sql` bootstrap migration.
 - `AGENTS.md` is a stub — the real rules live only in CLAUDE.md.
 
 **Testing** (O)
@@ -143,8 +143,8 @@ behavior, actual DB query plans/row counts.
 
 ## Remediation priority (recommended order)
 
-1. **Deploy blockers** — add `engines` or `.nvmrc` (Node ≥20.9); document or migrate
-   the three base tables (README now covers the caveat; a `schema.sql` bootstrap is better).
+1. **Deploy blockers** — add `engines` or `.nvmrc` (Node ≥20.9). ~~document or migrate
+   the three base tables~~ — done: `202610151100_base_schema.sql` bootstrap migration.
 2. **Security fix** — tighten the `/auth/callback` `next` allowlist (reject `\`,
    or parse+compare `URL` origin).
 3. **Data-integrity races** — NULL-guard the boolean RPC params; check `m.status`
