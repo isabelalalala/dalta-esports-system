@@ -79,7 +79,7 @@ Enforced by a CHECK constraint on `profiles.role` (migration `202610161200_role_
 - RLS policies check roles with `public.get_my_role()`.
 
 ## Current schema (public)
-All migrations are in `supabase/migrations/`, run in filename order (202610151100 … 202610181700). `202610151100_base_schema` creates the three pre-migration base tables (`profiles`, `tournaments`, `tournament_registrations`) — it is `if not exists`, so it is a no-op on databases that already have them.
+All migrations are in `supabase/migrations/`, run in filename order (202610151100 … 202610181800). `202610151100_base_schema` creates the three pre-migration base tables (`profiles`, `tournaments`, `tournament_registrations`) — it is `if not exists`, so it is a no-op on databases that already have them.
 `202610181000_feedback_protection` also needs its one-time Vault key setup (the `feedback_server_key` secret +
 `FEEDBACK_SERVER_KEY`); the steps are at the top of that file.
 Readers: "anyone" = also logged out; "logged-in" = any role; "admin/staff" = organizers only.
@@ -437,7 +437,11 @@ The final feature list for the documents is docs/new-features-summary.md.
   `get_needs_attention` → `202610171500_match_results`; `notifications_type_check` → `202610171500`;
   `report_engagement` → `202610181100_predictions` (adds predictions, predictors, prediction_accuracy,
   audience_accounts, prediction_participation and predictions_by_tournament; older saved reports lack them);
-  `protect_feedback` → `202610181000_feedback_protection`.
+  `protect_feedback` → `202610181000_feedback_protection`; `generate_bracket` → `202610181800_bracket_seed_pairing`.
+- **Testing**: `npm test` runs Vitest on `utils/*.test.ts`. `npm run db:test` runs the pgTAP files in
+  `supabase/tests/` against the local stack (`supabase start` first — needs Docker; `supabase/config.toml`
+  exists for the local stack only, production migrations stay manual). `npm run db:types` regenerates
+  `utils/database.types.ts` from the local schema; CI diffs it to catch drift.
 - **Scheduled jobs (pg_cron, enabled)**: `dalta-checkin-open-notifications` every 5 minutes. Manual cleanups run in
   the SQL Editor: `purge_old_activity_logs()` (1 year), `purge_old_notifications()` (read, 90 days).
 - **Privacy Notice**: current version `2026-10-18` (`utils/privacy.ts`; pick'em leaderboards). A new kind of personal data, or a new
