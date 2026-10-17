@@ -12,7 +12,8 @@
     "lint": "eslint",
     "test": "vitest run",
     "db:test": "supabase test db",
-    "db:types": "supabase gen types typescript --local > utils/database.types.ts"
+    "db:types": "supabase gen types typescript --local > utils/database.types.ts",
+    "loadtest:signup": "node scripts/load-test-signup.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",
