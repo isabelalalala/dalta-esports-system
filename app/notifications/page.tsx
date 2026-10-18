@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
 import { getErrorMessage } from '@/utils/errors';
+import { Bell } from 'lucide-react';
 import {
   fetchNotifications, markAllAsRead, markAsRead, notificationIcons, type AppNotification,
 } from '@/utils/notifications';
@@ -124,9 +125,12 @@ export default function NotificationsPage() {
           </p>
         ) : (
           <ul className="bg-sitecard border border-brown divide-y divide-brown">
-            {items.map((n) => (
+            {items.map((n) => {
+              // The DB may hold a type this build doesn't know yet — fall back instead of crashing
+              const Icon = notificationIcons[n.type] ?? Bell;
+              return (
               <li key={n.id} className={`flex gap-3 px-4 py-3 ${n.is_read ? 'opacity-60' : ''}`}>
-                <span className="text-xl leading-none mt-0.5">{notificationIcons[n.type]}</span>
+                <Icon className="h-5 w-5 mt-0.5 shrink-0 text-gray-300" />
                 <button onClick={() => handleOpen(n)} className="flex-1 min-w-0 text-left">
                   <span className="flex items-center gap-2">
                     <span className="font-semibold">{n.title}</span>
@@ -143,7 +147,8 @@ export default function NotificationsPage() {
                   </button>
                 )}
               </li>
-            ))}
+              );
+            })}
           </ul>
         )}
 

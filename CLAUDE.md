@@ -255,7 +255,7 @@ Readers: "anyone" = also logged out; "logged-in" = any role; "admin/staff" = org
   teams/captains. Some are sent from the functions themselves (`transfer_team_captaincy`, `declare_forfeit`,
   `submit/respond/review_match_result`, `send_checkin_open_notifications`). (`team_added` is no longer sent.)
   Message texts are saved, so times are in PH time.
-  New types need the CHECK list and `notificationIcons` in `utils/notifications.ts`.
+  New types need the CHECK list and `notificationIcons` (a Lucide icon per type) in `utils/notifications.ts`.
 - Cleanup: `select public.purge_old_notifications();` in the SQL Editor (read ones older than 90 days).
 - Email notifications aren't built. Resend would need an API key (server only), a verified domain (DNS), a
   Database Webhook or Edge Function on inserts, a per-user opt-out, and a line in the Privacy Notice.

@@ -3,13 +3,14 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { Bell } from 'lucide-react';
 import { createClient } from '@/utils/supabase/client';
 import {
   fetchNotifications, fetchUnreadCount, markAllAsRead, markAsRead, notificationIcons, timeAgo,
   type AppNotification,
 } from '@/utils/notifications';
 
-// 🔔 with the unread count (kept up to date with Supabase Realtime) and a dropdown
+// Bell with the unread count (kept up to date with Supabase Realtime) and a dropdown
 // with the latest notifications. Shown in the header (components/site/SiteAuthButtons.tsx).
 export default function NotificationBell({ userId }: { userId: string }) {
   const supabase = createClient();
@@ -90,7 +91,7 @@ export default function NotificationBell({ userId }: { userId: string }) {
         aria-label={unread > 0 ? `Notifications, ${unread} unread` : 'Notifications'}
         aria-expanded={open}
       >
-        🔔
+        <Bell className="h-5 w-5" />
         {unread > 0 && (
           <span className="absolute -top-0.5 -right-0.5 min-w-5 h-5 px-1 rounded-full bg-red-600 text-white text-[11px] font-bold grid place-items-center">
             {unread > 99 ? '99+' : unread}
@@ -117,13 +118,16 @@ export default function NotificationBell({ userId }: { userId: string }) {
               <p className="px-4 py-8 text-center text-sm text-gray-400">No notifications yet.</p>
             ) : (
               <ul className="max-h-[60vh] sm:max-h-96 overflow-y-auto divide-y divide-brown">
-                {items.map((n) => (
+                {items.map((n) => {
+                  // The DB may hold a type this build doesn't know yet — fall back instead of crashing
+                  const Icon = notificationIcons[n.type] ?? Bell;
+                  return (
                   <li key={n.id}>
                     <button
                       onClick={() => handleClick(n)}
                       className={`w-full text-left px-4 py-3 flex gap-3 hover:bg-gold/5 ${n.is_read ? 'opacity-60' : ''}`}
                     >
-                      <span className="text-lg leading-none mt-0.5">{notificationIcons[n.type]}</span>
+                      <Icon className="h-4 w-4 mt-1 shrink-0 text-gray-300" />
                       <span className="flex-1 min-w-0">
                         <span className="flex items-center gap-2">
                           <span className="font-semibold text-white text-sm min-w-0 break-words">{n.title}</span>
@@ -134,7 +138,8 @@ export default function NotificationBell({ userId }: { userId: string }) {
                       </span>
                     </button>
                   </li>
-                ))}
+                  );
+                })}
               </ul>
             )}
 
