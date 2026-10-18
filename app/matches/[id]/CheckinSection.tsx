@@ -5,6 +5,7 @@ import { createClient } from '@/utils/supabase/client';
 import { getErrorMessage } from '@/utils/errors';
 import type { Match, MatchCheckin, MatchTeam } from '@/utils/types';
 import { formatCountdown, getCheckinState, getCheckinWindow } from '@/utils/checkin';
+import { CircleCheck, Hourglass } from 'lucide-react';
 
 interface Props {
   match: Match;
@@ -103,10 +104,11 @@ export default function CheckinSection({ match, windowMinutes, teamA, teamB, che
             return (
               <li key={i} className={`border p-3 ${row ? 'border-green-500/60 bg-green-500/10' : 'border-gray-700'}`}>
                 <p className="font-semibold">{team?.name ?? <span className="italic text-gray-400">TBD</span>}</p>
-                <p className={`text-sm ${row ? 'text-green-300' : 'text-gray-400'}`}>
+                <p className={`text-sm inline-flex items-center gap-1.5 ${row ? 'text-green-300' : 'text-gray-400'}`}>
+                  {row ? <CircleCheck className="h-4 w-4" /> : <Hourglass className="h-4 w-4" />}
                   {row
-                    ? `✅ Checked in ${new Date(row.checked_in_at).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })}`
-                    : '⏳ Not checked in'}
+                    ? `Checked in ${new Date(row.checked_in_at).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })}`
+                    : 'Not checked in'}
                 </p>
               </li>
             );

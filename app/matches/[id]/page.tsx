@@ -16,6 +16,7 @@ import PageLoading from '@/components/PageLoading';
 import PageError from '@/components/PageError';
 import PredictionsProvider from '@/components/PredictionsProvider';
 import PredictionPicker from '@/components/PredictionPicker';
+import { Target } from 'lucide-react';
 
 interface MatchTournament {
   id: string;
@@ -184,7 +185,7 @@ export default function MatchPage() {
         {/* Pick'em: the community split, and pick buttons for the audience (not the two teams) */}
         {teamA && teamB && (
           <section className="bg-sitecard border border-brownlight p-4 sm:p-6 space-y-3">
-            <h2 className="text-xl font-bold">🎯 Who will win?</h2>
+            <h2 className="text-xl font-bold flex items-center gap-2"><Target className="h-5 w-5" /> Who will win?</h2>
             <PredictionsProvider matches={[match]}>
               <PredictionPicker match={match} teamNames={{ [teamA.id]: teamA.name, [teamB.id]: teamB.name }} />
             </PredictionsProvider>

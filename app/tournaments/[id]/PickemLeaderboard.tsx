@@ -5,6 +5,10 @@ import { createClient } from '@/utils/supabase/client';
 import { getErrorMessage } from '@/utils/errors';
 import type { LeaderboardRow } from '@/utils/predictions';
 import { SectionLoading } from '@/components/PageLoading';
+import { Medal } from 'lucide-react';
+
+// Gold, silver and bronze for the top three ranks
+const medalColors = ['text-amber-400', 'text-gray-300', 'text-amber-700'];
 
 // Pick'em leaderboard of one tournament (get_prediction_leaderboard: top 20 + your own row).
 // limit = show only the first rows (the preview on the tournament page); your own row is
@@ -50,7 +54,7 @@ export default function PickemLeaderboard({ tournamentId, limit }: { tournamentI
           className={`flex items-center gap-3 px-3 py-2 ${r.is_me ? 'bg-gold/10' : ''} ${me === r && !top.includes(r) ? 'border-t-2 border-dashed border-brownlight' : ''}`}
         >
           <span className={`w-8 shrink-0 text-right font-bold tabular-nums ${r.rank <= 3 ? 'text-gold' : 'text-gray-400'}`}>
-            {r.rank <= 3 ? ['🥇', '🥈', '🥉'][r.rank - 1] : `#${r.rank}`}
+            {r.rank <= 3 ? <Medal className={`inline h-4 w-4 ${medalColors[r.rank - 1]}`} role="img" aria-label={`Rank ${r.rank}`} /> : `#${r.rank}`}
           </span>
           <span className="flex-1 min-w-0 truncate font-semibold">
             {r.display_name}

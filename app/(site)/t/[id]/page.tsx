@@ -15,6 +15,7 @@ import { EmptyNote, Paragraphs, SectionTitle, SiteBox } from '@/components/site/
 import { SectionLoading } from '@/components/PageLoading';
 import PredictionsProvider from '@/components/PredictionsProvider';
 import PredictionPicker from '@/components/PredictionPicker';
+import { BadgeCheck, Target } from 'lucide-react';
 
 // The server's clock is UTC, so times on this server-rendered page are shown in PH time
 const TZ = 'Asia/Manila';
@@ -72,7 +73,7 @@ async function TournamentContent({ params }: { params: PageProps<'/t/[id]'>['par
             ? <span className="mx-2 tabular-nums text-white">{m.is_forfeit ? 'forfeit' : `${m.score_a ?? '-'} : ${m.score_b ?? '-'}`}</span>
             : <span className="mx-2 text-gray-400">vs</span>}
           <span className={m.status === 'completed' && m.winner_team_id === m.team_b_id ? 'text-gold font-bold' : 'text-white'}>{name(m.team_b_id)}</span>
-          {m.status === 'live' && <span className="ml-2 text-xs text-red-400 font-bold">● LIVE</span>}
+          {m.status === 'live' && <span className="ml-2 text-xs text-red-400 font-bold"><span className="inline-block h-1.5 w-1.5 rounded-full bg-current animate-pulse" /> LIVE</span>}
         </span>
         <span className="text-xs text-gray-400">
           {roundLabel(m.round, roundCount)} · {formatDateTime(m.scheduled_at, TZ)}
@@ -94,7 +95,7 @@ async function TournamentContent({ params }: { params: PageProps<'/t/[id]'>['par
           <span>{formatDate(t.start_date)} – {formatDate(t.end_date)}</span>
           <span>Register by {formatDate(t.registration_deadline)}</span>
           <span>{data.approved_count} / {t.max_participants} teams</span>
-          {t.requires_verification && <span>✓ Verified students only</span>}
+          {t.requires_verification && <span className="inline-flex items-center gap-1"><BadgeCheck className="h-4 w-4" /> Verified students only</span>}
         </div>
         <div className="flex flex-wrap gap-3">
           <ShareButton path={publicTournamentPath(t.id)} title={t.name} text={`${t.name} (${t.game}) on DALTA Esports`} />
@@ -110,7 +111,7 @@ async function TournamentContent({ params }: { params: PageProps<'/t/[id]'>['par
       {/* Live stream */}
       {data.live_streams.length > 0 && (
         <section className="space-y-4">
-          <SectionTitle>🔴 Live now</SectionTitle>
+          <SectionTitle><span className="inline-block h-3 w-3 rounded-full bg-red-500 animate-pulse mr-2" />Live now</SectionTitle>
           {data.live_streams.map((s) => (
             <div key={s.id} className="border-2 border-red-500/70 bg-black">
               <FacebookPlayer url={s.facebook_url} title={s.title} />
@@ -149,8 +150,8 @@ async function TournamentContent({ params }: { params: PageProps<'/t/[id]'>['par
           <EmptyNote>The bracket appears once registration closes and the organizers create it.</EmptyNote>
         ) : (
           <div className="border-2 border-brownlight bg-sitecard p-4 space-y-3">
-            <p className="text-sm text-gray-400">
-              🎯 Pick&apos;em: pick the winner of each match before it starts (log in first).{' '}
+            <p className="text-sm text-gray-400 flex items-center gap-1.5">
+              <Target className="h-4 w-4 shrink-0" /> Pick&apos;em: pick the winner of each match before it starts (log in first).{' '}
               <Link href={`/tournaments/${t.id}/predictions`} className="text-gold hover:underline">Leaderboard →</Link>
             </p>
             {/* Under each match: the community split, and pick buttons for logged-in audience members */}

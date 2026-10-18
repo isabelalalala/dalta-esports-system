@@ -9,6 +9,7 @@ import { isFeedbackRetryable } from '@/utils/feedback';
 import { usePageTitle } from '@/utils/page-title';
 import StarRating from '@/components/StarRating';
 import ExportButtons from '@/components/ExportButtons';
+import { Star } from 'lucide-react';
 import PageLoading from '@/components/PageLoading';
 import PageError from '@/components/PageError';
 
@@ -214,7 +215,7 @@ export default function FeedbackAnalysisPage() {
           </div>
           <div className="bg-sitecard border border-brownlight p-4">
             <p className="text-xs uppercase font-bold text-gray-400">Avg rating</p>
-            <p className="text-2xl font-bold">{averageRating ? averageRating.toFixed(1) : '–'} <span className="text-yellow-400 text-lg">★</span></p>
+            <p className="text-2xl font-bold">{averageRating ? averageRating.toFixed(1) : '–'} <Star className="inline h-5 w-5 fill-yellow-400 text-yellow-400" /></p>
           </div>
           {(['positive', 'neutral', 'negative'] as Sentiment[]).map((s) => (
             <div key={s} className={`border p-4 ${sentimentStyles[s]}`}>

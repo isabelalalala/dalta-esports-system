@@ -69,7 +69,7 @@ export default function EngagementSection({ report, liveCounts }: Props) {
             s.title,
             `${s.tournament_name} (${s.game})`,
             streamMatchLabel(s) || '–',
-            s.status === 'live' ? '● Live' : capitalize(s.status),
+            s.status === 'live' ? <><span className="inline-block h-1.5 w-1.5 rounded-full bg-red-500 animate-pulse" /> Live</> : capitalize(s.status),
             ...(liveCounts ? [s.status === 'live' ? liveCounts[s.id] ?? 0 : '–'] : []),
             s.views,
             s.unique_viewers,

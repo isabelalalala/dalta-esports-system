@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, type ReactNode } from 'react';
 import Link from 'next/link';
 import { createClient } from '@/utils/supabase/client';
 import { getErrorMessage } from '@/utils/errors';
@@ -112,7 +112,7 @@ export default function SchedulePage() {
         </div>
         <p className="text-sm text-gray-300 sm:text-right shrink-0">
           {m.status === 'live' ? (
-            <span className="text-green-400 font-bold">● LIVE</span>
+            <span className="text-green-400 font-bold"><span className="inline-block h-1.5 w-1.5 rounded-full bg-current animate-pulse" /> LIVE</span>
           ) : (
             formatDateTime(m.scheduled_at)
           )}
@@ -121,7 +121,7 @@ export default function SchedulePage() {
     );
   };
 
-  const section = (title: string, list: ScheduleMatch[], emptyText: string, showScore: boolean) => (
+  const section = (title: ReactNode, list: ScheduleMatch[], emptyText: string, showScore: boolean) => (
     <section className="bg-sitecard border border-brownlight p-6">
       <h2 className="text-xl font-bold mb-2">{title}</h2>
       {list.length === 0 ? (
@@ -159,7 +159,7 @@ export default function SchedulePage() {
           <div className="py-12 grid place-items-center"><SectionLoading /></div>
         ) : (
           <>
-            {live.length > 0 && section('🔴 Live now', live, '', true)}
+            {live.length > 0 && section(<><span className="inline-block h-3 w-3 rounded-full bg-red-500 animate-pulse mr-2" />Live now</>, live, '', true)}
             {section('Upcoming matches', upcoming, 'No upcoming matches scheduled.', false)}
             {section('Recent results', results, 'No results yet.', true)}
           </>

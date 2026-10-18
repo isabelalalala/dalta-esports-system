@@ -13,6 +13,7 @@ import FacebookPlayer from '@/components/FacebookPlayer';
 import PageLoading from '@/components/PageLoading';
 import PageError from '@/components/PageError';
 import { usePageTitle } from '@/utils/page-title';
+import { MessageSquare } from 'lucide-react';
 
 // Watch page: Facebook player + a scoreboard that updates in real time
 export default function WatchStreamPage() {
@@ -169,7 +170,7 @@ export default function WatchStreamPage() {
           <div className="flex flex-wrap items-center gap-2">
             <h1 className="text-2xl sm:text-3xl font-bold text-gold break-words min-w-0">{stream.title}</h1>
             <span className={`px-2 py-0.5 rounded-full border text-[10px] font-bold uppercase ${streamStatusStyles[stream.status]}`}>
-              {stream.status === 'live' ? '● Live' : stream.status === 'ended' ? 'Replay' : 'Scheduled'}
+              {stream.status === 'live' ? <><span className="inline-block h-1.5 w-1.5 rounded-full bg-current animate-pulse" /> Live</> : stream.status === 'ended' ? 'Replay' : 'Scheduled'}
             </span>
           </div>
           <p className="text-gray-400">
@@ -195,7 +196,7 @@ export default function WatchStreamPage() {
           <div className="flex flex-wrap justify-between items-center gap-2 mb-3">
             <h2 className="text-xl font-bold">{matchId ? 'Match' : 'Live matches'}</h2>
             <span className={`text-xs ${realtimeOn ? 'text-green-400' : 'text-gray-400'}`}>
-              {realtimeOn ? '● Updates automatically' : 'Connecting...'}
+              {realtimeOn ? <><span className="inline-block h-1.5 w-1.5 rounded-full bg-current animate-pulse" /> Updates automatically</> : 'Connecting...'}
             </span>
           </div>
 
@@ -215,7 +216,7 @@ export default function WatchStreamPage() {
                   <li key={m.id} className="py-3">
                     <p className="text-xs text-gray-400 mb-1">
                       {roundLabel(m.round, roundCount || m.round)} · Match {m.match_number}
-                      {m.status === 'live' && <span className="ml-2 text-red-400 font-bold">● LIVE</span>}
+                      {m.status === 'live' && <span className="ml-2 text-red-400 font-bold"><span className="inline-block h-1.5 w-1.5 rounded-full bg-current animate-pulse" /> LIVE</span>}
                       {m.status === 'completed' && <span className="ml-2 text-gray-400 font-bold">FINAL</span>}
                     </p>
                     <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3 text-lg">
@@ -238,9 +239,9 @@ export default function WatchStreamPage() {
 
         <Link
           href={`/feedback?tournament=${stream.tournament_id}`}
-          className="inline-block text-gold hover:underline"
+          className="inline-flex items-center gap-1.5 text-gold hover:underline"
         >
-          💬 Enjoying the stream? Give feedback
+          <MessageSquare className="h-4 w-4" /> Enjoying the stream? Give feedback
         </Link>
       </div>
     </main>

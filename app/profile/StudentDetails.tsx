@@ -5,6 +5,7 @@ import { createClient } from '@/utils/supabase/client';
 import { getErrorMessage } from '@/utils/errors';
 import type { Profile } from '@/utils/types';
 import { SCHOOL_SUGGESTIONS, verificationLabels, verificationStyles } from '@/utils/verification';
+import { BadgeCheck } from 'lucide-react';
 
 const inputClass =
   'w-full border border-brownlight bg-sitebg px-4 py-3 text-white placeholder-gray-400 outline-none focus:border-gold';
@@ -61,8 +62,8 @@ export default function StudentDetails({ profile, onSaved }: Props) {
     <form onSubmit={handleSave} className="bg-sitecard border-2 border-gold shadow-[6px_6px_0_var(--color-brown)] p-6 space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h2 className="text-xl font-bold">Student details</h2>
-        <span className={`px-3 py-1 rounded-full border text-xs font-bold uppercase ${verificationStyles[status]}`}>
-          {status === 'verified' ? '✓ ' : ''}{verificationLabels[status]}
+        <span className={`px-3 py-1 rounded-full border text-xs font-bold uppercase inline-flex items-center gap-1 ${verificationStyles[status]}`}>
+          {status === 'verified' && <BadgeCheck className="h-3.5 w-3.5" />}{verificationLabels[status]}
         </span>
       </div>
       <p className="text-sm text-gray-400">

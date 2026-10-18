@@ -3,6 +3,7 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { ChevronDown, ChevronUp } from 'lucide-react';
 import { createClient } from '@/utils/supabase/client';
 import { getErrorMessage } from '@/utils/errors';
 import { siteImageUrl } from '@/utils/site';
@@ -50,7 +51,7 @@ const inputClass =
 
 const str = (v: unknown) => (v === null || v === undefined ? '' : String(v));
 
-// Generic editor for one website list: add, edit, reorder (▲ ▼), publish/unpublish, delete,
+// Generic editor for one website list: add, edit, reorder (up/down), publish/unpublish, delete,
 // with image upload/replace. Every change refreshes the public pages (refreshSite()).
 export default function ListEditor({
   table, idKey = 'id', fields, titleOf, subtitleOf, newRow = null, addWithImage, canDelete = true,
@@ -307,9 +308,9 @@ export default function ListEditor({
                   )}
                   <div className="flex items-center gap-1 text-sm">
                     <button onClick={() => move(index, -1)} disabled={busy || index === 0} aria-label="Move up"
-                      className="px-2 py-1 border border-gray-600 disabled:opacity-30">▲</button>
+                      className="px-2 py-1 border border-gray-600 disabled:opacity-30"><ChevronUp className="h-4 w-4" /></button>
                     <button onClick={() => move(index, 1)} disabled={busy || index === rows.length - 1} aria-label="Move down"
-                      className="px-2 py-1 border border-gray-600 disabled:opacity-30">▼</button>
+                      className="px-2 py-1 border border-gray-600 disabled:opacity-30"><ChevronDown className="h-4 w-4" /></button>
                   </div>
                   {!editing && (
                     <div className="flex flex-wrap gap-3 text-sm font-semibold">

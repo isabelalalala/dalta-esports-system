@@ -8,6 +8,7 @@ import type { Announcement, Tournament } from '@/utils/types';
 import AnnouncementCard from '@/components/AnnouncementCard';
 import PageLoading from '@/components/PageLoading';
 import { usePageTitle } from '@/utils/page-title';
+import { Pin } from 'lucide-react';
 
 const inputClass =
   'w-full border border-brownlight bg-sitebg px-4 py-3 text-white placeholder-gray-400 outline-none focus:border-gold';
@@ -256,7 +257,7 @@ function AnnouncementForm({
         </select>
         <label className="flex items-center gap-2 text-gray-300 cursor-pointer">
           <input type="checkbox" checked={pinned} onChange={(e) => setPinned(e.target.checked)} />
-          📌 Pin to the top
+          <Pin className="h-4 w-4" /> Pin to the top
         </label>
       </div>
 

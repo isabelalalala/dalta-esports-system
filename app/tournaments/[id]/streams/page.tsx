@@ -13,6 +13,7 @@ import FacebookPlayer from '@/components/FacebookPlayer';
 import PageLoading from '@/components/PageLoading';
 import PageError from '@/components/PageError';
 import { usePageTitle } from '@/utils/page-title';
+import { CircleCheck } from 'lucide-react';
 
 const inputClass =
   'w-full border border-brownlight bg-sitebg px-4 py-3 text-white placeholder-gray-400 outline-none focus:border-gold';
@@ -201,7 +202,7 @@ export default function ManageStreamsPage() {
                   <div className="flex flex-wrap items-center gap-2">
                     <h2 className="text-lg font-bold">{stream.title}</h2>
                     <span className={`px-2 py-0.5 rounded-full border text-[10px] font-bold uppercase ${streamStatusStyles[stream.status]}`}>
-                      {stream.status === 'live' ? '● Live' : stream.status}
+                      {stream.status === 'live' ? <><span className="inline-block h-1.5 w-1.5 rounded-full bg-current animate-pulse" /> Live</> : stream.status}
                     </span>
                   </div>
                   {stream.match_id && (
@@ -211,8 +212,8 @@ export default function ManageStreamsPage() {
 
                   <div className="mt-3 flex flex-wrap gap-3 text-sm font-semibold">
                     {stream.status !== 'live' && (
-                      <button onClick={() => setStatus(stream, 'live')} className="bg-red-600 hover:bg-red-700 text-white px-3 py-1.5">
-                        ● Go live
+                      <button onClick={() => setStatus(stream, 'live')} className="inline-flex items-center gap-1.5 bg-red-600 hover:bg-red-700 text-white px-3 py-1.5">
+                        <span className="inline-block h-1.5 w-1.5 rounded-full bg-white" /> Go live
                       </button>
                     )}
                     {stream.status === 'live' && (
@@ -311,7 +312,7 @@ function StreamForm({
         />
         {url && (
           <p role={urlError ? 'alert' : 'status'} className={`mt-1 text-sm ${urlError ? 'text-red-300' : 'text-green-400'}`}>
-            {urlError || '✓ Valid Facebook link. Check the preview below plays.'}
+            {urlError || <span className="inline-flex items-center gap-1"><CircleCheck className="h-4 w-4" /> Valid Facebook link. Check the preview below plays.</span>}
           </p>
         )}
       </div>
