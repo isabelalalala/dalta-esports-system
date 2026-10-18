@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { createClient } from '@/utils/supabase/client';
 import { getErrorMessage } from '@/utils/errors';
 import type { MyTeamInvite } from '@/utils/types';
+import { Mail } from 'lucide-react';
 
 // The logged-in player's open team invites with Accept / Decline.
 // Shown on the dashboard and on /teams; shows nothing when there are no invites.
@@ -55,7 +56,7 @@ export default function TeamInvites({ onAnswered }: { onAnswered?: () => void })
 
   return (
     <section className="bg-sitecard border-2 border-gold shadow-[6px_6px_0_var(--color-brown)] p-6 mb-8 space-y-4">
-      <h2 className="text-xl font-bold text-gold">✉️ Team invites</h2>
+      <h2 className="text-xl font-bold text-gold flex items-center gap-2"><Mail className="h-5 w-5" /> Team invites</h2>
 
       {error && <div className="bg-red-500/10 border border-red-500 text-red-300 px-4 py-3">{error}</div>}
       {message && <div className="bg-green-500/10 border border-green-500 text-green-300 px-4 py-3">{message}</div>}

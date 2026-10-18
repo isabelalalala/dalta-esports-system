@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { Download } from 'lucide-react';
 import { getErrorMessage } from '@/utils/errors';
 
 interface Props {
@@ -11,7 +12,7 @@ interface Props {
   params?: Record<string, string | null | undefined>;
 }
 
-// "Export ⬇ Excel / CSV" buttons. The file is built on the server (app/api/exports/[type]),
+// "Export Excel / CSV" download buttons. The file is built on the server (app/api/exports/[type]),
 // which checks the role and logs the export. Errors show here instead of downloading an error page.
 export default function ExportButtons({ type, label, params = {} }: Props) {
   const [busy, setBusy] = useState<'xlsx' | 'csv' | null>(null);
@@ -46,17 +47,17 @@ export default function ExportButtons({ type, label, params = {} }: Props) {
   };
 
   const buttonClass =
-    'border border-gold text-gold px-3 py-1.5 text-sm font-bold hover:bg-gold/10 disabled:opacity-50';
+    'inline-flex items-center gap-1.5 border border-gold text-gold px-3 py-1.5 text-sm font-bold hover:bg-gold/10 disabled:opacity-50';
 
   return (
     <div className="inline-flex flex-col gap-1 print:hidden">
       <div className="flex flex-wrap items-center gap-2">
         <span className="text-sm text-gray-400">{label}:</span>
         <button onClick={() => download('xlsx')} disabled={busy !== null} className={buttonClass}>
-          {busy === 'xlsx' ? 'Preparing...' : '⬇ Excel'}
+          {busy === 'xlsx' ? 'Preparing...' : <><Download className="h-4 w-4" /> Excel</>}
         </button>
         <button onClick={() => download('csv')} disabled={busy !== null} className={buttonClass}>
-          {busy === 'csv' ? 'Preparing...' : '⬇ CSV'}
+          {busy === 'csv' ? 'Preparing...' : <><Download className="h-4 w-4" /> CSV</>}
         </button>
       </div>
       {error && <p className="text-sm text-red-300" role="alert">{error}</p>}

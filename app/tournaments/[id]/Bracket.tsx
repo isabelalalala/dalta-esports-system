@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import Link from 'next/link';
+import { Trophy } from 'lucide-react';
 import type { Match } from '@/utils/types';
 import { formatDateTime, isBye, roundLabel } from '@/utils/tournaments';
 
@@ -30,8 +31,8 @@ export default function Bracket({
   return (
     <div>
       {champion && (
-        <div className="mb-4 bg-yellow-500/10 border border-yellow-500 text-yellow-300 px-4 py-3 text-center font-bold">
-          🏆 Champion: {champion}
+        <div className="mb-4 bg-yellow-500/10 border border-yellow-500 text-yellow-300 px-4 py-3 text-center font-bold flex items-center justify-center gap-2">
+          <Trophy className="h-5 w-5" /> Champion: {champion}
         </div>
       )}
 

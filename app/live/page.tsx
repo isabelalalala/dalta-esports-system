@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, type ReactNode } from 'react';
 import Link from 'next/link';
 import { createClient } from '@/utils/supabase/client';
 import { getErrorMessage } from '@/utils/errors';
@@ -36,7 +36,7 @@ export default function LiveStreamsPage() {
     fetchData();
   }, [supabase]);
 
-  const section = (title: string, list: Stream[], emptyText: string) => (
+  const section = (title: ReactNode, list: Stream[], emptyText: string) => (
     <section>
       <h2 className="text-2xl font-bold mb-3">{title}</h2>
       {list.length === 0 ? (
@@ -52,7 +52,7 @@ export default function LiveStreamsPage() {
               }`}
             >
               <span className={`inline-block px-2 py-0.5 rounded-full border text-[10px] font-bold uppercase mb-2 ${streamStatusStyles[s.status]}`}>
-                {s.status === 'live' ? '● Live' : s.status === 'ended' ? 'Replay' : 'Scheduled'}
+                {s.status === 'live' ? <><span className="inline-block h-1.5 w-1.5 rounded-full bg-current animate-pulse" /> Live</> : s.status === 'ended' ? 'Replay' : 'Scheduled'}
               </span>
               <h3 className="text-lg font-bold">{s.title}</h3>
               <p className="text-sm text-gray-400">
@@ -79,7 +79,7 @@ export default function LiveStreamsPage() {
 
         {error && <div role="alert" className="bg-red-500/10 border border-red-500 text-red-300 px-4 py-3">{error}</div>}
 
-        {section('🔴 Live now', streams.filter((s) => s.status === 'live'), 'Nothing is live right now.')}
+        {section(<><span className="inline-block h-3 w-3 rounded-full bg-red-500 animate-pulse mr-2" />Live now</>, streams.filter((s) => s.status === 'live'), 'Nothing is live right now.')}
         {section('Upcoming', streams.filter((s) => s.status === 'scheduled'), 'No streams scheduled.')}
         {section('Replays', streams.filter((s) => s.status === 'ended'), 'No replays yet.')}
       </div>

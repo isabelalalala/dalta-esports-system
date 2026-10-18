@@ -7,6 +7,7 @@ import { getErrorMessage } from '@/utils/errors';
 import type { Announcement } from '@/utils/types';
 import AnnouncementCard from '@/components/AnnouncementCard';
 import { SectionLoading } from '@/components/PageLoading';
+import { Megaphone } from 'lucide-react';
 
 // The 3 newest announcements (pinned first), shown on every role's dashboard
 export default function LatestAnnouncements() {
@@ -39,7 +40,7 @@ export default function LatestAnnouncements() {
   return (
     <div className="mt-8 bg-sitecard border-2 border-gold shadow-[6px_6px_0_var(--color-brown)] p-6">
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-bold text-gold">📢 Latest Announcements</h2>
+        <h2 className="text-xl font-bold text-gold flex items-center gap-2"><Megaphone className="h-5 w-5" /> Latest Announcements</h2>
         <Link href="/announcements" className="text-sm text-gold hover:underline">View all →</Link>
       </div>
 

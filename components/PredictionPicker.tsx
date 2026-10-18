@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { Check, X } from 'lucide-react';
 import { usePredictions } from '@/components/PredictionsProvider';
 import { canBePicked, picksOpen, splitPercents, type PickMatch } from '@/utils/predictions';
 
@@ -52,10 +53,10 @@ export default function PredictionPicker({
   else if (state.isOrganizer) note = "Organizers can't pick.";
   else if (ownMatch) note = "You can't pick your own team's match.";
 
-  // ✓ / ✗ once the match has a winner
+  // Correct / Wrong once the match has a winner
   const verdict = mine && mine.is_correct !== null && (
-    <span className={mine.is_correct ? 'text-green-300 font-bold' : 'text-red-300 font-bold'}>
-      {mine.is_correct ? '✓ Correct' : '✗ Wrong'}
+    <span className={`inline-flex items-center gap-1 ${mine.is_correct ? 'text-green-300 font-bold' : 'text-red-300 font-bold'}`}>
+      {mine.is_correct ? <><Check className="h-3.5 w-3.5" /> Correct</> : <><X className="h-3.5 w-3.5" /> Wrong</>}
     </span>
   );
 
@@ -94,10 +95,10 @@ export default function PredictionPicker({
       {canPick && (
         <div className="flex gap-2">
           <button onClick={() => handlePick(teamA)} disabled={busy} className={buttonClass(teamA)} aria-pressed={mine?.predicted_winner_team_id === teamA}>
-            {compact ? nameA : `${mine?.predicted_winner_team_id === teamA ? '✓ ' : ''}${nameA} wins`}
+            {compact ? nameA : <>{mine?.predicted_winner_team_id === teamA && <Check className="inline h-4 w-4 mr-1 -mt-0.5" />}{nameA} wins</>}
           </button>
           <button onClick={() => handlePick(teamB)} disabled={busy} className={buttonClass(teamB)} aria-pressed={mine?.predicted_winner_team_id === teamB}>
-            {compact ? nameB : `${mine?.predicted_winner_team_id === teamB ? '✓ ' : ''}${nameB} wins`}
+            {compact ? nameB : <>{mine?.predicted_winner_team_id === teamB && <Check className="inline h-4 w-4 mr-1 -mt-0.5" />}{nameB} wins</>}
           </button>
         </div>
       )}

@@ -19,6 +19,7 @@ import CalendarLinks from '@/components/CalendarLinks';
 import PageLoading from '@/components/PageLoading';
 import PageError from '@/components/PageError';
 import { usePageTitle } from '@/utils/page-title';
+import { BadgeCheck, MessageSquare, Target, Tv } from 'lucide-react';
 
 export default function TournamentDetailsPage() {
   usePageTitle('Tournament');
@@ -306,8 +307,8 @@ export default function TournamentDetailsPage() {
                 {statusLabels[status]}
               </span>
               {tournament.requires_verification && (
-                <span className="px-3 py-1 rounded-full border border-[#3987e5]/60 bg-[#3987e5]/15 text-[#8fbcf2] text-xs font-bold uppercase">
-                  ✓ Verified students only
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-[#3987e5]/60 bg-[#3987e5]/15 text-[#8fbcf2] text-xs font-bold uppercase">
+                  <BadgeCheck className="h-3.5 w-3.5" /> Verified students only
                 </span>
               )}
             </div>
@@ -336,8 +337,8 @@ export default function TournamentDetailsPage() {
               href={`/live/${s.id}`}
               className="flex items-center justify-between gap-3 bg-red-600/15 border border-red-500 px-4 py-3 hover:bg-red-600/25 transition"
             >
-              <span className="font-bold text-red-300 min-w-0 break-words">📺 Watch live: {s.title}</span>
-              <span className="text-red-300 text-sm shrink-0">● LIVE →</span>
+              <span className="font-bold text-red-300 min-w-0 break-words inline-flex items-center gap-2"><Tv className="h-4 w-4 shrink-0" /> Watch live: {s.title}</span>
+              <span className="text-red-300 text-sm shrink-0"><span className="inline-block h-2 w-2 rounded-full bg-red-500 animate-pulse mr-1" />LIVE →</span>
             </Link>
           ))}
 
@@ -363,8 +364,8 @@ export default function TournamentDetailsPage() {
             </div>
           )}
 
-          <Link href={`/feedback?tournament=${id}`} className="inline-block text-sm text-gold hover:underline">
-            💬 Give feedback about this tournament
+          <Link href={`/feedback?tournament=${id}`} className="inline-flex items-center gap-1.5 text-sm text-gold hover:underline">
+            <MessageSquare className="h-4 w-4" /> Give feedback about this tournament
           </Link>
 
           {/* Rules */}
@@ -385,8 +386,8 @@ export default function TournamentDetailsPage() {
             {matches.length > 0 ? (
               <>
                 {!isOrganizer && (
-                  <p className="text-sm text-gray-400 mb-3">
-                    🎯 Pick&apos;em: pick the winner under each match before it starts. Picks close at match time.
+                  <p className="text-sm text-gray-400 mb-3 flex items-center gap-1.5">
+                    <Target className="h-4 w-4 shrink-0" /> Pick&apos;em: pick the winner under each match before it starts. Picks close at match time.
                   </p>
                 )}
                 {/* Under each match: the community split and (for the audience) the pick buttons */}
@@ -410,7 +411,7 @@ export default function TournamentDetailsPage() {
           {matches.length > 0 && (
             <div>
               <div className="flex flex-wrap items-baseline justify-between gap-2 mb-3">
-                <h2 className="text-xl font-bold">🎯 Pick&apos;em Leaderboard</h2>
+                <h2 className="text-xl font-bold flex items-center gap-2"><Target className="h-5 w-5" /> Pick&apos;em Leaderboard</h2>
                 <Link href={`/tournaments/${id}/predictions`} className="text-sm text-gold hover:underline">Full leaderboard →</Link>
               </div>
               <PickemLeaderboard tournamentId={id} limit={3} />

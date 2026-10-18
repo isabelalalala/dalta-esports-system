@@ -7,6 +7,7 @@ import { getErrorMessage } from '@/utils/errors';
 import type { Match } from '@/utils/types';
 import { formatDateTime, roundLabel } from '@/utils/tournaments';
 import { SectionLoading } from '@/components/PageLoading';
+import { Swords } from 'lucide-react';
 
 type UpcomingMatch = Match & { tournaments: { name: string } | null };
 
@@ -87,7 +88,7 @@ export default function MyMatches({ userId }: { userId: string }) {
 
   return (
     <div className="mt-8 bg-sitecard border-2 border-gold shadow-[6px_6px_0_var(--color-brown)] p-6">
-      <h2 className="text-xl font-bold text-gold mb-4">⚔️ My Matches</h2>
+      <h2 className="text-xl font-bold text-gold mb-4 flex items-center gap-2"><Swords className="h-5 w-5" /> My Matches</h2>
 
       {loading ? (
         <SectionLoading label="Loading your matches..." />

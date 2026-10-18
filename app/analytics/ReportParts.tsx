@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { Star } from 'lucide-react';
 
 // Small building blocks shared by the report sections
 
@@ -56,9 +57,14 @@ export function ReportTable({ columns, rows }: { columns: string[]; rows: ReactN
   );
 }
 
-// "4.3 ★" or "–" when there's nothing to average
+// "4.3" with a star icon, or "–" when there's nothing to average
 export function formatRating(value: number | null) {
-  return value === null ? '–' : `${Number(value).toFixed(1)} ★`;
+  if (value === null) return '–';
+  return (
+    <span className="inline-flex items-center gap-1">
+      {Number(value).toFixed(1)} <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+    </span>
+  );
 }
 
 // "Oct 2026" for a YYYY-MM-DD month start
