@@ -35,6 +35,10 @@ export default async function Footer() {
           <Link href="/divisions" className="hover:text-gold">Esports Division</Link>
           <Link href="/community" className="hover:text-gold">Community</Link>
           <Link href="/privacy" className="hover:text-gold">Privacy Notice</Link>
+          <Link href="/terms" className="hover:text-gold">Terms of Service</Link>
+          <Link href="/conduct" className="hover:text-gold">Code of Conduct</Link>
+          <Link href="/cookies" className="hover:text-gold">Cookie Policy</Link>
+          <Link href="/security" className="hover:text-gold">Security</Link>
         </nav>
 
         <div>

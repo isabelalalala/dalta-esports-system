@@ -483,14 +483,14 @@ isOneToOne: false
                   ]
                 },"profiles": {
                   Row: {
-                    "course_year": string | null,"created_at": string,"email": string,"full_name": string | null,"id": string,"is_verified": boolean | null,"privacy_consent_at": string | null,"privacy_consent_version": string | null,"reviewed_at": string | null,"reviewed_by": string | null,"role": string,"school": string | null,"student_id": string | null,"submitted_at": string | null,"updated_at": string,"verification_note": string | null,"verification_status": string
+                    "course_year": string | null,"created_at": string,"email": string,"full_name": string | null,"id": string,"is_verified": boolean | null,"privacy_consent_at": string | null,"privacy_consent_version": string | null,"reviewed_at": string | null,"reviewed_by": string | null,"role": string,"school": string | null,"student_id": string | null,"submitted_at": string | null,"tos_accepted_at": string | null,"tos_version": string | null,"updated_at": string,"verification_note": string | null,"verification_status": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "course_year"?: string | null,"created_at"?: string,"email": string,"full_name"?: string | null,"id": string,"is_verified"?: never,"privacy_consent_at"?: string | null,"privacy_consent_version"?: string | null,"reviewed_at"?: string | null,"reviewed_by"?: string | null,"role"?: string,"school"?: string | null,"student_id"?: string | null,"submitted_at"?: string | null,"updated_at"?: string,"verification_note"?: string | null,"verification_status"?: string
+                    "course_year"?: string | null,"created_at"?: string,"email": string,"full_name"?: string | null,"id": string,"is_verified"?: never,"privacy_consent_at"?: string | null,"privacy_consent_version"?: string | null,"reviewed_at"?: string | null,"reviewed_by"?: string | null,"role"?: string,"school"?: string | null,"student_id"?: string | null,"submitted_at"?: string | null,"tos_accepted_at"?: string | null,"tos_version"?: string | null,"updated_at"?: string,"verification_note"?: string | null,"verification_status"?: string
                   }
                   Update: {
-                    "course_year"?: string | null,"created_at"?: string,"email"?: string,"full_name"?: string | null,"id"?: string,"is_verified"?: never,"privacy_consent_at"?: string | null,"privacy_consent_version"?: string | null,"reviewed_at"?: string | null,"reviewed_by"?: string | null,"role"?: string,"school"?: string | null,"student_id"?: string | null,"submitted_at"?: string | null,"updated_at"?: string,"verification_note"?: string | null,"verification_status"?: string
+                    "course_year"?: string | null,"created_at"?: string,"email"?: string,"full_name"?: string | null,"id"?: string,"is_verified"?: never,"privacy_consent_at"?: string | null,"privacy_consent_version"?: string | null,"reviewed_at"?: string | null,"reviewed_by"?: string | null,"role"?: string,"school"?: string | null,"student_id"?: string | null,"submitted_at"?: string | null,"tos_accepted_at"?: string | null,"tos_version"?: string | null,"updated_at"?: string,"verification_note"?: string | null,"verification_status"?: string
                   }
                   Relationships: [
                     {
@@ -753,7 +753,10 @@ isOneToOne: false
             [_ in never]: never
           }
           Functions: {
-            "activity_log_actors":
+            "accept_tos":
+{ Args: { "p_version": string }; Returns: undefined
+                           },
+"activity_log_actors":
 { Args: Record<PropertyKey, never>; Returns: {
               "actor_id": string,"actor_name": string
             }[]

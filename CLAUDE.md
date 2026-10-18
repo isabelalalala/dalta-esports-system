@@ -16,6 +16,7 @@ Full title: "DALTA Esports: Tournament Management System with AI-Powered Feedbac
 - Google Gemini API (sentiment, Module 5), Facebook Live embeds (streaming, Module 4), Chart.js (reports, Module 6)
 - Deployment: Railway. Version control: Git/GitHub.
 - Next.js 16 note: middleware is `proxy.ts` in the project root, not `middleware.ts`.
+- Brand guide (colors, fonts, logo, voice): `docs/brand.md` — the `@theme` tokens in `app/globals.css` are the source of truth.
 
 ## Supabase rules
 - Client components (`"use client"`) use `createClient()` from `@/utils/supabase/client`.
@@ -61,6 +62,11 @@ Full title: "DALTA Esports: Tournament Management System with AI-Powered Feedbac
   without current-version consent to `/privacy/consent` on every protected page (not just the dashboard).
   Changing `PRIVACY_NOTICE_VERSION` asks everyone to agree again.
   Keep the notice in sync when a feature changes what data is collected or who can see it.
+- Terms of Service: `/terms` (public draft pending org review), `/conduct` (Code of Conduct, part of the terms),
+  `/cookies`, `/security`. Same acceptance pattern as privacy: version in `utils/terms.ts` (`TOS_VERSION`),
+  `profiles.tos_version`/`tos_accepted_at`, `accept_tos(version)` RPC, register checkbox
+  (`components/TermsCheckbox.tsx` — also carries the 18+/guardian-consent declaration), `proxy.ts` gate to
+  `/terms/accept`. Changing `TOS_VERSION` asks everyone to accept again.
 
 ## Roles (stored in `profiles.role`)
 | role value | Actor in the documents |
@@ -79,7 +85,7 @@ Enforced by a CHECK constraint on `profiles.role` (migration `202610161200_role_
 - RLS policies check roles with `public.get_my_role()`.
 
 ## Current schema (public)
-All migrations are in `supabase/migrations/`, run in filename order (202610151100 … 202610181800). `202610151100_base_schema` creates the three pre-migration base tables (`profiles`, `tournaments`, `tournament_registrations`). It is `if not exists`, so it is a no-op on databases that already have them.
+All migrations are in `supabase/migrations/`, run in filename order (202610151100 … 202610181900). `202610151100_base_schema` creates the three pre-migration base tables (`profiles`, `tournaments`, `tournament_registrations`). It is `if not exists`, so it is a no-op on databases that already have them.
 `202610181000_feedback_protection` also needs its one-time Vault key setup (the `feedback_server_key` secret +
 `FEEDBACK_SERVER_KEY`); the steps are at the top of that file.
 Readers: "anyone" = also logged out; "logged-in" = any role; "admin/staff" = organizers only.
@@ -87,7 +93,9 @@ Readers: "anyone" = also logged out; "logged-in" = any role; "admin/staff" = org
 **Accounts (Module 1)**
 - `profiles`: id (uuid, = auth.users.id, deleted with the auth user), email, role, full_name, created_at (join date),
   updated_at, privacy_consent_at, privacy_consent_version (null = not agreed yet; set at sign-up or only through
-  `give_privacy_consent(version)`, never edited directly, not even by admins).
+  `give_privacy_consent(version)`, never edited directly, not even by admins),
+  tos_version, tos_accepted_at (Terms of Service acceptance — also records the 18+/guardian declaration;
+  set at sign-up or only through `accept_tos(version)`).
   Student verification (players): student_id, school, course_year (the player edits them on `/profile`),
   verification_status (`unsubmitted`/`pending`/`verified`/`rejected`), is_verified (generated from the status),
   verification_note (reason shown to the player), submitted_at, reviewed_by, reviewed_at. Saving complete details

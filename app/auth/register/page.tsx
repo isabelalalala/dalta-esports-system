@@ -6,8 +6,10 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/utils/supabase/client'
 import { getErrorMessage } from '@/utils/errors'
 import { PRIVACY_NOTICE_VERSION } from '@/utils/privacy'
+import { TOS_VERSION } from '@/utils/terms'
 import { confirmEmailRedirect } from '@/utils/auth'
 import PrivacyConsentCheckbox from '@/components/PrivacyConsentCheckbox'
+import TermsCheckbox from '@/components/TermsCheckbox'
 import { usePageTitle } from '@/utils/page-title'
 
 const inputClass = 'w-full p-3 bg-sitebg text-white border border-gold'
@@ -22,6 +24,7 @@ export default function Register() {
   const [confirmPassword, setConfirmPassword] = useState('')
   const [role, setRole] = useState('player')
   const [consent, setConsent] = useState(false)
+  const [tosConsent, setTosConsent] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   // Set after signing up when Supabase requires email confirmation
@@ -45,6 +48,10 @@ export default function Register() {
       setError('Please agree to the Privacy Notice to create an account.')
       return
     }
+    if (!tosConsent) {
+      setError('Please accept the Terms of Service to create an account.')
+      return
+    }
 
     setLoading(true)
     try {
@@ -57,12 +64,15 @@ export default function Register() {
           // The database trigger handle_new_user() creates the profile from this data.
           // It only accepts 'player'; any other role is saved as 'spectator'.
           // Admin and staff roles are given by an administrator, never at sign-up.
-          // privacy_consent is saved as profiles.privacy_consent_at (Data Privacy Act).
+          // privacy_consent is saved as profiles.privacy_consent_at (Data Privacy Act);
+          // tos_consent/tos_version as profiles.tos_accepted_at/tos_version (Terms of Service).
           data: {
             full_name: fullName.trim(),
             role,
             privacy_consent: true,
             privacy_notice_version: PRIVACY_NOTICE_VERSION,
+            tos_consent: true,
+            tos_version: TOS_VERSION,
           },
         },
       })
@@ -143,10 +153,11 @@ export default function Register() {
         </div>
 
         <PrivacyConsentCheckbox checked={consent} onChange={setConsent} />
+        <TermsCheckbox checked={tosConsent} onChange={setTosConsent} />
 
         <button
           type="submit"
-          disabled={loading || !consent}
+          disabled={loading || !consent || !tosConsent}
           className="w-full p-3 bg-gold text-black font-bold disabled:opacity-60 disabled:cursor-not-allowed"
         >
           {loading ? 'Creating account...' : 'Sign Up'}

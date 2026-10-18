@@ -191,7 +191,10 @@ export default function PrivacyNoticePage() {
         <Section title="9. Users under 18">
           <p>
             Students under 18 may create an account only with the consent of a parent or guardian, who should read
-            this notice with them. A parent or guardian can contact us to access or delete their child&apos;s data.
+            this notice with them. When you accept the{' '}
+            <Link href="/terms" className="text-gold underline">Terms of Service</Link> you declare that you are at
+            least 18 or have that consent; we record the date and version of your acceptance. A parent or guardian
+            can contact us to access or delete their child&apos;s data.
           </p>
         </Section>
 

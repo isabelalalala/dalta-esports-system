@@ -30,6 +30,7 @@ updated to match the final system.
 | 11 | Activity (audit) log | 6 Administrative Reports ("System Report") | `activity_logs` | `202610171100_activity_log` |
 | 12 | Excel / CSV exports | 6 Administrative Reports | - (logged in `activity_logs`) | `202610171700_export_log` |
 | 13 | Enhancements inside the original modules (saved reports, "watching now", engagement additions) | 4, 6 | - | `202610162300_admin_reports`, `202610181100_predictions` |
+| 14 | Terms of Service acceptance & legal pages (/terms, /conduct, /cookies, /security) | 1 Account Management | (new columns on `profiles`) | `202610181900_tos_consent` |
 
 ---
 

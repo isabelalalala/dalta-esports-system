@@ -1,6 +1,7 @@
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 import { PRIVACY_NOTICE_VERSION } from './utils/privacy';
+import { TOS_VERSION } from './utils/terms';
 
 // Pages that require a logged-in user.
 // [^/]+ matches a tournament id, e.g. /tournaments/123/edit
@@ -21,6 +22,8 @@ const protectedRoutes = [
   /^\/notifications$/,
   // /privacy itself is public; only the consent form needs a login
   /^\/privacy\/consent$/,
+  // /terms is public; only the accept form needs a login
+  /^\/terms\/accept$/,
 ];
 
 export async function proxy(request: NextRequest) {
@@ -79,16 +82,23 @@ export async function proxy(request: NextRequest) {
   }
 
   // Logged-in users on protected pages must have agreed to the current Privacy
-  // Notice version — otherwise they are sent to re-consent before the app can
-  // collect more of their data. /privacy/consent is exempt to avoid a loop.
-  if (user && isProtected && path !== '/privacy/consent') {
+  // Notice and Terms of Service versions — otherwise they are sent to re-consent
+  // before the app can collect more of their data. The consent/accept pages are
+  // exempt to avoid a loop.
+  if (user && isProtected && path !== '/privacy/consent' && path !== '/terms/accept') {
     const { data: profile } = await supabase
       .from('profiles')
-      .select('privacy_consent_version')
+      .select('privacy_consent_version, tos_version')
       .eq('id', user.id)
       .maybeSingle();
-    if (profile?.privacy_consent_version !== PRIVACY_NOTICE_VERSION) {
-      const redirect = NextResponse.redirect(new URL('/privacy/consent', request.url));
+    const needed =
+      profile?.privacy_consent_version !== PRIVACY_NOTICE_VERSION
+        ? '/privacy/consent'
+        : profile?.tos_version !== TOS_VERSION
+          ? '/terms/accept'
+          : null;
+    if (needed) {
+      const redirect = NextResponse.redirect(new URL(needed, request.url));
       response.cookies.getAll().forEach((cookie) => redirect.cookies.set(cookie));
       return redirect;
     }
@@ -99,5 +109,5 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   // Run on every page so the session stays fresh, but skip static files and images.
-  matcher: ['/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)'],
+  matcher: ['/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|txt)$).*)'],
 };
