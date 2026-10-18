@@ -7,7 +7,8 @@
 // 2026-10-17.2: added the activity log. (Only the first 10 characters are shown as the date.)
 // 2026-10-18: added pick'em predictions and leaderboards (first name + initial shown to logged-in users).
 // 2026-10-18.2: disclosed match-proof retention, exports, public rosters/officers, check-ins.
-export const PRIVACY_NOTICE_VERSION = '2026-10-18.2';
+// 2026-10-18.3: the under-18 section now points to the Terms of Service age declaration.
+export const PRIVACY_NOTICE_VERSION = '2026-10-18.3';
 
 // Where people send privacy requests and questions. Set the real contact in
 // NEXT_PUBLIC_PRIVACY_CONTACT_* before going live; the fallbacks are placeholders.
