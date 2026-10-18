@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import type { ReactNode } from 'react';
+import { Pin } from 'lucide-react';
 import type { Announcement } from '@/utils/types';
 
 // One announcement. Used on /announcements, the tournament page and the dashboard.
@@ -25,8 +26,8 @@ export default function AnnouncementCard({
     >
       <div className="flex flex-wrap items-center gap-2 mb-1">
         {a.pinned && (
-          <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-yellow-500/15 text-yellow-300 border border-yellow-500/50">
-            📌 Pinned
+          <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-yellow-500/15 text-yellow-300 border border-yellow-500/50">
+            <Pin className="h-3 w-3" /> Pinned
           </span>
         )}
         {showTournament && a.tournaments && (
