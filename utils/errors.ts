@@ -28,6 +28,13 @@ export function getErrorMessage(err: unknown, fallback: string) {
     return 'Not found. It may have been deleted.';
   }
   switch (code) {
+    // Supabase Auth (login, sign-up, password changes)
+    case 'invalid_credentials': return 'Wrong email or password.';
+    case 'over_request_rate_limit': return 'Too many attempts. Please wait a few minutes and try again.';
+    case 'over_email_send_rate_limit': return 'Too many emails were sent. Please wait a while before asking for another one.';
+    case 'weak_password': return 'This password is too weak. Use at least 10 characters with uppercase and lowercase letters, a number and a symbol.';
+    case 'email_address_invalid': return "This email address can't be used. Please check it or use another one.";
+    case 'same_password': return 'The new password must be different from your current one.';
     case '23505': return 'This already exists.';
     case '23503': return "This is still linked to other records, so it can't be changed or deleted.";
     case '23514':

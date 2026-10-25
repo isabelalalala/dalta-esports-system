@@ -5,7 +5,7 @@ import { useRouter, useParams } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
 import Link from 'next/link';
 import { getErrorMessage } from '@/utils/errors';
-import { toDateInput, validateTournamentDates } from '@/utils/tournaments';
+import { defaultParticipants, participantRangeLabel, toDateInput, validateParticipants, validateTournamentDates } from '@/utils/tournaments';
 import type { Game } from '@/utils/types';
 import PageLoading from '@/components/PageLoading';
 import { usePageTitle } from '@/utils/page-title';
@@ -27,6 +27,9 @@ export default function EditTournamentPage() {
   const [registrationDeadline, setRegistrationDeadline] = useState('');
   // Only 'cancelled' is chosen by hand; every other status comes from the dates
   const [cancelled, setCancelled] = useState(false);
+  // The game and limit as loaded: older tournaments outside the new ranges can still be
+  // edited, as long as these two aren't changed (same as the database trigger)
+  const [loaded, setLoaded] = useState({ gameId: '', maxParticipants: '' });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
@@ -62,6 +65,7 @@ export default function EditTournamentPage() {
         setEndDate(toDateInput(data.end_date));
         setRegistrationDeadline(toDateInput(data.registration_deadline));
         setCancelled(data.status === 'cancelled');
+        setLoaded({ gameId: data.game_id ?? '', maxParticipants: String(data.max_participants ?? '') });
       } catch (err) {
         setError(getErrorMessage(err, 'Failed to load tournament'));
       } finally {
@@ -72,6 +76,19 @@ export default function EditTournamentPage() {
     if (id) fetchTournament();
   }, [id, supabase]);
 
+  const selectedGame = games.find((g) => g.id === gameId);
+  const participantsChanged = gameId !== loaded.gameId || maxParticipants !== loaded.maxParticipants;
+
+  // Picking a game suggests a participant limit inside that game's range,
+  // unless the current one already fits
+  const handleGameChange = (id: string) => {
+    setGameId(id);
+    const game = games.find((g) => g.id === id);
+    if (game && validateParticipants(game, maxParticipants)) {
+      setMaxParticipants(String(defaultParticipants(game)));
+    }
+  };
+
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
@@ -81,6 +98,15 @@ export default function EditTournamentPage() {
     const dateError = validateTournamentDates(startDate, endDate, registrationDeadline);
     if (dateError) {
       setError(dateError);
+      setSaving(false);
+      return;
+    }
+
+    // Check the participant range for the game (the database checks it too)
+    const participantsError =
+      selectedGame && participantsChanged ? validateParticipants(selectedGame, maxParticipants) : '';
+    if (participantsError) {
+      setError(participantsError);
       setSaving(false);
       return;
     }
@@ -163,7 +189,7 @@ export default function EditTournamentPage() {
             <select
               id="game"
               value={gameId}
-              onChange={(e) => setGameId(e.target.value)}
+              onChange={(e) => handleGameChange(e.target.value)}
               className="w-full border border-brownlight bg-sitebg px-4 py-3 text-white outline-none focus:border-gold"
               required
             >
@@ -208,12 +234,19 @@ export default function EditTournamentPage() {
             <input
               id="max-participants"
               type="number"
-              min="1"
+              min={participantsChanged ? (selectedGame?.min_participants ?? 2) : undefined}
+              max={participantsChanged ? selectedGame?.max_participants : undefined}
+              step="1"
               value={maxParticipants}
               onChange={(e) => setMaxParticipants(e.target.value)}
               className="w-full border border-brownlight bg-sitebg px-4 py-3 text-white outline-none focus:border-gold"
               required
             />
+            <p className="mt-1 text-xs text-gray-400">
+              {selectedGame
+                ? `${participantRangeLabel(selectedGame)} for ${selectedGame.name}.`
+                : 'The allowed range depends on the game.'}
+            </p>
           </div>
 
           <label className="flex items-start gap-3 text-sm text-gray-300 cursor-pointer">

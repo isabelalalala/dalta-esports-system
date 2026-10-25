@@ -1,4 +1,4 @@
-import type { Tournament } from '@/utils/types';
+import type { Game, Tournament } from '@/utils/types';
 
 // What the app shows. Only 'cancelled' is stored; the rest comes from the dates.
 export type TournamentDisplayStatus =
@@ -79,6 +79,40 @@ export function validateTournamentDates(startDate: string, endDate: string, regi
   }
   if (endDate < startDate) {
     return 'The end date must be on or after the start date.';
+  }
+  return '';
+}
+
+// What a tournament of this game counts: players for solo games (Tekken 8), else teams
+export function participantUnit(game: Pick<Game, 'max_players'>) {
+  return game.max_players === 1 ? 'players' : 'teams';
+}
+
+// "Allowed: 4-64 teams" hint under the Max Participants field
+export function participantRangeLabel(game: Pick<Game, 'min_participants' | 'max_participants' | 'max_players'>) {
+  return `Allowed: ${game.min_participants}–${game.max_participants} ${participantUnit(game)}`;
+}
+
+// A bracket-friendly starting value when a game is picked: 16 (32 for solo games),
+// kept inside the game's range
+export function defaultParticipants(game: Pick<Game, 'min_participants' | 'max_participants' | 'max_players'>) {
+  const preferred = game.max_players === 1 ? 32 : 16;
+  return Math.min(Math.max(preferred, game.min_participants), game.max_participants);
+}
+
+// Checks Max Participants against the game's range (games.min_participants/max_participants).
+// Returns an error message, or '' if it's fine. The database trigger
+// check_tournament_participants() enforces the same rule.
+export function validateParticipants(
+  game: Pick<Game, 'name' | 'min_participants' | 'max_participants' | 'max_players'>,
+  value: string,
+) {
+  const count = Number(value);
+  if (!value.trim() || !Number.isInteger(count)) {
+    return 'Enter the maximum number of participants as a whole number.';
+  }
+  if (count < game.min_participants || count > game.max_participants) {
+    return `${game.name} tournaments must allow between ${game.min_participants} and ${game.max_participants} ${participantUnit(game)}.`;
   }
   return '';
 }

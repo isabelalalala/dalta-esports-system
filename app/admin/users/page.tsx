@@ -5,7 +5,10 @@ import { createClient } from '@/utils/supabase/client';
 import { createSignupClient } from '@/utils/supabase/signup-client';
 import Link from 'next/link';
 import { getErrorMessage } from '@/utils/errors';
-import { confirmEmailRedirect } from '@/utils/auth';
+import { getPasswordError } from '@/utils/password';
+import EmailField from '@/components/EmailField';
+import PasswordField from '@/components/PasswordField';
+import { confirmEmailRedirect, getEmailError } from '@/utils/auth';
 import type { Profile } from '@/utils/types';
 import { usePageTitle } from '@/utils/page-title';
 import ExportButtons from '@/components/ExportButtons';
@@ -309,8 +312,15 @@ function AddAccountForm({ onCreated }: { onCreated: () => void }) {
     setError('');
     setMessage('');
 
-    if (password.length < 8) {
-      setError('The temporary password must be at least 8 characters.');
+    const emailError = getEmailError(email);
+    if (emailError) {
+      setError(emailError);
+      return;
+    }
+    // Temporary passwords follow the same rules, since people may keep them
+    const passwordError = getPasswordError(password, { email, fullName });
+    if (passwordError) {
+      setError(passwordError);
       return;
     }
 
@@ -383,11 +393,8 @@ function AddAccountForm({ onCreated }: { onCreated: () => void }) {
       {error && <div role="alert" className="bg-red-500/10 border border-red-500 text-red-300 px-4 py-3">{error}</div>}
       {message && <div role="status" className="bg-green-500/10 border border-green-500 text-green-300 px-4 py-3">{message}</div>}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <input
-          type="email" value={email} onChange={(e) => setEmail(e.target.value)}
-          placeholder="Email" aria-label="Email" className={inputClass} required
-        />
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
+        <EmailField value={email} onChange={setEmail} className={inputClass} />
         <input
           type="text" value={fullName} onChange={(e) => setFullName(e.target.value)}
           placeholder="Full name" aria-label="Full name" className={inputClass} required
@@ -397,10 +404,9 @@ function AddAccountForm({ onCreated }: { onCreated: () => void }) {
             <option key={r} value={r}>{roleLabels[r]}</option>
           ))}
         </select>
-        <input
-          type="text" value={password} onChange={(e) => setPassword(e.target.value)}
-          placeholder="Temporary password (8+ characters)" aria-label="Temporary password" className={inputClass} required
-          autoComplete="off"
+        <PasswordField
+          value={password} onChange={setPassword} placeholder="Temporary password"
+          className={inputClass} autoComplete="new-password" rules={{ email, fullName }}
         />
       </div>
       <p className="text-gray-400 text-sm">

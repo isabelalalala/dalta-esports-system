@@ -6,6 +6,8 @@ import { useRouter } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
 import { getErrorMessage } from '@/utils/errors';
 import { usePageTitle } from '@/utils/page-title';
+import { getPasswordError } from '@/utils/password';
+import PasswordField from '@/components/PasswordField';
 
 // Reached from the reset email (through /auth/callback, which logs the user in).
 export default function ResetPasswordPage() {
@@ -13,6 +15,8 @@ export default function ResetPasswordPage() {
   const supabase = createClient();
   const router = useRouter();
   const [hasSession, setHasSession] = useState<boolean | null>(null);
+  // The account's email, so the new password can't contain it
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [saving, setSaving] = useState(false);
@@ -23,6 +27,7 @@ export default function ResetPasswordPage() {
     const check = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       setHasSession(!!session);
+      setEmail(session?.user.email ?? '');
     };
     check();
   }, [supabase]);
@@ -31,8 +36,9 @@ export default function ResetPasswordPage() {
     e.preventDefault();
     setError('');
 
-    if (password.length < 8) {
-      setError('The new password must be at least 8 characters.');
+    const passwordError = getPasswordError(password, { email });
+    if (passwordError) {
+      setError(passwordError);
       return;
     }
     if (password !== confirmPassword) {
@@ -71,17 +77,15 @@ export default function ResetPasswordPage() {
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
             {error && <div role="alert" className="bg-red-500/10 border border-red-500 text-red-300 px-3 py-2">{error}</div>}
-            <input
-              type="password" placeholder="New password (8+ characters)" aria-label="New password (8+ characters)"
-              value={password} onChange={(e) => setPassword(e.target.value)}
+            <PasswordField
+              value={password} onChange={setPassword} placeholder="New password"
               className="w-full p-3 bg-sitebg text-white border border-gold"
-              autoComplete="new-password" required
+              autoComplete="new-password" rules={{ email }}
             />
-            <input
-              type="password" placeholder="Confirm new password" aria-label="Confirm new password"
-              value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)}
+            <PasswordField
+              value={confirmPassword} onChange={setConfirmPassword} placeholder="Confirm new password"
               className="w-full p-3 bg-sitebg text-white border border-gold"
-              autoComplete="new-password" required
+              autoComplete="new-password" matches={password}
             />
             <button
               type="submit" disabled={saving}

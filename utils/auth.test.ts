@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { safeNextPath } from '@/utils/auth';
+import { getEmailError, isValidEmail, safeNextPath } from '@/utils/auth';
 
 const ORIGIN = 'https://dalta-esports.up.railway.app';
 
@@ -32,5 +32,28 @@ describe('safeNextPath', () => {
     expect(safeNextPath('/\n/evil.com', ORIGIN)).toBe('/dashboard');
     // a lone "\r" strips to a harmless same-origin path
     expect(safeNextPath('/\revil.com', ORIGIN)).toBe('/\revil.com');
+  });
+});
+
+describe('isValidEmail / getEmailError', () => {
+  it('accepts normal addresses', () => {
+    expect(isValidEmail('juan@gmail.com')).toBe(true);
+    expect(isValidEmail('maria.santos+dalta@perpetual.edu.ph')).toBe(true);
+    expect(isValidEmail('  juan@gmail.com  ')).toBe(true);
+  });
+  it('rejects addresses the browser would let through or that are mistyped', () => {
+    expect(isValidEmail('juan@gmail')).toBe(false);
+    expect(isValidEmail('juan@gmail.c')).toBe(false);
+    expect(isValidEmail('juangmail.com')).toBe(false);
+    expect(isValidEmail('juan @gmail.com')).toBe(false);
+    expect(isValidEmail('juan..cruz@gmail.com')).toBe(false);
+    expect(isValidEmail('.juan@gmail.com')).toBe(false);
+    expect(isValidEmail('juan@-gmail.com')).toBe(false);
+    expect(isValidEmail('juan@gmail..com')).toBe(false);
+  });
+  it('explains empty and invalid emails', () => {
+    expect(getEmailError('')).toBe('Enter your email.');
+    expect(getEmailError('juan@gmail')).toMatch(/valid email/);
+    expect(getEmailError('juan@gmail.com')).toBe('');
   });
 });

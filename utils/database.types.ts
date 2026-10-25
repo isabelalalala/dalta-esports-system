@@ -177,14 +177,14 @@ isOneToOne: true
                   ]
                 },"games": {
                   Row: {
-                    "id": string,"max_players": number,"min_players": number,"name": string
+                    "id": string,"max_participants": number,"max_players": number,"min_participants": number,"min_players": number,"name": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "id": string,"max_players": number,"min_players": number,"name": string
+                    "id": string,"max_participants"?: number,"max_players": number,"min_participants"?: number,"min_players": number,"name": string
                   }
                   Update: {
-                    "id"?: string,"max_players"?: number,"min_players"?: number,"name"?: string
+                    "id"?: string,"max_participants"?: number,"max_players"?: number,"min_participants"?: number,"min_players"?: number,"name"?: string
                   }
                   Relationships: [
                     

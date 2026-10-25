@@ -1,9 +1,12 @@
 import { describe, expect, it, vi, afterEach } from 'vitest';
 import {
+  defaultParticipants,
   getTournamentStatus,
   isBye,
+  participantRangeLabel,
   roundLabel,
   toDateInput,
+  validateParticipants,
   validateTournamentDates,
 } from '@/utils/tournaments';
 
@@ -104,5 +107,39 @@ describe('isBye', () => {
   it('is not a bye with both teams or in later rounds', () => {
     expect(isBye({ round: 1, team_a_id: 'a', team_b_id: 'b' })).toBe(false);
     expect(isBye({ round: 2, team_a_id: 'a', team_b_id: null })).toBe(false);
+  });
+});
+
+// Same ranges as migration 202610251000_participant_limits
+const mlbb = { name: 'MLBB', min_players: 5, max_players: 6, min_participants: 4, max_participants: 64 };
+const valorant = { name: 'Valorant', min_players: 5, max_players: 6, min_participants: 4, max_participants: 32 };
+const tekken = { name: 'Tekken 8', min_players: 1, max_players: 1, min_participants: 8, max_participants: 128 };
+
+describe('validateParticipants', () => {
+  it('accepts values inside the game range, including the ends', () => {
+    expect(validateParticipants(mlbb, '4')).toBe('');
+    expect(validateParticipants(mlbb, '64')).toBe('');
+    expect(validateParticipants(tekken, '128')).toBe('');
+  });
+  it('refuses values outside the range, naming teams or players', () => {
+    expect(validateParticipants(mlbb, '3')).toBe('MLBB tournaments must allow between 4 and 64 teams.');
+    expect(validateParticipants(valorant, '33')).toMatch(/between 4 and 32 teams/);
+    expect(validateParticipants(tekken, '4')).toBe('Tekken 8 tournaments must allow between 8 and 128 players.');
+  });
+  it('refuses empty and non-whole numbers', () => {
+    expect(validateParticipants(mlbb, '')).toMatch(/whole number/);
+    expect(validateParticipants(mlbb, '12.5')).toMatch(/whole number/);
+  });
+});
+
+describe('participant range helpers', () => {
+  it('suggests 16 teams or 32 players, inside the range', () => {
+    expect(defaultParticipants(mlbb)).toBe(16);
+    expect(defaultParticipants(tekken)).toBe(32);
+    expect(defaultParticipants({ ...mlbb, min_participants: 20 })).toBe(20);
+  });
+  it('labels the range', () => {
+    expect(participantRangeLabel(mlbb)).toBe('Allowed: 4–64 teams');
+    expect(participantRangeLabel(tekken)).toBe('Allowed: 8–128 players');
   });
 });

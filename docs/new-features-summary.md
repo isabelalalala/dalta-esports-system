@@ -381,6 +381,14 @@ These additions stay inside existing modules but add flows you may want to draw.
   participation (share of player/spectator accounts that made at least one pick), plus a table per tournament.
 - **Module 5:** sentiment now includes **topics** (up to 3 per comment). "Common concerns" are the topics on
   negative feedback.
+- **Module 1:** stronger passwords and email checks (requested by the adviser). New passwords need 10+
+  characters with uppercase, lowercase, a number and a symbol, and can't be a common password or contain the
+  user's name or email; forms show a live checklist and strength bar. Users whose old password breaks the rules
+  are asked to change it after logging in. Email fields reject invalid addresses (e.g. `juan@gmail`).
+  No new tables; Supabase's own password requirements are set to match.
+- **Module 2:** each game has a realistic participant range for tournaments (`games.min_participants`,
+  `games.max_participants`; MLBB/CODM 4–64 teams, Valorant/LoL 4–32 teams, Tekken 8 8–128 players), enforced by
+  a database trigger and shown on the create/edit forms. Data flow: D2 games → 2.0: participant range.
 
 ---
 

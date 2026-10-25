@@ -7,7 +7,10 @@ import { createClient } from '@/utils/supabase/client'
 import { getErrorMessage } from '@/utils/errors'
 import { PRIVACY_NOTICE_VERSION } from '@/utils/privacy'
 import { TOS_VERSION } from '@/utils/terms'
-import { confirmEmailRedirect } from '@/utils/auth'
+import { confirmEmailRedirect, getEmailError } from '@/utils/auth'
+import { getPasswordError } from '@/utils/password'
+import EmailField from '@/components/EmailField'
+import PasswordField from '@/components/PasswordField'
 import PrivacyConsentCheckbox from '@/components/PrivacyConsentCheckbox'
 import TermsCheckbox from '@/components/TermsCheckbox'
 import { usePageTitle } from '@/utils/page-title'
@@ -35,8 +38,15 @@ export default function Register() {
     e.preventDefault()
     setError('')
 
-    if (password.length < 8) {
-      setError('The password must be at least 8 characters.')
+    // The fields block these too; checked again here in case the browser skipped it
+    const emailError = getEmailError(email)
+    if (emailError) {
+      setError(emailError)
+      return
+    }
+    const passwordError = getPasswordError(password, { email, fullName })
+    if (passwordError) {
+      setError(passwordError)
       return
     }
     if (password !== confirmPassword) {
@@ -137,12 +147,11 @@ export default function Register() {
 
         <input type="text" placeholder="Full Name" aria-label="Full Name" value={fullName} onChange={(e) => setFullName(e.target.value)}
           className={inputClass} autoComplete="name" required />
-        <input type="email" placeholder="Email" aria-label="Email" value={email} onChange={(e) => setEmail(e.target.value)}
-          className={inputClass} autoComplete="email" required />
-        <input type="password" placeholder="Password (8+ characters)" aria-label="Password (8+ characters)" value={password} onChange={(e) => setPassword(e.target.value)}
-          className={inputClass} autoComplete="new-password" required />
-        <input type="password" placeholder="Confirm Password" aria-label="Confirm Password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)}
-          className={inputClass} autoComplete="new-password" required />
+        <EmailField value={email} onChange={setEmail} className={inputClass} />
+        <PasswordField value={password} onChange={setPassword} className={inputClass}
+          placeholder="Password" autoComplete="new-password" rules={{ email, fullName }} />
+        <PasswordField value={confirmPassword} onChange={setConfirmPassword} className={inputClass}
+          placeholder="Confirm Password" autoComplete="new-password" matches={password} />
 
         <div>
           <label htmlFor="role" className="block text-gray-400 mb-2">I am a:</label>

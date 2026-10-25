@@ -28,3 +28,21 @@ export function isEmailNotConfirmed(err: unknown) {
   const { code, message } = err as { code?: string; message?: string }
   return code === 'email_not_confirmed' || /email not confirmed/i.test(message ?? '')
 }
+
+// Email format check for the auth forms. Stricter than the browser's type="email",
+// which accepts "juan@gmail" (no dot in the domain). Requires name@domain.tld with
+// a 2+ letter ending, no spaces, and no dots at the start, end or twice in a row.
+const EMAIL_PATTERN = /^[A-Za-z0-9._%+-]+@(?:[A-Za-z0-9](?:[A-Za-z0-9-]*[A-Za-z0-9])?\.)+[A-Za-z]{2,}$/
+
+export function isValidEmail(value: string) {
+  const email = value.trim()
+  if (email.length > 254 || !EMAIL_PATTERN.test(email)) return false
+  const local = email.split('@')[0]
+  return !local.startsWith('.') && !local.endsWith('.') && !local.includes('..')
+}
+
+// The message shown under an email field, or '' when the email is fine
+export function getEmailError(value: string) {
+  if (!value.trim()) return 'Enter your email.'
+  return isValidEmail(value) ? '' : 'Enter a valid email address, e.g. juan@gmail.com.'
+}

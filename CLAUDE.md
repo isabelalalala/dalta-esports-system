@@ -52,7 +52,10 @@ Full title: "DALTA Esports: Tournament Management System with AI-Powered Feedbac
   `{{ .SiteURL }}/auth/callback?token_hash={{ .TokenHash }}&type=recovery&next=/auth/reset-password`.
 - Supabase's built-in email sender allows only a few emails per hour; set up custom SMTP for demos.
 - Email confirmation: keep Authentication → Sign In / Providers → Email → "Confirm email" ON, and set the minimum
-  password length to 8 (the app checks 8 too). Register works either way: no session after `signUp()` = show
+  password length to 10 and "Password requirements" to lowercase, uppercase, digits and symbols (the app checks
+  the same rules, plus no common password and no name/email, in `utils/password.ts` with `components/PasswordField.tsx`;
+  login sends users whose old password breaks them to `/profile?weak=1`). Email fields use `components/EmailField.tsx`
+  (`isValidEmail()` in `utils/auth.ts`). Register works either way: no session after `signUp()` = show
   "Check your email"; a session = go to the dashboard. The confirmation link goes through `/auth/callback` to
   `/auth/login?confirmed=1`. Login shows a "confirm your email first" message with a resend button
   (`app/auth/login/page.tsx`, using helpers from `utils/auth.ts`).
@@ -85,7 +88,7 @@ Enforced by a CHECK constraint on `profiles.role` (migration `202610161200_role_
 - RLS policies check roles with `public.get_my_role()`.
 
 ## Current schema (public)
-All migrations are in `supabase/migrations/`, run in filename order (202610151100 … 202610181900). `202610151100_base_schema` creates the three pre-migration base tables (`profiles`, `tournaments`, `tournament_registrations`). It is `if not exists`, so it is a no-op on databases that already have them.
+All migrations are in `supabase/migrations/`, run in filename order (202610151100 … 202610251000). `202610151100_base_schema` creates the three pre-migration base tables (`profiles`, `tournaments`, `tournament_registrations`). It is `if not exists`, so it is a no-op on databases that already have them.
 `202610181000_feedback_protection` also needs its one-time Vault key setup (the `feedback_server_key` secret +
 `FEEDBACK_SERVER_KEY`); the steps are at the top of that file.
 Readers: "anyone" = also logged out; "logged-in" = any role; "admin/staff" = organizers only.
@@ -107,10 +110,12 @@ Readers: "anyone" = also logged out; "logged-in" = any role; "admin/staff" = org
   protected by triggers); admins update any.
 
 **Registration and tournaments (Module 2)**
-- `games`: id (text, e.g. `mlbb`), name, min_players, max_players. Anyone reads (also logged out, since
-  202610171600). Edited only in the SQL Editor.
+- `games`: id (text, e.g. `mlbb`), name, min_players, max_players, min_participants, max_participants (allowed
+  tournament size: MLBB/CODM 4–64 teams, Valorant/LoL 4–32, Tekken 8 8–128 players; 202610251000). Anyone reads
+  (also logged out, since 202610171600). Edited only in the SQL Editor.
 - `tournaments`: id, name, description, rules, game (one of the 5 game names), game_id (→ games, required),
-  start_date, end_date, max_participants, registration_deadline (≤ start_date; end_date ≥ start_date),
+  start_date, end_date, max_participants (inside the game's range, trigger `check_tournament_participants()`, checked
+  only on insert or when game/limit change; can't go below active registrations), registration_deadline (≤ start_date; end_date ≥ start_date),
   requires_verification (default true; tournaments made before 202610171000 were set to false: every team member
   must be verified to register, to be approved, and to be added to a registered team),
   status (only `upcoming` or `cancelled` is stored), created_by (→ profiles, set null when the user is deleted),

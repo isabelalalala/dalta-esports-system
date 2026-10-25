@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect, useRef } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
 import Link from 'next/link';
 import { getErrorMessage } from '@/utils/errors';
@@ -11,6 +11,8 @@ import StudentDetails from './StudentDetails';
 import PageLoading from '@/components/PageLoading';
 import PageError from '@/components/PageError';
 import { usePageTitle } from '@/utils/page-title';
+import { getPasswordError } from '@/utils/password';
+import PasswordField from '@/components/PasswordField';
 
 const inputClass =
   'w-full border border-brownlight bg-sitebg px-4 py-3 text-white placeholder-gray-400 outline-none focus:border-gold';
@@ -345,7 +347,7 @@ export default function ProfilePage() {
           </div>
         )}
 
-        <ChangePassword email={profile.email} />
+        <ChangePassword email={profile.email} fullName={profile.full_name ?? ''} />
 
         {/* Danger zone */}
         <div className="border border-red-500 p-6">
@@ -401,8 +403,11 @@ export default function ProfilePage() {
 
 // Change password. The current password is checked first by signing in again,
 // so someone using an unattended logged-in computer can't change it.
-function ChangePassword({ email }: { email: string }) {
+// ?weak=1: the login page sent the user here because their password breaks the current rules.
+function ChangePassword({ email, fullName }: { email: string; fullName: string }) {
   const supabase = createClient();
+  const weak = useSearchParams().get('weak') === '1';
+  const formRef = useRef<HTMLFormElement>(null);
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -410,13 +415,19 @@ function ChangePassword({ email }: { email: string }) {
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
 
+  // Bring the form into view so the weak-password notice isn't missed
+  useEffect(() => {
+    if (weak) formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }, [weak]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setMessage('');
 
-    if (newPassword.length < 8) {
-      setError('The new password must be at least 8 characters.');
+    const passwordError = getPasswordError(newPassword, { email, fullName });
+    if (passwordError) {
+      setError(passwordError);
       return;
     }
     if (newPassword !== confirmPassword) {
@@ -444,25 +455,27 @@ function ChangePassword({ email }: { email: string }) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="bg-sitecard border-2 border-gold shadow-[6px_6px_0_var(--color-brown)] p-6 space-y-4">
+    <form ref={formRef} onSubmit={handleSubmit} className="bg-sitecard border-2 border-gold shadow-[6px_6px_0_var(--color-brown)] p-4 sm:p-6 space-y-4">
       <h2 className="text-xl font-bold">Change Password</h2>
+      {weak && !message && (
+        <div role="status" className="bg-yellow-500/10 border border-yellow-500 text-yellow-200 px-4 py-3">
+          Your password doesn&apos;t meet our new security rules. Please choose a stronger one below.
+        </div>
+      )}
       {error && <div role="alert" className="bg-red-500/10 border border-red-500 text-red-300 px-4 py-3">{error}</div>}
       {message && <div role="status" className="bg-green-500/10 border border-green-500 text-green-300 px-4 py-3">{message}</div>}
-      <input
-        type="password" placeholder="Current password" aria-label="Current password"
-        value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)}
-        className={inputClass} autoComplete="current-password" required
+      <PasswordField
+        value={currentPassword} onChange={setCurrentPassword} placeholder="Current password"
+        className={inputClass} autoComplete="current-password"
       />
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <input
-          type="password" placeholder="New password (8+ characters)" aria-label="New password (8+ characters)"
-          value={newPassword} onChange={(e) => setNewPassword(e.target.value)}
-          className={inputClass} autoComplete="new-password" required
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
+        <PasswordField
+          value={newPassword} onChange={setNewPassword} placeholder="New password"
+          className={inputClass} autoComplete="new-password" rules={{ email, fullName }}
         />
-        <input
-          type="password" placeholder="Confirm new password" aria-label="Confirm new password"
-          value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)}
-          className={inputClass} autoComplete="new-password" required
+        <PasswordField
+          value={confirmPassword} onChange={setConfirmPassword} placeholder="Confirm new password"
+          className={inputClass} autoComplete="new-password" matches={newPassword}
         />
       </div>
       <button

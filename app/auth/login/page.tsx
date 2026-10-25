@@ -5,7 +5,10 @@ import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/utils/supabase/client'
 import { getErrorMessage } from '@/utils/errors'
-import { confirmEmailRedirect, isEmailNotConfirmed } from '@/utils/auth'
+import { confirmEmailRedirect, getEmailError, isEmailNotConfirmed } from '@/utils/auth'
+import { getPasswordError } from '@/utils/password'
+import EmailField from '@/components/EmailField'
+import PasswordField from '@/components/PasswordField'
 import { usePageTitle } from '@/utils/page-title'
 
 const inputClass = 'w-full p-3 bg-sitebg text-white border border-gold'
@@ -39,11 +42,24 @@ export default function Login() {
     setError('')
     setNotConfirmed(false)
     setResendMessage('')
-    setLoading(true)
 
+    const emailError = getEmailError(email)
+    if (emailError) {
+      setError(emailError)
+      return
+    }
+
+    setLoading(true)
     try {
-      const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password })
+      const { data, error } = await supabase.auth.signInWithPassword({ email: email.trim(), password })
       if (error) throw error
+      // Accounts made before the stronger rules may still have a weak password. Let them in,
+      // but send them to change it. Supabase also reports this (weakPassword) once its
+      // password requirements are turned on in the dashboard.
+      if (data.weakPassword || getPasswordError(password, { email })) {
+        router.push('/profile?weak=1')
+        return
+      }
       router.push('/dashboard')
     } catch (err) {
       if (isEmailNotConfirmed(err)) {
@@ -95,10 +111,9 @@ export default function Login() {
           </div>
         )}
 
-        <input type="email" placeholder="Email" aria-label="Email" value={email} onChange={(e) => setEmail(e.target.value)}
-          className={inputClass} autoComplete="email" required />
-        <input type="password" placeholder="Password" aria-label="Password" value={password} onChange={(e) => setPassword(e.target.value)}
-          className={inputClass} autoComplete="current-password" required />
+        <EmailField value={email} onChange={setEmail} className={inputClass} />
+        <PasswordField value={password} onChange={setPassword} className={inputClass}
+          placeholder="Password" autoComplete="current-password" />
 
         <button
           type="submit"

@@ -31,6 +31,9 @@ export interface Game {
   name: string;
   min_players: number;
   max_players: number;
+  // How many teams (players for solo games) a tournament may allow (202610251000)
+  min_participants: number;
+  max_participants: number;
 }
 
 export interface Tournament {

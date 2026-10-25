@@ -5,6 +5,8 @@ import Link from 'next/link';
 import { createClient } from '@/utils/supabase/client';
 import { getErrorMessage } from '@/utils/errors';
 import { usePageTitle } from '@/utils/page-title';
+import { getEmailError } from '@/utils/auth';
+import EmailField from '@/components/EmailField';
 
 export default function ForgotPasswordPage() {
   usePageTitle('Forgot password');
@@ -16,8 +18,13 @@ export default function ForgotPasswordPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
     setError('');
+    const emailError = getEmailError(email);
+    if (emailError) {
+      setError(emailError);
+      return;
+    }
+    setLoading(true);
 
     try {
       // The link in the email goes to /auth/callback, which logs the user in
@@ -50,15 +57,7 @@ export default function ForgotPasswordPage() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <p className="text-gray-400 text-sm">Enter your email and we&apos;ll send you a link to choose a new password.</p>
             {error && <div role="alert" className="bg-red-500/10 border border-red-500 text-red-300 px-3 py-2">{error}</div>}
-            <input
-              type="email"
-              placeholder="Email"
-              aria-label="Email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full p-3 bg-sitebg text-white border border-gold"
-              required
-            />
+            <EmailField value={email} onChange={setEmail} className="w-full p-3 bg-sitebg text-white border border-gold" />
             <button
               type="submit"
               disabled={loading}
