@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useEffect, useState, type ReactNode } from 'react';
+import { Suspense, useState, type ReactNode } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
@@ -35,22 +35,15 @@ const NAV_ITEMS: NavItem[] = [
 ];
 
 export default function SiteNavLayout({ children }: { children: ReactNode }) {
-  const [isCollapsed, setIsCollapsed] = useState(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [mounted, setMounted] = useState(false);
-
-  // Restore collapse preference from localStorage
-  useEffect(() => {
+  const [isCollapsed, setIsCollapsed] = useState(() => {
+    if (typeof window === 'undefined') return false;
     try {
-      const saved = localStorage.getItem('dalta_site_nav_collapsed');
-      if (saved === 'true') {
-        setIsCollapsed(true);
-      }
+      return localStorage.getItem('dalta_site_nav_collapsed') === 'true';
     } catch {
-      // Ignore storage errors in private/restricted browsing modes
+      return false;
     }
-    setMounted(true);
-  }, []);
+  });
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const toggleCollapse = () => {
     setIsCollapsed((prev) => {
@@ -94,9 +87,7 @@ export default function SiteNavLayout({ children }: { children: ReactNode }) {
       {/* ----------------- DESKTOP SIDEBAR WITH VERTICAL SEPARATOR LINE (lg+) ----------------- */}
       <aside
         aria-label="Desktop Side Navigation"
-        className={`hidden lg:flex flex-col shrink-0 border-r border-stone-200/90 bg-white sticky top-14 h-[calc(100vh-56px)] z-20 ${
-          mounted ? 'transition-[width] duration-300 ease-in-out' : ''
-        } ${
+        className={`hidden lg:flex flex-col shrink-0 border-r border-stone-200/90 bg-white sticky top-14 h-[calc(100vh-56px)] z-20 transition-[width] duration-300 ease-in-out ${
           isCollapsed ? 'w-20' : 'w-64 xl:w-72'
         }`}
       >
@@ -133,9 +124,7 @@ export default function SiteNavLayout({ children }: { children: ReactNode }) {
       {/* ----------------- ADJUSTABLE MAIN CONTENT SECTION ----------------- */}
       <main
         id="main-content"
-        className={`flex-1 min-w-0 w-full px-6 sm:px-8 lg:px-12 xl:px-16 py-8 sm:py-10 ${
-          mounted ? 'transition-all duration-300 ease-in-out' : ''
-        }`}
+        className="flex-1 min-w-0 w-full px-6 sm:px-8 lg:px-12 xl:px-16 py-8 sm:py-10 transition-all duration-300 ease-in-out"
       >
         {children}
       </main>

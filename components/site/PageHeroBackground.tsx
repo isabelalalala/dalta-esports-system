@@ -83,7 +83,6 @@ export default function PageHeroBackground({
 
   useEffect(() => {
     if (src) {
-      setResolvedSrc(src);
       return;
     }
     let cancelled = false;
@@ -107,7 +106,7 @@ export default function PageHeroBackground({
   return (
     <div className="absolute inset-0 -z-0 pointer-events-none overflow-hidden" aria-hidden="true">
       <Image
-        src={resolvedSrc}
+        src={src ?? resolvedSrc}
         alt={alt}
         fill
         sizes="(max-width: 1024px) 100vw, 1200px"
@@ -118,4 +117,3 @@ export default function PageHeroBackground({
     </div>
   );
 }
-
