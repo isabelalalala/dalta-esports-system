@@ -68,7 +68,10 @@ export default function TournamentDetailsPage() {
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
   const [registering, setRegistering] = useState(false);
-  const [showForm, setShowForm] = useState(false);
+  const [showForm, setShowForm] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return window.location.hash === '#register';
+  });
   const [teams, setTeams] = useState<Team[]>([]);
   const [selectedTeamId, setSelectedTeamId] = useState('');
   const [unverified, setUnverified] = useState<{ teamId: string; members: RosterMember[] } | null>(null);
@@ -96,13 +99,12 @@ export default function TournamentDetailsPage() {
   };
 
   useEffect(() => {
-    if (typeof window !== 'undefined' && window.location.hash === '#register') {
-      setShowForm(true);
+    if (!loading && showForm) {
       setTimeout(() => {
         registrationRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }, 300);
     }
-  }, [loading]);
+  }, [loading, showForm]);
 
   useEffect(() => {
     const fetchData = async () => {
