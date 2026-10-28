@@ -8,11 +8,12 @@ interface Props {
   onChange: (value: string) => void;
   className: string;
   placeholder?: string;
+  dark?: boolean;
 }
 
 // Email input with a format check (utils/auth.ts). The error shows under the field
 // once the user leaves it, and the browser refuses to submit the form with the same message.
-export default function EmailField({ value, onChange, className, placeholder = 'Email' }: Props) {
+export default function EmailField({ value, onChange, className, placeholder = 'Email', dark }: Props) {
   const inputRef = useRef<HTMLInputElement>(null);
   const errorId = useId();
   // Only complain after the user has left the field, not while they're still typing
@@ -43,7 +44,7 @@ export default function EmailField({ value, onChange, className, placeholder = '
         required
       />
       {showError && (
-        <p id={errorId} className="mt-1 text-sm text-red-300">{error}</p>
+        <p id={errorId} className={`mt-1 text-xs font-bold uppercase tracking-wider ${dark ? 'text-red-400' : 'text-red-700'}`}>{error}</p>
       )}
     </div>
   );

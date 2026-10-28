@@ -1,11 +1,12 @@
-import { Suspense } from 'react';
+import { ReactNode, Suspense } from 'react';
 
 // The login page reads ?confirmed=1 with useSearchParams(), which is only known at
 // request time. With Cache Components enabled, that needs a Suspense boundary.
-export default function LoginLayout({ children }: LayoutProps<'/auth/login'>) {
+export default function LoginLayout({ children }: { children: ReactNode }) {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-sitebg" />}>
+    <Suspense fallback={<div className="min-h-screen w-full bg-white" />}>
       {children}
     </Suspense>
   );
 }
+

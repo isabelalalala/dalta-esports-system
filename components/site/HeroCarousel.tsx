@@ -38,7 +38,7 @@ export default function HeroCarousel({ images }: { images: HeroImage[] }) {
     <section
       aria-roledescription="carousel"
       aria-label="Event photos"
-      className="relative border-2 border-gold shadow-[6px_6px_0_var(--color-brown)] bg-black"
+      className="relative w-full rounded-2xl border border-stone-200/90 shadow-md bg-stone-950 overflow-hidden"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
       onFocusCapture={() => setPaused(true)}
@@ -48,28 +48,28 @@ export default function HeroCarousel({ images }: { images: HeroImage[] }) {
       <div className="relative aspect-[16/7] overflow-hidden">
         {current.link ? <Link href={current.link}>{photo}</Link> : photo}
         {current.caption && (
-          <p className="absolute bottom-0 inset-x-0 bg-black/70 px-4 py-2 text-sm text-white">{current.caption}</p>
+          <p className="absolute bottom-0 inset-x-0 bg-stone-950/85 px-6 py-3 text-xs sm:text-sm text-white font-extrabold uppercase tracking-wider backdrop-blur-sm">{current.caption}</p>
         )}
       </div>
 
       {images.length > 1 && (
         <>
           <button onClick={() => go(-1)} aria-label="Previous photo"
-            className="absolute left-2 top-1/2 -translate-y-1/2 w-9 h-9 bg-sitebg/80 border-2 border-gold text-gold font-bold">
+            className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/90 border border-stone-200 text-stone-950 font-black shadow-sm hover:bg-gold hover:scale-105 transition-all">
             ‹
           </button>
           <button onClick={() => go(1)} aria-label="Next photo"
-            className="absolute right-2 top-1/2 -translate-y-1/2 w-9 h-9 bg-sitebg/80 border-2 border-gold text-gold font-bold">
+            className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/90 border border-stone-200 text-stone-950 font-black shadow-sm hover:bg-gold hover:scale-105 transition-all">
             ›
           </button>
-          <div className="absolute top-2 right-2 flex gap-1.5">
+          <div className="absolute top-3 right-3 flex gap-2">
             {images.map((img, i) => (
               <button
                 key={img.id}
                 onClick={() => setIndex(i)}
                 aria-label={`Photo ${i + 1}`}
                 aria-current={i === index % images.length}
-                className={`w-2.5 h-2.5 border border-gold ${i === index % images.length ? 'bg-gold' : 'bg-sitebg/80'}`}
+                className={`w-2.5 h-2.5 rounded-full border border-stone-300 transition-all ${i === index % images.length ? 'bg-gold w-6' : 'bg-white/80'}`}
               />
             ))}
           </div>

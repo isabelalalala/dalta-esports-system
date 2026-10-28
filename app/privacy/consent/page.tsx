@@ -41,36 +41,36 @@ export default function PrivacyConsentPage() {
   };
 
   return (
-    <main id="main-content" className="min-h-screen grid place-items-center bg-sitebg px-4 py-10">
+    <main id="main-content" className="min-h-screen w-full grid place-items-center bg-white px-4 py-12 uppercase">
       <form
         onSubmit={handleAgree}
-        className="w-full max-w-lg bg-sitecard p-6 sm:p-8 shadow-[6px_6px_0_var(--color-brown)] space-y-5"
+        className="w-full max-w-lg bg-white rounded-2xl border border-stone-200/90 p-6 sm:p-8 shadow-sm space-y-5"
       >
-        <h1 className="text-gold text-2xl font-bold text-center">Your privacy</h1>
-        <p className="text-gray-300">
+        <h1 className="text-stone-950 text-2xl sm:text-3xl font-black text-center tracking-wider uppercase mb-2">Your privacy</h1>
+        <p className="text-stone-700 font-medium uppercase tracking-wide text-xs sm:text-sm leading-relaxed">
           Before you continue, please read our{' '}
-          <Link href="/privacy" target="_blank" className="text-gold underline">Privacy Notice</Link>. It explains
+          <Link href="/privacy" target="_blank" className="text-amber-800 font-extrabold uppercase underline hover:text-amber-950">Privacy Notice</Link>. It explains
           what personal data we collect, why, who can see it, how long we keep it, and how to delete your account.
         </p>
 
-        {error && <div role="alert" className="bg-red-500/10 border border-red-500 text-red-300 px-3 py-2">{error}</div>}
+        {error && <div role="alert" className="bg-red-50 border border-red-500/30 rounded-xl text-red-700 px-4 py-2.5 text-xs sm:text-sm font-bold uppercase tracking-wider">{error}</div>}
 
         <PrivacyConsentCheckbox checked={consent} onChange={setConsent} />
 
         <button
           type="submit"
           disabled={saving || !consent}
-          className="w-full p-3 bg-gold text-black font-bold disabled:opacity-60 disabled:cursor-not-allowed"
+          className="w-full p-3.5 rounded-xl bg-gold text-stone-950 font-black border border-amber-400 shadow-xs hover:bg-golddark hover:-translate-y-0.5 hover:shadow-sm transition-all duration-200 uppercase tracking-widest disabled:opacity-60 disabled:cursor-not-allowed"
         >
           {saving ? 'Saving...' : 'Agree and continue'}
         </button>
 
-        <div className="border-t border-gray-700 pt-4 text-sm text-gray-400 space-y-2">
+        <div className="border-t border-stone-100 pt-4 text-xs text-stone-600 font-medium uppercase tracking-wide space-y-2">
           <p>
             If you don&apos;t agree, you can log out. To remove your data, delete your account on{' '}
-            <Link href="/profile" className="text-gold underline">My Profile</Link> under &quot;Delete my account&quot;.
+            <Link href="/profile" className="text-amber-800 font-extrabold uppercase underline hover:text-amber-950">My Profile</Link> under &quot;Delete my account&quot;.
           </p>
-          <button type="button" onClick={handleLogout} className="text-red-400 font-semibold hover:underline">
+          <button type="button" onClick={handleLogout} className="text-red-700 font-black uppercase tracking-wider hover:underline">
             Log out
           </button>
         </div>

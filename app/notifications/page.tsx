@@ -5,16 +5,16 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
 import { getErrorMessage } from '@/utils/errors';
-import { Bell } from 'lucide-react';
+import { Bell, Check, CheckCheck, ChevronRight } from 'lucide-react';
 import {
   fetchNotifications, markAllAsRead, markAsRead, notificationIcons, type AppNotification,
 } from '@/utils/notifications';
 import PageLoading from '@/components/PageLoading';
 import { usePageTitle } from '@/utils/page-title';
+import PageHeroBackground from '@/components/site/PageHeroBackground';
 
 const PAGE_SIZE = 30;
 
-// Full notification history (the bell in the header shows only the latest).
 export default function NotificationsPage() {
   const supabase = createClient();
   const router = useRouter();
@@ -25,7 +25,6 @@ export default function NotificationsPage() {
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState('');
-  // Increase this to load the first page again
   const [reloadCount, setReloadCount] = useState(0);
 
   useEffect(() => {
@@ -67,7 +66,8 @@ export default function NotificationsPage() {
     else setReloadCount((c) => c + 1);
   };
 
-  const handleMarkRead = async (n: AppNotification) => {
+  const handleMarkRead = async (e: React.MouseEvent, n: AppNotification) => {
+    e.stopPropagation();
     try {
       await markAsRead(supabase, n.id);
       setReloadCount((c) => c + 1);
@@ -85,85 +85,175 @@ export default function NotificationsPage() {
     }
   };
 
-  if (loading) return <PageLoading />;
+  if (loading) return <PageLoading label="Loading notifications..." />;
+
+  const unreadCount = items.filter((n) => !n.is_read).length;
 
   return (
-    <main id="main-content" className="min-h-screen bg-sitebg text-white px-4 py-10">
-      <div className="max-w-3xl mx-auto space-y-6">
-        <div>
-          <Link href="/dashboard" className="inline-block text-gold hover:underline mb-6">
+    <div className="w-full space-y-8 uppercase text-stone-950">
+      {/* 1. Main Hero Container with Official Banner */}
+      <section className="relative w-full rounded-3xl border border-stone-800/80 bg-stone-950 overflow-hidden shadow-md p-8 sm:p-14 lg:p-16 text-center text-white flex flex-col items-center justify-center space-y-4">
+        <PageHeroBackground specificKey="hero_banner_path" alt="DALTA Esports Notifications Banner" />
+
+        <div className="relative z-10 w-full flex items-center justify-between">
+          <Link
+            href="/dashboard"
+            className="inline-flex items-center gap-1.5 text-xs font-black text-[#FFCC37] hover:text-[#FFE066] uppercase tracking-wider transition-colors"
+          >
             ← Back to Dashboard
           </Link>
-          <div className="flex flex-wrap justify-between items-center gap-4">
-            <h1 className="font-pixel text-xl sm:text-2xl leading-relaxed text-gold">Notifications</h1>
-            <button onClick={handleMarkAll} className="border border-gold text-gold px-4 py-2 font-bold hover:bg-gold/10">
-              Mark all as read
-            </button>
-          </div>
         </div>
 
-        <div className="flex gap-2">
-          {[false, true].map((value) => (
-            <button
-              key={String(value)}
-              onClick={() => setUnreadOnly(value)}
-              className={`px-4 py-2 font-bold border ${unreadOnly === value
-                ? 'bg-gold text-black border-gold'
-                : 'border-brownlight text-gray-300 hover:bg-gold/10'}`}
-            >
-              {value ? 'Unread' : 'All'}
-            </button>
-          ))}
-        </div>
-
-        {error && <div role="alert" className="bg-red-500/10 border border-red-500 text-red-300 px-4 py-3">{error}</div>}
-
-        {/* A failed load shows the error above, not "nothing here" */}
-        {items.length === 0 && error ? null : items.length === 0 ? (
-          <p className="text-gray-400 text-center py-12">
-            {unreadOnly ? 'You have no unread notifications.' : 'No notifications yet.'}
+        <div className="relative z-10 max-w-4xl mx-auto space-y-3 pt-2">
+          <h1
+            className="text-4xl sm:text-5xl lg:text-6xl font-black !text-white text-white tracking-wider uppercase leading-tight"
+            style={{ color: '#ffffff' }}
+          >
+            Notifications
+          </h1>
+          <p
+            className="text-base sm:text-lg !text-white text-stone-200 font-medium uppercase tracking-wide leading-relaxed"
+            style={{ color: '#ffffff' }}
+          >
+            Match alerts, tournament registrations, verification updates, and organizer notices.
           </p>
+        </div>
+      </section>
+
+      {/* 2. Controls & Actions Bar */}
+      <div className="space-y-4">
+        {error && (
+          <div
+            role="alert"
+            className="bg-red-50 border border-red-200 text-red-800 rounded-xl p-4 text-xs font-bold tracking-wider shadow-2xs"
+          >
+            {error}
+          </div>
+        )}
+
+        <div className="bg-white border border-stone-200/90 rounded-2xl p-4 sm:p-5 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex flex-wrap items-center gap-2">
+            {[
+              { id: false, label: 'All Notifications' },
+              { id: true, label: `Unread Only (${unreadCount})`, highlight: unreadCount > 0 },
+            ].map(({ id, label, highlight }) => (
+              <button
+                key={String(id)}
+                onClick={() => setUnreadOnly(id)}
+                className={`px-4 py-2 rounded-xl text-xs font-black tracking-wider transition-all cursor-pointer ${
+                  unreadOnly === id
+                    ? 'bg-gold text-stone-950 border border-amber-400 shadow-xs'
+                    : highlight
+                    ? 'bg-stone-50 text-[#5B271E] border border-[#5B271E]/20 hover:bg-[#FFCC37]/15'
+                    : 'bg-stone-100 text-stone-700 hover:text-[#5B271E] hover:bg-stone-200/80 border border-transparent'
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+
+          {unreadCount > 0 && (
+            <button
+              onClick={handleMarkAll}
+              className="rounded-xl border border-stone-300 hover:border-[#FFCC37] bg-white text-stone-800 hover:text-[#5B271E] font-bold px-4 py-2 text-xs tracking-wider transition-all inline-flex items-center gap-1.5 cursor-pointer shadow-2xs hover:-translate-y-0.5"
+            >
+              <CheckCheck className="w-3.5 h-3.5 text-[#5B271E]" />
+              <span>Mark all as read</span>
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* 3. Notifications List */}
+      <div className="space-y-4">
+        {items.length === 0 ? (
+          <div className="rounded-2xl border border-stone-200/80 bg-stone-50/70 p-12 text-center text-stone-500 font-bold tracking-wider text-xs">
+            {unreadOnly ? 'You have no unread notifications.' : 'No notifications yet.'}
+          </div>
         ) : (
-          <ul className="bg-sitecard border border-brown divide-y divide-brown">
+          <div className="space-y-3">
             {items.map((n) => {
-              // The DB may hold a type this build doesn't know yet — fall back instead of crashing
               const Icon = notificationIcons[n.type] ?? Bell;
+              const isUnread = !n.is_read;
+
               return (
-              <li key={n.id} className={`flex gap-3 px-4 py-3 ${n.is_read ? 'opacity-60' : ''}`}>
-                <Icon className="h-5 w-5 mt-0.5 shrink-0 text-gray-300" />
-                <button onClick={() => handleOpen(n)} className="flex-1 min-w-0 text-left">
-                  <span className="flex items-center gap-2">
-                    <span className="font-semibold">{n.title}</span>
-                    {!n.is_read && <span className="w-2 h-2 rounded-full bg-gold" role="img" aria-label="unread" />}
-                  </span>
-                  <span className="block text-gray-300 text-sm">{n.message}</span>
-                  <span className="block text-xs text-gray-400 mt-1">
-                    {new Date(n.created_at).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })}
-                  </span>
-                </button>
-                {!n.is_read && (
-                  <button onClick={() => handleMarkRead(n)} className="text-xs text-gold hover:underline self-center shrink-0">
-                    Mark as read
-                  </button>
-                )}
-              </li>
+                <div
+                  key={n.id}
+                  onClick={() => handleOpen(n)}
+                  className={`rounded-2xl p-5 border transition-all cursor-pointer flex items-start gap-4 ${
+                    isUnread
+                      ? 'bg-white border-amber-400/90 shadow-xs ring-1 ring-amber-400/20 hover:border-amber-500'
+                      : 'bg-white/80 border-stone-200/90 shadow-2xs hover:bg-white hover:border-stone-300'
+                  }`}
+                >
+                  {/* Icon badge */}
+                  <div
+                    className={`w-10 h-10 rounded-xl grid place-items-center shrink-0 ${
+                      isUnread
+                        ? 'bg-[#5B271E]/10 text-[#5B271E] border border-[#5B271E]/20'
+                        : 'bg-stone-100 text-stone-600 border border-stone-200'
+                    }`}
+                  >
+                    <Icon className="w-4 h-4" />
+                  </div>
+
+                  {/* Body content */}
+                  <div className="flex-1 min-w-0 space-y-1">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <p className={`text-sm ${isUnread ? 'font-black text-stone-950' : 'font-bold text-stone-800'}`}>
+                        {n.title}
+                      </p>
+                      {isUnread && (
+                        <span className="h-2 w-2 rounded-full bg-[#FFCC37]" />
+                      )}
+                    </div>
+
+                    <p className="text-xs text-stone-600 font-medium normal-case leading-relaxed">
+                      {n.message}
+                    </p>
+
+                    <p className="text-[11px] font-semibold text-stone-400 tracking-wider pt-1">
+                      {new Date(n.created_at).toLocaleString(undefined, {
+                        dateStyle: 'medium',
+                        timeStyle: 'short',
+                      })}
+                    </p>
+                  </div>
+
+                  {/* Action buttons */}
+                  <div className="shrink-0 flex items-center gap-2 self-center">
+                    {isUnread && (
+                      <button
+                        onClick={(e) => handleMarkRead(e, n)}
+                        title="Mark as read"
+                        className="p-2 rounded-xl text-stone-400 hover:text-[#5B271E] hover:bg-[#FFCC37]/20 transition-colors"
+                      >
+                        <Check className="w-4 h-4" />
+                      </button>
+                    )}
+                    {n.link && (
+                      <ChevronRight className="w-4 h-4 text-stone-400 group-hover:text-stone-700" />
+                    )}
+                  </div>
+                </div>
               );
             })}
-          </ul>
+          </div>
         )}
 
         {hasMore && (
-          <div className="text-center">
+          <div className="text-center pt-2">
             <button
               onClick={handleLoadMore}
               disabled={loadingMore}
-              className="border border-gold text-gold px-6 py-2 font-bold hover:bg-gold/10 disabled:opacity-50"
+              className="rounded-xl border border-stone-300 hover:border-stone-400 bg-white text-stone-800 font-black px-6 py-2.5 text-xs tracking-wider transition-all shadow-xs hover:-translate-y-0.5 disabled:opacity-50 cursor-pointer"
             >
-              {loadingMore ? 'Loading...' : 'Load more'}
+              {loadingMore ? 'Loading more...' : 'Load more notifications'}
             </button>
           </div>
         )}
       </div>
-    </main>
+    </div>
   );
 }

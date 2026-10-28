@@ -6,10 +6,10 @@ import { Star } from 'lucide-react';
 // A headline number, e.g. "Views 128"
 export function StatTile({ label, value, note }: { label: string; value: ReactNode; note?: string }) {
   return (
-    <div className="bg-sitecard border border-brownlight p-4 print:border-gray-400 print:bg-white">
-      <p className="text-xs uppercase font-bold text-gray-400 print:text-gray-600">{label}</p>
-      <p className="text-2xl font-bold">{value}</p>
-      {note && <p className="text-xs text-gray-400 mt-1">{note}</p>}
+    <div className="bg-white border border-stone-200/90 rounded-2xl p-4 sm:p-5 shadow-xs text-stone-950 transition-all hover:-translate-y-0.5 print:border-stone-300 print:shadow-none">
+      <p className="text-[11px] uppercase font-black text-stone-500 tracking-wider mb-1">{label}</p>
+      <p className="text-2xl sm:text-3xl font-black text-stone-950 tracking-tight">{value}</p>
+      {note && <p className="text-xs font-semibold text-stone-400 mt-1">{note}</p>}
     </div>
   );
 }
@@ -17,9 +17,9 @@ export function StatTile({ label, value, note }: { label: string; value: ReactNo
 // A titled card around a chart or table. break-inside-avoid keeps it on one printed page.
 export function ReportCard({ title, note, children }: { title: string; note?: string; children: ReactNode }) {
   return (
-    <div className="bg-sitecard border border-brownlight p-4 break-inside-avoid print:border-gray-400 print:bg-white">
-      <h3 className="font-bold text-gold print:text-black">{title}</h3>
-      {note && <p className="text-xs text-gray-400 mb-2 print:text-gray-600">{note}</p>}
+    <div className="bg-white border border-stone-200/90 rounded-2xl p-5 sm:p-6 shadow-xs break-inside-avoid text-stone-950 print:border-stone-300 print:shadow-none">
+      <h3 className="font-black text-amber-800 text-sm sm:text-base uppercase tracking-wider">{title}</h3>
+      {note && <p className="text-xs text-stone-500 font-medium normal-case mt-0.5 mb-3">{note}</p>}
       <div className="mt-2">{children}</div>
     </div>
   );
@@ -27,7 +27,11 @@ export function ReportCard({ title, note, children }: { title: string; note?: st
 
 // Shown instead of a chart that has no data
 export function NoData({ text = 'No data for these filters.' }: { text?: string }) {
-  return <p className="text-gray-400 text-sm py-8 text-center">{text}</p>;
+  return (
+    <div className="rounded-xl border border-stone-200/80 bg-stone-50/70 p-8 text-center text-stone-500 font-bold tracking-wider text-xs uppercase">
+      {text}
+    </div>
+  );
 }
 
 // A simple table; numbers are right-aligned so they line up
@@ -35,19 +39,19 @@ export function ReportTable({ columns, rows }: { columns: string[]; rows: ReactN
   if (rows.length === 0) return <NoData />;
   return (
     <div className="overflow-x-auto">
-      <table className="w-full text-sm">
+      <table className="w-full text-xs sm:text-sm">
         <thead>
-          <tr className="text-left text-xs uppercase text-gray-400 border-b border-gray-700 print:text-gray-600">
+          <tr className="text-left text-xs uppercase font-black text-stone-500 tracking-wider border-b border-stone-200">
             {columns.map((c, i) => (
-              <th key={c} className={`py-2 pr-3 ${i > 0 ? 'text-right' : ''}`}>{c}</th>
+              <th key={c} className={`py-3 pr-4 ${i > 0 ? 'text-right' : ''}`}>{c}</th>
             ))}
           </tr>
         </thead>
-        <tbody>
+        <tbody className="divide-y divide-stone-100">
           {rows.map((row, r) => (
-            <tr key={r} className="border-b border-gray-800 print:border-gray-300">
+            <tr key={r} className="hover:bg-stone-50/80 transition-colors">
               {row.map((cell, i) => (
-                <td key={i} className={`py-2 pr-3 ${i > 0 ? 'text-right tabular-nums' : ''}`}>{cell}</td>
+                <td key={i} className={`py-3 pr-4 font-medium text-stone-800 ${i > 0 ? 'text-right tabular-nums' : ''}`}>{cell}</td>
               ))}
             </tr>
           ))}
@@ -61,8 +65,8 @@ export function ReportTable({ columns, rows }: { columns: string[]; rows: ReactN
 export function formatRating(value: number | null) {
   if (value === null) return '–';
   return (
-    <span className="inline-flex items-center gap-1">
-      {Number(value).toFixed(1)} <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+    <span className="inline-flex items-center gap-1 font-black text-amber-700">
+      {Number(value).toFixed(1)} <Star className="h-4 w-4 fill-amber-500 text-amber-500" />
     </span>
   );
 }

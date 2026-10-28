@@ -3,7 +3,9 @@
 
 export const SITE_IMAGES_BUCKET = 'site-images';
 // Used when no logo has been uploaded on /admin/website
-export const DEFAULT_LOGO = '/daltaesportslogo.jpg';
+export const DEFAULT_LOGO = '/DALTA ESPORTS LOGO TRNPRNT.png';
+// Used when no hero banner has been uploaded on /admin/website
+export const DEFAULT_HERO_BANNER = '/Home Page Photo.png';
 
 // Every text an admin can edit. The admin page builds its form from this list,
 // and the defaults are shown if a key is missing in the database.
@@ -26,13 +28,41 @@ export const SITE_CONTENT_FIELDS = [
   { key: 'contact_email', label: 'Contact email', group: 'Connect With Us', multiline: false, fallback: '' },
 ] as const;
 
-export type SiteContentKey = (typeof SITE_CONTENT_FIELDS)[number]['key'] | 'logo_path' | 'about_image_path';
+export type SiteContentKey =
+  | (typeof SITE_CONTENT_FIELDS)[number]['key']
+  | 'logo_path'
+  | 'about_image_path'
+  | 'hero_banner_path'
+  | 'home_slide_1_path'
+  | 'home_slide_2_path'
+  | 'home_slide_3_path'
+  | 'home_slide_4_path'
+  | 'home_slide_5_path'
+  | 'tournaments_hero_bg_path'
+  | 'events_hero_bg_path'
+  | 'community_hero_bg_path'
+  | 'divisions_hero_bg_path'
+  | 'campaigns_hero_bg_path'
+  | 'dashboard_hero_bg_path';
+
 export type SiteContent = Record<SiteContentKey, string>;
 
 export const DEFAULT_SITE_CONTENT = {
   ...Object.fromEntries(SITE_CONTENT_FIELDS.map((f) => [f.key, f.fallback])),
   logo_path: '',
   about_image_path: '',
+  hero_banner_path: '',
+  home_slide_1_path: '',
+  home_slide_2_path: '',
+  home_slide_3_path: '',
+  home_slide_4_path: '',
+  home_slide_5_path: '',
+  tournaments_hero_bg_path: '',
+  events_hero_bg_path: '',
+  community_hero_bg_path: '',
+  divisions_hero_bg_path: '',
+  campaigns_hero_bg_path: '',
+  dashboard_hero_bg_path: '',
 } as SiteContent;
 
 export interface HeroImage {
@@ -121,4 +151,16 @@ export function siteImageUrl(path: string | null | undefined) {
 
 export function logoUrl(content: SiteContent) {
   return siteImageUrl(content.logo_path) ?? DEFAULT_LOGO;
+}
+
+export function heroBannerUrl(content?: Partial<SiteContent> | null, specificKey?: SiteContentKey): string {
+  if (specificKey && content?.[specificKey]) {
+    const specific = siteImageUrl(content[specificKey]);
+    if (specific) return specific;
+  }
+  if (content?.hero_banner_path) {
+    const general = siteImageUrl(content.hero_banner_path);
+    if (general) return general;
+  }
+  return DEFAULT_HERO_BANNER;
 }

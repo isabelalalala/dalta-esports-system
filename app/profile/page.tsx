@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { createClient } from '@/utils/supabase/client';
+import Image from 'next/image';
 import Link from 'next/link';
+import { createClient } from '@/utils/supabase/client';
 import { getErrorMessage } from '@/utils/errors';
 import type { Game, PlayerGameProfile, Profile } from '@/utils/types';
 import VerifiedBadge from '@/components/VerifiedBadge';
@@ -13,9 +14,42 @@ import PageError from '@/components/PageError';
 import { usePageTitle } from '@/utils/page-title';
 import { getPasswordError } from '@/utils/password';
 import PasswordField from '@/components/PasswordField';
+import PageHeroBackground from '@/components/site/PageHeroBackground';
+import {
+  User,
+  Shield,
+  Gamepad2,
+  Lock,
+  Trash2,
+  AlertCircle,
+  CheckCircle2,
+  Mail,
+  Calendar,
+  Sparkles,
+} from 'lucide-react';
 
 const inputClass =
-  'w-full border border-brownlight bg-sitebg px-4 py-3 text-white placeholder-gray-400 outline-none focus:border-gold';
+  'w-full p-3.5 rounded-xl bg-white text-stone-950 border border-stone-300 placeholder:text-stone-400 uppercase tracking-wide focus:border-[#FFCC37] focus:ring-2 focus:ring-[#FFCC37]/25 shadow-xs outline-none transition-all font-medium text-xs sm:text-sm';
+
+// Match game name to official logo asset
+function getGameLogo(game: string, gameId?: string | null): string | null {
+  const g = (game || '').toLowerCase().trim();
+  const id = (gameId || '').toLowerCase().trim();
+
+  if (g.includes('mlbb') || g.includes('mobile legends') || id.includes('mlbb')) {
+    return '/MLBB LOGO.png';
+  }
+  if (g.includes('valo') || g.includes('valorant') || id.includes('valo')) {
+    return '/VALO LOGO.png';
+  }
+  if (g.includes('tekken') || id.includes('tekken')) {
+    return '/TEKKEMN 8 LOGO.png';
+  }
+  if (g.includes('codm') || g.includes('call of duty') || id.includes('cod')) {
+    return '/CODM LOGO.png';
+  }
+  return null;
+}
 
 export default function ProfilePage() {
   usePageTitle('Profile');
@@ -30,7 +64,6 @@ export default function ProfilePage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
-  // Increase this to make the effect below load everything again
   const [reloadCount, setReloadCount] = useState(0);
 
   // Game profile form: which game is being edited, and its fields
@@ -46,8 +79,13 @@ export default function ProfilePage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!session) return;
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
+        if (!session) {
+          router.push('/auth/login');
+          return;
+        }
 
         const { data: profileData, error: profileError } = await supabase
           .from('profiles')
@@ -59,14 +97,8 @@ export default function ProfilePage() {
         setFullName(profileData.full_name || '');
 
         const [gamesRes, gpRes] = await Promise.all([
-          supabase
-            .from('games')
-            .select('*')
-            .order('name'),
-          supabase
-            .from('player_game_profiles')
-            .select('*')
-            .eq('user_id', session.user.id),
+          supabase.from('games').select('*').order('name'),
+          supabase.from('player_game_profiles').select('*').eq('user_id', session.user.id),
         ]);
         if (gamesRes.error) throw gamesRes.error;
         if (gpRes.error) throw gpRes.error;
@@ -80,7 +112,7 @@ export default function ProfilePage() {
     };
 
     fetchData();
-  }, [supabase, reloadCount]);
+  }, [supabase, router, reloadCount]);
 
   const handleSaveName = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -95,7 +127,7 @@ export default function ProfilePage() {
         .update({ full_name: fullName.trim() || null })
         .eq('id', profile.id);
       if (updateError) throw updateError;
-      setMessage('Name saved.');
+      setMessage('Name updated successfully.');
     } catch (err) {
       setError(getErrorMessage(err, 'Failed to save name'));
     } finally {
@@ -126,7 +158,6 @@ export default function ProfilePage() {
     };
 
     try {
-      // Update the row if this game already has one, otherwise add a new row
       const existing = gameProfiles.find((gp) => gp.game_id === editingGameId);
       const { error: saveError } = existing
         ? await supabase.from('player_game_profiles').update(fields).eq('id', existing.id)
@@ -137,6 +168,7 @@ export default function ProfilePage() {
 
       setEditingGameId(null);
       setReloadCount((n) => n + 1);
+      setMessage('Game profile saved.');
     } catch (err) {
       setError(getErrorMessage(err, 'Failed to save game profile'));
     } finally {
@@ -156,6 +188,7 @@ export default function ProfilePage() {
         .eq('id', gp.id);
       if (deleteError) throw deleteError;
       setReloadCount((n) => n + 1);
+      setMessage('Game profile removed.');
     } catch (err) {
       setError(getErrorMessage(err, 'Failed to remove game profile'));
     } finally {
@@ -168,12 +201,9 @@ export default function ProfilePage() {
     setError('');
 
     try {
-      // The database checks that you're not a captain with teammates
-      // and not the only admin, then deletes the account.
       const { error: deleteError } = await supabase.rpc('delete_own_account');
       if (deleteError) throw deleteError;
 
-      // The account is gone; just clear the session cookies in this browser.
       await supabase.auth.signOut({ scope: 'local' });
       router.push('/');
     } catch (err) {
@@ -183,52 +213,162 @@ export default function ProfilePage() {
   };
 
   if (loading) {
-    return <PageLoading />;
+    return <PageLoading variant="dashboard" label="Loading profile..." />;
   }
   if (!profile) {
-    return <PageError message={error || 'Profile not found. It may have been deleted.'} backHref="/dashboard" backLabel="Back to Dashboard" />;
+    return (
+      <PageError
+        message={error || 'Profile not found. It may have been deleted.'}
+        backHref="/dashboard"
+        backLabel="Back to Dashboard"
+      />
+    );
   }
 
+  const initials = (profile.full_name || profile.email || 'U').slice(0, 2).toUpperCase();
+
   return (
-    <main id="main-content" className="min-h-screen bg-sitebg text-white px-4 py-10">
-      <div className="max-w-3xl mx-auto space-y-8">
-        <Link href="/dashboard" className="text-gold hover:underline inline-block">
-          ← Back to Dashboard
-        </Link>
+    <main
+      id="main-content"
+      className="flex-1 w-full min-h-[calc(100vh-160px)] bg-white text-stone-950 px-4 sm:px-6 lg:px-8 xl:px-12 py-8 sm:py-10 uppercase"
+    >
+      <div className="w-full max-w-6xl mx-auto space-y-8">
+        {/* 1. Main Hero Container (Matching Dashboard & Tournaments Layout) */}
+        <section className="animate-hero-entrance relative w-full rounded-3xl border border-stone-800/80 bg-stone-950 overflow-hidden shadow-md p-8 sm:p-12 lg:p-14 text-center text-white flex flex-col items-center justify-center space-y-5">
+          <PageHeroBackground specificKey="dashboard_hero_bg_path" alt="DALTA Esports Profile Banner" />
 
-        <h1 className="font-pixel text-xl sm:text-2xl leading-relaxed text-gold">My Profile</h1>
+          {/* Action Bar inside Hero: Back Link & Badges */}
+          <div className="relative z-10 w-full flex flex-wrap items-center justify-between gap-4">
+            <Link
+              href="/dashboard"
+              className="inline-flex items-center gap-1.5 text-xs font-black text-[#FFCC37] hover:text-[#FFE066] uppercase tracking-wider transition-colors"
+            >
+              ← Back to Dashboard
+            </Link>
 
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="px-3.5 py-1 rounded-md border border-white/20 bg-white/10 text-stone-200 text-[10px] sm:text-xs font-black tracking-widest uppercase backdrop-blur-xs shadow-2xs">
+                Role: {profile.role}
+              </span>
+              <VerifiedBadge verified={profile.is_verified} />
+            </div>
+          </div>
+
+          {/* User Identity Display */}
+          <div className="relative z-10 max-w-4xl mx-auto space-y-3 pt-2 flex flex-col items-center">
+            <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-3xl bg-gradient-to-br from-[#5B271E]/40 via-stone-900 to-black border-2 border-[#FFCC37]/60 text-[#FFCC37] font-black text-2xl sm:text-3xl grid place-items-center tracking-widest shadow-xl shadow-black/50">
+              {initials}
+            </div>
+            <h1
+              className="animate-hero-title text-3xl sm:text-4xl lg:text-5xl font-black !text-white text-white tracking-wider uppercase leading-tight"
+              style={{ color: '#ffffff' }}
+            >
+              {profile.full_name || 'My Profile'}
+            </h1>
+            <p
+              className="animate-hero-tagline text-xs sm:text-sm text-stone-300 font-semibold tracking-wider normal-case"
+              style={{ color: '#ffffff' }}
+            >
+              {profile.email}
+            </p>
+          </div>
+        </section>
+
+        {/* Global Notifications */}
         {error && (
-          <div role="alert" className="bg-red-500/10 border border-red-500 text-red-300 px-4 py-3">{error}</div>
+          <div
+            role="alert"
+            className="rounded-2xl bg-red-500/10 border border-red-500/30 p-4 sm:p-5 text-red-700 text-xs sm:text-sm font-bold uppercase tracking-wider flex items-center gap-3 shadow-xs"
+          >
+            <AlertCircle className="w-5 h-5 shrink-0 text-red-600" />
+            <span>{error}</span>
+          </div>
         )}
         {message && (
-          <div role="status" className="bg-green-500/10 border border-green-500 text-green-300 px-4 py-3">{message}</div>
+          <div
+            role="status"
+            className="rounded-2xl bg-emerald-500/10 border border-emerald-500/30 p-4 sm:p-5 text-emerald-800 text-xs sm:text-sm font-bold uppercase tracking-wider flex items-center gap-3 shadow-xs"
+          >
+            <CheckCircle2 className="w-5 h-5 shrink-0 text-emerald-600" />
+            <span>{message}</span>
+          </div>
         )}
 
-        {/* Account details */}
-        <form onSubmit={handleSaveName} className="bg-sitecard border-2 border-gold shadow-[6px_6px_0_var(--color-brown)] p-6 space-y-4">
-          <h2 className="text-xl font-bold">Account</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-            <div>
-              <span className="block text-gray-400">Email</span>
-              <span className="break-all">{profile.email}</span>
+        {/* 2. Account Information Card */}
+        <form
+          onSubmit={handleSaveName}
+          className="animate-stagger-1 bg-white border border-stone-200/90 rounded-3xl p-6 sm:p-8 shadow-xs space-y-6"
+        >
+          <div className="flex items-center gap-3 pb-4 border-b border-stone-100">
+            <div className="w-10 h-10 rounded-xl bg-[#5B271E]/10 border border-[#5B271E]/20 text-[#5B271E] grid place-items-center shadow-2xs">
+              <User className="w-5 h-5" />
             </div>
             <div>
-              <span className="block text-gray-400">Role</span>
-              <span className="capitalize">{profile.role}</span> <VerifiedBadge verified={profile.is_verified} />
+              <h2 className="text-lg sm:text-xl font-black text-stone-950 tracking-wider">
+                Account Information
+              </h2>
+              <p className="text-xs text-stone-500 font-medium tracking-wide mt-0.5">
+                Manage your personal credentials and official student profile records.
+              </p>
             </div>
-            <div className="md:col-span-2">
-              <span className="block text-gray-400">Privacy</span>
-              <span>
-                {profile.privacy_consent_at
-                  ? `You agreed to the Privacy Notice on ${new Date(profile.privacy_consent_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}. `
-                  : 'You haven\'t agreed to the Privacy Notice yet. '}
-                <Link href="/privacy" className="text-gold underline">Read the Privacy Notice</Link>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 text-xs sm:text-sm">
+            <div className="p-4 sm:p-5 rounded-2xl bg-stone-50/70 border border-stone-200/80 space-y-1">
+              <span className="block text-stone-500 font-black tracking-wider text-xs flex items-center gap-1.5">
+                <Mail className="w-3.5 h-3.5 text-[#5B271E]" />
+                Email Address
+              </span>
+              <span className="font-extrabold text-stone-900 break-all normal-case tracking-wide">
+                {profile.email}
+              </span>
+            </div>
+
+            <div className="p-4 sm:p-5 rounded-2xl bg-stone-50/70 border border-stone-200/80 space-y-1">
+              <span className="block text-stone-500 font-black tracking-wider text-xs flex items-center gap-1.5">
+                <Shield className="w-3.5 h-3.5 text-[#5B271E]" />
+                System Role
+              </span>
+              <span className="font-extrabold text-stone-900 tracking-wider capitalize">
+                {profile.role}
+              </span>
+            </div>
+
+            <div className="md:col-span-2 p-4 sm:p-5 rounded-2xl bg-stone-50/70 border border-stone-200/80 space-y-1.5">
+              <span className="block text-stone-500 font-black tracking-wider text-xs flex items-center gap-1.5">
+                <Calendar className="w-3.5 h-3.5 text-[#5B271E]" />
+                Privacy & RA 10173 Compliance
+              </span>
+              <span className="text-stone-700 font-medium tracking-wide normal-case block">
+                {profile.privacy_consent_at ? (
+                  <>
+                    You agreed to the Perpetualite Privacy Notice on{' '}
+                    <strong className="text-stone-900">
+                      {new Date(profile.privacy_consent_at).toLocaleDateString(undefined, {
+                        month: 'short',
+                        day: 'numeric',
+                        year: 'numeric',
+                      })}
+                    </strong>
+                    .{' '}
+                  </>
+                ) : (
+                  "You haven't agreed to the Privacy Notice yet. "
+                )}
+                <Link
+                  href="/privacy"
+                  className="text-[#5B271E] font-bold uppercase underline hover:text-[#FFCC37] ml-1 transition-colors"
+                >
+                  Read Privacy Notice →
+                </Link>
               </span>
             </div>
           </div>
-          <div>
-            <label htmlFor="full-name" className="block text-sm font-semibold text-gray-300 mb-2">Full Name</label>
+
+          <div className="space-y-1.5 pt-2">
+            <label htmlFor="full-name" className="block text-xs font-black text-stone-700 tracking-wider">
+              Full Name
+            </label>
             <input
               id="full-name"
               type="text"
@@ -238,65 +378,126 @@ export default function ProfilePage() {
               className={inputClass}
             />
           </div>
-          <button
-            type="submit"
-            disabled={saving}
-            className="bg-gold text-black px-6 py-2 font-bold hover:bg-golddark transition disabled:opacity-50"
-          >
-            Save Name
-          </button>
+
+          <div className="pt-2">
+            <button
+              type="submit"
+              disabled={saving}
+              className="rounded-xl bg-gold hover:bg-golddark text-stone-950 font-black px-6 py-3 text-xs tracking-widest shadow-xs hover:-translate-y-0.5 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+            >
+              {saving ? 'Saving...' : 'Save Name'}
+            </button>
+          </div>
         </form>
 
-        {/* Student verification, players only (the database also enforces this) */}
+        {/* 3. Student Verification (Players only) */}
         {profile.role === 'player' && (
-          <StudentDetails profile={profile} onSaved={() => setReloadCount((n) => n + 1)} />
+          <div className="animate-stagger-1">
+            <StudentDetails profile={profile} onSaved={() => setReloadCount((n) => n + 1)} />
+          </div>
         )}
 
-        {/* In-game profiles, players only (the database also enforces this) */}
+        {/* 4. Game Profiles (Players only) */}
         {profile.role === 'player' && (
-          <div className="bg-sitecard border-2 border-gold shadow-[6px_6px_0_var(--color-brown)] p-6">
-            <h2 className="text-xl font-bold mb-1">Game Profiles</h2>
-            <p className="text-gray-400 text-sm mb-6">Your in-game name, role and rank for each game you play.</p>
+          <div className="animate-stagger-2 bg-white border border-stone-200/90 rounded-3xl p-6 sm:p-8 shadow-xs space-y-6">
+            <div className="flex items-center gap-3 pb-4 border-b border-stone-100">
+              <div className="w-10 h-10 rounded-xl bg-[#5B271E]/10 border border-[#5B271E]/20 text-[#5B271E] grid place-items-center shadow-2xs">
+                <Gamepad2 className="w-5 h-5" />
+              </div>
+              <div>
+                <h2 className="text-lg sm:text-xl font-black text-stone-950 tracking-wider">
+                  Game Profiles
+                </h2>
+                <p className="text-xs text-stone-500 font-medium tracking-wide mt-0.5">
+                  Your in-game name, competitive role, and rank for organization tournaments.
+                </p>
+              </div>
+            </div>
 
             <div className="space-y-4">
               {games.map((game) => {
                 const gp = gameProfiles.find((p) => p.game_id === game.id);
+                const logo = getGameLogo(game.name, game.id);
 
                 if (editingGameId === game.id) {
                   return (
                     <form
                       key={game.id}
                       onSubmit={handleSaveGameProfile}
-                      className="bg-sitebg border border-gold p-4 space-y-3"
+                      className="bg-stone-50/80 border border-[#FFCC37]/70 rounded-2xl p-5 sm:p-6 space-y-4 shadow-sm"
                     >
-                      <h3 className="font-bold text-gold">{game.name}</h3>
-                      <input
-                        type="text" placeholder="IGN (in-game name) *" aria-label="IGN (in-game name)"
-                        value={ign} onChange={(e) => setIgn(e.target.value)}
-                        className={inputClass} required
-                      />
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      <div className="flex items-center gap-3 pb-2 border-b border-stone-200">
+                        {logo ? (
+                          <div className="w-10 h-10 rounded-xl bg-[#0e0c0b] border border-stone-800 flex items-center justify-center p-1.5 shadow-xs shrink-0">
+                            <Image src={logo} alt={game.name} width={32} height={32} className="object-contain" />
+                          </div>
+                        ) : null}
+                        <div>
+                          <h3 className="font-black text-[#5B271E] text-sm tracking-wider uppercase">
+                            Editing {game.name} Profile
+                          </h3>
+                          <p className="text-[11px] text-stone-500 font-medium uppercase tracking-wide">
+                            Enter your official IGN, role, and current competitive tier.
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <label className="block text-xs font-black text-stone-700 tracking-wider">
+                          In-Game Name (IGN) *
+                        </label>
                         <input
-                          type="text" placeholder="In-game role (e.g. Jungler, Duelist)" aria-label="In-game role (e.g. Jungler, Duelist)"
-                          value={inGameRole} onChange={(e) => setInGameRole(e.target.value)}
+                          type="text"
+                          placeholder="e.g. DALTA_Sniper"
+                          aria-label="IGN (in-game name)"
+                          value={ign}
+                          onChange={(e) => setIgn(e.target.value)}
                           className={inputClass}
-                        />
-                        <input
-                          type="text" placeholder="Rank (e.g. Mythic, Diamond 2)" aria-label="Rank (e.g. Mythic, Diamond 2)"
-                          value={rank} onChange={(e) => setRank(e.target.value)}
-                          className={inputClass}
+                          required
                         />
                       </div>
-                      <div className="flex gap-2">
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-1.5">
+                          <label className="block text-xs font-black text-stone-700 tracking-wider">
+                            In-Game Role
+                          </label>
+                          <input
+                            type="text"
+                            placeholder="e.g. Jungler, Duelist, Anchor"
+                            aria-label="In-game role"
+                            value={inGameRole}
+                            onChange={(e) => setInGameRole(e.target.value)}
+                            className={inputClass}
+                          />
+                        </div>
+                        <div className="space-y-1.5">
+                          <label className="block text-xs font-black text-stone-700 tracking-wider">
+                            Competitive Rank
+                          </label>
+                          <input
+                            type="text"
+                            placeholder="e.g. Mythic, Diamond 2, Ascendant"
+                            aria-label="Rank"
+                            value={rank}
+                            onChange={(e) => setRank(e.target.value)}
+                            className={inputClass}
+                          />
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-3 pt-2">
                         <button
-                          type="submit" disabled={saving}
-                          className="bg-gold text-black px-6 py-2 font-bold hover:bg-golddark transition disabled:opacity-50"
+                          type="submit"
+                          disabled={saving}
+                          className="rounded-xl bg-gold hover:bg-golddark text-stone-950 font-black px-6 py-2.5 text-xs tracking-wider shadow-xs hover:-translate-y-0.5 transition-all cursor-pointer disabled:opacity-50"
                         >
                           Save
                         </button>
                         <button
-                          type="button" onClick={() => setEditingGameId(null)}
-                          className="text-gray-400 px-6 py-2 hover:text-white transition"
+                          type="button"
+                          onClick={() => setEditingGameId(null)}
+                          className="rounded-xl border border-stone-300 hover:border-stone-400 bg-white text-stone-700 font-bold px-5 py-2.5 text-xs tracking-wider transition-all cursor-pointer"
                         >
                           Cancel
                         </button>
@@ -308,33 +509,53 @@ export default function ProfilePage() {
                 return (
                   <div
                     key={game.id}
-                    className="bg-sitebg border border-brown p-4 flex flex-wrap justify-between items-center gap-4"
+                    className="bg-stone-50/70 border border-stone-200/90 rounded-2xl p-5 flex flex-wrap justify-between items-center gap-4 hover:border-stone-300 hover:bg-stone-50 transition-all shadow-2xs"
                   >
-                    <div>
-                      <h3 className="font-bold text-gold">{game.name}</h3>
-                      {gp ? (
-                        <p className="text-sm text-gray-300">
-                          {gp.ign}
-                          {gp.in_game_role && <span className="text-gray-400"> · {gp.in_game_role}</span>}
-                          {gp.rank && <span className="text-gray-400"> · {gp.rank}</span>}
-                        </p>
+                    <div className="flex items-center gap-4">
+                      {logo ? (
+                        <div className="w-12 h-12 rounded-2xl bg-[#0e0c0b] border border-stone-800 flex items-center justify-center p-2 shadow-xs shrink-0">
+                          <Image src={logo} alt={game.name} width={38} height={38} className="object-contain" />
+                        </div>
                       ) : (
-                        <p className="text-sm text-gray-400">Not set up</p>
+                        <div className="w-12 h-12 rounded-2xl bg-stone-200 border border-stone-300 grid place-items-center text-stone-700 font-black text-sm shrink-0">
+                          {game.name.slice(0, 2).toUpperCase()}
+                        </div>
                       )}
+                      <div>
+                        <h3 className="font-black text-stone-950 text-sm tracking-wider uppercase">
+                          {game.name}
+                        </h3>
+                        {gp ? (
+                          <p className="text-xs sm:text-sm font-semibold text-stone-700 mt-0.5">
+                            IGN: <span className="text-stone-950 font-black">{gp.ign}</span>
+                            {gp.in_game_role && (
+                              <span className="text-stone-500 font-medium"> · Role: {gp.in_game_role}</span>
+                            )}
+                            {gp.rank && (
+                              <span className="text-stone-500 font-medium"> · Rank: {gp.rank}</span>
+                            )}
+                          </p>
+                        ) : (
+                          <p className="text-xs text-stone-400 font-medium tracking-wide mt-0.5">
+                            Not set up yet
+                          </p>
+                        )}
+                      </div>
                     </div>
-                    <div className="flex gap-3 text-sm font-semibold">
+
+                    <div className="flex items-center gap-3 text-xs font-black tracking-wider">
                       <button
                         onClick={() => startEditing(game.id)}
                         disabled={saving}
-                        className="text-gold hover:underline disabled:opacity-50"
+                        className="rounded-xl border border-stone-300 hover:border-[#FFCC37] bg-white text-[#5B271E] hover:text-[#FFCC37] px-4 py-2 transition-all cursor-pointer disabled:opacity-50 shadow-2xs"
                       >
-                        {gp ? 'Edit' : '+ Add'}
+                        {gp ? 'Edit Profile' : '+ Add Profile'}
                       </button>
                       {gp && (
                         <button
                           onClick={() => handleRemoveGameProfile(gp, game.name)}
                           disabled={saving}
-                          className="text-red-400 hover:text-red-300 disabled:opacity-50"
+                          className="rounded-xl border border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700 px-3.5 py-2 transition-all cursor-pointer disabled:opacity-50"
                         >
                           Remove
                         </button>
@@ -347,26 +568,42 @@ export default function ProfilePage() {
           </div>
         )}
 
-        <ChangePassword email={profile.email} fullName={profile.full_name ?? ''} />
+        {/* 5. Change Password Container */}
+        <div className="animate-stagger-3">
+          <Suspense
+            fallback={<div className="bg-white border border-stone-200/90 rounded-3xl p-6 sm:p-8 shadow-xs" />}
+          >
+            <ChangePassword email={profile.email} fullName={profile.full_name ?? ''} />
+          </Suspense>
+        </div>
 
-        {/* Danger zone */}
-        <div className="border border-red-500 p-6">
-          <h2 className="text-xl font-bold text-red-400">Delete my account</h2>
-          <p className="text-gray-400 text-sm mt-1">
-            This permanently deletes your account, profile and game profiles. It can&apos;t be undone.
-          </p>
+        {/* 6. Danger Zone: Delete Account */}
+        <div className="animate-stagger-3 bg-red-50/20 border border-red-200/90 rounded-3xl p-6 sm:p-8 shadow-xs space-y-4">
+          <div className="flex items-center gap-3 pb-4 border-b border-red-100">
+            <div className="w-10 h-10 rounded-xl bg-red-500/10 border border-red-500/20 text-red-700 grid place-items-center shadow-2xs">
+              <Trash2 className="w-5 h-5" />
+            </div>
+            <div>
+              <h2 className="text-lg sm:text-xl font-black text-red-700 tracking-wider uppercase">
+                Delete Account
+              </h2>
+              <p className="text-xs sm:text-sm text-stone-600 font-medium tracking-wide mt-0.5 normal-case">
+                Permanently removes your account, tournament records, and roster profiles. This action cannot be undone.
+              </p>
+            </div>
+          </div>
 
           {!showDelete ? (
             <button
               onClick={() => setShowDelete(true)}
-              className="mt-4 border border-red-500 text-red-400 hover:bg-red-500 hover:text-white px-6 py-2 font-bold transition"
+              className="rounded-xl border border-red-300 text-red-700 hover:bg-red-50 hover:border-red-400 px-6 py-2.5 font-black text-xs uppercase tracking-wider transition-all cursor-pointer"
             >
               Delete my account
             </button>
           ) : (
-            <div className="mt-4 space-y-3">
-              <label htmlFor="delete-confirm" className="block text-sm text-gray-300">
-                Type <span className="font-mono font-bold text-red-400">DELETE</span> to confirm:
+            <div className="space-y-4 pt-1 max-w-lg">
+              <label htmlFor="delete-confirm" className="block text-xs font-black text-stone-800 tracking-wider">
+                Type <span className="font-mono font-black text-red-700">DELETE</span> to confirm:
               </label>
               <input
                 id="delete-confirm"
@@ -374,21 +611,22 @@ export default function ProfilePage() {
                 value={deleteText}
                 onChange={(e) => setDeleteText(e.target.value)}
                 className={inputClass}
+                placeholder="DELETE"
               />
-              <div className="flex gap-2">
+              <div className="flex items-center gap-3">
                 <button
                   onClick={handleDeleteAccount}
                   disabled={deleteText !== 'DELETE' || saving}
-                  className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 font-bold transition disabled:opacity-50"
+                  className="rounded-xl bg-red-600 hover:bg-red-700 text-white font-black px-6 py-3 text-xs tracking-widest shadow-xs hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                 >
-                  {saving ? 'Deleting...' : 'Permanently delete'}
+                  {saving ? 'Deleting...' : 'Permanently Delete'}
                 </button>
                 <button
                   onClick={() => {
                     setShowDelete(false);
                     setDeleteText('');
                   }}
-                  className="text-gray-400 px-6 py-2 hover:text-white transition"
+                  className="rounded-xl border border-stone-300 hover:border-stone-400 bg-white text-stone-700 font-bold px-5 py-3 text-xs tracking-wider transition-all cursor-pointer"
                 >
                   Cancel
                 </button>
@@ -401,9 +639,7 @@ export default function ProfilePage() {
   );
 }
 
-// Change password. The current password is checked first by signing in again,
-// so someone using an unattended logged-in computer can't change it.
-// ?weak=1: the login page sent the user here because their password breaks the current rules.
+// Change password component
 function ChangePassword({ email, fullName }: { email: string; fullName: string }) {
   const supabase = createClient();
   const weak = useSearchParams().get('weak') === '1';
@@ -415,7 +651,6 @@ function ChangePassword({ email, fullName }: { email: string; fullName: string }
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
 
-  // Bring the form into view so the weak-password notice isn't missed
   useEffect(() => {
     if (weak) formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }, [weak]);
@@ -437,13 +672,16 @@ function ChangePassword({ email, fullName }: { email: string; fullName: string }
 
     setSaving(true);
     try {
-      const { error: signInError } = await supabase.auth.signInWithPassword({ email, password: currentPassword });
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email,
+        password: currentPassword,
+      });
       if (signInError) throw new Error('Your current password is incorrect.');
 
       const { error: updateError } = await supabase.auth.updateUser({ password: newPassword });
       if (updateError) throw updateError;
 
-      setMessage('Password changed.');
+      setMessage('Password changed successfully.');
       setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
@@ -455,35 +693,104 @@ function ChangePassword({ email, fullName }: { email: string; fullName: string }
   };
 
   return (
-    <form ref={formRef} onSubmit={handleSubmit} className="bg-sitecard border-2 border-gold shadow-[6px_6px_0_var(--color-brown)] p-4 sm:p-6 space-y-4">
-      <h2 className="text-xl font-bold">Change Password</h2>
+    <form
+      ref={formRef}
+      onSubmit={handleSubmit}
+      className="bg-white border border-stone-200/90 rounded-3xl p-6 sm:p-8 shadow-xs space-y-6 uppercase"
+    >
+      <div className="flex items-center gap-3 pb-4 border-b border-stone-100">
+        <div className="w-10 h-10 rounded-xl bg-[#5B271E]/10 border border-[#5B271E]/20 text-[#5B271E] grid place-items-center shadow-2xs">
+          <Lock className="w-5 h-5" />
+        </div>
+        <div>
+          <h2 className="text-lg sm:text-xl font-black text-stone-950 tracking-wider">Change Password</h2>
+          <p className="text-xs text-stone-500 font-medium tracking-wide mt-0.5">
+            Keep your organization account secure with a strong password.
+          </p>
+        </div>
+      </div>
+
       {weak && !message && (
-        <div role="status" className="bg-yellow-500/10 border border-yellow-500 text-yellow-200 px-4 py-3">
-          Your password doesn&apos;t meet our new security rules. Please choose a stronger one below.
+        <div
+          role="status"
+          className="bg-amber-500/10 border border-amber-500/30 rounded-2xl text-amber-900 p-4 text-xs font-bold tracking-wider shadow-2xs"
+        >
+          Your password does not meet our latest security standards. Please choose a stronger password below.
         </div>
       )}
-      {error && <div role="alert" className="bg-red-500/10 border border-red-500 text-red-300 px-4 py-3">{error}</div>}
-      {message && <div role="status" className="bg-green-500/10 border border-green-500 text-green-300 px-4 py-3">{message}</div>}
-      <PasswordField
-        value={currentPassword} onChange={setCurrentPassword} placeholder="Current password"
-        className={inputClass} autoComplete="current-password"
-      />
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
+
+      {error && (
+        <div
+          role="alert"
+          className="rounded-2xl bg-red-500/10 border border-red-500/30 p-4 text-xs font-bold tracking-wider text-red-800 shadow-2xs flex items-center gap-2.5"
+        >
+          <AlertCircle className="w-4 h-4 shrink-0 text-red-600" />
+          <span>{error}</span>
+        </div>
+      )}
+
+      {message && (
+        <div
+          role="status"
+          className="rounded-2xl bg-emerald-500/10 border border-emerald-500/30 p-4 text-xs font-bold tracking-wider text-emerald-800 shadow-2xs flex items-center gap-2.5"
+        >
+          <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600" />
+          <span>{message}</span>
+        </div>
+      )}
+
+      <div className="space-y-1.5">
+        <label className="block text-xs font-black text-stone-700 tracking-wider">
+          Current Password
+        </label>
         <PasswordField
-          value={newPassword} onChange={setNewPassword} placeholder="New password"
-          className={inputClass} autoComplete="new-password" rules={{ email, fullName }}
-        />
-        <PasswordField
-          value={confirmPassword} onChange={setConfirmPassword} placeholder="Confirm new password"
-          className={inputClass} autoComplete="new-password" matches={newPassword}
+          value={currentPassword}
+          onChange={setCurrentPassword}
+          placeholder="Current password"
+          className={inputClass}
+          autoComplete="current-password"
         />
       </div>
-      <button
-        type="submit" disabled={saving}
-        className="bg-gold text-black px-6 py-2 font-bold hover:bg-golddark transition disabled:opacity-50"
-      >
-        {saving ? 'Saving...' : 'Change Password'}
-      </button>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 items-start">
+        <div className="space-y-1.5">
+          <label className="block text-xs font-black text-stone-700 tracking-wider">
+            New Password
+          </label>
+          <PasswordField
+            value={newPassword}
+            onChange={setNewPassword}
+            placeholder="New password"
+            className={inputClass}
+            autoComplete="new-password"
+            rules={{ email, fullName }}
+          />
+        </div>
+
+        <div className="space-y-1.5">
+          <label className="block text-xs font-black text-stone-700 tracking-wider">
+            Confirm New Password
+          </label>
+          <PasswordField
+            value={confirmPassword}
+            onChange={setConfirmPassword}
+            placeholder="Confirm new password"
+            className={inputClass}
+            autoComplete="new-password"
+            matches={newPassword}
+          />
+        </div>
+      </div>
+
+      <div className="pt-2">
+        <button
+          type="submit"
+          disabled={saving}
+          className="rounded-xl bg-gold hover:bg-golddark text-stone-950 font-black px-6 py-3 text-xs tracking-widest shadow-xs hover:-translate-y-0.5 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+        >
+          {saving ? 'Saving...' : 'Change Password'}
+        </button>
+      </div>
     </form>
   );
 }

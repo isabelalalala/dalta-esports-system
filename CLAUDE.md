@@ -291,7 +291,7 @@ Readers: "anyone" = also logged out; "logged-in" = any role; "admin/staff" = org
 - `/admin/website` (admin): tabs Site text (`SiteTextEditor`), Carousel, Campaigns, Events, Divisions, Officers,
   Official teams (+ players). Lists use the generic `ListEditor` (add, edit, ▲▼ order, publish, delete, images);
   images go through `utils/site-images.ts` (`<folder>/<random>.<ext>`), and replaced/removed files are deleted.
-- Logo: `public/daltaesportslogo.jpg` unless one is uploaded on `/admin/website`.
+- Logo: `public/DALTA ESPORTS LOGO TRNPRNT.png` unless one is uploaded on `/admin/website`.
 
 **Storage buckets**
 - `match-proofs` (private): result screenshots, `<match id>/<random>.<ext>`, PNG/JPEG/WebP, 5 MB. Captains of the

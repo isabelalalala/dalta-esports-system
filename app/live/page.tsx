@@ -8,11 +8,11 @@ import type { Stream } from '@/utils/types';
 import { streamStatusStyles } from '@/utils/streams';
 import PageLoading from '@/components/PageLoading';
 import { usePageTitle } from '@/utils/page-title';
+import PageHeroBackground from '@/components/site/PageHeroBackground';
 
-// "Watch live stream" (use case, Audience): every stream, live ones first
 export default function LiveStreamsPage() {
   const supabase = createClient();
-  usePageTitle('Live streams');
+  usePageTitle('Live Streams');
   const [streams, setStreams] = useState<Stream[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -37,25 +37,36 @@ export default function LiveStreamsPage() {
   }, [supabase]);
 
   const section = (title: ReactNode, list: Stream[], emptyText: string) => (
-    <section>
-      <h2 className="text-2xl font-bold mb-3">{title}</h2>
+    <section className="space-y-4">
+      <div className="pb-2 border-b border-stone-200/80">
+        <h2 className="text-lg sm:text-xl font-black text-stone-950 tracking-wider uppercase">{title}</h2>
+      </div>
       {list.length === 0 ? (
-        <p className="text-gray-400">{emptyText}</p>
+        <p className="text-stone-500 font-bold py-6">{emptyText}</p>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
           {list.map((s) => (
             <Link
               key={s.id}
               href={`/live/${s.id}`}
-              className={`block bg-sitecard border p-4 hover:border-gold transition ${
-                s.status === 'live' ? 'border-red-500/70' : 'border-brownlight'
+              className={`block bg-white border rounded-2xl p-6 shadow-xs hover:shadow-md hover:-translate-y-0.5 transition-all text-stone-950 ${
+                s.status === 'live' ? 'border-red-500/80 ring-2 ring-red-500/10' : 'border-stone-200/90 hover:border-stone-300'
               }`}
             >
-              <span className={`inline-block px-2 py-0.5 rounded-full border text-[10px] font-bold uppercase mb-2 ${streamStatusStyles[s.status]}`}>
-                {s.status === 'live' ? <><span className="inline-block h-1.5 w-1.5 rounded-full bg-current animate-pulse" /> Live</> : s.status === 'ended' ? 'Replay' : 'Scheduled'}
+              <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full border text-[11px] font-black uppercase mb-3 ${streamStatusStyles[s.status]}`}>
+                {s.status === 'live' ? (
+                  <>
+                    <span className="inline-block h-2 w-2 rounded-full bg-red-600 animate-pulse" />
+                    <span>Live Now</span>
+                  </>
+                ) : s.status === 'ended' ? (
+                  'Replay'
+                ) : (
+                  'Scheduled'
+                )}
               </span>
-              <h3 className="text-lg font-bold">{s.title}</h3>
-              <p className="text-sm text-gray-400">
+              <h3 className="text-base sm:text-lg font-black text-stone-950 tracking-wide uppercase">{s.title}</h3>
+              <p className="text-xs sm:text-sm text-stone-500 font-semibold tracking-wider mt-1">
                 {s.tournaments?.name} · {s.tournaments?.game}
               </p>
             </Link>
@@ -67,22 +78,53 @@ export default function LiveStreamsPage() {
 
   if (loading) return <PageLoading />;
 
+  const live = streams.filter((s) => s.status === 'live');
+  const scheduled = streams.filter((s) => s.status === 'scheduled');
+  const ended = streams.filter((s) => s.status === 'ended');
+
   return (
-    <main id="main-content" className="min-h-screen bg-sitebg text-white px-4 py-10">
-      <div className="max-w-4xl mx-auto space-y-10">
-        <div>
-          <Link href="/dashboard" className="inline-block text-gold hover:underline mb-6">
+    <div className="w-full space-y-8 uppercase">
+      {/* 1. Main Hero Container with Official Banner */}
+      <section className="relative w-full rounded-3xl border border-stone-800/80 bg-stone-950 overflow-hidden shadow-md p-8 sm:p-14 lg:p-16 text-center text-white flex flex-col items-center justify-center space-y-4">
+        <PageHeroBackground specificKey="hero_banner_path" alt="DALTA Esports Live Streams Banner" />
+
+        <div className="relative z-10 w-full flex items-center justify-between">
+          <Link
+            href="/dashboard"
+            className="inline-flex items-center gap-1.5 text-xs font-black text-amber-400 hover:text-amber-300 uppercase tracking-wider transition-colors"
+          >
             ← Back to Dashboard
           </Link>
-          <h1 className="font-pixel text-xl sm:text-2xl leading-relaxed text-gold">Live Streams</h1>
         </div>
 
-        {error && <div role="alert" className="bg-red-500/10 border border-red-500 text-red-300 px-4 py-3">{error}</div>}
+        <div className="relative z-10 max-w-4xl mx-auto space-y-3 pt-2">
+          <h1
+            className="text-3xl sm:text-4xl lg:text-5xl font-black !text-white text-white tracking-wider uppercase leading-tight"
+            style={{ color: '#ffffff' }}
+          >
+            Live Streams
+          </h1>
+          <p
+            className="text-base sm:text-lg !text-white text-stone-200 font-medium uppercase tracking-wide leading-relaxed"
+            style={{ color: '#ffffff' }}
+          >
+            Watch real-time matches, scheduled tournament streams, and full game replays.
+          </p>
+        </div>
+      </section>
 
-        {section(<><span className="inline-block h-3 w-3 rounded-full bg-red-500 animate-pulse mr-2" />Live now</>, streams.filter((s) => s.status === 'live'), 'Nothing is live right now.')}
-        {section('Upcoming', streams.filter((s) => s.status === 'scheduled'), 'No streams scheduled.')}
-        {section('Replays', streams.filter((s) => s.status === 'ended'), 'No replays yet.')}
+      {/* 2. Streams Feed */}
+      <div className="space-y-8 text-stone-950">
+        {error && (
+          <div role="alert" className="bg-red-50 border border-red-200 text-red-800 rounded-xl p-4 text-xs font-bold tracking-wider shadow-2xs">
+            {error}
+          </div>
+        )}
+
+        {section('Live Broadcasts', live, 'No matches are broadcasting live right now.')}
+        {section('Upcoming Streams', scheduled, 'No upcoming match streams scheduled at the moment.')}
+        {section('Past Broadcasts & Replays', ended, 'No past stream replays available.')}
       </div>
-    </main>
+    </div>
   );
 }

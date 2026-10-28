@@ -29,28 +29,28 @@ export default function Bracket({
   const champion = final?.winner_team_id ? teamNames[final.winner_team_id] : null;
 
   return (
-    <div>
+    <div className="w-full">
       {champion && (
-        <div className="mb-4 bg-yellow-500/10 border border-yellow-500 text-yellow-300 px-4 py-3 text-center font-bold flex items-center justify-center gap-2">
-          <Trophy className="h-5 w-5" /> Champion: {champion}
+        <div className="mb-6 rounded-2xl bg-amber-500/10 border border-amber-400/80 text-amber-950 px-5 py-3.5 text-center font-black uppercase tracking-wider flex items-center justify-center gap-2 shadow-xs">
+          <Trophy className="h-5 w-5 text-amber-600" /> Champion: {champion}
         </div>
       )}
 
-      <div className="overflow-x-auto pb-2 -mx-2 px-2 snap-x">
-        <div className="flex gap-4 min-w-max">
+      <div className="overflow-x-auto pb-4 -mx-2 px-2 snap-x">
+        <div className="flex gap-4 sm:gap-6 min-w-max">
           {rounds.map((round) => (
-            <div key={round} className="w-56 shrink-0 snap-start flex flex-col">
-              <h3 className="text-center text-sm font-bold uppercase text-gray-400 mb-3">
+            <div key={round} className="w-60 shrink-0 snap-start flex flex-col">
+              <h3 className="text-center text-xs font-black uppercase text-stone-500 tracking-widest mb-3">
                 {roundLabel(round, roundCount)}
               </h3>
               {/* justify-around spaces later rounds out so they line up between the matches feeding them */}
-              <div className="flex flex-col justify-around gap-3 grow">
+              <div className="flex flex-col justify-around gap-4 grow">
                 {matches
                   .filter((m) => m.round === round)
                   .map((match) => (
-                    <div key={match.id}>
+                    <div key={match.id} className="space-y-1.5">
                       {matchHref && !isBye(match) ? (
-                        <Link href={matchHref(match)} className="block hover:opacity-80">
+                        <Link href={matchHref(match)} className="block hover:-translate-y-0.5 transition-transform">
                           <MatchBox match={match} teamNames={teamNames} timeZone={timeZone} />
                         </Link>
                       ) : (
@@ -79,8 +79,10 @@ function MatchBox({ match, teamNames, timeZone }: { match: Match; teamNames: Rec
 
   return (
     <div
-      className={`bg-sitebg border text-sm overflow-hidden ${
-        match.status === 'live' ? 'border-green-500' : 'border-brownlight'
+      className={`rounded-2xl border text-xs sm:text-sm overflow-hidden shadow-2xs transition-all bg-white ${
+        match.status === 'live'
+          ? 'border-emerald-500 ring-2 ring-emerald-500/20'
+          : 'border-stone-200/90 hover:border-amber-400/80 hover:shadow-xs'
       }`}
     >
       {rows.map(({ teamId, score }, i) => {
@@ -91,18 +93,22 @@ function MatchBox({ match, teamNames, timeZone }: { match: Match; teamNames: Rec
         return (
           <div
             key={i}
-            className={`flex justify-between items-center gap-2 px-3 py-2 ${i === 0 ? 'border-b border-brown' : ''} ${
-              won ? 'text-gold font-bold' : lost ? 'text-gray-400' : 'text-white'
-            } ${teamId === null ? 'italic text-gray-400' : ''}`}
+            className={`flex justify-between items-center gap-2 px-3.5 py-2.5 ${i === 0 ? 'border-b border-stone-100' : ''} ${
+              won
+                ? 'text-[#5B271E] font-black bg-amber-500/5'
+                : lost
+                ? 'text-stone-400 font-semibold'
+                : 'text-stone-900 font-bold'
+            } ${teamId === null ? 'italic text-stone-400' : ''}`}
           >
-            <span className="truncate">{name}</span>
-            <span className="tabular-nums">{won && match.is_forfeit ? 'FF' : score ?? ''}</span>
+            <span className="truncate uppercase">{name}</span>
+            <span className="tabular-nums font-black">{won && match.is_forfeit ? 'FF' : score ?? ''}</span>
           </div>
         );
       })}
-      <div className="px-3 py-1 bg-sitecard text-[11px] text-gray-400 flex justify-between gap-2">
+      <div className="px-3.5 py-1.5 bg-stone-50 border-t border-stone-100 text-[10px] sm:text-[11px] font-bold text-stone-500 uppercase flex justify-between gap-2 tracking-wider">
         <span>{bye ? 'Advances automatically' : formatDateTime(match.scheduled_at, timeZone)}</span>
-        {match.status === 'live' && <span className="text-green-400 font-bold">LIVE</span>}
+        {match.status === 'live' && <span className="text-emerald-600 font-black animate-pulse">LIVE</span>}
       </div>
     </div>
   );

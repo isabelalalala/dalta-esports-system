@@ -1,15 +1,16 @@
 import type { Metadata } from "next";
-import { Press_Start_2P } from "next/font/google";
+import { Montserrat } from "next/font/google";
 import "./globals.css";
 import Footer from "@/components/Footer";
 import SiteHeader from "@/components/site/SiteHeader";
 import { SITE_URL } from "@/utils/site-url";
 
-// Pixel/retro font for the public website's headings (Tailwind class: font-pixel)
-const pressStart = Press_Start_2P({
-  variable: "--font-press-start",
-  weight: "400",
+// Uppercase Montserrat font for all typography across the layout
+const montserrat = Montserrat({
+  variable: "--font-montserrat",
+  weight: ["400", "500", "600", "700", "800", "900"],
   subsets: ["latin"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -21,7 +22,7 @@ export const metadata: Metadata = {
   openGraph: {
     siteName: "DALTA Esports",
     type: "website",
-    images: [{ url: "/daltaesportslogo.jpg", width: 1080, height: 1080, alt: "DALTA Esports logo" }],
+    images: [{ url: "/DALTA ESPORTS LOGO TRNPRNT.png", width: 1080, height: 1080, alt: "DALTA Esports logo" }],
   },
 };
 
@@ -29,16 +30,15 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={`${pressStart.variable} h-full antialiased`}
+      className={`${montserrat.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">
+      <body className="min-h-full w-full flex flex-col bg-white text-sitebg uppercase">
         <a
           href="#main-content"
-          className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:bg-gold focus:text-sitebg focus:px-4 focus:py-2 focus:rounded focus:font-bold"
+          className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:bg-gold focus:text-sitebg focus:px-4 focus:py-2 focus:border-2 focus:border-brown focus:font-bold uppercase"
         >
           Skip to content
         </a>
-        {/* The same header on every page, logged in or not */}
         <SiteHeader />
         {children}
         <Footer />

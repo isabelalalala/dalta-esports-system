@@ -68,32 +68,34 @@ async function MatchContent({ params }: { params: PageProps<'/t/[id]/match/[matc
   // A stream for this match, or else any live stream of the tournament
   const stream = data.live_streams.find((s) => s.match_id === match.id) ?? (match.status === 'live' ? data.live_streams[0] : undefined);
   const teamClass = (teamId: string | null) =>
-    done ? (match.winner_team_id === teamId ? 'text-gold' : 'text-gray-400') : 'text-white';
+    done ? (match.winner_team_id === teamId ? 'text-amber-700 font-black' : 'text-stone-400') : 'text-stone-950 font-black';
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 uppercase">
       <LiveRefresher tournamentId={id} />
-      <Link href={publicTournamentPath(id)} className="text-sm text-gold hover:underline">← {data.tournament.name}</Link>
+      <Link href={publicTournamentPath(id)} className="inline-flex items-center gap-1.5 text-xs font-black text-amber-800 hover:text-amber-900 tracking-wider">
+        ← {data.tournament.name}
+      </Link>
 
-      <section className="border-2 border-gold bg-sitecard shadow-[6px_6px_0_var(--color-brown)] p-6 space-y-5 text-center">
-        <p className="text-xs uppercase tracking-widest text-gray-400">
+      <section className="rounded-2xl border border-stone-200/90 bg-white shadow-xs p-6 sm:p-8 space-y-5 text-center">
+        <p className="text-xs uppercase tracking-widest text-amber-800 font-extrabold">
           {data.tournament.game} · {info.round} · Match {match.match_number}
         </p>
         <h1 className="sr-only">{teamA} vs {teamB}</h1>
         <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto_1fr] items-center gap-4">
-          <p className={`font-pixel text-sm sm:text-base leading-relaxed ${teamClass(match.team_a_id)}`}>{teamA}</p>
-          <p className="text-3xl font-bold tabular-nums text-white">
+          <p className={`text-base sm:text-xl font-black leading-relaxed ${teamClass(match.team_a_id)}`}>{teamA}</p>
+          <p className="text-3xl sm:text-4xl font-black tabular-nums text-stone-950">
             {done && !match.is_forfeit ? `${match.score_a ?? '-'} : ${match.score_b ?? '-'}` : 'vs'}
           </p>
-          <p className={`font-pixel text-sm sm:text-base leading-relaxed ${teamClass(match.team_b_id)}`}>{teamB}</p>
+          <p className={`text-base sm:text-xl font-black leading-relaxed ${teamClass(match.team_b_id)}`}>{teamB}</p>
         </div>
-        <p className="text-gray-300">
-          {match.status === 'live' && <span className="text-red-400 font-bold mr-2"><span className="inline-block h-1.5 w-1.5 rounded-full bg-current animate-pulse" /> LIVE</span>}
+        <p className="text-xs sm:text-sm text-stone-600 font-medium">
+          {match.status === 'live' && <span className="text-red-600 font-black mr-2"><span className="inline-block h-1.5 w-1.5 rounded-full bg-current animate-pulse" /> LIVE</span>}
           {done
             ? `${match.winner_team_id === match.team_a_id ? teamA : teamB} won${match.is_forfeit ? ' by forfeit' : ''}`
             : `${info.when} (Philippine time)`}
         </p>
-        <div className="flex flex-wrap justify-center gap-3">
+        <div className="flex flex-wrap justify-center gap-3 pt-2">
           <ShareButton path={publicMatchPath(id, match.id)} title={`${teamA} vs ${teamB}`} text={`${info.round}, ${data.tournament.name}`} />
           {match.scheduled_at && !done && <CalendarLinks kind="match" id={match.id} />}
         </div>
@@ -102,8 +104,8 @@ async function MatchContent({ params }: { params: PageProps<'/t/[id]/match/[matc
       {/* Pick'em: community split for everyone, pick buttons for logged-in audience members */}
       {match.team_a_id && match.team_b_id && (
         <section className="space-y-3">
-          <SectionTitle><span className="inline-flex items-center gap-2"><Target className="h-5 w-5" /> Who will win?</span></SectionTitle>
-          <div className="border-2 border-brownlight bg-sitecard p-4">
+          <SectionTitle><span className="inline-flex items-center gap-2"><Target className="h-5 w-5 text-amber-700" /> Who will win?</span></SectionTitle>
+          <div className="rounded-2xl border border-stone-200/90 bg-white p-5 shadow-xs">
             <PredictionsProvider matches={[match]}>
               <PredictionPicker match={match} teamNames={teamNameMap(data)} />
             </PredictionsProvider>
@@ -114,7 +116,7 @@ async function MatchContent({ params }: { params: PageProps<'/t/[id]/match/[matc
       {stream && (
         <section className="space-y-3">
           <SectionTitle><span className="inline-block h-3 w-3 rounded-full bg-red-500 animate-pulse mr-2" />Live now</SectionTitle>
-          <div className="border-2 border-red-500/70 bg-black">
+          <div className="rounded-2xl border border-stone-200 overflow-hidden bg-black">
             <FacebookPlayer url={stream.facebook_url} title={stream.title} />
           </div>
         </section>

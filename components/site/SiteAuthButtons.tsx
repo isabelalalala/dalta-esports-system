@@ -27,13 +27,19 @@ export default function SiteAuthButtons() {
 
   if (userId) {
     return (
-      <div className="flex items-center gap-2">
-        <Link href="/dashboard" className="px-4 py-2 border-2 border-gold bg-gold text-sitebg font-bold text-sm shadow-[3px_3px_0_var(--color-brown)] hover:translate-y-px">
+      <div className="flex items-center gap-2.5">
+        <Link
+          href="/dashboard"
+          className="h-10 flex items-center justify-center px-4 sm:px-5 rounded-xl border border-amber-400 bg-gold text-stone-950 font-black text-xs sm:text-sm uppercase tracking-wider shadow-xs hover:bg-golddark hover:-translate-y-0.5 hover:shadow-sm transition-all duration-200"
+        >
           Dashboard
         </Link>
         {/* key: a different user gets a fresh bell (count and Realtime channel) */}
         <NotificationBell key={userId} userId={userId} />
-        <button onClick={handleLogout} className="px-3 py-2 text-sm font-bold text-gray-300 hover:text-gold">
+        <button
+          onClick={handleLogout}
+          className="h-10 flex items-center justify-center px-3 rounded-xl text-xs sm:text-sm font-extrabold text-stone-700 hover:text-red-700 hover:bg-red-50 uppercase tracking-wider transition-all duration-200"
+        >
           Log out
         </button>
       </div>
@@ -41,11 +47,17 @@ export default function SiteAuthButtons() {
   }
 
   return (
-    <div className="flex gap-2">
-      <Link href="/auth/login" className="px-4 py-2 border-2 border-gold text-gold font-bold text-sm hover:bg-gold/10">
+    <div className="flex items-center gap-2.5">
+      <Link
+        href="/auth/login"
+        className="h-10 flex items-center justify-center px-4 sm:px-5 rounded-xl border border-stone-200 bg-white text-stone-950 font-extrabold text-xs sm:text-sm uppercase tracking-wider shadow-xs hover:bg-stone-50 hover:border-stone-300 hover:-translate-y-0.5 transition-all duration-200"
+      >
         Log in
       </Link>
-      <Link href="/auth/register" className="px-4 py-2 border-2 border-gold bg-gold text-sitebg font-bold text-sm shadow-[3px_3px_0_var(--color-brown)] hover:translate-y-px">
+      <Link
+        href="/auth/register"
+        className="h-10 flex items-center justify-center px-4 sm:px-5 rounded-xl border border-amber-400 bg-gold text-stone-950 font-black text-xs sm:text-sm uppercase tracking-wider shadow-xs hover:bg-golddark hover:-translate-y-0.5 hover:shadow-sm transition-all duration-200"
+      >
         Sign up
       </Link>
     </div>

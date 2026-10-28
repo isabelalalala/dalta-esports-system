@@ -14,6 +14,8 @@ import {
 import PageLoading from '@/components/PageLoading';
 import PageError from '@/components/PageError';
 import { usePageTitle } from '@/utils/page-title';
+import PageHeroBackground from '@/components/site/PageHeroBackground';
+import { Download, Printer } from 'lucide-react';
 
 // A generated report, shown from its saved copy ("display after report": print or export).
 export default function SavedReportPage() {
@@ -69,37 +71,67 @@ export default function SavedReportPage() {
   };
 
   return (
-    <main id="main-content" className="min-h-screen bg-sitebg text-white px-4 py-10 print:bg-white print:text-black print:p-0">
-      <div className="max-w-6xl mx-auto space-y-10">
-        <div>
-          <Link href="/analytics" className="inline-block text-gold hover:underline mb-6 print:hidden">
+    <div className="w-full space-y-8 uppercase text-stone-950 print:p-0">
+      {/* 1. Main Hero Container with Official Banner */}
+      <section className="relative w-full rounded-3xl border border-stone-800/80 bg-stone-950 overflow-hidden shadow-md p-8 sm:p-14 lg:p-16 text-center text-white flex flex-col items-center justify-center space-y-4 print:hidden">
+        <PageHeroBackground specificKey="hero_banner_path" alt="DALTA Esports Analytics Report Banner" />
+
+        <div className="relative z-10 w-full flex items-center justify-between">
+          <Link
+            href="/analytics"
+            className="inline-flex items-center gap-1.5 text-xs font-black text-amber-400 hover:text-amber-300 uppercase tracking-wider transition-colors"
+          >
             ← Back to Analytics
           </Link>
-          <div className="flex flex-wrap justify-between items-center gap-4">
-            <div>
-              <h1 className="font-pixel text-xl sm:text-2xl leading-relaxed text-gold print:text-black">DALTA Esports Analytics Report</h1>
-              <p className="text-gray-400 mt-1 print:text-gray-700">
-                {describeFilters(report.filters)} · Generated {generatedAt}
-              </p>
-            </div>
-            <div className="flex gap-2 print:hidden">
-              <button onClick={handleCsv} className="border border-gold text-gold px-4 py-2 font-bold hover:bg-gold/10">
-                Download CSV
-              </button>
-              <button onClick={() => window.print()} className="bg-gold text-black px-4 py-2 font-bold hover:bg-golddark">
-                Print / PDF
-              </button>
-            </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleCsv}
+              className="rounded-xl border border-white/20 bg-white/10 hover:bg-white/20 text-white font-bold px-4 py-2 text-xs tracking-wider transition-all inline-flex items-center gap-1.5 cursor-pointer backdrop-blur-xs"
+            >
+              <Download className="w-3.5 h-3.5" />
+              <span>CSV</span>
+            </button>
+            <button
+              onClick={() => window.print()}
+              className="rounded-xl bg-gold hover:bg-golddark text-stone-950 font-black px-4 py-2 text-xs tracking-wider border border-amber-400 shadow-xs hover:-translate-y-0.5 transition-all inline-flex items-center gap-1.5 cursor-pointer"
+            >
+              <Printer className="w-3.5 h-3.5" />
+              <span>Print / PDF</span>
+            </button>
           </div>
-          <p className="text-xs text-gray-400 mt-2 print:hidden">
-            To save as PDF, choose &quot;Save as PDF&quot; as the printer.
-          </p>
         </div>
 
+        <div className="relative z-10 max-w-4xl mx-auto space-y-3 pt-2">
+          <h1
+            className="text-4xl sm:text-5xl lg:text-6xl font-black !text-white text-white tracking-wider uppercase leading-tight"
+            style={{ color: '#ffffff' }}
+          >
+            DALTA Esports Analytics Report
+          </h1>
+          <p
+            className="text-base sm:text-lg !text-white text-stone-200 font-medium uppercase tracking-wide leading-relaxed"
+            style={{ color: '#ffffff' }}
+          >
+            {describeFilters(report.filters)} · Generated {generatedAt}
+          </p>
+        </div>
+      </section>
+
+      {/* Print header visible only during print */}
+      <div className="hidden print:block border-b border-stone-300 pb-4 mb-6">
+        <h1 className="text-2xl font-black text-black uppercase">DALTA Esports Analytics Report</h1>
+        <p className="text-xs text-stone-600 mt-1">
+          {describeFilters(report.filters)} · Generated {generatedAt}
+        </p>
+      </div>
+
+      {/* 2. Report Sections */}
+      <div className="space-y-10">
         <ActivitySection report={report.data.activity} />
         <SentimentSection report={report.data.sentiment} />
         <EngagementSection report={report.data.engagement} />
       </div>
-    </main>
+    </div>
   );
 }

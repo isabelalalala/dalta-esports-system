@@ -3,26 +3,56 @@
 import { useEffect, useState } from 'react';
 import { createClient } from '@/utils/supabase/client';
 import { getErrorMessage } from '@/utils/errors';
-import { DEFAULT_LOGO, SITE_CONTENT_FIELDS } from '@/utils/site';
+import { DEFAULT_HERO_BANNER, DEFAULT_LOGO, SITE_CONTENT_FIELDS, siteImageUrl } from '@/utils/site';
+import { clearSiteBannerClientCache } from '@/components/site/PageHeroBackground';
 import { deleteSiteImage } from '@/utils/site-images';
 import { refreshSite } from './actions';
 import ImageField from './ImageField';
 
 const inputClass =
-  'w-full border border-brownlight bg-sitebg px-3 py-2 text-white outline-none focus:border-gold';
+  'w-full p-3 rounded-xl bg-white text-stone-950 border border-stone-300 placeholder:text-stone-400 tracking-wide focus:border-amber-600 focus:ring-2 focus:ring-amber-500/20 shadow-xs outline-none transition-all font-medium text-xs sm:text-sm';
 
-// The image keys in site_content (the texts come from SITE_CONTENT_FIELDS)
-const IMAGE_KEYS = [
-  { key: 'logo_path', label: `Logo (empty = ${DEFAULT_LOGO})` },
-  { key: 'about_image_path', label: 'About Us photo' },
+const BRAND_IMAGE_KEYS = [
+  { key: 'logo_path', label: `Logo (default = ${DEFAULT_LOGO})`, folder: 'site', fallback: DEFAULT_LOGO },
+  { key: 'about_image_path', label: 'About Us Hero Background Image', folder: 'site', fallback: '' },
+];
+
+const SLIDE_IMAGE_KEYS = [
+  { key: 'home_slide_1_path', label: 'Home Slideshow — Photo 1 (Primary)', folder: 'slides' },
+  { key: 'home_slide_2_path', label: 'Home Slideshow — Photo 2', folder: 'slides' },
+  { key: 'home_slide_3_path', label: 'Home Slideshow — Photo 3', folder: 'slides' },
+  { key: 'home_slide_4_path', label: 'Home Slideshow — Photo 4', folder: 'slides' },
+  { key: 'home_slide_5_path', label: 'Home Slideshow — Photo 5', folder: 'slides' },
+];
+
+const HERO_BANNER_KEY = {
+  key: 'hero_banner_path',
+  label: 'Default Hero Banner (Tournaments, Events, Community, Dashboard, etc.)',
+  folder: 'banners',
+  fallback: DEFAULT_HERO_BANNER,
+  description: 'This background image is used across the main container hero banners on all pages unless a page-specific banner is set below.',
+};
+
+const PAGE_SPECIFIC_HERO_KEYS = [
+  { key: 'tournaments_hero_bg_path', label: 'Tournaments Page Banner (Optional Override)', folder: 'banners' },
+  { key: 'events_hero_bg_path', label: 'Events Page Banner (Optional Override)', folder: 'banners' },
+  { key: 'community_hero_bg_path', label: 'Community Page Banner (Optional Override)', folder: 'banners' },
+  { key: 'divisions_hero_bg_path', label: 'Game Divisions Banner (Optional Override)', folder: 'banners' },
+  { key: 'campaigns_hero_bg_path', label: 'Campaigns Page Banner (Optional Override)', folder: 'banners' },
+  { key: 'dashboard_hero_bg_path', label: 'Dashboard Banner (Optional Override)', folder: 'banners' },
+];
+
+const ALL_IMAGE_KEYS = [
+  ...BRAND_IMAGE_KEYS,
+  ...SLIDE_IMAGE_KEYS,
+  HERO_BANNER_KEY,
+  ...PAGE_SPECIFIC_HERO_KEYS,
 ];
 
 const groups = [...new Set(SITE_CONTENT_FIELDS.map((f) => f.group))];
 
-// All texts of the site (hero, About Us, footer, social links) plus the logo and About photo.
 export default function SiteTextEditor() {
   const supabase = createClient();
-  // What is saved, and what is being edited
   const [saved, setSaved] = useState<Record<string, string>>({});
   const [values, setValues] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState(false);
@@ -56,17 +86,19 @@ export default function SiteTextEditor() {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       const rows = changedKeys.map((key) => ({
-        key, value: values[key].trim(), updated_by: session?.user.id ?? null, updated_at: new Date().toISOString(),
+        key,
+        value: values[key].trim(),
+        updated_by: session?.user.id ?? null,
+        updated_at: new Date().toISOString(),
       }));
-      // upsert: adds keys that don't exist yet, updates the rest
       const { data, error: saveError } = await supabase.from('site_content').upsert(rows).select('key');
       if (saveError) throw saveError;
       if (!data || data.length !== rows.length) throw new Error('Not everything was saved. Are you logged in as an admin?');
 
-      // Old images that were replaced or removed
-      for (const { key } of IMAGE_KEYS) {
+      for (const { key } of ALL_IMAGE_KEYS) {
         if (changedKeys.includes(key) && saved[key]) await deleteSiteImage(supabase, saved[key]);
       }
+      clearSiteBannerClientCache();
       await refreshSite();
       setMessage('Saved. The website is updated.');
       setReloadCount((n) => n + 1);
@@ -78,59 +110,174 @@ export default function SiteTextEditor() {
   };
 
   const handleUndo = async () => {
-    // Images uploaded but not saved are deleted again
-    for (const { key } of IMAGE_KEYS) {
+    for (const { key } of ALL_IMAGE_KEYS) {
       if (values[key] && values[key] !== saved[key]) await deleteSiteImage(supabase, values[key]);
     }
     setValues(saved);
   };
 
-  return (
-    <div className="space-y-6">
-      {error && <div role="alert" className="bg-red-500/10 border border-red-500 text-red-300 px-4 py-3">{error}</div>}
-      {message && <div role="status" className="bg-green-500/10 border border-green-500 text-green-300 px-4 py-3">{message}</div>}
+  const activeMainBanner = values.hero_banner_path ? (siteImageUrl(values.hero_banner_path) || DEFAULT_HERO_BANNER) : DEFAULT_HERO_BANNER;
 
-      <section className="bg-sitecard border border-brown p-4 grid grid-cols-1 sm:grid-cols-2 gap-6">
-        {IMAGE_KEYS.map(({ key, label }) => (
-          <ImageField
-            key={key}
-            label={label}
-            value={values[key] || null}
-            folder="site"
-            onChange={(path) => setValues((v) => ({ ...v, [key]: path ?? '' }))}
-          />
-        ))}
+  return (
+    <div className="space-y-6 text-stone-950">
+      {error && (
+        <div role="alert" className="bg-red-50 border border-red-200 text-red-800 rounded-xl p-4 text-xs font-bold tracking-wider shadow-2xs">
+          {error}
+        </div>
+      )}
+      {message && (
+        <div role="status" className="bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl p-4 text-xs font-bold tracking-wider shadow-2xs">
+          {message}
+        </div>
+      )}
+
+      {/* 1. Brand & Organization Assets */}
+      <section className="bg-white border border-stone-200/90 rounded-2xl p-6 sm:p-8 shadow-xs space-y-5">
+        <div>
+          <h3 className="text-base sm:text-lg font-black text-amber-700 tracking-wider uppercase">
+            Brand & Identity Photos
+          </h3>
+          <p className="text-xs text-stone-500 font-medium normal-case mt-0.5">
+            Official organization logo and About Us story photo.
+          </p>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-2">
+          {BRAND_IMAGE_KEYS.map(({ key, label, folder, fallback }) => (
+            <ImageField
+              key={key}
+              label={label}
+              value={values[key] || null}
+              fallbackUrl={fallback}
+              folder={folder}
+              onChange={(path) => setValues((v) => ({ ...v, [key]: path ?? '' }))}
+            />
+          ))}
+        </div>
       </section>
 
-      {groups.map((group) => (
-        <section key={group} className="bg-sitecard border border-brown p-4 space-y-4">
-          <h3 className="font-bold text-gold">{group}</h3>
-          {SITE_CONTENT_FIELDS.filter((f) => f.group === group).map((f) => (
-            <label key={f.key} className="block text-sm font-semibold text-gray-300">
-              {f.label}
-              {f.multiline ? (
-                <textarea value={values[f.key] ?? ''} rows={5}
-                  onChange={(e) => setValues((v) => ({ ...v, [f.key]: e.target.value }))}
-                  className={`${inputClass} mt-1 font-normal`} />
-              ) : (
-                <input value={values[f.key] ?? ''}
-                  onChange={(e) => setValues((v) => ({ ...v, [f.key]: e.target.value }))}
-                  className={`${inputClass} mt-1 font-normal`} />
-              )}
-            </label>
+      {/* 2. Home Page Hero Slideshow Backgrounds */}
+      <section className="bg-white border border-stone-200/90 rounded-2xl p-6 sm:p-8 shadow-xs space-y-5">
+        <div>
+          <h3 className="text-base sm:text-lg font-black text-amber-700 tracking-wider uppercase">
+            Home Page Hero Slideshow Backgrounds
+          </h3>
+          <p className="text-xs text-stone-500 font-medium normal-case mt-0.5">
+            Upload custom background photos that automatically rotate on the Home Page hero container (5-second intervals). If empty, curated default stage imagery is displayed.
+          </p>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 pt-2">
+          {SLIDE_IMAGE_KEYS.map(({ key, label, folder }) => (
+            <ImageField
+              key={key}
+              label={label}
+              value={values[key] || null}
+              folder={folder}
+              onChange={(path) => setValues((v) => ({ ...v, [key]: path ?? '' }))}
+            />
           ))}
+        </div>
+      </section>
+
+      {/* 3. Main Container Hero Banner Backgrounds */}
+      <section className="bg-white border border-stone-200/90 rounded-2xl p-6 sm:p-8 shadow-xs space-y-6">
+        <div>
+          <h3 className="text-base sm:text-lg font-black text-amber-700 tracking-wider uppercase">
+            Page Hero Banner Backgrounds
+          </h3>
+          <p className="text-xs text-stone-500 font-medium normal-case mt-0.5">
+            Change the background photo displayed across the main container hero banners. The default hero banner applies across all pages. You can also specify unique banners for individual sections below.
+          </p>
+        </div>
+
+        {/* Primary Default Hero Banner */}
+        <div className="p-4 sm:p-5 rounded-xl bg-stone-50 border border-stone-200">
+          <ImageField
+            label={HERO_BANNER_KEY.label}
+            value={values[HERO_BANNER_KEY.key] || null}
+            fallbackUrl={HERO_BANNER_KEY.fallback}
+            description={HERO_BANNER_KEY.description}
+            folder={HERO_BANNER_KEY.folder}
+            onChange={(path) => setValues((v) => ({ ...v, [HERO_BANNER_KEY.key]: path ?? '' }))}
+          />
+        </div>
+
+        {/* Section Overrides */}
+        <div className="space-y-4 pt-2">
+          <h4 className="text-xs font-black text-stone-700 tracking-widest uppercase">
+            Optional Section Hero Overrides
+          </h4>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {PAGE_SPECIFIC_HERO_KEYS.map(({ key, label, folder }) => (
+              <ImageField
+                key={key}
+                label={label}
+                value={values[key] || null}
+                fallbackUrl={activeMainBanner}
+                folder={folder}
+                onChange={(path) => setValues((v) => ({ ...v, [key]: path ?? '' }))}
+              />
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Text Groups */}
+      {groups.map((group) => (
+        <section key={group} className="bg-white border border-stone-200/90 rounded-2xl p-6 sm:p-8 shadow-xs space-y-4">
+          <h3 className="text-base sm:text-lg font-black text-amber-700 tracking-wider uppercase pb-2 border-b border-stone-100">
+            {group}
+          </h3>
+          <div className="space-y-4">
+            {SITE_CONTENT_FIELDS.filter((f) => f.group === group).map((f) => (
+              <label key={f.key} className="block text-xs font-black text-stone-800 tracking-wider uppercase">
+                <span className="block mb-1.5">{f.label}</span>
+                {f.multiline ? (
+                  <textarea
+                    value={values[f.key] ?? ''}
+                    rows={4}
+                    onChange={(e) => setValues((v) => ({ ...v, [f.key]: e.target.value }))}
+                    className={`${inputClass} font-normal`}
+                  />
+                ) : (
+                  <input
+                    value={values[f.key] ?? ''}
+                    onChange={(e) => setValues((v) => ({ ...v, [f.key]: e.target.value }))}
+                    className={`${inputClass} font-normal`}
+                  />
+                )}
+              </label>
+            ))}
+          </div>
         </section>
       ))}
 
-      {/* Stays visible while scrolling through the long form */}
-      <div className="sticky bottom-0 bg-sitebg/95 border-t border-brownlight py-3 flex items-center gap-4">
-        <button onClick={handleSave} disabled={busy || changedKeys.length === 0}
-          className="bg-gold text-black px-6 py-2 font-bold hover:bg-golddark disabled:opacity-50">
-          {busy ? 'Saving...' : `Save changes${changedKeys.length ? ` (${changedKeys.length})` : ''}`}
-        </button>
-        {changedKeys.length > 0 && (
-          <button onClick={handleUndo} disabled={busy} className="text-gray-400 hover:text-white">Undo changes</button>
-        )}
+      {/* Floating Save Actions Bar */}
+      <div className="sticky bottom-4 z-20 bg-white/95 backdrop-blur-md border border-stone-200/90 rounded-2xl p-4 shadow-md flex items-center justify-between gap-4">
+        <div className="text-xs font-black text-stone-700 tracking-wider">
+          {changedKeys.length > 0 ? (
+            <span className="text-amber-700">{changedKeys.length} unsaved changes</span>
+          ) : (
+            <span>All text changes up to date</span>
+          )}
+        </div>
+        <div className="flex items-center gap-3">
+          {changedKeys.length > 0 && (
+            <button
+              onClick={handleUndo}
+              disabled={busy}
+              className="rounded-xl border border-stone-300 hover:border-stone-400 bg-white text-stone-700 font-bold px-4 py-2 text-xs tracking-wider transition-all cursor-pointer"
+            >
+              Undo
+            </button>
+          )}
+          <button
+            onClick={handleSave}
+            disabled={busy || changedKeys.length === 0}
+            className="rounded-xl bg-gold hover:bg-golddark text-stone-950 font-black px-6 py-2.5 text-xs tracking-widest border border-amber-400 shadow-xs hover:-translate-y-0.5 transition-all disabled:opacity-50 cursor-pointer"
+          >
+            {busy ? 'Saving...' : 'Save Changes'}
+          </button>
+        </div>
       </div>
     </div>
   );

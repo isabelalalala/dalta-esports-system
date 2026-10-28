@@ -6,6 +6,7 @@ import type { SitePost } from '@/utils/site';
 import type { Tournament } from '@/utils/types';
 import SiteSearchBox from '@/components/site/SiteSearchBox';
 import { EmptyNote, PageTitle, SectionTitle } from '@/components/site/SiteParts';
+import { SectionLoading } from '@/components/PageLoading';
 
 const LIMIT = 20;
 
@@ -13,9 +14,9 @@ const LIMIT = 20;
 // The query comes from the URL, so the results are inside Suspense.
 export default function SearchPage({ searchParams }: PageProps<'/search'>) {
   return (
-    <div>
+    <div className="w-full uppercase">
       <PageTitle title="Search" />
-      <Suspense fallback={<p className="text-gray-400">Searching...</p>}>
+      <Suspense fallback={<SectionLoading label="Searching..." />}>
         <SearchResults searchParams={searchParams} />
       </Suspense>
     </div>
@@ -32,7 +33,7 @@ async function SearchResults({ searchParams }: { searchParams: PageProps<'/searc
     return (
       <div className="space-y-4">
         <SiteSearchBox />
-        <p className="text-gray-400">Type a tournament, event or campaign name.</p>
+        <p className="text-stone-500 text-xs sm:text-sm font-semibold uppercase tracking-wider">Type a tournament, event or campaign name.</p>
       </div>
     );
   }
@@ -60,7 +61,7 @@ async function SearchResults({ searchParams }: { searchParams: PageProps<'/searc
     <div className="space-y-10">
       <div className="space-y-2">
         <SiteSearchBox defaultValue={query} />
-        <p className="text-gray-400 text-sm">
+        <p className="text-stone-600 text-xs sm:text-sm font-semibold uppercase tracking-wider">
           {total === 0 ? 'No results' : `${total} result${total === 1 ? '' : 's'}`} for &quot;{query}&quot;
         </p>
       </div>
@@ -107,16 +108,16 @@ async function SearchResults({ searchParams }: { searchParams: PageProps<'/searc
 }
 
 function ResultList({ children }: { children: ReactNode }) {
-  return <ul className="border-2 border-brownlight bg-sitecard divide-y-2 divide-brown">{children}</ul>;
+  return <ul className="rounded-2xl border border-stone-200/90 bg-white shadow-xs divide-y divide-stone-100 overflow-hidden">{children}</ul>;
 }
 
 function ResultItem({ href, title, meta, text }: { href: string; title: string; meta?: string; text?: string }) {
   return (
     <li>
-      <Link href={href} className="block px-4 py-3 hover:bg-brown/30 group">
-        <p className="font-bold text-white group-hover:text-gold">{title}</p>
-        {meta && <p className="text-xs text-gold">{meta}</p>}
-        {text && <p className="text-sm text-gray-400 line-clamp-2 mt-1">{text}</p>}
+      <Link href={href} className="block px-5 py-4 hover:bg-amber-50/50 transition-colors group">
+        <p className="font-black text-stone-950 uppercase tracking-wide group-hover:text-amber-700 transition-colors">{title}</p>
+        {meta && <p className="text-xs text-amber-700 font-extrabold uppercase tracking-wider mt-0.5">{meta}</p>}
+        {text && <p className="text-xs sm:text-sm text-stone-600 font-medium uppercase tracking-wide line-clamp-2 mt-1">{text}</p>}
       </Link>
     </li>
   );

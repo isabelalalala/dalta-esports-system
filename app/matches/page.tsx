@@ -10,13 +10,13 @@ import { usePageTitle } from '@/utils/page-title';
 import ExportButtons from '@/components/ExportButtons';
 import PageLoading from '@/components/PageLoading';
 import PageError from '@/components/PageError';
+import PageHeroBackground from '@/components/site/PageHeroBackground';
 
-// Tournament with the number of matches in its bracket
 type TournamentWithMatches = Tournament & { matches: { count: number }[] };
 
 export default function MatchesOverviewPage() {
   const supabase = createClient();
-  usePageTitle('Matches');
+  usePageTitle('Match Management');
   const [tournaments, setTournaments] = useState<TournamentWithMatches[]>([]);
   const [profile, setProfile] = useState<Pick<Profile, 'id' | 'role'> | null>(null);
   const [loading, setLoading] = useState(true);
@@ -53,39 +53,65 @@ export default function MatchesOverviewPage() {
   }, [supabase]);
 
   if (loading) return <PageLoading />;
-
-  // Hiding the page is only for convenience; the database refuses changes from other roles.
   if (!profile && error) return <PageError message={error} />;
   if (profile?.role !== 'admin' && profile?.role !== 'staff') {
     return (
-      <main id="main-content" className="min-h-screen bg-sitebg text-white p-10 text-center">
-        Only organizers can manage matches.{' '}
-        <Link href="/dashboard" className="text-gold underline">Back to the dashboard</Link>
-      </main>
+      <div className="w-full bg-white text-stone-950 p-10 text-center uppercase space-y-4">
+        <p className="font-extrabold text-stone-900">Only tournament organizers can manage matches.</p>
+        <Link href="/dashboard" className="inline-block text-amber-700 hover:text-amber-800 font-bold underline">
+          ← Back to the dashboard
+        </Link>
+      </div>
     );
   }
 
   return (
-    <main id="main-content" className="min-h-screen bg-sitebg text-white px-4 py-10">
-      <div className="max-w-4xl mx-auto">
-        <Link href="/dashboard" className="inline-block text-gold hover:underline mb-6">
-          ← Back to Dashboard
-        </Link>
+    <div className="w-full space-y-8 uppercase">
+      {/* 1. Main Hero Container with Official Banner */}
+      <section className="relative w-full rounded-3xl border border-stone-800/80 bg-stone-950 overflow-hidden shadow-md p-8 sm:p-14 lg:p-16 text-center text-white flex flex-col items-center justify-center space-y-4">
+        <PageHeroBackground specificKey="hero_banner_path" alt="DALTA Esports Match Banner" />
 
-        <h1 className="font-pixel text-xl sm:text-2xl leading-relaxed text-gold mb-4">Match Management</h1>
-        <div className="mb-8">
+        <div className="relative z-10 w-full flex items-center justify-between">
+          <Link
+            href="/dashboard"
+            className="inline-flex items-center gap-1.5 text-xs font-black text-amber-400 hover:text-amber-300 uppercase tracking-wider transition-colors"
+          >
+            ← Back to Dashboard
+          </Link>
+        </div>
+
+        <div className="relative z-10 max-w-4xl mx-auto space-y-3 pt-2">
+          <h1
+            className="text-3xl sm:text-4xl lg:text-5xl font-black !text-white text-white tracking-wider uppercase leading-tight"
+            style={{ color: '#ffffff' }}
+          >
+            Match Management
+          </h1>
+          <p
+            className="text-base sm:text-lg !text-white text-stone-200 font-medium uppercase tracking-wide leading-relaxed"
+            style={{ color: '#ffffff' }}
+          >
+            Schedule and manage match series, brackets, and live stream broadcasts.
+          </p>
+        </div>
+      </section>
+
+      {/* 2. Content & Tournament Match Cards */}
+      <div className="space-y-6 text-stone-950">
+        <div className="flex flex-wrap items-center justify-between gap-4">
           <ExportButtons type="rosters" label="All team rosters" />
         </div>
 
         {error && (
-          <div role="alert" className="mb-6 bg-red-500/10 border border-red-500 text-red-300 px-4 py-3">{error}</div>
+          <div role="alert" className="bg-red-50 border border-red-200 text-red-800 rounded-xl p-4 text-xs font-bold tracking-wider shadow-2xs">
+            {error}
+          </div>
         )}
 
-        {/* A failed load shows the error above, not "nothing here" */}
         {tournaments.length === 0 && error ? null : tournaments.length === 0 ? (
-          <p className="text-gray-400">No tournaments yet.</p>
+          <p className="text-stone-500 text-center py-12 font-bold tracking-wider">No tournaments active yet.</p>
         ) : (
-          <ul className="space-y-3">
+          <ul className="space-y-4">
             {tournaments.map((t) => {
               const matchCount = t.matches?.[0]?.count || 0;
               const status = getTournamentStatus(t);
@@ -93,16 +119,16 @@ export default function MatchesOverviewPage() {
               return (
                 <li
                   key={t.id}
-                  className="bg-sitecard border border-brownlight p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+                  className="bg-white border border-stone-200/90 rounded-2xl p-6 shadow-xs hover:border-stone-300 transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-stone-950"
                 >
-                  <div>
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className="font-bold text-lg">{t.name}</span>
-                      <span className={`px-2 py-0.5 rounded-full border text-[10px] font-bold uppercase ${statusStyles[status]}`}>
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2.5 flex-wrap">
+                      <span className="font-black text-stone-950 text-base sm:text-lg tracking-wide">{t.name}</span>
+                      <span className={`px-2.5 py-0.5 rounded-full border text-[10px] font-black uppercase ${statusStyles[status]}`}>
                         {statusLabels[status]}
                       </span>
                     </div>
-                    <p className="text-gray-400 text-sm">
+                    <p className="text-stone-500 font-medium text-xs tracking-wider">
                       {t.game} · {formatDate(t.start_date)} – {formatDate(t.end_date)}
                     </p>
                   </div>
@@ -111,16 +137,22 @@ export default function MatchesOverviewPage() {
                     {matchCount > 0 ? (
                       <Link
                         href={`/tournaments/${t.id}/matches`}
-                        className="bg-gold text-black px-4 py-2 font-bold hover:bg-golddark transition text-center"
+                        className="rounded-xl bg-gold hover:bg-golddark text-stone-950 font-black px-5 py-2.5 text-xs tracking-wider shadow-xs hover:-translate-y-0.5 border border-amber-400 transition-all text-center"
                       >
-                        Manage {matchCount} matches
+                        Manage {matchCount} Matches
                       </Link>
                     ) : (
-                      <Link href={`/tournaments/${t.id}`} className="text-gray-400 text-sm hover:text-white">
-                        No bracket yet. Generate it on the tournament page →
+                      <Link
+                        href={`/tournaments/${t.id}`}
+                        className="text-stone-600 hover:text-stone-950 text-xs font-bold underline"
+                      >
+                        Generate Bracket →
                       </Link>
                     )}
-                    <Link href={`/tournaments/${t.id}/streams`} className="text-red-300 text-sm font-semibold hover:underline">
+                    <Link
+                      href={`/tournaments/${t.id}/streams`}
+                      className="rounded-xl border border-stone-300 hover:border-stone-400 bg-white text-stone-800 font-bold px-4 py-2.5 text-xs tracking-wider transition-all"
+                    >
                       Streams
                     </Link>
                   </div>
@@ -130,6 +162,6 @@ export default function MatchesOverviewPage() {
           </ul>
         )}
       </div>
-    </main>
+    </div>
   );
 }

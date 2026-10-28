@@ -24,9 +24,11 @@ export default function EngagementSection({ report, liveCounts }: Props) {
 
   return (
     <section className="space-y-4">
-      <h2 className="text-2xl font-bold text-gold print:text-black">Viewership &amp; Audience Engagement</h2>
-      <p className="text-sm text-gray-400 print:text-gray-600">
-        A view = one logged-in person opening a stream on one day. Organizers&apos; own visits are not counted.
+      <h2 className="text-xl sm:text-2xl font-black text-amber-800 uppercase tracking-wider print:text-black">
+        Viewership &amp; Audience Engagement
+      </h2>
+      <p className="text-xs text-stone-500 font-medium normal-case print:text-stone-600">
+        A view = one logged-in account opening a stream on one day. Organizer and staff views are excluded.
       </p>
 
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
@@ -85,14 +87,15 @@ export default function EngagementSection({ report, liveCounts }: Props) {
       </ReportCard>
 
       {/* Pick'em predictions (reports saved before this feature don't have them) */}
-      <h3 className="text-xl font-bold text-gold print:text-black pt-2">Pick&apos;em Predictions</h3>
+      <h3 className="text-lg sm:text-xl font-black text-amber-800 uppercase tracking-wider print:text-black pt-4">
+        Pick&apos;em Predictions
+      </h3>
       {report.predictions_by_tournament === undefined ? (
         <NoData text="No prediction data in this report (it was saved before pick'em was added)." />
       ) : (
         <>
-          <p className="text-sm text-gray-400 print:text-gray-600">
-            Participation = player and spectator accounts that made at least one pick. Accuracy = share of picks on
-            finished matches that were right.
+          <p className="text-xs text-stone-500 font-medium normal-case print:text-stone-600">
+            Participation = player and spectator accounts that made at least one pick. Accuracy = share of correct picks on finished matches.
           </p>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             <StatTile label="Predictions" value={t.predictions ?? 0} />

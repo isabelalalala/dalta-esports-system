@@ -87,13 +87,13 @@ export default function NotificationBell({ userId }: { userId: string }) {
     <div className="relative">
       <button
         onClick={() => setOpen((o) => !o)}
-        className="relative p-2 hover:bg-gold/10 text-xl leading-none"
+        className="relative w-10 h-10 flex items-center justify-center rounded-xl border border-stone-200 bg-white hover:bg-stone-50 hover:border-stone-300 text-stone-700 hover:text-stone-950 shadow-xs transition-all"
         aria-label={unread > 0 ? `Notifications, ${unread} unread` : 'Notifications'}
         aria-expanded={open}
       >
         <Bell className="h-5 w-5" />
         {unread > 0 && (
-          <span className="absolute -top-0.5 -right-0.5 min-w-5 h-5 px-1 rounded-full bg-red-600 text-white text-[11px] font-bold grid place-items-center">
+          <span className="absolute -top-1 -right-1 min-w-5 h-5 px-1 rounded-full bg-red-600 text-white text-[11px] font-bold grid place-items-center">
             {unread > 99 ? '99+' : unread}
           </span>
         )}
@@ -106,18 +106,18 @@ export default function NotificationBell({ userId }: { userId: string }) {
 
           {/* Phones: a full-width panel under the header (the bell isn't at the screen edge, so a
               dropdown anchored to it would stick out on the left). Larger screens: under the bell. */}
-          <div className="fixed inset-x-4 top-20 z-50 sm:absolute sm:inset-x-auto sm:top-auto sm:right-0 sm:mt-2 sm:w-[22rem] bg-sitecard border border-brownlight shadow-[6px_6px_0_var(--color-brown)] overflow-hidden">
-            <div className="flex items-center justify-between px-4 py-3 border-b border-brown">
-              <span className="font-bold text-white">Notifications</span>
-              <button onClick={handleMarkAll} disabled={unread === 0} className="text-xs text-gold hover:underline disabled:opacity-40 disabled:no-underline">
+          <div className="fixed inset-x-4 top-20 z-50 sm:absolute sm:inset-x-auto sm:top-auto sm:right-0 sm:mt-2 sm:w-[22rem] bg-white rounded-2xl border border-stone-200 shadow-xl overflow-hidden uppercase">
+            <div className="flex items-center justify-between px-4 py-3 border-b border-stone-200 bg-stone-50/80">
+              <span className="font-extrabold text-stone-950 text-xs tracking-wider">Notifications</span>
+              <button onClick={handleMarkAll} disabled={unread === 0} className="text-xs text-amber-700 hover:text-amber-900 font-bold uppercase tracking-wider disabled:opacity-40 disabled:no-underline">
                 Mark all as read
               </button>
             </div>
 
             {items.length === 0 ? (
-              <p className="px-4 py-8 text-center text-sm text-gray-400">No notifications yet.</p>
+              <p className="px-4 py-8 text-center text-xs text-stone-500 font-medium tracking-wider">No notifications yet.</p>
             ) : (
-              <ul className="max-h-[60vh] sm:max-h-96 overflow-y-auto divide-y divide-brown">
+              <ul className="max-h-[60vh] sm:max-h-96 overflow-y-auto divide-y divide-stone-100">
                 {items.map((n) => {
                   // The DB may hold a type this build doesn't know yet — fall back instead of crashing
                   const Icon = notificationIcons[n.type] ?? Bell;
@@ -125,16 +125,16 @@ export default function NotificationBell({ userId }: { userId: string }) {
                   <li key={n.id}>
                     <button
                       onClick={() => handleClick(n)}
-                      className={`w-full text-left px-4 py-3 flex gap-3 hover:bg-gold/5 ${n.is_read ? 'opacity-60' : ''}`}
+                      className={`w-full text-left px-4 py-3 flex gap-3 hover:bg-amber-50/60 transition-colors ${n.is_read ? 'opacity-60' : ''}`}
                     >
-                      <Icon className="h-4 w-4 mt-1 shrink-0 text-gray-300" />
+                      <Icon className="h-4 w-4 mt-1 shrink-0 text-amber-700" />
                       <span className="flex-1 min-w-0">
                         <span className="flex items-center gap-2">
-                          <span className="font-semibold text-white text-sm min-w-0 break-words">{n.title}</span>
-                          {!n.is_read && <span className="w-2 h-2 rounded-full bg-gold shrink-0" role="img" aria-label="unread" />}
+                          <span className="font-extrabold text-stone-950 text-xs sm:text-sm min-w-0 break-words">{n.title}</span>
+                          {!n.is_read && <span className="w-2 h-2 rounded-full bg-amber-600 shrink-0" role="img" aria-label="unread" />}
                         </span>
-                        <span className="block text-sm text-gray-300 line-clamp-2">{n.message}</span>
-                        <span className="block text-xs text-gray-400 mt-0.5">{timeAgo(n.created_at)}</span>
+                        <span className="block text-xs text-stone-600 line-clamp-2 mt-0.5 normal-case">{n.message}</span>
+                        <span className="block text-[10px] text-stone-400 mt-1">{timeAgo(n.created_at)}</span>
                       </span>
                     </button>
                   </li>

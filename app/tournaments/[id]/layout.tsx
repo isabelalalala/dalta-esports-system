@@ -4,7 +4,7 @@ import { Suspense } from 'react';
 // known at request time. With Cache Components enabled, that needs a Suspense boundary.
 export default function TournamentLayout({ children }: LayoutProps<'/tournaments/[id]'>) {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-sitebg" />}>
+    <Suspense fallback={<div className="min-h-screen w-full bg-white" />}>
       {children}
     </Suspense>
   );

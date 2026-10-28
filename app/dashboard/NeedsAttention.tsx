@@ -19,10 +19,10 @@ const kindLabels: Record<string, string> = {
 const kindOrder = Object.keys(kindLabels);
 
 const kindStyles: Record<string, string> = {
-  result_disputed: 'border-red-500/60 text-red-300',
-  result_confirmed: 'border-green-500/60 text-green-300',
-  result_pending: 'border-gray-500/60 text-gray-300',
-  no_checkin: 'border-yellow-500/60 text-yellow-300',
+  result_disputed: 'bg-red-50 text-red-700 border-red-200',
+  result_confirmed: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+  result_pending: 'bg-amber-50 text-amber-800 border-amber-200',
+  no_checkin: 'bg-stone-100 text-stone-700 border-stone-200',
 };
 
 // Staff dashboard: matches that need an organizer (from get_needs_attention()).
@@ -50,32 +50,61 @@ export default function NeedsAttention() {
   }, [supabase]);
 
   return (
-    <section className="bg-sitecard border-2 border-gold shadow-[6px_6px_0_var(--color-brown)] p-6 mt-8 space-y-3">
-      <h2 className="text-xl font-bold text-gold flex items-center gap-2"><TriangleAlert className="h-5 w-5" /> Needs attention {items.length > 0 && `(${items.length})`}</h2>
+    <section className="w-full rounded-3xl border border-stone-200/90 bg-white p-6 sm:p-8 shadow-xs space-y-6 uppercase">
+      <div className="flex items-center justify-between pb-4 border-b border-stone-100">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-700 flex items-center justify-center">
+            <TriangleAlert className="h-5 w-5" />
+          </div>
+          <div>
+            <h2 className="text-xl sm:text-2xl font-black text-stone-950 tracking-wider">
+              Needs Attention {items.length > 0 && <span className="ml-1.5 px-2.5 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-800 text-xs font-black">({items.length})</span>}
+            </h2>
+            <p className="text-xs text-stone-500 font-medium tracking-wide mt-0.5">
+              Urgent matches and disputes requiring staff intervention
+            </p>
+          </div>
+        </div>
+      </div>
+
       {!loaded && <SectionLoading />}
-      {error && <p role="alert" className="text-red-300 text-sm">{error}</p>}
-      {loaded && !error && items.length === 0 && <p className="text-gray-400 text-sm">Nothing needs attention right now.</p>}
+      {error && (
+        <div role="alert" className="p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs font-bold tracking-wider">
+          {error}
+        </div>
+      )}
+      {loaded && !error && items.length === 0 && (
+        <div className="p-8 rounded-2xl bg-stone-50/70 border border-stone-200/80 text-center">
+          <p className="text-stone-500 text-xs font-bold tracking-wider">Nothing needs attention right now.</p>
+        </div>
+      )}
       {items.length > 0 && (
-        <ul className="divide-y divide-brown">
+        <div className="space-y-3">
           {items.map((item) => (
-            <li key={`${item.kind}-${item.match_id}`}>
-              <Link href={`/matches/${item.match_id}`} className="py-3 flex flex-col sm:flex-row sm:items-center gap-2 hover:bg-white/5 px-2 -mx-2">
-                <span className={`shrink-0 px-2 py-0.5 rounded-full border text-[11px] font-bold uppercase ${kindStyles[item.kind] ?? 'border-gray-500 text-gray-300'}`}>
+            <Link
+              key={`${item.kind}-${item.match_id}`}
+              href={`/matches/${item.match_id}`}
+              className="group rounded-2xl border border-stone-200/80 bg-stone-50/60 hover:bg-white hover:border-amber-500/40 hover:shadow-xs p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 transition-all"
+            >
+              <div className="flex flex-col sm:flex-row sm:items-center gap-3 min-w-0 flex-1">
+                <span className={`shrink-0 px-3 py-1 rounded-full border text-[11px] font-black uppercase tracking-wider ${kindStyles[item.kind] ?? 'bg-stone-100 text-stone-700 border-stone-200'}`}>
                   {kindLabels[item.kind] ?? item.kind}
                 </span>
-                <span className="flex-1 min-w-0">
-                  <span className="block font-semibold text-white truncate">
+                <div className="min-w-0 flex-1">
+                  <span className="block font-black text-stone-950 text-sm sm:text-base truncate group-hover:text-amber-700 transition-colors">
                     {item.team_a ?? 'TBD'} vs {item.team_b ?? 'TBD'}
                   </span>
-                  <span className="block text-sm text-gray-400">
+                  <span className="block text-xs text-stone-500 font-medium mt-0.5">
                     {item.tournament_name} · {roundLabel(item.round, item.round_count)} · {item.detail}
                   </span>
-                </span>
-                <span className="text-xs text-gray-400 shrink-0">{formatDateTime(item.since)}</span>
-              </Link>
-            </li>
+                </div>
+              </div>
+              <span className="text-xs text-stone-500 font-semibold shrink-0">
+                {formatDateTime(item.since)}
+              </span>
+            </Link>
           ))}
-        </ul>
+        </div>
       )}
     </section>
   );

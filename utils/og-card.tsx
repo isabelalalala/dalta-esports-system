@@ -15,8 +15,8 @@ const CARD = '#1f1714';
 
 // The logo from public/, as a data URL the image renderer can draw
 async function logoDataUrl() {
-  const file = await readFile(join(process.cwd(), 'public', 'daltaesportslogo.jpg'));
-  return `data:image/jpeg;base64,${file.toString('base64')}`;
+  const file = await readFile(join(process.cwd(), 'public', 'DALTA ESPORTS LOGO TRNPRNT.png'));
+  return `data:image/png;base64,${file.toString('base64')}`;
 }
 
 export async function ogCard({ eyebrow, title, subtitle, footer }: {

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
 import Link from 'next/link';
@@ -10,6 +11,27 @@ import { formatDate, getTournamentStatus, statusLabels, statusStyles } from '@/u
 import type { Profile, Tournament } from '@/utils/types';
 import PageLoading from '@/components/PageLoading';
 import { usePageTitle } from '@/utils/page-title';
+import PageHeroBackground from '@/components/site/PageHeroBackground';
+
+// Match tournament game to official game asset logo
+function getGameLogo(game: string, gameId?: string | null): string | null {
+  const g = (game || '').toLowerCase().trim();
+  const id = (gameId || '').toLowerCase().trim();
+
+  if (g.includes('mlbb') || g.includes('mobile legends') || id.includes('mlbb')) {
+    return '/MLBB LOGO.png';
+  }
+  if (g.includes('valo') || g.includes('valorant') || id.includes('valo')) {
+    return '/VALO LOGO.png';
+  }
+  if (g.includes('tekken') || id.includes('tekken')) {
+    return '/TEKKEMN 8 LOGO.png';
+  }
+  if (g.includes('codm') || g.includes('call of duty') || id.includes('cod')) {
+    return '/CODM LOGO.png';
+  }
+  return null;
+}
 
 export default function TournamentsPage() {
   usePageTitle('Tournaments');
@@ -24,7 +46,9 @@ export default function TournamentsPage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const { data: { session } } = await supabase.auth.getSession();
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
         if (!session) {
           router.push('/auth/login');
           return;
@@ -39,8 +63,7 @@ export default function TournamentsPage() {
         if (profileError) throw profileError;
         setProfile(profileData);
 
-        // Fetch tournaments with a count of their registrations.
-        // Only pending + approved registrations count (the filter applies to the counted rows).
+        // Fetch tournaments with a count of their active registrations
         const { data, error: tourError } = await supabase
           .from('tournaments')
           .select(`
@@ -67,116 +90,188 @@ export default function TournamentsPage() {
   }
 
   return (
-    <main id="main-content" className="min-h-screen bg-sitebg text-white px-4 py-6 sm:p-6 font-sans">
-      <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="flex flex-wrap items-end justify-between gap-4 mb-8">
-          <div className="flex flex-col gap-2">
-            <Link href="/dashboard" className="text-gold hover:underline text-sm flex items-center gap-1">
-              ← Back to Dashboard
-            </Link>
-            <h1 className="font-pixel text-xl sm:text-2xl leading-relaxed text-gold">Tournaments</h1>
-          </div>
+    <div className="w-full space-y-8 uppercase">
+      {/* 1. Main Hero Container with dynamic background (Matching Events Layout) */}
+      <section className="animate-hero-entrance relative w-full rounded-3xl border border-stone-800/80 bg-stone-950 overflow-hidden shadow-md p-8 sm:p-14 lg:p-16 text-center text-white flex flex-col items-center justify-center space-y-4">
+        <PageHeroBackground specificKey="tournaments_hero_bg_path" alt="DALTA Esports Tournaments Banner" />
+
+        {/* Action Bar inside Hero: Back link & optional Create Tournament button */}
+        <div className="relative z-10 w-full flex flex-wrap items-center justify-between gap-4">
+          <Link
+            href="/dashboard"
+            className="inline-flex items-center gap-1.5 text-xs font-black text-amber-400 hover:text-amber-300 uppercase tracking-wider transition-colors"
+          >
+            ← Back to Dashboard
+          </Link>
 
           {(profile?.role === 'admin' || profile?.role === 'staff') && (
             <Link
               href="/tournaments/create"
-              className="bg-gold text-black px-6 py-3 font-bold border-2 border-gold shadow-[4px_4px_0_var(--color-brown)] hover:bg-golddark"
+              className="bg-gold text-stone-950 px-5 py-2.5 rounded-xl font-black border border-amber-400 shadow-xs hover:bg-golddark hover:-translate-y-0.5 transition-all uppercase tracking-widest text-xs"
             >
               + Create Tournament
             </Link>
           )}
         </div>
 
-        {error && (
-          <div role="alert" className="mb-6 bg-red-500/10 border border-red-500 p-4 text-red-500 text-sm">
-            {error}
-          </div>
-        )}
+        <div className="relative z-10 max-w-4xl mx-auto space-y-3 pt-2">
+          <h1
+            className="animate-hero-title text-4xl sm:text-5xl lg:text-6xl font-black !text-white text-white tracking-wider uppercase leading-tight"
+            style={{ color: '#ffffff' }}
+          >
+            Tournaments
+          </h1>
+          <p
+            className="animate-hero-tagline text-base sm:text-lg !text-white text-stone-200 font-medium uppercase tracking-wide leading-relaxed"
+            style={{ color: '#ffffff' }}
+          >
+            Official championships, brackets, and match schedules.
+          </p>
+        </div>
+      </section>
 
-        {/* Tournaments Grid */}
-        {/* A failed load shows the error above, not "nothing here" */}
-        {tournaments.length === 0 && error ? null : tournaments.length === 0 ? (
-          <div className="text-center text-gray-400 py-20 px-4 border-2 border-dashed border-brown space-y-2">
-            <p>No tournaments yet.</p>
-            {(profile?.role === 'admin' || profile?.role === 'staff') ? (
-              <p className="text-sm">Use &quot;+ Create Tournament&quot; to add the first one.</p>
-            ) : (
-              <p className="text-sm">Check back soon, or read the <Link href="/announcements" className="text-gold underline">announcements</Link>.</p>
-            )}
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
-            {tournaments.map((tournament) => {
-              // Extract the count from the joined table
-              const registeredCount = tournament.tournament_registrations?.[0]?.count || 0;
-              const status = getTournamentStatus(tournament);
+      {/* Error Notice */}
+      {error && (
+        <div
+          role="alert"
+          className="rounded-xl bg-red-500/10 border border-red-500/30 p-4 text-red-700 text-sm font-bold uppercase tracking-wider"
+        >
+          {error}
+        </div>
+      )}
 
-              return (
-                <Link key={tournament.id} href={`/tournaments/${tournament.id}`}>
-                  <div className="group bg-sitecard border-2 border-brownlight shadow-[4px_4px_0_var(--color-brown)] overflow-hidden hover:border-gold transition-colors relative">
-                    {/* Status Badge */}
-                    <div className="absolute top-4 right-4">
-                      <span className={`text-[10px] font-black px-2 py-1 border uppercase ${statusStyles[status]}`}>
-                        {statusLabels[status]}
+      {/* 2. Tournaments Grid / Empty State (Matching Events Layout) */}
+      {tournaments.length === 0 && !error ? (
+        <div className="animate-stagger-1 w-full rounded-2xl border border-stone-200/80 bg-stone-50/70 p-8 sm:p-14 text-center flex flex-col items-center justify-center gap-2 shadow-xs">
+          <p className="font-black text-stone-900 text-base uppercase tracking-wider">
+            No tournaments published yet.
+          </p>
+          {(profile?.role === 'admin' || profile?.role === 'staff') ? (
+            <p className="text-xs text-stone-500 font-semibold uppercase tracking-wide">
+              Click &quot;+ Create Tournament&quot; above to launch a new competition.
+            </p>
+          ) : (
+            <p className="text-xs text-stone-500 font-semibold uppercase tracking-wide">
+              Check back soon or read our announcements for upcoming schedules.
+            </p>
+          )}
+        </div>
+      ) : (
+        <div className="animate-stagger-1 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6 sm:gap-8 w-full">
+          {tournaments.map((tournament) => {
+            const registeredCount = tournament.tournament_registrations?.[0]?.count || 0;
+            const status = getTournamentStatus(tournament);
+            const logo = getGameLogo(tournament.game, tournament.game_id);
+
+            return (
+              <Link
+                key={tournament.id}
+                href={`/tournaments/${tournament.id}`}
+                className="group flex flex-col rounded-2xl border border-stone-200/90 bg-white shadow-xs hover:shadow-lg hover:-translate-y-1 hover:border-amber-500/50 transition-all duration-300 overflow-hidden relative"
+              >
+                {/* Visual Header Aspect-Video (Matching PostCard Layout in Events) */}
+                <div className="relative aspect-video bg-gradient-to-br from-stone-900 via-stone-950 to-amber-950/40 overflow-hidden flex items-center justify-center border-b border-stone-100">
+                  {logo ? (
+                    <div className="relative w-28 h-28 group-hover:scale-105 transition-transform duration-300">
+                      <Image
+                        src={logo}
+                        alt={tournament.game}
+                        fill
+                        sizes="120px"
+                        className="object-contain p-2"
+                      />
+                    </div>
+                  ) : (
+                    <div className="text-center p-4">
+                      <span className="font-black text-amber-500/90 text-lg uppercase tracking-widest">
+                        {tournament.game}
                       </span>
                     </div>
+                  )}
 
-                    <div className="p-5 sm:p-6">
-                      {/* pr-28 keeps the name clear of the status badge in the corner */}
-                      <p className="text-gold text-xs font-bold tracking-widest mb-1 uppercase pr-28">
-                        {tournament.game}
+                  {/* Status Badge in Corner */}
+                  <div className="absolute top-3.5 right-3.5 z-10">
+                    <span
+                      className={`text-[10px] font-black px-2.5 py-1 rounded-md border uppercase shadow-xs ${statusStyles[status]}`}
+                    >
+                      {statusLabels[status]}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Card Content Area */}
+                <div className="p-5 sm:p-6 flex flex-col flex-1 justify-between space-y-4">
+                  <div className="space-y-1.5">
+                    <p className="text-amber-700 text-xs font-black tracking-widest uppercase">
+                      {tournament.game}
+                    </p>
+                    <h3 className="text-xl sm:text-2xl font-black text-stone-950 leading-tight uppercase tracking-wide group-hover:text-amber-700 transition-colors">
+                      {tournament.name}
+                    </h3>
+                    {tournament.description && (
+                      <p className="text-xs sm:text-sm text-stone-600 font-medium uppercase tracking-wide line-clamp-2">
+                        {tournament.description}
                       </p>
-                      <h3 className="text-xl sm:text-2xl font-black text-white mb-4 leading-tight break-words group-hover:text-gold transition-colors">
-                        {tournament.name}
-                      </h3>
+                    )}
+                  </div>
 
-                      <div className="space-y-4">
-                        {/* Participants Stats */}
-                        <div className="bg-sitebg p-3 border border-brown">
-                          <div className="flex justify-between items-end mb-1">
-                            <span className="text-gray-400 text-[10px] font-bold uppercase">Participants</span>
-                            <span className="text-white text-sm font-bold">
-                              {registeredCount} / {tournament.max_participants || '∞'}
-                            </span>
-                          </div>
-                          {/* How full the tournament is (a native progress bar, styled for the theme) */}
-                          <progress
-                            value={Math.min(registeredCount, tournament.max_participants || registeredCount)}
-                            max={tournament.max_participants || 1}
-                            aria-label="Teams registered"
-                            className="w-full h-1.5 block appearance-none bg-sitecard [&::-webkit-progress-bar]:bg-sitecard [&::-webkit-progress-value]:bg-gold [&::-moz-progress-bar]:bg-gold"
-                          />
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-4">
-                          <div>
-                            <p className="text-gray-400 text-[10px] font-bold uppercase">Start Date</p>
-                            <p className="text-white text-sm font-medium">
-                              {formatDate(tournament.start_date)}
-                            </p>
-                          </div>
-                          <div>
-                            <p className="text-gray-400 text-[10px] font-bold uppercase">Deadline</p>
-                            <p className="text-white text-sm font-medium">
-                              {tournament.registration_deadline ? formatDate(tournament.registration_deadline) : 'N/A'}
-                            </p>
-                          </div>
-                        </div>
+                  <div className="space-y-4 pt-2">
+                    {/* Participants Progress Stats */}
+                    <div className="bg-stone-50/80 p-3.5 rounded-xl border border-stone-200/80">
+                      <div className="flex justify-between items-end mb-1.5">
+                        <span className="text-stone-600 text-[10px] font-black uppercase tracking-wider">
+                          Participants
+                        </span>
+                        <span className="text-stone-950 text-xs sm:text-sm font-black">
+                          {registeredCount} / {tournament.max_participants || '∞'}
+                        </span>
                       </div>
+                      <progress
+                        value={Math.min(
+                          registeredCount,
+                          tournament.max_participants || registeredCount
+                        )}
+                        max={tournament.max_participants || 1}
+                        aria-label="Teams registered"
+                        className="w-full h-2 block appearance-none rounded-full overflow-hidden bg-stone-200 [&::-webkit-progress-bar]:bg-stone-200 [&::-webkit-progress-value]:bg-amber-500 [&::-moz-progress-bar]:bg-amber-500"
+                      />
+                    </div>
 
-                      {/* The whole card is the link; this only looks like a button */}
-                      <span className="block text-center w-full mt-6 py-3 border-2 border-gold text-gold font-bold group-hover:bg-gold group-hover:text-black transition-colors uppercase text-sm">
-                        View Tournament Details
-                      </span>
+                    {/* Tournament Key Dates */}
+                    <div className="grid grid-cols-2 gap-3 text-xs">
+                      <div>
+                        <p className="text-stone-500 text-[10px] font-bold uppercase tracking-wider">
+                          Start Date
+                        </p>
+                        <p className="text-stone-950 font-bold">
+                          {formatDate(tournament.start_date)}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-stone-500 text-[10px] font-bold uppercase tracking-wider">
+                          Deadline
+                        </p>
+                        <p className="text-stone-950 font-bold">
+                          {tournament.registration_deadline
+                            ? formatDate(tournament.registration_deadline)
+                            : 'N/A'}
+                        </p>
+                      </div>
                     </div>
                   </div>
-                </Link>
-              );
-            })}
-          </div>
-        )}
-      </div>
-    </main>
+
+                  {/* View Details Action Link */}
+                  <div className="pt-2">
+                    <span className="block text-center w-full py-3 rounded-xl border border-amber-400 bg-gold text-stone-950 font-black group-hover:bg-golddark transition-all uppercase text-xs tracking-widest shadow-xs">
+                      View Tournament Details →
+                    </span>
+                  </div>
+                </div>
+              </Link>
+            );
+          })}
+        </div>
+      )}
+    </div>
   );
 }

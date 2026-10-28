@@ -42,26 +42,26 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <main id="main-content" className="min-h-screen grid place-items-center bg-sitebg px-4">
-      <div className="w-full max-w-md bg-sitecard p-6 sm:p-8 shadow-[6px_6px_0_var(--color-brown)]">
-        <h1 className="text-gold text-2xl font-bold text-center mb-6">Forgot password</h1>
+    <main id="main-content" className="min-h-screen w-full grid place-items-center bg-white px-4 py-12 uppercase">
+      <div className="w-full max-w-md bg-white rounded-2xl border border-stone-200/90 p-6 sm:p-8 shadow-sm space-y-5">
+        <h1 className="text-stone-950 text-2xl sm:text-3xl font-black text-center tracking-wider uppercase mb-2">Forgot password</h1>
 
         {sent ? (
           // Same message whether or not the email has an account, so nobody can
           // use this page to find out who is registered.
-          <p className="text-gray-300 text-center">
-            If <span className="text-white font-semibold">{email}</span> has an account, we sent a link to
+          <p className="text-stone-700 font-medium uppercase tracking-wide text-center text-sm">
+            If <span className="text-stone-950 font-black">{email}</span> has an account, we sent a link to
             reset the password. Open it on this device and browser.
           </p>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
-            <p className="text-gray-400 text-sm">Enter your email and we&apos;ll send you a link to choose a new password.</p>
-            {error && <div role="alert" className="bg-red-500/10 border border-red-500 text-red-300 px-3 py-2">{error}</div>}
-            <EmailField value={email} onChange={setEmail} className="w-full p-3 bg-sitebg text-white border border-gold" />
+            <p className="text-stone-600 font-medium text-xs sm:text-sm uppercase tracking-wide">Enter your email and we&apos;ll send you a link to choose a new password.</p>
+            {error && <div role="alert" className="bg-red-50 border border-red-500/30 rounded-xl text-red-700 px-4 py-2.5 text-xs sm:text-sm font-bold uppercase tracking-wider">{error}</div>}
+            <EmailField value={email} onChange={setEmail} className="w-full p-3.5 rounded-xl bg-white text-stone-950 border border-stone-200 placeholder:text-stone-400 uppercase tracking-wide focus:border-amber-600 focus:ring-2 focus:ring-amber-500/20 shadow-xs outline-none transition-all" />
             <button
               type="submit"
               disabled={loading}
-              className="w-full p-3 bg-gold text-black font-bold disabled:opacity-60"
+              className="w-full p-3.5 rounded-xl bg-gold text-stone-950 font-black border border-amber-400 shadow-xs hover:bg-golddark hover:-translate-y-0.5 hover:shadow-sm transition-all duration-200 uppercase tracking-widest disabled:opacity-60"
             >
               {loading ? 'Sending...' : 'Send reset link'}
             </button>
@@ -69,7 +69,7 @@ export default function ForgotPasswordPage() {
         )}
 
         <p className="text-center mt-6">
-          <Link href="/auth/login" className="text-gold">Back to login</Link>
+          <Link href="/auth/login" className="text-amber-800 font-extrabold uppercase tracking-wider hover:underline text-xs sm:text-sm">Back to login</Link>
         </p>
       </div>
     </main>

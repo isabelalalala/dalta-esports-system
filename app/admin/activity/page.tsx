@@ -8,14 +8,13 @@ import { ACTION_GROUPS, describeActivity, type ActivityLog } from '@/utils/activ
 import { usePageTitle } from '@/utils/page-title';
 import PageLoading from '@/components/PageLoading';
 import PageError from '@/components/PageError';
+import PageHeroBackground from '@/components/site/PageHeroBackground';
 
 const PAGE_SIZE = 50;
 
 const inputClass =
-  'border border-brownlight bg-sitebg px-3 py-2 text-white outline-none focus:border-gold';
+  'w-full p-3 rounded-xl bg-white text-stone-950 border border-stone-300 placeholder:text-stone-400 uppercase tracking-wide focus:border-amber-600 focus:ring-2 focus:ring-amber-500/20 shadow-xs outline-none transition-all font-medium text-xs sm:text-sm';
 
-// action: '' = all, 'group:<label>' = a whole group, otherwise one action.
-// actor: '' = everyone, 'none' = no user (SQL Editor or a deleted account), otherwise a user id.
 interface Filters {
   action: string;
   actor: string;
@@ -25,13 +24,11 @@ interface Filters {
 
 const emptyFilters: Filters = { action: '', actor: '', from: '', to: '' };
 
-// YYYY-MM-DD (viewer's local day) -> the moment that day starts, for comparing with created_at
 function startOfDay(date: string, addDays = 0) {
   const [y, m, d] = date.split('-').map(Number);
   return new Date(y, m - 1, d + addDays).toISOString();
 }
 
-// One page of entries, filtered in the database (the log is too big to load all at once)
 async function fetchPage(supabase: ReturnType<typeof createClient>, filters: Filters, offset: number) {
   let query = supabase
     .from('activity_logs')
@@ -48,7 +45,6 @@ async function fetchPage(supabase: ReturnType<typeof createClient>, filters: Fil
   if (filters.actor === 'none') query = query.is('actor_id', null);
   else if (filters.actor) query = query.eq('actor_id', filters.actor);
   if (filters.from) query = query.gte('created_at', startOfDay(filters.from));
-  // "to" is inclusive: everything before the next day starts
   if (filters.to) query = query.lt('created_at', startOfDay(filters.to, 1));
 
   const { data, error } = await query;
@@ -56,21 +52,18 @@ async function fetchPage(supabase: ReturnType<typeof createClient>, filters: Fil
   return (data || []) as ActivityLog[];
 }
 
-// Activity log (admin only): who did what, newest first.
 export default function ActivityLogPage() {
   const supabase = createClient();
   usePageTitle('Activity log');
   const [role, setRole] = useState('');
-  const [filters, setFilters] = useState<Filters>(emptyFilters);
   const [logs, setLogs] = useState<ActivityLog[]>([]);
   const [actors, setActors] = useState<{ actor_id: string; actor_name: string | null }[]>([]);
-  // False once a page came back with fewer than PAGE_SIZE entries
+  const [filters, setFilters] = useState<Filters>(emptyFilters);
   const [hasMore, setHasMore] = useState(false);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState('');
 
-  // First page, again whenever the filters change
   useEffect(() => {
     const load = async () => {
       try {
@@ -114,116 +107,177 @@ export default function ActivityLogPage() {
   };
 
   if (loading) return <PageLoading />;
-
-  // Hiding the page is only for convenience; RLS returns nothing to other roles.
-  // The role couldn't be loaded: show why, not "only admins"
   if (!role && error) return <PageError message={error} />;
   if (role !== 'admin') {
     return (
-      <main id="main-content" className="min-h-screen bg-sitebg text-white p-10 text-center">
-        Only admins can view the activity log.{' '}
-        <Link href="/dashboard" className="text-gold underline">Back to Dashboard</Link>
-      </main>
+      <div className="w-full bg-white text-stone-950 p-10 text-center uppercase space-y-4">
+        <p className="font-extrabold text-stone-900">Only administrators can view the activity log.</p>
+        <Link href="/dashboard" className="inline-block text-amber-700 hover:text-amber-800 font-bold underline">
+          ← Back to Dashboard
+        </Link>
+      </div>
     );
   }
 
   const sortedActors = [...actors].sort((a, b) => (a.actor_name || '').localeCompare(b.actor_name || ''));
 
   return (
-    <main id="main-content" className="min-h-screen bg-sitebg text-white px-4 py-10">
-      <div className="max-w-5xl mx-auto space-y-6">
-        <div>
-          <Link href="/dashboard" className="inline-block text-gold hover:underline mb-6">
+    <div className="w-full space-y-8 uppercase">
+      {/* 1. Main Hero Container with Official Banner */}
+      <section className="relative w-full rounded-3xl border border-stone-800/80 bg-stone-950 overflow-hidden shadow-md p-8 sm:p-14 lg:p-16 text-center text-white flex flex-col items-center justify-center space-y-4">
+        <PageHeroBackground specificKey="hero_banner_path" alt="DALTA Esports Activity Banner" />
+
+        <div className="relative z-10 w-full flex items-center justify-between">
+          <Link
+            href="/dashboard"
+            className="inline-flex items-center gap-1.5 text-xs font-black text-amber-400 hover:text-amber-300 uppercase tracking-wider transition-colors"
+          >
             ← Back to Dashboard
           </Link>
-          <h1 className="font-pixel text-xl sm:text-2xl leading-relaxed text-gold">Activity Log</h1>
-          <p className="text-gray-400 text-sm mt-2">
-            Recorded automatically by the database. Entries can&apos;t be edited or deleted, and are kept for one year.
+        </div>
+
+        <div className="relative z-10 max-w-4xl mx-auto space-y-3 pt-2">
+          <h1
+            className="text-3xl sm:text-4xl lg:text-5xl font-black !text-white text-white tracking-wider uppercase leading-tight"
+            style={{ color: '#ffffff' }}
+          >
+            Activity Log
+          </h1>
+          <p
+            className="text-base sm:text-lg !text-white text-stone-200 font-medium uppercase tracking-wide leading-relaxed"
+            style={{ color: '#ffffff' }}
+          >
+            Recorded automatically by the database. Entries cannot be edited or deleted and are kept for one year.
           </p>
         </div>
+      </section>
 
-        {/* Filters */}
-        <div className="bg-sitecard border border-brownlight p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-          <label className="flex flex-col gap-1 text-xs uppercase font-bold text-gray-400">
-            Action
-            <select value={filters.action} onChange={(e) => setFilters({ ...filters, action: e.target.value })} className={inputClass}>
-              <option value="">All actions</option>
-              {ACTION_GROUPS.map((group) => (
-                <optgroup key={group.label} label={group.label}>
-                  <option value={`group:${group.label}`}>All {group.label.toLowerCase()}</option>
-                  {group.actions.map((a) => (
-                    <option key={a.value} value={a.value}>{a.label}</option>
-                  ))}
-                </optgroup>
-              ))}
-            </select>
-          </label>
-          <label className="flex flex-col gap-1 text-xs uppercase font-bold text-gray-400">
-            User
-            <select value={filters.actor} onChange={(e) => setFilters({ ...filters, actor: e.target.value })} className={inputClass}>
-              <option value="">Everyone</option>
-              {sortedActors.map((a) => (
-                <option key={a.actor_id} value={a.actor_id}>{a.actor_name || 'Unnamed user'}</option>
-              ))}
-              <option value="none">No user (SQL Editor or deleted account)</option>
-            </select>
-          </label>
-          <label className="flex flex-col gap-1 text-xs uppercase font-bold text-gray-400">
-            From
-            <input type="date" value={filters.from} onChange={(e) => setFilters({ ...filters, from: e.target.value })} className={inputClass} />
-          </label>
-          <label className="flex flex-col gap-1 text-xs uppercase font-bold text-gray-400">
-            To
-            <input type="date" value={filters.to} onChange={(e) => setFilters({ ...filters, to: e.target.value })} className={inputClass} />
-          </label>
-          {(filters.action || filters.actor || filters.from || filters.to) && (
-            <button onClick={() => setFilters(emptyFilters)} className="text-sm text-gold hover:underline justify-self-start">
-              Clear filters
-            </button>
-          )}
+      {/* 2. Filters & Log Timeline */}
+      <div className="space-y-6 text-stone-950">
+        <div className="bg-white border border-stone-200/90 rounded-2xl p-6 shadow-xs space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-sm font-black text-stone-950 tracking-wider">Log Filters</h2>
+            {(filters.action || filters.actor || filters.from || filters.to) && (
+              <button
+                onClick={() => setFilters(emptyFilters)}
+                className="text-xs font-extrabold text-amber-700 hover:text-amber-800 underline cursor-pointer"
+              >
+                Clear all filters
+              </button>
+            )}
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <label className="flex flex-col gap-1.5 text-xs font-black text-stone-800 tracking-wider">
+              <span>Action Category</span>
+              <select
+                value={filters.action}
+                onChange={(e) => setFilters({ ...filters, action: e.target.value })}
+                className={inputClass}
+              >
+                <option value="">All actions</option>
+                {ACTION_GROUPS.map((group) => (
+                  <optgroup key={group.label} label={group.label}>
+                    <option value={`group:${group.label}`}>All {group.label.toLowerCase()}</option>
+                    {group.actions.map((a) => (
+                      <option key={a.value} value={a.value}>{a.label}</option>
+                    ))}
+                  </optgroup>
+                ))}
+              </select>
+            </label>
+
+            <label className="flex flex-col gap-1.5 text-xs font-black text-stone-800 tracking-wider">
+              <span>User / Actor</span>
+              <select
+                value={filters.actor}
+                onChange={(e) => setFilters({ ...filters, actor: e.target.value })}
+                className={inputClass}
+              >
+                <option value="">Everyone</option>
+                {sortedActors.map((a) => (
+                  <option key={a.actor_id} value={a.actor_id}>{a.actor_name || 'Unnamed user'}</option>
+                ))}
+                <option value="none">System / Deleted account</option>
+              </select>
+            </label>
+
+            <label className="flex flex-col gap-1.5 text-xs font-black text-stone-800 tracking-wider">
+              <span>From Date</span>
+              <input
+                type="date"
+                value={filters.from}
+                onChange={(e) => setFilters({ ...filters, from: e.target.value })}
+                className={inputClass}
+              />
+            </label>
+
+            <label className="flex flex-col gap-1.5 text-xs font-black text-stone-800 tracking-wider">
+              <span>To Date</span>
+              <input
+                type="date"
+                value={filters.to}
+                onChange={(e) => setFilters({ ...filters, to: e.target.value })}
+                className={inputClass}
+              />
+            </label>
+          </div>
         </div>
 
-        {error && <div role="alert" className="bg-red-500/10 border border-red-500 text-red-300 px-4 py-3">{error}</div>}
+        {error && (
+          <div role="alert" className="bg-red-50 border border-red-200 text-red-800 rounded-xl p-4 text-xs font-bold tracking-wider shadow-2xs">
+            {error}
+          </div>
+        )}
 
-        {/* A failed load shows the error above, not "nothing here" */}
+        {/* Entries List */}
         {logs.length === 0 && error ? null : logs.length === 0 ? (
-          <p className="text-gray-400 text-center py-12">No activity matches these filters.</p>
+          <p className="text-stone-500 text-center py-12 font-bold tracking-wider">No activity matches these filters.</p>
         ) : (
-          <ul className="bg-sitecard border border-brown divide-y divide-brown">
+          <div className="bg-white border border-stone-200/90 rounded-2xl divide-y divide-stone-200/80 shadow-xs overflow-hidden">
             {logs.map((log) => {
-              // Link to the tournament involved, unless it was deleted
               const tournamentId =
                 log.details.tournament_id ?? (log.entity_type === 'tournament' ? log.entity_id : null);
               const showLink = tournamentId && log.action !== 'tournament.deleted';
               return (
-                <li key={log.id} className="px-4 py-3 flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4">
-                  <time className="text-xs text-gray-400 sm:w-40 shrink-0" dateTime={log.created_at}>
-                    {new Date(log.created_at).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })}
-                  </time>
-                  <p className="flex-1 text-gray-200">{describeActivity(log)}</p>
+                <div
+                  key={log.id}
+                  className="px-6 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-stone-50/60 transition-colors"
+                >
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 flex-1 min-w-0">
+                    <time className="text-xs text-stone-500 font-bold sm:w-44 shrink-0" dateTime={log.created_at}>
+                      {new Date(log.created_at).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })}
+                    </time>
+                    <p className="font-extrabold text-stone-900 text-xs sm:text-sm tracking-wide">
+                      {describeActivity(log)}
+                    </p>
+                  </div>
                   {showLink && (
-                    <Link href={`/tournaments/${tournamentId}`} className="text-xs text-gold hover:underline shrink-0">
-                      View tournament
+                    <Link
+                      href={`/tournaments/${tournamentId}`}
+                      className="text-xs font-black text-amber-700 hover:text-amber-800 underline shrink-0"
+                    >
+                      View Tournament →
                     </Link>
                   )}
-                </li>
+                </div>
               );
             })}
-          </ul>
+          </div>
         )}
 
         {hasMore && (
-          <div className="text-center">
+          <div className="text-center pt-2">
             <button
               onClick={handleLoadMore}
               disabled={loadingMore}
-              className="border border-gold text-gold px-6 py-2 font-bold hover:bg-gold/10 disabled:opacity-50"
+              className="rounded-xl border border-stone-300 hover:border-stone-400 bg-white text-stone-900 font-black px-6 py-2.5 text-xs uppercase tracking-widest shadow-xs hover:-translate-y-0.5 transition-all disabled:opacity-50 cursor-pointer"
             >
-              {loadingMore ? 'Loading...' : 'Load more'}
+              {loadingMore ? 'Loading...' : 'Load More Entries'}
             </button>
           </div>
         )}
       </div>
-    </main>
+    </div>
   );
 }

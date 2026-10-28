@@ -22,37 +22,42 @@ export default function AnnouncementCard({
 
   return (
     <article
-      className={`bg-sitecard border p-4 ${a.pinned ? 'border-yellow-500/60' : 'border-brownlight'}`}
+      className="rounded-2xl border border-stone-200/90 bg-stone-50/60 p-5 sm:p-6 shadow-2xs hover:bg-white hover:border-amber-500/40 hover:shadow-xs transition-all space-y-3 uppercase"
     >
-      <div className="flex flex-wrap items-center gap-2 mb-1">
+      <div className="flex flex-wrap items-center gap-2">
         {a.pinned && (
-          <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-yellow-500/15 text-yellow-300 border border-yellow-500/50">
+          <span className="inline-flex items-center gap-1 text-[11px] font-black uppercase px-2.5 py-0.5 rounded-full bg-amber-500/15 text-amber-800 border border-amber-500/30">
             <Pin className="h-3 w-3" /> Pinned
           </span>
         )}
         {showTournament && a.tournaments && (
           <Link
             href={`/tournaments/${a.tournaments.id}`}
-            className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-gold/15 text-gold border border-brownlight hover:bg-gold/25"
+            className="text-[11px] font-black uppercase px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-900 border border-amber-500/20 hover:bg-amber-500/20 transition-colors"
           >
             {a.tournaments.name}
           </Link>
         )}
         {showTournament && !a.tournament_id && (
-          <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-gray-500/15 text-gray-300 border border-gray-500/50">
+          <span className="text-[11px] font-black uppercase px-2.5 py-0.5 rounded-full bg-stone-100 text-stone-700 border border-stone-200">
             General
           </span>
         )}
       </div>
 
-      <h3 className="text-lg font-bold text-white">{a.title}</h3>
-      <p className="text-xs text-gray-400 mb-2">
-        {new Date(a.created_at).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })}
-        {edited && ' · edited'}
-      </p>
-      <p className={`text-gray-300 whitespace-pre-wrap ${compact ? 'line-clamp-3' : ''}`}>{a.body}</p>
+      <div>
+        <h3 className="text-base sm:text-lg font-black text-stone-950 tracking-wide">{a.title}</h3>
+        <p className="text-xs text-stone-500 font-semibold tracking-wider mt-1">
+          {new Date(a.created_at).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })}
+          {edited && ' · edited'}
+        </p>
+      </div>
 
-      {actions && <div className="mt-3 flex gap-4 text-sm font-semibold">{actions}</div>}
+      <p className={`text-stone-700 text-xs sm:text-sm font-medium tracking-wide leading-relaxed whitespace-pre-wrap ${compact ? 'line-clamp-3' : ''}`}>
+        {a.body}
+      </p>
+
+      {actions && <div className="mt-4 pt-3 border-t border-stone-200/60 flex gap-4 text-xs font-black">{actions}</div>}
     </article>
   );
 }

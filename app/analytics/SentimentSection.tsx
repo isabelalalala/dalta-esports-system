@@ -25,13 +25,15 @@ export default function SentimentSection({ report }: { report: SentimentReport }
 
   return (
     <section className="space-y-4">
-      <h2 className="text-2xl font-bold text-gold print:text-black">Sentiment Analysis Report</h2>
+      <h2 className="text-xl sm:text-2xl font-black text-amber-800 uppercase tracking-wider print:text-black">
+        Sentiment Analysis Report
+      </h2>
 
       {t.pending > 0 && (
-        <div className="bg-yellow-500/10 border border-yellow-500 text-yellow-200 px-4 py-3 print:hidden">
+        <div className="bg-amber-50 border border-amber-200 text-amber-900 rounded-xl px-4 py-3 text-xs font-bold tracking-wide print:hidden">
           {t.pending} feedback {t.pending === 1 ? 'is' : 'are'} pending analysis, so they only count towards the
           rating.{' '}
-          <Link href="/admin/feedback" className="underline">Retry them on Feedback Analysis</Link>, then generate again.
+          <Link href="/admin/feedback" className="underline hover:text-amber-700">Retry them on Feedback Analysis</Link>, then generate again.
         </div>
       )}
 

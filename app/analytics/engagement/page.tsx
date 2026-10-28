@@ -13,6 +13,8 @@ import {
 import PageLoading from '@/components/PageLoading';
 import PageError from '@/components/PageError';
 import { usePageTitle } from '@/utils/page-title';
+import PageHeroBackground from '@/components/site/PageHeroBackground';
+import { Download, Printer, RotateCw } from 'lucide-react';
 
 // "View engagement stats" (use case, Tournament Staff). Admins can open it too.
 export default function EngagementPage() {
@@ -91,49 +93,100 @@ export default function EngagementPage() {
   if (!role && error) return <PageError message={error} />;
   if (role !== 'admin' && role !== 'staff') {
     return (
-      <main id="main-content" className="min-h-screen bg-sitebg text-white p-10 text-center">
-        Only organizers can view engagement stats.{' '}
-        <Link href="/dashboard" className="text-gold underline">Back to Dashboard</Link>
-      </main>
+      <div className="w-full bg-white text-stone-950 p-10 text-center uppercase space-y-4">
+        <p className="font-extrabold text-stone-900">Only organizers can view engagement stats.</p>
+        <Link href="/dashboard" className="inline-block text-amber-700 hover:text-amber-800 font-bold underline">
+          ← Back to Dashboard
+        </Link>
+      </div>
     );
   }
 
   return (
-    <main id="main-content" className="min-h-screen bg-sitebg text-white px-4 py-10 print:bg-white print:text-black print:p-0">
-      <div className="max-w-6xl mx-auto space-y-6">
-        <div>
-          <Link href={role === 'admin' ? '/analytics' : '/dashboard'} className="inline-block text-gold hover:underline mb-6 print:hidden">
+    <div className="w-full space-y-8 uppercase text-stone-950 print:p-0">
+      {/* 1. Main Hero Container with Official Banner */}
+      <section className="relative w-full rounded-3xl border border-stone-800/80 bg-stone-950 overflow-hidden shadow-md p-8 sm:p-14 lg:p-16 text-center text-white flex flex-col items-center justify-center space-y-4 print:hidden">
+        <PageHeroBackground specificKey="hero_banner_path" alt="DALTA Esports Engagement Banner" />
+
+        <div className="relative z-10 w-full flex items-center justify-between">
+          <Link
+            href={role === 'admin' ? '/analytics' : '/dashboard'}
+            className="inline-flex items-center gap-1.5 text-xs font-black text-amber-400 hover:text-amber-300 uppercase tracking-wider transition-colors"
+          >
             ← Back to {role === 'admin' ? 'Analytics' : 'Dashboard'}
           </Link>
-          <div className="flex flex-wrap justify-between items-center gap-4">
-            <h1 className="font-pixel text-xl sm:text-2xl leading-relaxed text-gold print:text-black">Engagement Stats</h1>
-            <div className="flex flex-wrap gap-2 print:hidden">
-              <button onClick={() => setReloadCount((n) => n + 1)} className="border border-gold text-gold px-4 py-2 font-bold hover:bg-gold/10">
-                Refresh
-              </button>
-              <button onClick={handleCsv} disabled={!report} className="border border-gold text-gold px-4 py-2 font-bold hover:bg-gold/10 disabled:opacity-50">
-                Download CSV
-              </button>
-              <button onClick={() => window.print()} disabled={!report} className="bg-gold text-black px-4 py-2 font-bold hover:bg-golddark disabled:opacity-50">
-                Print / PDF
-              </button>
-            </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setReloadCount((n) => n + 1)}
+              className="rounded-xl border border-white/20 bg-white/10 hover:bg-white/20 text-white font-bold px-3.5 py-2 text-xs tracking-wider transition-all inline-flex items-center gap-1.5 cursor-pointer backdrop-blur-xs"
+            >
+              <RotateCw className="w-3.5 h-3.5" />
+              <span>Refresh</span>
+            </button>
+            <button
+              onClick={handleCsv}
+              disabled={!report}
+              className="rounded-xl border border-white/20 bg-white/10 hover:bg-white/20 text-white font-bold px-3.5 py-2 text-xs tracking-wider transition-all inline-flex items-center gap-1.5 cursor-pointer backdrop-blur-xs disabled:opacity-50"
+            >
+              <Download className="w-3.5 h-3.5" />
+              <span>CSV</span>
+            </button>
+            <button
+              onClick={() => window.print()}
+              disabled={!report}
+              className="rounded-xl bg-gold hover:bg-golddark text-stone-950 font-black px-4 py-2 text-xs tracking-wider border border-amber-400 shadow-xs hover:-translate-y-0.5 transition-all inline-flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+            >
+              <Printer className="w-3.5 h-3.5" />
+              <span>Print / PDF</span>
+            </button>
           </div>
-          <p className="hidden print:block text-sm mt-1">
-            {describeFilters(filterNames(filters, options))} · Printed {new Date().toLocaleString()}
-          </p>
         </div>
 
+        <div className="relative z-10 max-w-4xl mx-auto space-y-3 pt-2">
+          <h1
+            className="text-4xl sm:text-5xl lg:text-6xl font-black !text-white text-white tracking-wider uppercase leading-tight"
+            style={{ color: '#ffffff' }}
+          >
+            Engagement Stats
+          </h1>
+          <p
+            className="text-base sm:text-lg !text-white text-stone-200 font-medium uppercase tracking-wide leading-relaxed"
+            style={{ color: '#ffffff' }}
+          >
+            Live stream viewership, audience retention, and tournament broadcast analytics.
+          </p>
+        </div>
+      </section>
+
+      {/* Print header visible only during print */}
+      <div className="hidden print:block border-b border-stone-300 pb-4 mb-6">
+        <h1 className="text-2xl font-black text-black uppercase">Engagement Stats</h1>
+        <p className="text-xs text-stone-600 mt-1">
+          {describeFilters(filterNames(filters, options))} · Printed {new Date().toLocaleString()}
+        </p>
+      </div>
+
+      {/* 2. Filters Box */}
+      <div className="space-y-4 print:hidden">
         <ReportFilters value={filters} onChange={setFilters} options={options} />
 
         {(error || optionsError || filterError) && (
-          <div role="alert" className="bg-red-500/10 border border-red-500 text-red-300 px-4 py-3">
+          <div
+            role="alert"
+            className="bg-red-50 border border-red-200 text-red-800 rounded-xl p-4 text-xs font-bold tracking-wider shadow-2xs"
+          >
             {filterError || error || optionsError}
           </div>
         )}
-
-        {report && <EngagementSection report={report} liveCounts={liveCounts} />}
       </div>
-    </main>
+
+      {/* 3. Engagement Metrics & Charts */}
+      {report && (
+        <div className="space-y-8">
+          <EngagementSection report={report} liveCounts={liveCounts} />
+        </div>
+      )}
+    </div>
   );
 }

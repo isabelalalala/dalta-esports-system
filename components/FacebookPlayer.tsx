@@ -15,10 +15,10 @@ export default function FacebookPlayer({ url, title }: { url: string; title: str
           allowFullScreen
         />
       </div>
-      <p className="mt-2 text-sm text-gray-400">
-        Video not showing? It must be set to Public on Facebook, and some ad blockers hide it.{' '}
-        <a href={url} target="_blank" rel="noopener noreferrer" className="text-gold underline">
-          Open on Facebook
+      <p className="mt-2 text-xs font-semibold text-stone-500 uppercase tracking-wider">
+        Video not displaying? Stream must be set to Public on Facebook.{' '}
+        <a href={url} target="_blank" rel="noopener noreferrer" className="text-[#5B271E] font-black underline hover:text-[#FFCC37]">
+          Open on Facebook ↗
         </a>
       </p>
     </div>

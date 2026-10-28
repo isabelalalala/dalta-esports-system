@@ -38,25 +38,47 @@ export default function LatestAnnouncements() {
   }, [supabase]);
 
   return (
-    <div className="mt-8 bg-sitecard border-2 border-gold shadow-[6px_6px_0_var(--color-brown)] p-6">
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-bold text-gold flex items-center gap-2"><Megaphone className="h-5 w-5" /> Latest Announcements</h2>
-        <Link href="/announcements" className="text-sm text-gold hover:underline">View all →</Link>
+    <section className="w-full rounded-3xl border border-stone-200/90 bg-white p-6 sm:p-8 shadow-xs space-y-6 uppercase">
+      <div className="flex justify-between items-center pb-4 border-b border-stone-100">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-700 flex items-center justify-center">
+            <Megaphone className="h-5 w-5" />
+          </div>
+          <div>
+            <h2 className="text-xl sm:text-2xl font-black text-stone-950 tracking-wider">
+              Latest Announcements
+            </h2>
+            <p className="text-xs text-stone-500 font-medium tracking-wide mt-0.5">
+              News and updates from tournament organizers
+            </p>
+          </div>
+        </div>
+        <Link
+          href="/announcements"
+          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-stone-50 border border-stone-200 text-xs font-black text-amber-700 hover:text-amber-800 hover:bg-amber-50/50 tracking-wider shadow-2xs transition-all"
+        >
+          <span>View all</span>
+          <span>→</span>
+        </Link>
       </div>
 
       {loading ? (
         <SectionLoading />
       ) : error ? (
-        <p className="text-red-300" role="alert">{error}</p>
+        <div className="p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs font-bold tracking-wider" role="alert">
+          {error}
+        </div>
       ) : announcements.length === 0 ? (
-        <p className="text-gray-400">No announcements yet.</p>
+        <div className="p-8 rounded-2xl bg-stone-50/70 border border-stone-200/80 text-center">
+          <p className="text-stone-500 text-xs font-bold tracking-wider">No announcements posted yet.</p>
+        </div>
       ) : (
-        <div className="space-y-3">
+        <div className="space-y-4">
           {announcements.map((a) => (
             <AnnouncementCard key={a.id} announcement={a} compact />
           ))}
         </div>
       )}
-    </div>
+    </section>
   );
 }

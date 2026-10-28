@@ -87,56 +87,83 @@ export default function MyMatches({ userId }: { userId: string }) {
   }, [supabase, userId]);
 
   return (
-    <div className="mt-8 bg-sitecard border-2 border-gold shadow-[6px_6px_0_var(--color-brown)] p-6">
-      <h2 className="text-xl font-bold text-gold mb-4 flex items-center gap-2"><Swords className="h-5 w-5" /> My Matches</h2>
+    <section className="w-full rounded-3xl border border-stone-200/90 bg-white p-6 sm:p-8 shadow-xs space-y-6 uppercase">
+      <div className="flex justify-between items-center pb-4 border-b border-stone-100">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-700 flex items-center justify-center">
+            <Swords className="h-5 w-5" />
+          </div>
+          <div>
+            <h2 className="text-xl sm:text-2xl font-black text-stone-950 tracking-wider">
+              My Matches
+            </h2>
+            <p className="text-xs text-stone-500 font-medium tracking-wide mt-0.5">
+              Upcoming scheduled and live tournament matches
+            </p>
+          </div>
+        </div>
+      </div>
 
       {loading ? (
         <SectionLoading label="Loading your matches..." />
       ) : error ? (
-        <p className="text-red-300" role="alert">{error}</p>
+        <div className="p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs font-bold tracking-wider" role="alert">
+          {error}
+        </div>
       ) : matches.length === 0 ? (
-        <p className="text-gray-400">
-          {myTeamIds.length === 0 ? 'You are not on a team yet.' : 'No upcoming matches.'}
-        </p>
+        <div className="p-8 rounded-2xl bg-stone-50/70 border border-stone-200/80 text-center">
+          <p className="text-stone-500 text-xs font-bold tracking-wider">
+            {myTeamIds.length === 0 ? 'You are not on an active team yet.' : 'No upcoming matches scheduled.'}
+          </p>
+        </div>
       ) : (
-        <ul className="divide-y divide-brown">
+        <div className="space-y-3">
           {matches.map((m) => {
-            // Which side is mine decides who the opponent is
             const mineIsA = m.team_a_id !== null && myTeamIds.includes(m.team_a_id);
             const myTeam = mineIsA ? m.team_a_id : m.team_b_id;
             const opponent = mineIsA ? m.team_b_id : m.team_a_id;
 
             return (
-              <li key={m.id} className="py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                <div>
-                  <p className="font-semibold text-white">
-                    {myTeam ? teamNames[myTeam] : 'Your team'}{' '}
-                    <span className="text-gray-400 font-normal">vs</span>{' '}
-                    {opponent ? teamNames[opponent] ?? 'Unknown team' : <span className="italic text-gray-400">TBD</span>}
+              <div
+                key={m.id}
+                className="rounded-2xl border border-stone-200/90 bg-stone-50/60 hover:bg-white p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-all duration-200 hover:shadow-xs hover:border-amber-500/40"
+              >
+                <div className="space-y-1">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="font-black text-stone-950 text-sm sm:text-base tracking-wide">
+                      {myTeam ? teamNames[myTeam] : 'Your team'}{' '}
+                      <span className="text-stone-400 font-normal">vs</span>{' '}
+                      {opponent ? teamNames[opponent] ?? 'Unknown team' : <span className="italic text-stone-400">TBD</span>}
+                    </span>
                     {m.status === 'live' && (
-                      <span className="ml-2 text-xs bg-green-500/20 text-green-400 border border-green-500/50 px-2 py-0.5 rounded-full font-bold">
-                        LIVE
+                      <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-700 text-[10px] font-black tracking-wider animate-pulse">
+                        LIVE NOW
                       </span>
                     )}
-                  </p>
-                  <p className="text-sm text-gray-400">
-                    <Link href={`/tournaments/${m.tournament_id}`} className="hover:text-white underline">
+                  </div>
+                  <p className="text-xs text-stone-500 font-semibold tracking-wider">
+                    <Link href={`/tournaments/${m.tournament_id}`} className="hover:text-amber-700 underline transition-colors">
                       {m.tournaments?.name}
                     </Link>{' '}
                     · {roundLabel(m.round, roundCounts[m.tournament_id] || m.round)}
                   </p>
                 </div>
-                <div className="text-sm sm:text-right">
-                  <p className="text-gray-300">{formatDateTime(m.scheduled_at)}</p>
-                  <Link href={`/matches/${m.id}`} className="text-gold hover:underline font-semibold">
+                <div className="flex flex-col sm:items-end gap-1.5 shrink-0">
+                  <span className="text-xs text-stone-600 font-semibold tracking-wider">
+                    {formatDateTime(m.scheduled_at)}
+                  </span>
+                  <Link
+                    href={`/matches/${m.id}`}
+                    className="inline-flex items-center gap-1 text-xs font-black text-amber-700 hover:text-amber-800 tracking-wider hover:underline"
+                  >
                     Match page (check-in, result) →
                   </Link>
                 </div>
-              </li>
+              </div>
             );
           })}
-        </ul>
+        </div>
       )}
-    </div>
+    </section>
   );
 }

@@ -8,7 +8,7 @@ import { SectionLoading } from '@/components/PageLoading';
 import { Medal } from 'lucide-react';
 
 // Gold, silver and bronze for the top three ranks
-const medalColors = ['text-amber-400', 'text-gray-300', 'text-amber-700'];
+const medalColors = ['text-amber-500', 'text-stone-400', 'text-amber-700'];
 
 // Pick'em leaderboard of one tournament (get_prediction_leaderboard: top 20 + your own row).
 // limit = show only the first rows (the preview on the tournament page); your own row is
@@ -37,9 +37,9 @@ export default function PickemLeaderboard({ tournamentId, limit }: { tournamentI
   }, [supabase, tournamentId]);
 
   if (loading) return <SectionLoading label="Loading leaderboard..." />;
-  if (error) return <p role="alert" className="text-red-300 text-sm">{error}</p>;
+  if (error) return <p role="alert" className="text-red-600 text-xs sm:text-sm font-bold uppercase">{error}</p>;
   if (rows.length === 0) {
-    return <p className="text-gray-400">No picks yet. Pick the winners in the bracket to get on the board!</p>;
+    return <p className="text-stone-500 text-xs sm:text-sm font-medium uppercase tracking-wide">No picks yet. Pick the winners in the bracket to get on the board!</p>;
   }
 
   const top = limit ? rows.slice(0, limit) : rows;
@@ -47,23 +47,25 @@ export default function PickemLeaderboard({ tournamentId, limit }: { tournamentI
   const shown = me && !top.includes(me) ? [...top, me] : top;
 
   return (
-    <ol className="divide-y divide-brown border border-brown bg-sitebg">
+    <ol className="divide-y divide-stone-100 border border-stone-200/90 rounded-2xl bg-white overflow-hidden shadow-2xs">
       {shown.map((r, i) => (
         <li
           key={`${r.rank}-${r.display_name}-${i}`}
-          className={`flex items-center gap-3 px-3 py-2 ${r.is_me ? 'bg-gold/10' : ''} ${me === r && !top.includes(r) ? 'border-t-2 border-dashed border-brownlight' : ''}`}
+          className={`flex items-center gap-3 px-4 py-3 uppercase tracking-wide transition-colors ${
+            r.is_me ? 'bg-amber-500/10' : 'hover:bg-stone-50/70'
+          } ${me === r && !top.includes(r) ? 'border-t-2 border-dashed border-stone-300' : ''}`}
         >
-          <span className={`w-8 shrink-0 text-right font-bold tabular-nums ${r.rank <= 3 ? 'text-gold' : 'text-gray-400'}`}>
+          <span className={`w-8 shrink-0 text-right font-black tabular-nums text-xs sm:text-sm ${r.rank <= 3 ? 'text-amber-600' : 'text-stone-400'}`}>
             {r.rank <= 3 ? <Medal className={`inline h-4 w-4 ${medalColors[r.rank - 1]}`} role="img" aria-label={`Rank ${r.rank}`} /> : `#${r.rank}`}
           </span>
-          <span className="flex-1 min-w-0 truncate font-semibold">
+          <span className="flex-1 min-w-0 truncate font-black text-xs sm:text-sm text-stone-900">
             {r.display_name}
-            {r.is_me && <span className="ml-2 text-xs text-gold">(you)</span>}
+            {r.is_me && <span className="ml-2 text-xs font-black text-[#5B271E]">(you)</span>}
           </span>
-          <span className="shrink-0 text-right text-sm">
-            <span className="font-bold text-white tabular-nums">{r.correct}</span>
-            <span className="text-gray-400"> correct</span>
-            <span className="block text-xs text-gray-400 tabular-nums">
+          <span className="shrink-0 text-right text-xs sm:text-sm">
+            <span className="font-black text-stone-950 tabular-nums">{r.correct}</span>
+            <span className="text-stone-500 font-semibold"> correct</span>
+            <span className="block text-[11px] text-stone-400 font-bold tabular-nums">
               {r.decided > 0 ? `${Math.round((r.correct / r.decided) * 100)}% of ${r.decided}` : `${r.total} pending`}
             </span>
           </span>

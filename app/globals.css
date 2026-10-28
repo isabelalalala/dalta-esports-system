@@ -1,22 +1,36 @@
 @import "tailwindcss";
 
-/* DALTA theme (the logo's yellow and brown on a dark background), used by every page.
-   e.g. bg-sitebg, bg-sitecard, text-gold, border-brownlight, hover:bg-golddark.
-   Change a color here and the whole app follows. */
+/* DALTA redesign: Solid white background, full-width layouts, and uppercase Montserrat typography.
+   Official brand tokens sampled directly from the official DALTA ESPORTS logo:
+   - Primary Gold: #FFCC37 (and hover #FFE066)
+   - Collegiate Maroon: #5B271E
+   - Logo Charcoal: #202020 */
 @theme {
-  --color-gold: #fccb35;
-  --color-golddark: #e0b22a;  /* hover on gold buttons */
-  --color-brown: #5c241c;
-  --color-brownlight: #a0522d;
-  --color-sitebg: #120d0b;
-  --color-sitecard: #1f1714;
-  /* Pixel/retro font for website headings (loaded in app/layout.tsx) */
-  --font-pixel: var(--font-press-start);
+  --color-gold: #FFCC37;
+  --color-golddark: #E5B72E;
+  --color-goldlight: #FFE066;
+  --color-brown: #5B271E;
+  --color-brownlight: #7E3629;
+  --color-maroon: #5B271E;
+  --color-maroondark: #431B14;
+  --color-maroonlight: #7A3529;
+  --color-logoblack: #202020;
+  --color-sitebg: #ffffff;
+  --color-sitecard: #ffffff;
+  --font-montserrat: var(--font-montserrat), "Montserrat", sans-serif;
+  --font-pixel: var(--font-montserrat), "Montserrat", sans-serif;
+
+  /* Remap orange/amber to the official DALTA brand maroon (#5B271E) so all orange font colors become brand maroon */
+  --color-amber-600: #5B271E;
+  --color-amber-700: #5B271E;
+  --color-amber-800: #4B2019;
+  --color-amber-900: #3B1913;
+  --color-amber-950: #2B120E;
 }
 
 :root {
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: #120d0b;
 }
 
 @theme inline {
@@ -24,18 +38,270 @@
   --color-foreground: var(--foreground);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+body {
+  background: #ffffff;
+  color: #120d0b;
+  font-family: var(--font-montserrat), "Montserrat", sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  /* Long words without spaces (emails, links, IGNs) wrap instead of making phones scroll sideways */
+  overflow-wrap: break-word;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+}
+
+/* Universal Uppercase Montserrat */
+@layer base {
+  *, *::before, *::after {
+    font-family: var(--font-montserrat), "Montserrat", sans-serif;
+  }
+
+  h1, h2, h3, h4, h5, h6,
+  p, span, a, button, input, select, textarea, label,
+  th, td, li, dt, dd, summary {
+    text-transform: uppercase;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    letter-spacing: 0.06em;
+    font-weight: 800;
+    color: #120d0b;
   }
 }
 
-body {
-  background: var(--color-sitebg);
-  color: #e5e7eb;
-  font-family: Arial, Helvetica, sans-serif;
-  /* Long words without spaces (emails, links, IGNs) wrap instead of making phones scroll sideways */
-  overflow-wrap: break-word;
+/* Accessibility & contrast safeguard on solid white background */
+.bg-sitebg > *,
+.bg-sitecard > * {
+  --tw-text-opacity: 1;
 }
+
+/* High contrast inputs and text areas */
+input, select, textarea {
+  letter-spacing: 0.04em;
+  color: #120d0b;
+}
+
+input::placeholder, textarea::placeholder {
+  color: #78716c;
+  text-transform: uppercase;
+}
+
+/* Accessible focus outline */
+:focus-visible {
+  outline: 2px solid #5B271E;
+  outline-offset: 2px;
+}
+
+/* Custom selection */
+::selection {
+  background: #FFCC37;
+  color: #120d0b;
+}
+
+/* Global brand hover effect: Text hovers illuminate with Logo Yellow (#FFCC37) */
+[class*="hover:text-amber"]:hover,
+[class*="group-hover:text-amber"]:hover,
+.group:hover [class*="group-hover:text-amber"] {
+  color: #FFCC37 !important;
+}
+
+/* Themed scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #ffffff;
+}
+::-webkit-scrollbar-thumb {
+  background: #5c241c;
+  border-radius: 0;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #120d0b;
+}
+
+/* Infinite Marquee for Partnerships and Logo Loops */
+@keyframes marquee {
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+  100% {
+    transform: translate3d(-100%, 0, 0);
+  }
+}
+
+.animate-marquee {
+  display: flex !important;
+  flex-shrink: 0 !important;
+  animation: marquee 24s linear infinite !important;
+  will-change: transform;
+}
+
+.animate-marquee:hover {
+  animation-play-state: paused !important;
+}
+
+/* Home Page Orchestrated Entrance Choreography */
+@keyframes heroEntrance {
+  0% {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes heroContentReveal {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes sectionEntrance {
+  0% {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-hero-entrance {
+  animation: heroEntrance 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+  will-change: transform, opacity;
+}
+
+.animate-hero-title {
+  animation: heroContentReveal 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.12s both;
+  will-change: transform, opacity;
+}
+
+.animate-hero-tagline {
+  animation: heroContentReveal 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.25s both;
+  will-change: transform, opacity;
+}
+
+.animate-hero-cta {
+  animation: heroContentReveal 0.65s cubic-bezier(0.16, 1, 0.3, 1) 0.38s both;
+  will-change: transform, opacity;
+}
+
+.animate-section-campaigns {
+  animation: sectionEntrance 0.75s cubic-bezier(0.16, 1, 0.3, 1) 0.45s both;
+  will-change: transform, opacity;
+}
+
+.animate-section-events {
+  animation: sectionEntrance 0.75s cubic-bezier(0.16, 1, 0.3, 1) 0.6s both;
+  will-change: transform, opacity;
+}
+
+.animate-section-partnerships {
+  animation: sectionEntrance 0.75s cubic-bezier(0.16, 1, 0.3, 1) 0.75s both;
+  will-change: transform, opacity;
+}
+
+.animate-stagger-1 {
+  animation: sectionEntrance 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.2s both;
+  will-change: transform, opacity;
+}
+
+.animate-stagger-2 {
+  animation: sectionEntrance 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.35s both;
+  will-change: transform, opacity;
+}
+
+.animate-stagger-3 {
+  animation: sectionEntrance 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.5s both;
+  will-change: transform, opacity;
+}
+
+/* Skeleton Shimmer Sweep Effect */
+@keyframes skeletonShimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.shimmer-dark {
+  position: relative;
+  overflow: hidden;
+}
+
+.shimmer-dark::after {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  transform: translateX(-100%);
+  background-image: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0,
+    rgba(255, 255, 255, 0.05) 20%,
+    rgba(255, 255, 255, 0.12) 60%,
+    rgba(255, 255, 255, 0)
+  );
+  animation: skeletonShimmer 1.8s infinite;
+  content: '';
+}
+
+.shimmer-light {
+  position: relative;
+  overflow: hidden;
+}
+
+.shimmer-light::after {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  transform: translateX(-100%);
+  background-image: linear-gradient(
+    90deg,
+    rgba(0, 0, 0, 0) 0,
+    rgba(0, 0, 0, 0.03) 20%,
+    rgba(0, 0, 0, 0.06) 60%,
+    rgba(0, 0, 0, 0)
+  );
+  animation: skeletonShimmer 1.8s infinite;
+  content: '';
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-hero-entrance,
+  .animate-hero-title,
+  .animate-hero-tagline,
+  .animate-hero-cta,
+  .animate-section-campaigns,
+  .animate-section-events,
+  .animate-section-partnerships,
+  .animate-stagger-1,
+  .animate-stagger-2,
+  .animate-stagger-3 {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+    filter: none !important;
+  }
+
+  .shimmer-dark::after,
+  .shimmer-light::after {
+    animation: none !important;
+  }
+}
+
+
 

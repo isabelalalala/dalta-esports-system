@@ -10,10 +10,10 @@ export const verificationLabels: Record<VerificationStatus, string> = {
 };
 
 export const verificationStyles: Record<VerificationStatus, string> = {
-  unsubmitted: 'bg-gray-500/15 text-gray-300 border-gray-500/50',
-  pending: 'bg-yellow-500/15 text-yellow-300 border-yellow-500/50',
-  verified: 'bg-[#3987e5]/15 text-[#8fbcf2] border-[#3987e5]/60',
-  rejected: 'bg-red-500/15 text-red-300 border-red-500/50',
+  unsubmitted: 'bg-stone-100 text-stone-700 border-stone-300',
+  pending: 'bg-amber-50 text-amber-800 border-amber-300',
+  verified: 'bg-blue-50 text-blue-700 border-blue-300',
+  rejected: 'bg-red-50 text-red-700 border-red-300',
 };
 
 // Suggestions for the School field (players can still type any school).

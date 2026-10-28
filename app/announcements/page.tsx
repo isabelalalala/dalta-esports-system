@@ -9,9 +9,10 @@ import AnnouncementCard from '@/components/AnnouncementCard';
 import PageLoading from '@/components/PageLoading';
 import { usePageTitle } from '@/utils/page-title';
 import { Pin } from 'lucide-react';
+import PageHeroBackground from '@/components/site/PageHeroBackground';
 
 const inputClass =
-  'w-full border border-brownlight bg-sitebg px-4 py-3 text-white placeholder-gray-400 outline-none focus:border-gold';
+  'w-full p-3 rounded-xl bg-white text-stone-950 border border-stone-300 placeholder:text-stone-400 uppercase tracking-wide focus:border-amber-600 focus:ring-2 focus:ring-amber-500/20 shadow-xs outline-none transition-all font-medium text-xs sm:text-sm';
 
 type TournamentOption = Pick<Tournament, 'id' | 'name'>;
 
@@ -22,13 +23,11 @@ export default function AnnouncementsPage() {
   const [tournaments, setTournaments] = useState<TournamentOption[]>([]);
   const [isAdmin, setIsAdmin] = useState(false);
   const [userId, setUserId] = useState('');
-  // 'all', 'general', or a tournament id
   const [filter, setFilter] = useState('all');
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  // Increase this to make the effect below load everything again
   const [reloadCount, setReloadCount] = useState(0);
 
   useEffect(() => {
@@ -51,7 +50,6 @@ export default function AnnouncementsPage() {
             .from('tournaments')
             .select('id, name')
             .order('start_date', { ascending: false }),
-          // Pinned first, then newest
           supabase
             .from('announcements')
             .select('*, tournaments(id, name)')
@@ -60,6 +58,7 @@ export default function AnnouncementsPage() {
         ]);
         if (tourRes.error) throw tourRes.error;
         if (annRes.error) throw annRes.error;
+
         setTournaments(tourRes.data || []);
         setAnnouncements(annRes.data || []);
       } catch (err) {
@@ -72,29 +71,22 @@ export default function AnnouncementsPage() {
     fetchData();
   }, [supabase, reloadCount]);
 
-  const handleDelete = async (a: Announcement) => {
-    if (!confirm(`Delete the announcement "${a.title}"?`)) return;
-    setError('');
-
-    try {
-      // RLS blocks silently (no error, no rows), so check that something was deleted
-      const { data, error: deleteError } = await supabase
-        .from('announcements')
-        .delete()
-        .eq('id', a.id)
-        .select('id');
-      if (deleteError) throw deleteError;
-      if (!data || data.length === 0) throw new Error('Only administrators can delete announcements.');
-      setAnnouncements((current) => current.filter((x) => x.id !== a.id));
-    } catch (err) {
-      setError(getErrorMessage(err, 'Failed to delete announcement'));
-    }
-  };
-
   const afterSave = () => {
     setShowForm(false);
     setEditingId(null);
     setReloadCount((n) => n + 1);
+  };
+
+  const handleDelete = async (a: Announcement) => {
+    if (!confirm(`Delete announcement "${a.title}"?`)) return;
+    setError('');
+    try {
+      const { error: deleteError } = await supabase.from('announcements').delete().eq('id', a.id);
+      if (deleteError) throw deleteError;
+      setReloadCount((n) => n + 1);
+    } catch (err) {
+      setError(getErrorMessage(err, 'Failed to delete announcement'));
+    }
   };
 
   if (loading) return <PageLoading />;
@@ -106,27 +98,50 @@ export default function AnnouncementsPage() {
   });
 
   return (
-    <main id="main-content" className="min-h-screen bg-sitebg text-white px-4 py-10">
-      <div className="max-w-3xl mx-auto">
-        <Link href="/dashboard" className="inline-block text-gold hover:underline mb-6">
-          ← Back to Dashboard
-        </Link>
+    <div className="w-full space-y-8 uppercase">
+      {/* 1. Main Hero Container with Official Banner */}
+      <section className="relative w-full rounded-3xl border border-stone-800/80 bg-stone-950 overflow-hidden shadow-md p-8 sm:p-14 lg:p-16 text-center text-white flex flex-col items-center justify-center space-y-4">
+        <PageHeroBackground specificKey="hero_banner_path" alt="DALTA Esports Announcements Banner" />
 
-        <div className="flex flex-wrap justify-between items-center gap-4 mb-6">
-          <h1 className="font-pixel text-xl sm:text-2xl leading-relaxed text-gold">Announcements</h1>
-          {/* Admin only; the database refuses posts from other roles too */}
+        <div className="relative z-10 w-full flex flex-wrap items-center justify-between gap-4">
+          <Link
+            href="/dashboard"
+            className="inline-flex items-center gap-1.5 text-xs font-black text-amber-400 hover:text-amber-300 uppercase tracking-wider transition-colors"
+          >
+            ← Back to Dashboard
+          </Link>
           {isAdmin && !showForm && (
             <button
               onClick={() => { setShowForm(true); setEditingId(null); }}
-              className="bg-gold text-black px-6 py-2 font-bold hover:bg-golddark transition"
+              className="bg-gold text-stone-950 px-5 py-2.5 rounded-xl font-black border border-amber-400 shadow-xs hover:bg-golddark hover:-translate-y-0.5 transition-all uppercase tracking-widest text-xs cursor-pointer"
             >
-              + New announcement
+              + New Announcement
             </button>
           )}
         </div>
 
+        <div className="relative z-10 max-w-4xl mx-auto space-y-3 pt-2">
+          <h1
+            className="text-4xl sm:text-5xl lg:text-6xl font-black !text-white text-white tracking-wider uppercase leading-tight"
+            style={{ color: '#ffffff' }}
+          >
+            Announcements
+          </h1>
+          <p
+            className="text-base sm:text-lg !text-white text-stone-200 font-medium uppercase tracking-wide leading-relaxed"
+            style={{ color: '#ffffff' }}
+          >
+            Official bulletins, tournament schedules, operational updates, and news.
+          </p>
+        </div>
+      </section>
+
+      {/* 2. Controls & Announcements Feed */}
+      <div className="space-y-6 text-stone-950">
         {error && (
-          <div role="alert" className="mb-6 bg-red-500/10 border border-red-500 text-red-300 px-4 py-3">{error}</div>
+          <div role="alert" className="bg-red-50 border border-red-200 text-red-800 rounded-xl p-4 text-xs font-bold tracking-wider shadow-2xs">
+            {error}
+          </div>
         )}
 
         {isAdmin && showForm && (
@@ -138,17 +153,23 @@ export default function AnnouncementsPage() {
           />
         )}
 
-        <select value={filter} onChange={(e) => setFilter(e.target.value)} className={`${inputClass} mb-6`} aria-label="Filter announcements">
-          <option value="all">All announcements</option>
-          <option value="general">General only</option>
-          {tournaments.map((t) => (
-            <option key={t.id} value={t.id}>{t.name}</option>
-          ))}
-        </select>
+        <div className="sm:w-80">
+          <select
+            value={filter}
+            onChange={(e) => setFilter(e.target.value)}
+            className={inputClass}
+            aria-label="Filter announcements"
+          >
+            <option value="all">All Announcements</option>
+            <option value="general">General Updates Only</option>
+            {tournaments.map((t) => (
+              <option key={t.id} value={t.id}>{t.name}</option>
+            ))}
+          </select>
+        </div>
 
-        {/* A failed load shows the error above, not "nothing here" */}
         {visible.length === 0 && error ? null : visible.length === 0 ? (
-          <p className="text-gray-400 text-center py-12">No announcements yet.</p>
+          <p className="text-stone-500 text-center py-12 font-bold tracking-wider">No announcements posted yet.</p>
         ) : (
           <div className="space-y-4">
             {visible.map((a) =>
@@ -167,14 +188,20 @@ export default function AnnouncementsPage() {
                   announcement={a}
                   actions={
                     isAdmin ? (
-                      <>
-                        <button onClick={() => { setEditingId(a.id); setShowForm(false); }} className="text-gold hover:underline">
+                      <div className="flex items-center gap-3 text-xs font-black tracking-wider">
+                        <button
+                          onClick={() => { setEditingId(a.id); setShowForm(false); }}
+                          className="text-amber-700 hover:text-amber-800 underline cursor-pointer"
+                        >
                           Edit
                         </button>
-                        <button onClick={() => handleDelete(a)} className="text-red-400 hover:text-red-300">
+                        <button
+                          onClick={() => handleDelete(a)}
+                          className="text-red-600 hover:text-red-700 underline cursor-pointer"
+                        >
                           Delete
                         </button>
-                      </>
+                      </div>
                     ) : undefined
                   }
                 />
@@ -183,11 +210,10 @@ export default function AnnouncementsPage() {
           </div>
         )}
       </div>
-    </main>
+    </div>
   );
 }
 
-// Create a new announcement, or edit `existing`.
 function AnnouncementForm({
   existing,
   tournaments,
@@ -222,53 +248,118 @@ function AnnouncementForm({
     };
 
     try {
-      const { data, error: saveError } = existing
-        ? await supabase.from('announcements').update(fields).eq('id', existing.id).select('id')
-        : await supabase.from('announcements').insert([{ ...fields, created_by: userId }]).select('id');
-      if (saveError) throw saveError;
-      // RLS blocks updates silently (no error, no rows)
-      if (!data || data.length === 0) throw new Error('Only administrators can post announcements.');
+      if (existing) {
+        const { error: updateError } = await supabase
+          .from('announcements')
+          .update(fields)
+          .eq('id', existing.id);
+        if (updateError) throw updateError;
+      } else {
+        const { error: insertError } = await supabase
+          .from('announcements')
+          .insert([{ ...fields, author_id: userId }]);
+        if (insertError) throw insertError;
+      }
       onSaved();
     } catch (err) {
       setError(getErrorMessage(err, 'Failed to save announcement'));
+    } finally {
       setSaving(false);
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="mb-6 bg-sitecard border-2 border-gold shadow-[6px_6px_0_var(--color-brown)] p-6 space-y-4">
-      <h2 className="text-xl font-bold">{existing ? 'Edit announcement' : 'New announcement'}</h2>
-      {error && <div role="alert" className="bg-red-500/10 border border-red-500 text-red-300 px-4 py-3">{error}</div>}
-
-      <input
-        type="text" value={title} onChange={(e) => setTitle(e.target.value)}
-        placeholder="Title" aria-label="Announcement title" className={inputClass} required
-      />
-      <textarea
-        value={body} onChange={(e) => setBody(e.target.value)}
-        placeholder="What do you want to announce?" aria-label="Announcement body" rows={6} className={inputClass} required
-      />
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-center">
-        <select value={tournamentId} onChange={(e) => setTournamentId(e.target.value)} className={inputClass} aria-label="Tournament">
-          <option value="">General (not for one tournament)</option>
-          {tournaments.map((t) => (
-            <option key={t.id} value={t.id}>{t.name}</option>
-          ))}
-        </select>
-        <label className="flex items-center gap-2 text-gray-300 cursor-pointer">
-          <input type="checkbox" checked={pinned} onChange={(e) => setPinned(e.target.checked)} />
-          <Pin className="h-4 w-4" /> Pin to the top
-        </label>
+    <form
+      onSubmit={handleSubmit}
+      className="bg-white border border-stone-200/90 rounded-2xl p-6 sm:p-8 shadow-xs space-y-5 text-stone-950"
+    >
+      <div className="flex items-center justify-between pb-2 border-b border-stone-100">
+        <h2 className="text-lg font-black text-stone-950 tracking-wider">
+          {existing ? 'Edit Announcement' : 'Post New Announcement'}
+        </h2>
+        <button
+          type="button"
+          onClick={onCancel}
+          className="text-stone-500 hover:text-stone-800 text-xs font-bold cursor-pointer"
+        >
+          Cancel
+        </button>
       </div>
 
-      <div className="flex gap-2">
+      {error && (
+        <div role="alert" className="bg-red-50 border border-red-200 text-red-800 rounded-xl p-4 text-xs font-bold tracking-wider shadow-2xs">
+          {error}
+        </div>
+      )}
+
+      <div className="space-y-4">
+        <div>
+          <label className="block text-xs font-black text-stone-800 tracking-wider mb-1.5 uppercase">Title</label>
+          <input
+            type="text"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder="Announcement headline"
+            className={inputClass}
+            required
+          />
+        </div>
+
+        <div>
+          <label className="block text-xs font-black text-stone-800 tracking-wider mb-1.5 uppercase">Content</label>
+          <textarea
+            value={body}
+            onChange={(e) => setBody(e.target.value)}
+            rows={5}
+            placeholder="Detailed announcement text..."
+            className={`${inputClass} font-normal`}
+            required
+          />
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-center">
+          <div>
+            <label className="block text-xs font-black text-stone-800 tracking-wider mb-1.5 uppercase">Tournament (Optional)</label>
+            <select
+              value={tournamentId}
+              onChange={(e) => setTournamentId(e.target.value)}
+              className={inputClass}
+            >
+              <option value="">General (All Tournaments)</option>
+              {tournaments.map((t) => (
+                <option key={t.id} value={t.id}>{t.name}</option>
+              ))}
+            </select>
+          </div>
+
+          <div className="pt-5 sm:pt-6">
+            <label className="flex items-center gap-2.5 text-xs font-black text-stone-800 tracking-wider uppercase cursor-pointer">
+              <input
+                type="checkbox"
+                checked={pinned}
+                onChange={(e) => setPinned(e.target.checked)}
+                className="w-4 h-4 rounded text-amber-600 focus:ring-amber-500/20 border-stone-300"
+              />
+              <Pin className="h-4 w-4 text-amber-600" />
+              <span>Pin to top of feed</span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div className="flex items-center gap-3 pt-2">
         <button
-          type="submit" disabled={saving}
-          className="bg-gold text-black px-6 py-2 font-bold hover:bg-golddark transition disabled:opacity-50"
+          type="submit"
+          disabled={saving}
+          className="rounded-xl bg-gold hover:bg-golddark text-stone-950 font-black px-6 py-2.5 text-xs tracking-widest border border-amber-400 shadow-xs hover:-translate-y-0.5 transition-all disabled:opacity-50 cursor-pointer"
         >
-          {saving ? 'Saving...' : existing ? 'Save changes' : 'Post'}
+          {saving ? 'Saving...' : existing ? 'Save Changes' : 'Post Announcement'}
         </button>
-        <button type="button" onClick={onCancel} className="text-gray-400 px-6 py-2 hover:text-white transition">
+        <button
+          type="button"
+          onClick={onCancel}
+          className="rounded-xl border border-stone-300 hover:border-stone-400 bg-white text-stone-700 font-bold px-5 py-2.5 text-xs tracking-wider transition-all cursor-pointer"
+        >
           Cancel
         </button>
       </div>

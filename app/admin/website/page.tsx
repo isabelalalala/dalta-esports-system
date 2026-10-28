@@ -10,6 +10,7 @@ import PageLoading from '@/components/PageLoading';
 import PageError from '@/components/PageError';
 import { getErrorMessage } from '@/utils/errors';
 import { usePageTitle } from '@/utils/page-title';
+import PageHeroBackground from '@/components/site/PageHeroBackground';
 
 const TABS = ['Site text', 'Carousel', 'Campaigns', 'Events', 'Divisions', 'Officers', 'Official teams'] as const;
 type Tab = (typeof TABS)[number];
@@ -25,7 +26,6 @@ const postFields: FieldConfig[] = [
   { name: 'link', label: 'Link (optional)', type: 'link', help: 'A page on this site (/tournaments) or https://...' },
 ];
 
-// Edit the public website without code (admin only; RLS and the storage policies also check).
 export default function WebsiteAdminPage() {
   const supabase = createClient();
   usePageTitle('Edit website');
@@ -65,43 +65,77 @@ export default function WebsiteAdminPage() {
   if (loadError) return <PageError message={loadError} />;
   if (role !== 'admin') {
     return (
-      <main id="main-content" className="min-h-screen bg-sitebg text-white p-10 text-center">
-        Only admins can edit the website.{' '}
-        <Link href="/dashboard" className="text-gold underline">Back to Dashboard</Link>
-      </main>
+      <div className="w-full bg-white text-stone-950 p-10 text-center uppercase space-y-4">
+        <p className="font-extrabold text-stone-900">Only administrators can edit the website.</p>
+        <Link href="/dashboard" className="inline-block text-amber-700 hover:text-amber-800 font-bold underline">
+          ← Back to Dashboard
+        </Link>
+      </div>
     );
   }
 
   const gameName = (id: unknown) => games.find((g) => g.value === id)?.label ?? str(id);
 
   return (
-    <main id="main-content" className="min-h-screen bg-sitebg text-white px-4 py-10">
-      <div className="max-w-5xl mx-auto space-y-6">
-        <div>
-          <Link href="/dashboard" className="inline-block text-gold hover:underline mb-6">← Back to Dashboard</Link>
-          <div className="flex flex-wrap justify-between items-center gap-4">
-            <h1 className="font-pixel text-xl sm:text-2xl leading-relaxed text-gold">Website</h1>
-            <Link href="/" target="_blank" className="border border-gold text-gold px-4 py-2 font-bold hover:bg-gold/10">
-              View website ↗
-            </Link>
-          </div>
-          <p className="text-gray-400 text-sm mt-2">
-            Changes appear on the public website as soon as you save. Hidden items stay saved but aren&apos;t shown.
-          </p>
+    <div className="w-full space-y-8 uppercase">
+      {/* 1. Main Hero Container with Official Banner */}
+      <section className="relative w-full rounded-3xl border border-stone-800/80 bg-stone-950 overflow-hidden shadow-md p-8 sm:p-14 lg:p-16 text-center text-white flex flex-col items-center justify-center space-y-4">
+        <PageHeroBackground specificKey="hero_banner_path" alt="DALTA Esports Website Banner" />
+
+        <div className="relative z-10 w-full flex flex-wrap items-center justify-between gap-4">
+          <Link
+            href="/dashboard"
+            className="inline-flex items-center gap-1.5 text-xs font-black text-amber-400 hover:text-amber-300 uppercase tracking-wider transition-colors"
+          >
+            ← Back to Dashboard
+          </Link>
+          <Link
+            href="/"
+            target="_blank"
+            className="inline-flex items-center gap-1.5 text-xs font-black bg-white/10 hover:bg-white/20 border border-white/20 text-white px-4 py-2 rounded-xl transition-all"
+          >
+            View Live Website ↗
+          </Link>
         </div>
 
-        <div className="flex flex-wrap gap-2" role="tablist">
+        <div className="relative z-10 max-w-4xl mx-auto space-y-3 pt-2">
+          <h1
+            className="text-3xl sm:text-4xl lg:text-5xl font-black !text-white text-white tracking-wider uppercase leading-tight"
+            style={{ color: '#ffffff' }}
+          >
+            Website Content
+          </h1>
+          <p
+            className="text-base sm:text-lg !text-white text-stone-200 font-medium uppercase tracking-wide leading-relaxed"
+            style={{ color: '#ffffff' }}
+          >
+            Edit public portal text, banners, campaigns, events, divisions, and officer rosters.
+          </p>
+        </div>
+      </section>
+
+      {/* 2. Tabs Strip & Editor Containers */}
+      <div className="space-y-6 text-stone-950">
+        <div className="flex flex-wrap gap-2 pb-2 border-b border-stone-200/80" role="tablist">
           {TABS.map((t) => (
-            <button key={t} role="tab" aria-selected={tab === t} onClick={() => setTab(t)}
-              className={`px-4 py-2 font-bold border ${tab === t
-                ? 'bg-gold text-black border-gold' : 'border-brownlight text-gray-300 hover:bg-gold/10'}`}>
+            <button
+              key={t}
+              role="tab"
+              aria-selected={tab === t}
+              onClick={() => setTab(t)}
+              className={`px-4 py-2.5 rounded-xl font-black text-xs uppercase tracking-wider transition-all cursor-pointer ${
+                tab === t
+                  ? 'bg-amber-500/15 text-stone-950 border border-amber-500/30 shadow-2xs'
+                  : 'text-stone-700 hover:text-stone-950 hover:bg-stone-100/80 border border-transparent'
+              }`}
+            >
               {t}
             </button>
           ))}
         </div>
 
-        {/* key: switching tabs starts each editor fresh */}
-        <div key={tab}>
+        {/* Tab Contents */}
+        <div key={tab} className="w-full">
           {tab === 'Site text' && <SiteTextEditor />}
 
           {tab === 'Carousel' && (
@@ -203,17 +237,15 @@ export default function WebsiteAdminPage() {
           )}
         </div>
       </div>
-    </main>
+    </div>
   );
 }
 
 // Players of one official team (shown while editing the team)
 function TeamPlayers({ teamId }: { teamId: string }) {
-  const supabase = createClient();
-
-  // Only one captain per team (the database also enforces it): clear the others first
   const oneCaptain = async (player: Row) => {
     if (!player.is_captain) return;
+    const supabase = createClient();
     const { error } = await supabase
       .from('official_team_players')
       .update({ is_captain: false })
@@ -223,9 +255,11 @@ function TeamPlayers({ teamId }: { teamId: string }) {
   };
 
   return (
-    <div className="border-t border-gray-700 pt-4 space-y-3">
-      <h4 className="font-bold">Players</h4>
-      <p className="text-xs text-gray-400">Shown as &quot;IGN – role&quot;. Players appear on the website when the team is published.</p>
+    <div className="border-t border-stone-200/80 pt-5 space-y-3 text-stone-950">
+      <h4 className="font-black text-stone-950 text-sm tracking-wider uppercase">Team Roster Players</h4>
+      <p className="text-xs text-stone-500 font-semibold tracking-wide">
+        Players appear on the public division page once the team is published.
+      </p>
       <ListEditor
         table="official_team_players"
         filter={{ column: 'team_id', value: teamId }}

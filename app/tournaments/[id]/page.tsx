@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import Image from 'next/image';
 import { useRouter, useParams } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
 import Link from 'next/link';
@@ -19,13 +20,49 @@ import CalendarLinks from '@/components/CalendarLinks';
 import PageLoading from '@/components/PageLoading';
 import PageError from '@/components/PageError';
 import { usePageTitle } from '@/utils/page-title';
-import { BadgeCheck, MessageSquare, Target, Tv } from 'lucide-react';
+import PageHeroBackground from '@/components/site/PageHeroBackground';
+import {
+  AlertCircle,
+  BadgeCheck,
+  Calendar,
+  CheckCircle2,
+  Clock,
+  Edit3,
+  ExternalLink,
+  MessageSquare,
+  ShieldAlert,
+  Sparkles,
+  Swords,
+  Target,
+  Trash2,
+  Trophy,
+  Tv,
+  Users,
+} from 'lucide-react';
+
+function getGameLogo(game: string, gameId?: string | null): string | null {
+  const g = (game || '').toLowerCase().trim();
+  const id = (gameId || '').toLowerCase().trim();
+
+  if (g.includes('mlbb') || g.includes('mobile legends') || id.includes('mlbb')) {
+    return '/MLBB LOGO.png';
+  }
+  if (g.includes('valo') || g.includes('valorant') || id.includes('valo')) {
+    return '/VALO LOGO.png';
+  }
+  if (g.includes('tekken') || id.includes('tekken')) {
+    return '/TEKKEMN 8 LOGO.png';
+  }
+  if (g.includes('codm') || g.includes('call of duty') || id.includes('cod')) {
+    return '/CODM LOGO.png';
+  }
+  return null;
+}
 
 export default function TournamentDetailsPage() {
   usePageTitle('Tournament');
   const supabase = createClient();
   const [tournament, setTournament] = useState<Tournament | null>(null);
-  // Pending + approved registrations (the ones that take up a slot)
   const [registrations, setRegistrations] = useState<Registration[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -34,23 +71,38 @@ export default function TournamentDetailsPage() {
   const [showForm, setShowForm] = useState(false);
   const [teams, setTeams] = useState<Team[]>([]);
   const [selectedTeamId, setSelectedTeamId] = useState('');
-  // Members of the selected team who aren't verified students yet (for tournaments that require it).
-  // teamId says which team the list belongs to, so an old list is never shown for another team.
   const [unverified, setUnverified] = useState<{ teamId: string; members: RosterMember[] } | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [matches, setMatches] = useState<Match[]>([]);
-  // Team id -> team name, for the teams that appear in the bracket
   const [teamNames, setTeamNames] = useState<Record<string, string>>({});
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [liveStreams, setLiveStreams] = useState<Stream[]>([]);
   const [generating, setGenerating] = useState(false);
-  // Increase this to make the effect below load everything again
   const [reloadCount, setReloadCount] = useState(0);
 
+  const registrationRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const params = useParams();
   const id = params?.id as string;
+
+  const handleOpenRegistration = () => {
+    setShowForm(true);
+    setTimeout(() => {
+      registrationRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      const selectEl = document.getElementById('register-team');
+      selectEl?.focus();
+    }, 50);
+  };
+
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.location.hash === '#register') {
+      setShowForm(true);
+      setTimeout(() => {
+        registrationRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 300);
+    }
+  }, [loading]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -75,29 +127,24 @@ export default function TournamentDetailsPage() {
             .select('*')
             .eq('id', id)
             .single(),
-          // Registrations that take up a slot, with team name and captain
-          // (the captain's name is only readable by admin/staff).
           supabase
             .from('tournament_registrations')
             .select('*, teams(*, captain:profiles(full_name, email))')
             .eq('tournament_id', id)
             .in('status', ACTIVE_REGISTRATION_STATUSES)
             .order('registered_at'),
-          // Bracket matches (empty until an organizer generates the bracket)
           supabase
             .from('matches')
             .select('*')
             .eq('tournament_id', id)
             .order('round')
             .order('match_number'),
-          // Announcements for this tournament, pinned first
           supabase
             .from('announcements')
             .select('*')
             .eq('tournament_id', id)
             .order('pinned', { ascending: false })
             .order('created_at', { ascending: false }),
-          // Streams of this tournament that are live right now (for the "Watch live" banner)
           supabase
             .from('streams')
             .select('*')
@@ -119,7 +166,6 @@ export default function TournamentDetailsPage() {
         setAnnouncements(annRes.data || []);
         setLiveStreams(streamsRes.data || []);
 
-        // Names of every team in the bracket, in one query
         const bracketTeamIds = new Set<string>();
         for (const m of matchesData || []) {
           if (m.team_a_id) bracketTeamIds.add(m.team_a_id);
@@ -132,7 +178,6 @@ export default function TournamentDetailsPage() {
                 .select('id, name')
                 .in('id', [...bracketTeamIds])
             : null,
-          // Teams I captain for this tournament's game (only captains can register)
           data.game_id
             ? supabase
                 .from('teams')
@@ -156,8 +201,6 @@ export default function TournamentDetailsPage() {
     if (id) fetchData();
   }, [id, router, supabase, reloadCount]);
 
-  // When the captain picks a team, list the members who still need verification.
-  // Only a convenience: the database refuses the registration anyway.
   const requiresVerification = tournament?.requires_verification ?? false;
   useEffect(() => {
     if (!selectedTeamId || !requiresVerification) return;
@@ -184,8 +227,6 @@ export default function TournamentDetailsPage() {
         return;
       }
 
-      // The database checks the rules (dates, game, team size, tournament full,
-      // already registered) and returns a readable error if one fails.
       const { error: regError } = await supabase
         .from('tournament_registrations')
         .insert([
@@ -220,8 +261,6 @@ export default function TournamentDetailsPage() {
     setMessage('');
 
     try {
-      // The database shuffles the approved teams, creates every round and
-      // refuses if a match has already started.
       const { data: created, error: genError } = await supabase
         .rpc('generate_bracket', { p_tournament_id: id });
       if (genError) throw genError;
@@ -240,8 +279,6 @@ export default function TournamentDetailsPage() {
 
     setDeleting(true);
     try {
-      // .select() returns the deleted rows. If RLS blocked the delete,
-      // Supabase gives no error but an empty list, so check for that.
       const { data: deleted, error: deleteError } = await supabase
         .from('tournaments')
         .delete()
@@ -259,7 +296,7 @@ export default function TournamentDetailsPage() {
     }
   };
 
-  if (loading) return <PageLoading />;
+  if (loading) return <PageLoading variant="detail" label="Loading tournament..." />;
   if (!tournament) {
     return (
       <PageError message={error || 'Tournament not found. It may have been deleted.'} backHref="/tournaments" backLabel="Back to Tournaments" />
@@ -270,12 +307,11 @@ export default function TournamentDetailsPage() {
   const status = getTournamentStatus(tournament);
   const approvedTeams = registrations.filter((r) => r.status === 'approved');
   const isFull = tournament.max_participants != null && registrations.length >= tournament.max_participants;
-  // Selected team's members who must be verified before it can register
   const blockingMembers =
     tournament.requires_verification && selectedTeamId && unverified?.teamId === selectedTeamId ? unverified.members : [];
   const roundCount = matches.reduce((max, m) => Math.max(max, m.round), 0);
+  const logo = getGameLogo(tournament.game, tournament.game_id);
 
-  // Why the register form is hidden ('' = registration is open)
   let closedReason = '';
   if (status === 'cancelled') closedReason = 'This tournament has been cancelled.';
   else if (status === 'registration_closed') closedReason = 'Registration is closed.';
@@ -284,302 +320,514 @@ export default function TournamentDetailsPage() {
   else if (isFull) closedReason = 'This tournament is full.';
 
   const details = [
-    { label: 'Game', value: tournament.game },
-    { label: 'Participants', value: `${registrations.length} / ${tournament.max_participants || '∞'} teams` },
-    { label: 'Registration Deadline', value: formatDate(tournament.registration_deadline) },
-    { label: 'Start Date', value: formatDate(tournament.start_date) },
-    { label: 'End Date', value: formatDate(tournament.end_date) },
+    { label: 'Game Discipline', value: tournament.game, icon: Trophy },
+    { label: 'Registered Teams', value: `${registrations.length} / ${tournament.max_participants || '∞'} teams`, icon: Users },
+    { label: 'Registration Deadline', value: formatDate(tournament.registration_deadline), icon: Clock },
+    { label: 'Start Date', value: formatDate(tournament.start_date), icon: Calendar },
+    { label: 'End Date', value: formatDate(tournament.end_date), icon: Calendar },
+    {
+      label: 'Check-In Window',
+      value: tournament.checkin_window_minutes > 0 ? `${tournament.checkin_window_minutes} mins before match` : 'No pre-match check-in',
+      icon: CheckCircle2,
+    },
   ];
 
   return (
-    <main id="main-content" className="min-h-screen bg-sitebg text-white px-4 py-6 sm:p-6">
-      <div className="max-w-4xl mx-auto">
-        <Link href="/tournaments" className="text-gold hover:underline mb-6 inline-block">
-          ← Back to Tournaments
-        </Link>
+    <div className="w-full space-y-8 uppercase text-stone-950">
+      {/* 1. Main Hero Container */}
+      <section className="animate-hero-entrance relative w-full rounded-3xl border border-stone-800/80 bg-stone-950 overflow-hidden shadow-md p-8 sm:p-12 lg:p-14 text-center text-white flex flex-col items-center justify-center space-y-4">
+        <PageHeroBackground specificKey="tournaments_hero_bg_path" alt="DALTA Esports Tournament Banner" />
 
-        <div className="bg-sitecard border-2 border-gold shadow-[6px_6px_0_var(--color-brown)] p-4 sm:p-8 space-y-8">
-          {/* Title and status */}
-          <div>
-            <div className="flex flex-wrap items-center gap-3 mb-4">
-              <h1 className="font-pixel text-lg sm:text-2xl leading-relaxed text-gold break-words min-w-0">{tournament.name}</h1>
-              <span className={`px-3 py-1 rounded-full border text-xs font-bold uppercase ${statusStyles[status]}`}>
-                {statusLabels[status]}
-              </span>
-              {tournament.requires_verification && (
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-[#3987e5]/60 bg-[#3987e5]/15 text-[#8fbcf2] text-xs font-bold uppercase">
-                  <BadgeCheck className="h-3.5 w-3.5" /> Verified students only
-                </span>
-              )}
-            </div>
-            {tournament.description && (
-              <p className="text-gray-300 text-lg whitespace-pre-wrap break-words">{tournament.description}</p>
-            )}
-            {/* The public page works without logging in, so it's the one to share */}
-            <div className="mt-4 flex flex-wrap items-center gap-3">
-              <Link href={`/t/${tournament.id}`} className="text-sm text-gold hover:underline">Public page ↗</Link>
-              <ShareButton path={`/t/${tournament.id}`} title={tournament.name} text={`${tournament.name} (${tournament.game}) on DALTA Esports`} />
-              <CalendarLinks kind="tournament" id={tournament.id} />
-            </div>
-          </div>
-
-          {error && (
-            <div role="alert" className="bg-red-500/10 border border-red-500 text-red-300 px-4 py-3">{error}</div>
-          )}
-          {message && (
-            <div role="status" className="bg-green-500/10 border border-green-500 text-green-300 px-4 py-3">{message}</div>
-          )}
-
-          {/* Watch live banner */}
-          {liveStreams.map((s) => (
-            <Link
-              key={s.id}
-              href={`/live/${s.id}`}
-              className="flex items-center justify-between gap-3 bg-red-600/15 border border-red-500 px-4 py-3 hover:bg-red-600/25 transition"
-            >
-              <span className="font-bold text-red-300 min-w-0 break-words inline-flex items-center gap-2"><Tv className="h-4 w-4 shrink-0" /> Watch live: {s.title}</span>
-              <span className="text-red-300 text-sm shrink-0"><span className="inline-block h-2 w-2 rounded-full bg-red-500 animate-pulse mr-1" />LIVE →</span>
-            </Link>
-          ))}
-
-          {/* Details */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-            {details.map((d) => (
-              <div key={d.label} className="bg-sitebg p-4 border border-brown">
-                <span className="text-gray-400 block text-xs uppercase font-bold">{d.label}</span>
-                <span className="text-lg font-semibold break-words">{d.value}</span>
-              </div>
-            ))}
-          </div>
-
-          {/* Announcements for this tournament */}
-          {announcements.length > 0 && (
-            <div>
-              <h2 className="text-xl font-bold mb-3">Announcements</h2>
-              <div className="space-y-3">
-                {announcements.map((a) => (
-                  <AnnouncementCard key={a.id} announcement={a} showTournament={false} />
-                ))}
-              </div>
-            </div>
-          )}
-
-          <Link href={`/feedback?tournament=${id}`} className="inline-flex items-center gap-1.5 text-sm text-gold hover:underline">
-            <MessageSquare className="h-4 w-4" /> Give feedback about this tournament
+        {/* Back Link & Badges */}
+        <div className="relative z-10 w-full flex flex-wrap items-center justify-between gap-4">
+          <Link
+            href="/tournaments"
+            className="inline-flex items-center gap-1.5 text-xs font-black text-[#FFCC37] hover:text-[#FFE066] uppercase tracking-wider transition-colors"
+          >
+            ← Back to Tournaments
           </Link>
-
-          {/* Rules */}
-          <div>
-            <h2 className="text-xl font-bold mb-2">Rules</h2>
-            {tournament.rules ? (
-              <p className="text-gray-300 whitespace-pre-wrap break-words bg-sitebg p-4 border border-brown">
-                {tournament.rules}
-              </p>
-            ) : (
-              <p className="text-gray-400">No rules posted yet.</p>
+          <div className="flex flex-wrap items-center gap-2">
+            <span className={`text-[10px] sm:text-xs font-black px-3 py-1 rounded-md border uppercase shadow-xs ${statusStyles[status]}`}>
+              {statusLabels[status]}
+            </span>
+            {tournament.requires_verification && (
+              <span className="inline-flex items-center gap-1 text-[10px] sm:text-xs font-black px-3 py-1 rounded-md border border-sky-500/50 bg-sky-500/20 text-sky-200 uppercase">
+                <BadgeCheck className="h-3.5 w-3.5 text-sky-300" /> Verified Students Only
+              </span>
             )}
           </div>
+        </div>
 
-          {/* Bracket (scrolls sideways inside its own box on phones) */}
-          <div>
-            <h2 className="text-xl font-bold mb-3">Bracket</h2>
-            {matches.length > 0 ? (
-              <>
-                {!isOrganizer && (
-                  <p className="text-sm text-gray-400 mb-3 flex items-center gap-1.5">
-                    <Target className="h-4 w-4 shrink-0" /> Pick&apos;em: pick the winner under each match before it starts. Picks close at match time.
-                  </p>
-                )}
-                {/* Under each match: the community split and (for the audience) the pick buttons */}
-                <PredictionsProvider matches={matches}>
-                  <Bracket
-                    matches={matches}
-                    teamNames={teamNames}
-                    matchHref={(m) => `/matches/${m.id}`}
-                    renderBelow={(m) => <PredictionPicker match={m} teamNames={teamNames} compact />}
-                  />
-                </PredictionsProvider>
-              </>
-            ) : (
-              <p className="text-gray-400">
-                No bracket yet. It appears here once the organizers generate it from the approved teams.
-              </p>
-            )}
+        {/* Title & Metadata */}
+        <div className="relative z-10 max-w-4xl mx-auto space-y-3 pt-2">
+          <h1
+            className="animate-hero-title text-3xl sm:text-4xl lg:text-5xl font-black !text-white text-white tracking-wider uppercase leading-tight"
+            style={{ color: '#ffffff' }}
+          >
+            {tournament.name}
+          </h1>
+          <p
+            className="animate-hero-tagline text-xs sm:text-sm text-stone-200 font-semibold uppercase tracking-wider flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5"
+            style={{ color: '#ffffff' }}
+          >
+            <span className="text-[#FFCC37] font-black">{tournament.game}</span>
+            <span>•</span>
+            <span>{formatDate(tournament.start_date)} – {formatDate(tournament.end_date)}</span>
+            <span>•</span>
+            <span>{registrations.length} / {tournament.max_participants || '∞'} Teams</span>
+          </p>
+        </div>
+
+        {/* Action Controls */}
+        <div className="relative z-10 flex flex-wrap items-center justify-center gap-3 pt-2">
+          <ShareButton path={`/t/${tournament.id}`} title={tournament.name} text={`${tournament.name} (${tournament.game}) on DALTA Esports`} />
+          <CalendarLinks kind="tournament" id={tournament.id} />
+          <Link
+            href={`/t/${tournament.id}`}
+            className="px-4 py-2 rounded-xl border border-white/20 bg-white/10 hover:bg-white/20 hover:border-[#FFCC37] text-white text-xs font-black tracking-wider transition-all inline-flex items-center gap-1.5"
+          >
+            <span>Public Page</span>
+            <ExternalLink className="w-3.5 h-3.5 text-[#FFCC37]" />
+          </Link>
+        </div>
+      </section>
+
+      {/* 2. Error / Status Notifications */}
+      {error && (
+        <div role="alert" className="rounded-2xl bg-red-500/10 border border-red-500/30 p-4 sm:p-5 text-red-700 text-xs sm:text-sm font-bold uppercase tracking-wider flex items-center gap-3">
+          <AlertCircle className="w-5 h-5 shrink-0 text-red-600" />
+          <span>{error}</span>
+        </div>
+      )}
+      {message && (
+        <div role="status" className="rounded-2xl bg-emerald-500/10 border border-emerald-500/30 p-4 sm:p-5 text-emerald-800 text-xs sm:text-sm font-bold uppercase tracking-wider flex items-center gap-3">
+          <CheckCircle2 className="w-5 h-5 shrink-0 text-emerald-600" />
+          <span>{message}</span>
+        </div>
+      )}
+
+      {/* 3. Watch Live Banner (if streams active) */}
+      {liveStreams.map((s) => (
+        <Link
+          key={s.id}
+          href={`/live/${s.id}`}
+          className="group rounded-2xl border border-red-500/30 bg-red-500/10 hover:bg-red-500/15 p-4 sm:p-5 flex items-center justify-between gap-4 text-red-900 transition-all shadow-xs"
+        >
+          <div className="flex items-center gap-3 min-w-0">
+            <span className="p-2.5 rounded-xl bg-red-600 text-white shadow-xs">
+              <Tv className="h-5 w-5 animate-pulse" />
+            </span>
+            <div className="min-w-0">
+              <div className="text-[10px] font-black text-red-700 uppercase tracking-widest flex items-center gap-1.5">
+                <span className="inline-block h-2 w-2 rounded-full bg-red-600 animate-ping" /> Live Match Stream
+              </div>
+              <p className="font-black text-sm sm:text-base text-stone-950 truncate tracking-wide">{s.title}</p>
+            </div>
           </div>
+          <span className="px-4 py-2 rounded-xl bg-red-600 text-white font-black text-xs uppercase tracking-widest group-hover:bg-red-700 transition-colors shrink-0">
+            Watch Now →
+          </span>
+        </Link>
+      ))}
 
-          {/* Pick'em leaderboard (top 3 here, the full list on its own page) */}
-          {matches.length > 0 && (
-            <div>
-              <div className="flex flex-wrap items-baseline justify-between gap-2 mb-3">
-                <h2 className="text-xl font-bold flex items-center gap-2"><Target className="h-5 w-5" /> Pick&apos;em Leaderboard</h2>
-                <Link href={`/tournaments/${id}/predictions`} className="text-sm text-gold hover:underline">Full leaderboard →</Link>
+      {/* 4. Editorial Layout: Game Media Showcase & Overview */}
+      <div className="animate-stagger-1 grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 items-start">
+        {/* Left Column: Constrained Game Media Card */}
+        {logo ? (
+          <div className="lg:col-span-5 w-full">
+            <div className="relative aspect-[4/3] max-h-[380px] w-full rounded-3xl border border-stone-800/80 bg-[#0e0c0b] overflow-hidden shadow-md flex items-center justify-center p-6 sm:p-8">
+              {/* Radial gradient spotlight matching division cards */}
+              <div
+                className="absolute inset-0 pointer-events-none"
+                style={{
+                  background:
+                    'radial-gradient(circle at 85% 85%, rgba(164, 148, 140, 0.35) 0%, rgba(35, 30, 27, 0.7) 45%, #0e0c0b 100%)',
+                }}
+              />
+              <div className="absolute top-4 right-4 z-20 pointer-events-none">
+                <span className="text-[10px] font-black tracking-widest px-3 py-1.5 rounded-md border border-[#FFCC37]/60 bg-[#0e0c0b]/85 text-[#FFCC37] uppercase backdrop-blur-md shadow-md">
+                  {statusLabels[status]}
+                </span>
               </div>
-              <PickemLeaderboard tournamentId={id} limit={3} />
+              <div className="relative z-0 w-36 h-36 sm:w-44 sm:h-44 flex items-center justify-center">
+                <Image
+                  src={logo}
+                  alt={tournament.game}
+                  fill
+                  sizes="(max-width: 1024px) 200px, 220px"
+                  className="object-contain drop-shadow-[0_8px_24px_rgba(0,0,0,0.7)] hover:scale-105 transition-transform duration-300"
+                  priority
+                />
+              </div>
+              <div className="absolute bottom-4 left-6 right-6 text-center z-10">
+                <span className="text-xs font-black tracking-widest text-stone-400 uppercase">
+                  {tournament.game} Division
+                </span>
+              </div>
             </div>
-          )}
-
-          {/* Approved teams */}
-          <div>
-            <h2 className="text-xl font-bold mb-2">Approved Teams ({approvedTeams.length})</h2>
-            {approvedTeams.length === 0 ? (
-              <p className="text-gray-400">No approved teams yet.</p>
-            ) : (
-              <ul className="divide-y divide-brown bg-sitebg border border-brown">
-                {approvedTeams.map((reg) => (
-                  <li key={reg.id} className="px-4 py-3 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1">
-                    <span className="font-semibold break-words min-w-0">
-                      {/* Older registrations have no team, only the typed team_name */}
-                      {reg.teams?.name || reg.team_name || 'Unnamed Team'}
-                    </span>
-                    {reg.teams?.captain && (
-                      <span className="text-gray-400 text-sm break-all sm:break-normal">
-                        Captain: {reg.teams.captain.full_name || reg.teams.captain.email}
-                      </span>
-                    )}
-                  </li>
-                ))}
-              </ul>
-            )}
           </div>
+        ) : null}
 
-          {/* ADMIN / STAFF CONTROLS (the database also enforces these permissions) */}
-          {isOrganizer ? (
-            <div className="bg-yellow-600/10 border border-yellow-600 p-4">
-              <p className="text-yellow-400 font-semibold mb-1">Admin Panel</p>
-              <p className="text-gray-400 text-sm mb-4">
-                {matches.length > 0
-                  ? `Bracket: ${matches.length} matches in ${roundCount} rounds.`
-                  : `No bracket yet. It is generated from the ${approvedTeams.length} approved teams.`}
-              </p>
-              <div className="flex gap-3 flex-wrap">
-                <Link
-                  href={`/tournaments/${id}/edit`}
-                  className="bg-gold text-black px-6 py-2 font-bold hover:bg-golddark transition"
-                >
-                  Edit Tournament
-                </Link>
-                {matches.length > 0 && (
-                  <Link
-                    href={`/tournaments/${id}/matches`}
-                    className="bg-sitecard border-2 border-gold shadow-[6px_6px_0_var(--color-brown)] text-gold px-6 py-2 font-bold hover:bg-gold hover:text-black transition"
-                  >
-                    Manage Matches
-                  </Link>
-                )}
-                <Link
-                  href={`/tournaments/${id}/streams`}
-                  className="bg-sitecard border border-red-500 text-red-300 px-6 py-2 font-bold hover:bg-red-600 hover:text-white transition"
-                >
-                  Manage Streams
-                </Link>
-                <Link
-                  href={`/tournaments/${id}/registrations`}
-                  className="bg-purple-600 text-white px-6 py-2 font-bold hover:bg-purple-700 transition"
-                >
-                  View Registrations
-                </Link>
-                <button
-                  onClick={handleGenerateBracket}
-                  disabled={generating}
-                  className="bg-green-700 text-white px-6 py-2 font-bold hover:bg-green-800 transition disabled:opacity-50"
-                >
-                  {generating ? 'Generating...' : matches.length > 0 ? 'Regenerate Bracket' : 'Generate Bracket'}
-                </button>
-                {profile?.role === 'admin' && (
-                  <button
-                    onClick={handleDelete}
-                    disabled={deleting}
-                    className="bg-red-600 text-white px-6 py-2 font-bold hover:bg-red-700 transition disabled:opacity-50"
-                  >
-                    {deleting ? 'Deleting...' : 'Delete Tournament'}
-                  </button>
-                )}
-              </div>
+        {/* Right Column: Overview & Information */}
+        <div className={logo ? 'lg:col-span-7 w-full space-y-6' : 'w-full space-y-6'}>
+          <div className="rounded-3xl border border-stone-200/90 bg-white p-6 sm:p-8 lg:p-10 shadow-xs space-y-5">
+            <div className="border-b border-stone-100 pb-4 space-y-1">
+              <span className="text-[11px] font-black tracking-widest text-[#5B271E] uppercase">
+                Competition Details
+              </span>
+              <h2 className="text-xl sm:text-2xl font-black text-stone-950 uppercase tracking-wide">
+                Overview &amp; Information
+              </h2>
             </div>
-          ) : closedReason ? (
-            /* Registration not possible: say why instead of showing the form */
-            <div className="bg-sitebg border border-gray-600 text-gray-300 px-4 py-3 text-center">
-              {closedReason}
-            </div>
-          ) : !showForm ? (
-            <button
-              onClick={() => setShowForm(true)}
-              className="w-full bg-gold text-black font-bold py-3 hover:bg-golddark transition"
-            >
-              Register Team for Tournament
-            </button>
-          ) : (
-            /* PLAYER REGISTRATION */
-            <form onSubmit={handleRegister} className="p-6 bg-sitebg border border-gold space-y-4">
-              <div>
-                <label htmlFor="register-team" className="block text-gold mb-2 font-semibold">
-                  Select Your Team
-                </label>
 
-                {teams.length === 0 ? (
-                  <div className="bg-red-500/10 border border-red-500 text-red-300 px-4 py-3">
-                    You don&apos;t captain a {tournament.game} team yet. Create one first on the{' '}
-                    <Link href="/teams" className="font-bold underline hover:text-white">Teams</Link> page.
-                  </div>
-                ) : (
-                  <select
-                    id="register-team"
-                    value={selectedTeamId}
-                    onChange={(e) => setSelectedTeamId(e.target.value)}
-                    className="w-full bg-sitecard border border-brownlight p-3 text-white outline-none focus:border-gold"
-                    required
-                  >
-                    <option value="">-- Select Team --</option>
-                    {teams.map((team) => (
-                      <option key={team.id} value={team.id}>
-                        {team.name} ({team.team_members?.[0]?.count || 0} / {team.games?.max_players} players)
-                      </option>
-                    ))}
-                  </select>
-                )}
-              </div>
-
-              {blockingMembers.length > 0 && (
-                <div className="bg-yellow-500/10 border border-yellow-500 text-yellow-200 px-4 py-3 space-y-2">
-                  <p>
-                    This tournament only accepts verified students. These members need to submit their student details
-                    on their Profile and be verified by an organizer first:
-                  </p>
-                  <ul className="space-y-1">
-                    {blockingMembers.map((m) => (
-                      <li key={m.user_id} className="flex items-center gap-2">
-                        <span className="font-semibold">{m.ign || m.full_name || 'Unnamed player'}</span>
-                        {m.ign && m.full_name && <span className="text-yellow-200/70">({m.full_name})</span>}
-                        <VerifiedBadge verified={false} showUnverified />
-                      </li>
-                    ))}
-                  </ul>
-                </div>
+            <div className="text-stone-800 text-xs sm:text-sm font-medium uppercase tracking-wide leading-relaxed whitespace-pre-wrap">
+              {tournament.description ? (
+                <p>{tournament.description}</p>
+              ) : (
+                <p className="text-stone-400 italic">No description provided for this tournament.</p>
               )}
+            </div>
 
-              <div className="flex flex-wrap gap-2">
-                <button
-                  type="submit"
-                  disabled={registering || teams.length === 0 || blockingMembers.length > 0}
-                  className="bg-gold text-black px-6 py-2 font-bold hover:bg-golddark transition disabled:opacity-50"
-                >
-                  {registering ? 'Processing...' : 'Confirm Registration'}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowForm(false);
-                    setSelectedTeamId('');
-                  }}
-                  className="text-gray-400 px-6 py-2 hover:text-white transition"
-                >
-                  Cancel
-                </button>
+            {/* Registration Container inside Overview (Directly in-place without scrolling) */}
+            {!isOrganizer && (
+              <div id="register-container" ref={registrationRef} className="pt-4 border-t border-stone-100">
+                {closedReason ? (
+                  <div className="rounded-2xl border border-stone-200 bg-stone-50/90 p-4 text-center text-xs font-black uppercase text-stone-600 tracking-wider">
+                    {closedReason}
+                  </div>
+                ) : !showForm ? (
+                  <button
+                    onClick={handleOpenRegistration}
+                    className="w-full py-3.5 px-6 rounded-xl bg-gold hover:bg-golddark text-stone-950 font-black text-xs uppercase tracking-widest border border-amber-400 shadow-xs hover:-translate-y-0.5 transition-all cursor-pointer"
+                  >
+                    Register Team for Tournament
+                  </button>
+                ) : (
+                  <div className="rounded-2xl border-2 border-amber-400/90 bg-amber-50/40 p-5 sm:p-6 space-y-4 animate-hero-entrance">
+                    <div className="flex items-center justify-between gap-2 border-b border-amber-200/80 pb-3">
+                      <div>
+                        <span className="text-[10px] font-black tracking-widest text-[#5B271E] uppercase">
+                          Team Enrollment
+                        </span>
+                        <h3 className="text-base sm:text-lg font-black text-stone-950 uppercase tracking-wide">
+                          Register Your Squad ({tournament.game})
+                        </h3>
+                      </div>
+                      <span className="text-[10px] font-black px-2.5 py-1 rounded-md bg-[#5B271E] text-white uppercase tracking-wider">
+                        Active Step
+                      </span>
+                    </div>
+
+                    <form onSubmit={handleRegister} className="space-y-4">
+                      <div className="space-y-1.5">
+                        <label
+                          htmlFor="register-team"
+                          className="block text-stone-950 text-xs font-black tracking-wider uppercase"
+                        >
+                          Select Your Team ({tournament.game}) *
+                        </label>
+
+                        {teams.length === 0 ? (
+                          <div className="rounded-xl bg-red-500/10 border border-red-500/30 p-4 text-red-700 text-xs font-bold uppercase tracking-wider">
+                            You don&apos;t captain a {tournament.game} team yet. Create one first on the{' '}
+                            <Link href="/teams" className="font-black underline hover:text-[#5B271E]">
+                              Teams
+                            </Link>{' '}
+                            page.
+                          </div>
+                        ) : (
+                          <select
+                            id="register-team"
+                            value={selectedTeamId}
+                            onChange={(e) => setSelectedTeamId(e.target.value)}
+                            className="w-full p-3.5 rounded-xl bg-white border border-stone-300 text-stone-950 font-bold text-xs uppercase tracking-wide outline-none focus:border-[#FFCC37] focus:ring-2 focus:ring-[#FFCC37]/25 shadow-xs transition-all"
+                            required
+                          >
+                            <option value="">-- Choose Roster --</option>
+                            {teams.map((team) => (
+                              <option key={team.id} value={team.id}>
+                                {team.name} ({team.team_members?.[0]?.count || 0} / {team.games?.max_players} players)
+                              </option>
+                            ))}
+                          </select>
+                        )}
+                      </div>
+
+                      {blockingMembers.length > 0 && (
+                        <div className="rounded-2xl bg-amber-500/15 border border-amber-400 p-4 text-amber-950 text-xs font-semibold uppercase tracking-wider space-y-2.5">
+                          <div className="flex items-center gap-2 font-black text-[#5B271E]">
+                            <ShieldAlert className="h-4 w-4" />
+                            <span>Student Verification Required</span>
+                          </div>
+                          <p className="text-[11px] leading-relaxed">
+                            This tournament only accepts verified students under RA 10173 policy. These members must submit verification on their Profile first:
+                          </p>
+                          <ul className="space-y-1 pl-2 text-[11px]">
+                            {blockingMembers.map((m) => (
+                              <li key={m.user_id} className="flex items-center gap-2">
+                                <span className="font-black">{m.ign || m.full_name || 'Unnamed player'}</span>
+                                {m.ign && m.full_name && <span className="text-stone-500 font-medium">({m.full_name})</span>}
+                                <VerifiedBadge verified={false} showUnverified />
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+
+                      <div className="flex flex-wrap items-center gap-3 pt-2">
+                        <button
+                          type="submit"
+                          disabled={registering || teams.length === 0 || blockingMembers.length > 0}
+                          className="px-6 py-3 rounded-xl bg-gold hover:bg-golddark text-stone-950 font-black text-xs uppercase tracking-widest border border-amber-400 shadow-xs hover:-translate-y-0.5 transition-all disabled:opacity-50 cursor-pointer"
+                        >
+                          {registering ? 'Processing Registration...' : 'Confirm Registration'}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setShowForm(false);
+                            setSelectedTeamId('');
+                          }}
+                          className="px-5 py-3 rounded-xl border border-stone-300 bg-white text-stone-700 hover:text-stone-950 font-bold text-xs uppercase tracking-wider transition-colors cursor-pointer"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </form>
+                  </div>
+                )}
               </div>
-            </form>
-          )}
+            )}
+          </div>
         </div>
       </div>
-    </main>
+
+      {/* 5. Metrics & Key Specifications Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+        {details.map((d) => {
+          const Icon = d.icon;
+          return (
+            <div
+              key={d.label}
+              className="rounded-2xl border border-stone-200/90 bg-stone-50/70 p-5 shadow-2xs hover:bg-white hover:border-amber-400/50 hover:shadow-xs transition-all space-y-2"
+            >
+              <div className="flex items-center gap-2 text-stone-500">
+                <Icon className="h-4 w-4 text-[#5B271E]" />
+                <span className="text-[10px] font-black uppercase tracking-wider text-stone-500">{d.label}</span>
+              </div>
+              <p className="text-sm sm:text-base font-black text-stone-950 uppercase tracking-wide break-words">{d.value}</p>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* 6. Announcements Section */}
+      {announcements.length > 0 && (
+        <section className="space-y-4">
+          <div className="border-b border-stone-200/90 pb-3">
+            <span className="text-[11px] font-black tracking-widest text-[#5B271E] uppercase">Updates</span>
+            <h2 className="text-xl sm:text-2xl font-black text-stone-950 uppercase tracking-wide">Announcements</h2>
+          </div>
+          <div className="space-y-3">
+            {announcements.map((a) => (
+              <AnnouncementCard key={a.id} announcement={a} showTournament={false} />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* 7. Feedback Prompt */}
+      <Link
+        href={`/feedback?tournament=${id}`}
+        className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-5 sm:p-6 rounded-3xl border border-amber-500/25 bg-amber-500/5 hover:bg-amber-500/10 hover:border-amber-500/40 text-stone-950 transition-all shadow-2xs group"
+      >
+        <div className="flex items-center gap-3">
+          <span className="p-3 rounded-2xl bg-white border border-amber-400/40 text-[#5B271E] group-hover:bg-[#FFCC37] group-hover:text-stone-950 transition-colors shadow-2xs">
+            <MessageSquare className="h-5 w-5" />
+          </span>
+          <div>
+            <h3 className="font-black text-sm sm:text-base uppercase tracking-wide text-stone-950">
+              Spectator &amp; Participant Feedback
+            </h3>
+            <p className="text-xs text-stone-600 font-semibold uppercase tracking-wider">
+              Share your thoughts, match ratings, and sentiment for DALTA Esports committee review.
+            </p>
+          </div>
+        </div>
+        <span className="text-xs font-black text-[#5B271E] group-hover:text-[#FFCC37] uppercase tracking-widest shrink-0 self-end sm:self-center transition-colors">
+          Give Feedback →
+        </span>
+      </Link>
+
+      {/* 8. Rules Section */}
+      <section className="rounded-3xl border border-stone-200/90 bg-white p-6 sm:p-8 lg:p-10 shadow-xs space-y-4">
+        <div className="border-b border-stone-100 pb-3">
+          <span className="text-[11px] font-black tracking-widest text-[#5B271E] uppercase">Governance</span>
+          <h2 className="text-xl sm:text-2xl font-black text-stone-950 uppercase tracking-wide">Rules &amp; Regulations</h2>
+        </div>
+        {tournament.rules ? (
+          <p className="text-stone-800 text-xs sm:text-sm font-medium uppercase tracking-wide leading-relaxed whitespace-pre-wrap">
+            {tournament.rules}
+          </p>
+        ) : (
+          <p className="text-stone-400 text-xs sm:text-sm font-semibold uppercase tracking-wider">
+            No official tournament rules have been published for this tournament yet.
+          </p>
+        )}
+      </section>
+
+      {/* 9. Bracket Section */}
+      <section className="rounded-3xl border border-stone-200/90 bg-white p-6 sm:p-8 lg:p-10 shadow-xs space-y-5">
+        <div className="border-b border-stone-100 pb-3 flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <span className="text-[11px] font-black tracking-widest text-[#5B271E] uppercase">Playoffs</span>
+            <h2 className="text-xl sm:text-2xl font-black text-stone-950 uppercase tracking-wide">Tournament Bracket</h2>
+          </div>
+          {matches.length > 0 && !isOrganizer && (
+            <div className="flex items-center gap-1.5 text-xs text-stone-600 font-black uppercase tracking-wider">
+              <Target className="h-4 w-4 text-[#5B271E]" />
+              <span>Pick&apos;em enabled: pick the winner before match starts</span>
+            </div>
+          )}
+        </div>
+
+        {matches.length > 0 ? (
+          <PredictionsProvider matches={matches}>
+            <Bracket
+              matches={matches}
+              teamNames={teamNames}
+              matchHref={(m) => `/matches/${m.id}`}
+              renderBelow={(m) => <PredictionPicker match={m} teamNames={teamNames} compact />}
+            />
+          </PredictionsProvider>
+        ) : (
+          <div className="p-8 sm:p-12 text-center rounded-2xl bg-stone-50 border border-stone-200/80">
+            <p className="font-black text-stone-900 text-sm uppercase tracking-wider">No bracket generated yet.</p>
+            <p className="text-xs text-stone-500 font-semibold uppercase tracking-wide mt-1">
+              Organizers will generate the matchups once registration closes.
+            </p>
+          </div>
+        )}
+      </section>
+
+      {/* 10. Pick'em Leaderboard */}
+      {matches.length > 0 && (
+        <section className="rounded-3xl border border-stone-200/90 bg-white p-6 sm:p-8 lg:p-10 shadow-xs space-y-4">
+          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-stone-100 pb-3">
+            <div>
+              <span className="text-[11px] font-black tracking-widest text-[#5B271E] uppercase">Community</span>
+              <h2 className="text-xl sm:text-2xl font-black text-stone-950 uppercase tracking-wide flex items-center gap-2">
+                <Target className="h-5 w-5 text-[#5B271E]" /> Pick&apos;em Leaderboard
+              </h2>
+            </div>
+            <Link
+              href={`/tournaments/${id}/predictions`}
+              className="text-xs font-black text-[#5B271E] hover:text-[#FFCC37] uppercase tracking-wider transition-colors"
+            >
+              Full Leaderboard →
+            </Link>
+          </div>
+          <PickemLeaderboard tournamentId={id} limit={3} />
+        </section>
+      )}
+
+      {/* 11. Approved Teams List */}
+      <section className="rounded-3xl border border-stone-200/90 bg-white p-6 sm:p-8 lg:p-10 shadow-xs space-y-4">
+        <div className="border-b border-stone-100 pb-3">
+          <span className="text-[11px] font-black tracking-widest text-[#5B271E] uppercase">Roster</span>
+          <h2 className="text-xl sm:text-2xl font-black text-stone-950 uppercase tracking-wide">
+            Approved Teams ({approvedTeams.length})
+          </h2>
+        </div>
+        {approvedTeams.length === 0 ? (
+          <div className="p-8 text-center rounded-2xl bg-stone-50 border border-stone-200/80 text-stone-500 text-xs font-black uppercase tracking-wider">
+            No approved teams registered for this tournament yet.
+          </div>
+        ) : (
+          <ul className="divide-y divide-stone-100 border border-stone-200/90 rounded-2xl overflow-hidden bg-white shadow-2xs">
+            {approvedTeams.map((reg) => (
+              <li key={reg.id} className="px-5 py-3.5 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 hover:bg-stone-50/70 transition-colors">
+                <span className="font-black text-stone-950 text-xs sm:text-sm tracking-wide break-words min-w-0">
+                  {reg.teams?.name || reg.team_name || 'Unnamed Team'}
+                </span>
+                {reg.teams?.captain && (
+                  <span className="text-stone-500 text-xs font-bold tracking-wider">
+                    Captain: {reg.teams.captain.full_name || reg.teams.captain.email}
+                  </span>
+                )}
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+
+      {/* 12. Admin & Staff Controls Panel */}
+      {isOrganizer && (
+        <section className="rounded-3xl border border-amber-500/30 bg-amber-500/5 p-6 sm:p-8 lg:p-10 shadow-xs space-y-5">
+          <div className="border-b border-amber-500/20 pb-3">
+            <span className="text-[11px] font-black tracking-widest text-[#5B271E] uppercase">Operations</span>
+            <h2 className="text-xl sm:text-2xl font-black text-stone-950 uppercase tracking-wide">
+              Admin &amp; Organizer Panel
+            </h2>
+          </div>
+          <p className="text-xs text-stone-600 font-semibold uppercase tracking-wider">
+            {matches.length > 0
+              ? `Active Bracket: ${matches.length} matches across ${roundCount} rounds.`
+              : `No bracket generated yet. Ready to build from ${approvedTeams.length} approved teams.`}
+          </p>
+
+          <div className="flex flex-wrap gap-3">
+            <Link
+              href={`/tournaments/${id}/edit`}
+              className="px-5 py-2.5 rounded-xl bg-gold hover:bg-golddark text-stone-950 font-black text-xs uppercase tracking-widest border border-amber-400 shadow-xs hover:-translate-y-0.5 transition-all inline-flex items-center gap-2"
+            >
+              <Edit3 className="w-3.5 h-3.5" />
+              <span>Edit Tournament</span>
+            </Link>
+            {matches.length > 0 && (
+              <Link
+                href={`/tournaments/${id}/matches`}
+                className="px-5 py-2.5 rounded-xl bg-white hover:bg-stone-50 text-stone-950 font-black text-xs uppercase tracking-widest border border-stone-200 shadow-xs hover:-translate-y-0.5 transition-all inline-flex items-center gap-2"
+              >
+                <Swords className="w-3.5 h-3.5 text-[#5B271E]" />
+                <span>Manage Matches</span>
+              </Link>
+            )}
+            <Link
+              href={`/tournaments/${id}/streams`}
+              className="px-5 py-2.5 rounded-xl bg-white hover:bg-stone-50 text-stone-950 hover:text-red-700 font-black text-xs uppercase tracking-widest border border-stone-200 hover:border-red-300 shadow-xs hover:-translate-y-0.5 transition-all inline-flex items-center gap-2"
+            >
+              <Tv className="w-3.5 h-3.5 text-red-600" />
+              <span>Manage Streams</span>
+            </Link>
+            <Link
+              href={`/tournaments/${id}/registrations`}
+              className="px-5 py-2.5 rounded-xl bg-white hover:bg-stone-50 text-stone-950 hover:text-purple-700 font-black text-xs uppercase tracking-widest border border-stone-200 hover:border-purple-300 shadow-xs hover:-translate-y-0.5 transition-all inline-flex items-center gap-2"
+            >
+              <Users className="w-3.5 h-3.5 text-[#5B271E]" />
+              <span>View Registrations</span>
+            </Link>
+            <button
+              onClick={handleGenerateBracket}
+              disabled={generating}
+              className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs uppercase tracking-widest shadow-xs hover:-translate-y-0.5 transition-all disabled:opacity-50 inline-flex items-center gap-2"
+            >
+              <Trophy className="w-3.5 h-3.5" />
+              <span>{generating ? 'Generating...' : matches.length > 0 ? 'Regenerate Bracket' : 'Generate Bracket'}</span>
+            </button>
+            {profile?.role === 'admin' && (
+              <button
+                onClick={handleDelete}
+                disabled={deleting}
+                className="px-5 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-black text-xs uppercase tracking-widest shadow-xs hover:-translate-y-0.5 transition-all disabled:opacity-50 inline-flex items-center gap-2"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                <span>{deleting ? 'Deleting...' : 'Delete Tournament'}</span>
+              </button>
+            )}
+          </div>
+        </section>
+      )}
+    </div>
   );
 }
