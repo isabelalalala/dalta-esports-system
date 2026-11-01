@@ -11,7 +11,7 @@ interface Props {
 export default function PrivacyConsentCheckbox({ checked, onChange, dark }: Props) {
   return (
     <div className="space-y-2">
-      <label className={`flex items-start gap-3 text-xs sm:text-sm ${dark ? 'text-stone-200' : 'text-stone-800'} font-semibold uppercase tracking-wide cursor-pointer`}>
+      <label className={`flex items-start gap-3 text-xs sm:text-sm ${dark ? 'text-stone-200' : 'text-stone-800'} font-semibold normal-case cursor-pointer`}>
         <input
           type="checkbox"
           checked={checked}

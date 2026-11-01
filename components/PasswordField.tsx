@@ -56,7 +56,7 @@ export function PasswordRules({
           </span>
         </div>
       )}
-      <ul className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1.5 text-xs tracking-wide">
+      <ul className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1.5 text-xs">
         {checks.map((check) => (
           <li
             key={check.label}
@@ -111,7 +111,7 @@ export default function PasswordField({ value, onChange, className, placeholder,
           aria-invalid={!!validity}
           aria-describedby={rules || mismatch ? hintId : undefined}
           // normal-case: passwords are case-sensitive, so "Show password" must show the real letters
-          // (the page's input styles and globals.css make inputs uppercase)
+          // (some pages' input styles still add uppercase)
           className={`${className} pr-12 normal-case`}
           autoComplete={autoComplete}
           required

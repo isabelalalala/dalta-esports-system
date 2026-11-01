@@ -17,7 +17,7 @@ import PasswordField from '@/components/PasswordField'
 import { usePageTitle } from '@/utils/page-title'
 
 const inputClass =
-  'w-full p-3.5 rounded-xl bg-white text-stone-950 border border-stone-300 placeholder:text-stone-400 uppercase tracking-wide focus:border-amber-600 focus:ring-2 focus:ring-amber-500/20 shadow-xs outline-none transition-all font-medium text-xs sm:text-sm'
+  'w-full p-3.5 rounded-xl bg-white text-stone-950 border border-stone-300 placeholder:text-stone-400 focus:border-amber-600 focus:ring-2 focus:ring-amber-500/20 shadow-xs outline-none transition-all font-medium text-xs sm:text-sm'
 
 export default function Login() {
   return (
@@ -194,19 +194,19 @@ function LoginContent() {
 
           <form onSubmit={handleLogin} className="space-y-4">
             {confirmed && !notConfirmed && !error && (
-              <div role="status" className="bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-800 px-4 py-2.5 text-xs sm:text-sm font-bold tracking-wider shadow-2xs">
+              <div role="status" className="bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-800 px-4 py-2.5 text-xs sm:text-sm font-bold shadow-2xs">
                 Thanks for confirming your email. You can log in now.
               </div>
             )}
 
             {error && (
-              <div role="alert" className="bg-red-50 border border-red-200 rounded-xl text-red-800 px-4 py-2.5 text-xs sm:text-sm font-bold tracking-wider shadow-2xs">
+              <div role="alert" className="bg-red-50 border border-red-200 rounded-xl text-red-800 px-4 py-2.5 text-xs sm:text-sm font-bold shadow-2xs">
                 {error}
               </div>
             )}
 
             {notConfirmed && (
-              <div className="bg-amber-50 border border-amber-200 rounded-xl text-amber-950 px-4 py-3 text-xs sm:text-sm font-medium tracking-wide space-y-2 shadow-2xs">
+              <div className="bg-amber-50 border border-amber-200 rounded-xl text-amber-950 px-4 py-3 text-xs sm:text-sm font-medium space-y-2 shadow-2xs">
                 <p>
                   Please confirm your email first. Open the link we sent to{' '}
                   <span className="font-black text-stone-950">{email.trim()}</span> when you registered.
@@ -215,7 +215,7 @@ function LoginContent() {
                   type="button"
                   onClick={handleResend}
                   disabled={resending || resendCooldown.remaining > 0}
-                  className="underline font-black text-amber-700 hover:text-amber-800 uppercase tracking-wider cursor-pointer disabled:no-underline disabled:opacity-60 disabled:cursor-not-allowed"
+                  className="underline font-bold text-amber-700 hover:text-amber-800 normal-case cursor-pointer disabled:no-underline disabled:opacity-60 disabled:cursor-not-allowed"
                 >
                   {resending
                     ? 'Sending...'
@@ -229,7 +229,7 @@ function LoginContent() {
             )}
 
             <div className="space-y-1.5">
-              <label className="block text-xs font-black text-stone-800 uppercase tracking-wider">
+              <label className="block text-sm font-bold text-stone-800 normal-case">
                 Email
               </label>
               <EmailField
@@ -242,12 +242,12 @@ function LoginContent() {
 
             <div className="space-y-1.5">
               <div className="flex items-center justify-between">
-                <label className="text-xs font-black text-stone-800 uppercase tracking-wider">
+                <label className="text-sm font-bold text-stone-800 normal-case">
                   Password
                 </label>
                 <Link
                   href="/auth/forgot-password"
-                  className="text-xs font-bold text-amber-700 hover:text-amber-800 uppercase tracking-wider hover:underline"
+                  className="text-xs font-bold text-amber-700 hover:text-amber-800 hover:underline"
                 >
                   Forgot your password?
                 </Link>
@@ -275,7 +275,7 @@ function LoginContent() {
             Don&apos;t have an account?{' '}
             <Link
               href="/auth/register"
-              className="text-amber-700 font-black tracking-wider hover:underline hover:text-amber-800 ml-1"
+              className="text-amber-700 font-black hover:underline hover:text-amber-800 ml-1"
             >
               Register
             </Link>

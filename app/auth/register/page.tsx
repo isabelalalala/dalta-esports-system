@@ -19,7 +19,7 @@ import TermsCheckbox from '@/components/TermsCheckbox';
 import { usePageTitle } from '@/utils/page-title';
 
 const inputClass =
-  'w-full p-3.5 rounded-xl bg-white/45 text-stone-950 border border-stone-300 placeholder:text-stone-400 uppercase tracking-wide focus:border-amber-600 focus:ring-2 focus:ring-amber-500/20 shadow-xs outline-none transition-all font-medium text-xs sm:text-sm';
+  'w-full p-3.5 rounded-xl bg-white/45 text-stone-950 border border-stone-300 placeholder:text-stone-400 focus:border-amber-600 focus:ring-2 focus:ring-amber-500/20 shadow-xs outline-none transition-all font-medium text-xs sm:text-sm';
 
 export default function Register() {
   usePageTitle('Register');
@@ -217,7 +217,7 @@ export default function Register() {
               <p className="pt-2">
                 <Link
                   href="/auth/login"
-                  className="text-amber-700 font-black uppercase tracking-wider hover:underline hover:text-amber-800 text-xs sm:text-sm"
+                  className="text-amber-700 font-black hover:underline hover:text-amber-800 text-xs sm:text-sm"
                 >
                   ← Go to login
                 </Link>
@@ -227,7 +227,7 @@ export default function Register() {
             /* Registration Form */
             <form ref={formRef} onSubmit={handleRegister} className="space-y-5">
               {error && (
-                <div role="alert" className="bg-red-50 border border-red-200 rounded-xl text-red-700 px-4 py-3 text-xs sm:text-sm font-bold tracking-wider shadow-xs space-y-3">
+                <div role="alert" className="bg-red-50 border border-red-200 rounded-xl text-red-700 px-4 py-3 text-xs sm:text-sm font-bold shadow-xs space-y-3">
                   <p>{error}</p>
                   {/* Email limit reached: the same form can be sent again after the wait */}
                   {rateLimited && (
@@ -248,7 +248,7 @@ export default function Register() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                   {/* Full Name */}
                   <div className="space-y-1.5">
-                    <label className="block text-xs font-black text-stone-800 uppercase tracking-wider">
+                    <label className="block text-sm font-bold text-stone-800 normal-case">
                       Full Name
                     </label>
                     <input
@@ -265,7 +265,7 @@ export default function Register() {
 
                   {/* Email */}
                   <div className="space-y-1.5">
-                    <label className="block text-xs font-black text-stone-800 uppercase tracking-wider">
+                    <label className="block text-sm font-bold text-stone-800 normal-case">
                       Email
                     </label>
                     <EmailField
@@ -279,7 +279,7 @@ export default function Register() {
 
                 {/* 2. Password with Password Requirements directly below it */}
                 <div className="space-y-1.5">
-                  <label className="block text-xs font-black text-stone-800 uppercase tracking-wider">
+                  <label className="block text-sm font-bold text-stone-800 normal-case">
                     Password
                   </label>
                   <PasswordField
@@ -302,7 +302,7 @@ export default function Register() {
 
                 {/* 3. Confirm Password placed below the password requirements */}
                 <div className="space-y-1.5">
-                  <label className="block text-xs font-black text-stone-800 uppercase tracking-wider">
+                  <label className="block text-sm font-bold text-stone-800 normal-case">
                     Confirm Password
                   </label>
                   <PasswordField
@@ -317,7 +317,7 @@ export default function Register() {
 
                 {/* 4. Role Selection placed below Confirm Password and above Privacy/Terms */}
                 <div className="space-y-1.5">
-                  <label htmlFor="role" className="block text-xs font-black text-stone-800 uppercase tracking-wider">
+                  <label htmlFor="role" className="block text-sm font-bold text-stone-800 normal-case">
                     I am a:
                   </label>
                   <select
