@@ -16,6 +16,8 @@ export default function ResetPasswordPage() {
   const [hasSession, setHasSession] = useState<boolean | null>(null);
   // The account's email, so the new password can't contain it
   const [email, setEmail] = useState('');
+  // The sign-up name: login checks passwords against it, so the new one must pass that check too
+  const [fullName, setFullName] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [saving, setSaving] = useState(false);
@@ -27,6 +29,7 @@ export default function ResetPasswordPage() {
       const { data: { session } } = await supabase.auth.getSession();
       setHasSession(!!session);
       setEmail(session?.user.email ?? '');
+      setFullName(session?.user.user_metadata?.full_name ?? '');
     };
     check();
   }, [supabase]);
@@ -35,7 +38,7 @@ export default function ResetPasswordPage() {
     e.preventDefault();
     setError('');
 
-    const passwordError = getPasswordError(password, { email });
+    const passwordError = getPasswordError(password, { email, fullName });
     if (passwordError) {
       setError(passwordError);
       return;
@@ -80,7 +83,7 @@ export default function ResetPasswordPage() {
             <PasswordField
               value={password} onChange={setPassword} placeholder="New password"
               className="w-full p-3.5 rounded-xl bg-white text-stone-950 border border-stone-200 placeholder:text-stone-400 uppercase tracking-wide focus:border-amber-600 focus:ring-2 focus:ring-amber-500/20 shadow-xs outline-none transition-all"
-              autoComplete="new-password" rules={{ email }}
+              autoComplete="new-password" rules={{ email, fullName }}
             />
             <PasswordField
               value={confirmPassword} onChange={setConfirmPassword} placeholder="Confirm new password"

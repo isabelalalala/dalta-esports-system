@@ -40,6 +40,8 @@ export default function ProfilePage() {
 
   const [profile, setProfile] = useState<Profile | null>(null);
   const [fullName, setFullName] = useState('');
+  // The name saved at sign-up (user_metadata), which login checks passwords against
+  const [signupName, setSignupName] = useState('');
   const [games, setGames] = useState<Game[]>([]);
   const [gameProfiles, setGameProfiles] = useState<PlayerGameProfile[]>([]);
   const [loading, setLoading] = useState(true);
@@ -77,6 +79,7 @@ export default function ProfilePage() {
         if (profileError) throw profileError;
         setProfile(profileData as Profile);
         setFullName(profileData.full_name || '');
+        setSignupName(session.user.user_metadata?.full_name ?? '');
 
         const [gamesRes, gpRes] = await Promise.all([
           supabase.from('games').select('*').order('name'),
@@ -556,7 +559,9 @@ export default function ProfilePage() {
           <Suspense
             fallback={<div className="bg-white border border-stone-200/90 rounded-3xl p-6 sm:p-8 shadow-xs" />}
           >
-            <ChangePassword email={profile.email} fullName={profile.full_name ?? ''} />
+            {/* Both names: a new password must also pass the check login does (sign-up name),
+                or the next login would flag it as weak again */}
+            <ChangePassword email={profile.email} fullName={`${profile.full_name ?? ''} ${signupName}`.trim()} />
           </Suspense>
         </div>
 

@@ -15,6 +15,11 @@ export function getErrorMessage(err: unknown, fallback: string) {
   if (/failed to fetch|networkerror|load failed|network request failed/i.test(message)) {
     return "Can't reach the server. Check your internet connection and try again.";
   }
+  // Supabase Auth couldn't hand an email (confirmation, reset, password changed) to the mail server.
+  // The reason is in Supabase → Logs → Auth; usually the SMTP settings (Brevo) are wrong.
+  if (/error sending .*email/i.test(message)) {
+    return "We couldn't send the email right now. Please try again in a few minutes. If it keeps happening, contact the organizers.";
+  }
   // Logged out in another tab, or the session is too old
   if (code === 'PGRST301' || code === 'PGRST303' || /jwt expired|invalid jwt|refresh token/i.test(message)) {
     return 'Your session has expired. Please log in again.';

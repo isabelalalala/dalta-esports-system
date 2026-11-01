@@ -78,7 +78,7 @@ begin
   values ('RLS Team C', 'tekken8', admin_id) returning id into m_id;
   insert into public.team_members (team_id, user_id, role)
   values (m_id, (select val from fx where key = 'alice'), 'player');
-end $;
+end $$;
 
 set local session_replication_role = 'origin';
 
@@ -146,14 +146,14 @@ select set_config('request.jwt.claims',
   '{"sub":"' || (select val from fx where key = 'alice') || '","role":"authenticated"}', true);
 
 select throws_matching(
-  $insert into public.teams (name, game_id, captain_id)
-    values ('No Profile Team', 'mlbb', (select val from fx where key = 'alice'))$,
+  $$insert into public.teams (name, game_id, captain_id)
+    values ('No Profile Team', 'mlbb', (select val from fx where key = 'alice'))$$,
   'game profile',
   'a player cannot create a team for a game they have no game profile for');
 
 select throws_matching(
-  $delete from public.player_game_profiles
-    where user_id = (select val from fx where key = 'alice') and game_id = 'tekken8'$,
+  $$delete from public.player_game_profiles
+    where user_id = (select val from fx where key = 'alice') and game_id = 'tekken8'$$,
   'Leave the team first',
   'a player cannot delete the game profile of a game they have a team in');
 

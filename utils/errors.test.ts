@@ -31,4 +31,9 @@ describe('getErrorMessage', () => {
   it('passes through our own readable trigger messages', () => {
     expect(getErrorMessage({ message: 'Only admins can do that.' }, FALLBACK)).toBe('Only admins can do that.');
   });
+  it('explains a failed auth email (SMTP problem) in plain words', () => {
+    const err = { message: 'Error sending confirmation email', status: 500, code: 'unexpected_failure' };
+    expect(getErrorMessage(err, FALLBACK)).toMatch(/couldn't send the email/);
+    expect(getErrorMessage({ message: 'Error sending recovery email' }, FALLBACK)).toMatch(/couldn't send the email/);
+  });
 });
