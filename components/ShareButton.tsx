@@ -1,9 +1,10 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { SITE_URL } from '@/utils/site-url';
 
 interface Props {
-  // A path on this site, e.g. /t/<id>; the full address is built in the browser
+  // A path on this site, e.g. /t/<id>
   path: string;
   title: string;
   text?: string;
@@ -14,16 +15,15 @@ interface Props {
 export default function ShareButton({ path, title, text }: Props) {
   const [copied, setCopied] = useState(false);
   const [canShare, setCanShare] = useState(false);
-  const [url, setUrl] = useState(path);
+  // Always the official address (NEXT_PUBLIC_SITE_URL), not the one in the address bar,
+  // so links copied on localhost or a Vercel preview still open the live site
+  const url = `${SITE_URL}${path}`;
 
-  // window/navigator only exist in the browser, so these are read after the first render
+  // navigator only exists in the browser, so this is read after the first render
   useEffect(() => {
-    const check = () => {
-      setUrl(`${window.location.origin}${path}`);
-      setCanShare(typeof navigator.share === 'function');
-    };
+    const check = () => setCanShare(typeof navigator.share === 'function');
     check();
-  }, [path]);
+  }, []);
 
   const handleShare = async () => {
     try {
@@ -44,12 +44,12 @@ export default function ShareButton({ path, title, text }: Props) {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const buttonClass = 'px-3 py-1.5 border-2 border-gold text-gold text-sm font-bold hover:bg-gold/10';
+  const buttonClass = 'px-3 py-1.5 border-2 border-gold text-stone-950 text-sm font-bold hover:bg-gold/10';
 
   return (
     <div className="flex flex-wrap gap-2 print:hidden">
       {canShare && (
-        <button onClick={handleShare} className="px-3 py-1.5 border-2 border-gold bg-gold text-sitebg text-sm font-bold">
+        <button onClick={handleShare} className="px-3 py-1.5 border-2 border-gold bg-gold text-stone-950 text-sm font-bold hover:bg-golddark">
           Share
         </button>
       )}

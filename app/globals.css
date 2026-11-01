@@ -23,8 +23,11 @@
   --color-negative: #e66767;
   --color-sitebg: #ffffff;
   --color-sitecard: #ffffff;
-  --font-montserrat: var(--font-montserrat), "Montserrat", sans-serif;
-  --font-pixel: var(--font-montserrat), "Montserrat", sans-serif;
+  /* --font-montserrat-next is set by next/font (utils/fonts.ts) on <html>. It must have a different
+     name from these tokens: a token pointing at itself is invalid and the page falls back to serif. */
+  --font-montserrat: var(--font-montserrat-next), "Montserrat", sans-serif;
+  --font-sans: var(--font-montserrat-next), "Montserrat", sans-serif;
+  --font-pixel: var(--font-montserrat-next), "Montserrat", sans-serif;
 
   /* Remap orange/amber to the official DALTA brand maroon (#5B271E) so all orange font colors become brand maroon */
   --color-amber-600: #5B271E;
@@ -62,7 +65,7 @@
 body {
   background: #ffffff;
   color: #120d0b;
-  font-family: var(--font-montserrat), "Montserrat", sans-serif;
+  font-family: var(--font-montserrat-next), "Montserrat", sans-serif;
   text-transform: uppercase;
   letter-spacing: 0.04em;
   /* Long words without spaces (emails, links, IGNs) wrap instead of making phones scroll sideways */
@@ -75,7 +78,7 @@ body {
 /* Universal Uppercase Montserrat */
 @layer base {
   *, *::before, *::after {
-    font-family: var(--font-montserrat), "Montserrat", sans-serif;
+    font-family: var(--font-montserrat-next), "Montserrat", sans-serif;
   }
 
   h1, h2, h3, h4, h5, h6,

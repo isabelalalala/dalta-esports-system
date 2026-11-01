@@ -3,6 +3,7 @@
 import { useEffect } from 'react';
 import Link from 'next/link';
 import './globals.css';
+import { montserrat } from '@/utils/fonts';
 
 // Last safety net: shown when the root layout itself (header/footer) fails.
 // It replaces the whole document, so it has its own <html> and <body> and imports the theme.
@@ -12,7 +13,7 @@ export default function GlobalError({ error, retry }: { error: Error & { digest?
   }, [error]);
 
   return (
-    <html lang="en">
+    <html lang="en" className={`${montserrat.variable} antialiased`}>
       <body className="min-h-screen bg-white text-stone-950 grid place-items-center px-4 font-sans uppercase">
         <title>Something went wrong | DALTA Esports</title>
         <div role="alert" className="w-full max-w-md bg-white rounded-2xl border border-red-500/30 shadow-sm p-6 sm:p-8 text-center space-y-4">
