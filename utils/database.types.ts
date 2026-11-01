@@ -923,11 +923,11 @@ isOneToOne: false
 "report_sentiment":
 { Args: { "p_from"?: string,"p_game_id"?: string,"p_to"?: string,"p_tournament_id"?: string }; Returns: Json
                            },
-"respond_to_match_result":
-{ Args: { "p_confirm": boolean,"p_reason"?: string,"p_submission_id": string }; Returns: undefined
-                           },
 "respond_to_join_request":
 { Args: { "p_accept": boolean,"p_request_id": string }; Returns: undefined
+                           },
+"respond_to_match_result":
+{ Args: { "p_confirm": boolean,"p_reason"?: string,"p_submission_id": string }; Returns: undefined
                            },
 "respond_to_team_invite":
 { Args: { "p_accept": boolean,"p_invite_id": string }; Returns: undefined

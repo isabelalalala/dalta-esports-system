@@ -39,6 +39,8 @@ export default function TeamsPage() {
   const [newTeamName, setNewTeamName] = useState('');
   const [gameId, setGameId] = useState('');
   const [description, setDescription] = useState('');
+  // Open to join requests right away (can be changed later on the team page)
+  const [recruiting, setRecruiting] = useState(false);
   const [saving, setSaving] = useState(false);
   const [reloadCount, setReloadCount] = useState(0);
   const [role, setRole] = useState('');
@@ -88,6 +90,8 @@ export default function TeamsPage() {
     fetchData();
   }, [supabase, reloadCount]);
 
+  const selectedGameIsSolo = (games.find((g) => g.id === gameId)?.max_players ?? 2) <= 1;
+
   const handleCreateTeam = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
@@ -105,6 +109,8 @@ export default function TeamsPage() {
           game_id: gameId,
           description: description.trim() || null,
           captain_id: session.user.id,
+          // Solo games can't recruit (one player per team)
+          recruiting: recruiting && !selectedGameIsSolo,
         },
       ]);
       if (insertError) throw insertError;
@@ -112,6 +118,7 @@ export default function TeamsPage() {
       setNewTeamName('');
       setGameId('');
       setDescription('');
+      setRecruiting(false);
       setShowCreate(false);
       setReloadCount((n) => n + 1);
     } catch (err) {
@@ -320,6 +327,31 @@ export default function TeamsPage() {
                 className={inputClass}
               />
             </div>
+
+            {/* Recruiting: shows the team as open in All teams so players can ask to join */}
+            <label
+              className={`flex items-start gap-3 rounded-2xl border p-4 normal-case ${
+                selectedGameIsSolo
+                  ? 'border-stone-200 bg-stone-50 text-stone-500 cursor-not-allowed'
+                  : 'border-stone-200 bg-white hover:border-gold cursor-pointer'
+              }`}
+            >
+              <input
+                type="checkbox"
+                checked={recruiting && !selectedGameIsSolo}
+                onChange={(e) => setRecruiting(e.target.checked)}
+                disabled={selectedGameIsSolo}
+                className="mt-0.5 h-4 w-4 accent-amber-600"
+              />
+              <span>
+                <span className="block text-sm font-bold text-stone-950">Open for recruiting</span>
+                <span className="block text-xs text-stone-600 font-medium mt-0.5">
+                  {selectedGameIsSolo
+                    ? 'Solo games have one player per team, so they can’t recruit.'
+                    : 'Players can find your team under All teams and ask to join. You accept or decline each request, and you can turn this off any time on the team page.'}
+                </span>
+              </span>
+            </label>
 
             <div className="flex items-center gap-3 pt-2">
               <button

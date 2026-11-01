@@ -19,7 +19,7 @@ import { usePageTitle } from '@/utils/page-title';
 import {
   Activity, Brain, CalendarDays, ChartColumn, ChevronLeft, ChevronRight, ClipboardList,
   Crown, Eye, Gamepad2, Globe, GraduationCap, Megaphone, MessageSquare, RadioTower,
-  Target, Trophy, Tv, Users, type LucideIcon,
+  Shield, Target, Trophy, Tv, Users, type LucideIcon,
 } from 'lucide-react';
 
 interface DashCard {
@@ -74,6 +74,7 @@ function cardsFor(role: string | undefined): DashCard[] {
       isAdmin && { href: '/admin/users', title: 'Manage Users', text: 'Change roles, edit names and delete accounts', icon: Users },
       isAdmin && { href: '/admin/website', title: 'Website', text: 'Edit the public pages, photos, officers and teams', icon: Globe },
       isAdmin && { href: '/admin/activity', title: 'Activity Log', text: 'Who did what, and when', icon: Activity },
+      { href: '/teams', title: 'Teams', text: 'Browse every team, roster and join request', icon: Shield },
       { href: '/matches', title: 'Match Management', text: 'Schedule and manage matches', icon: Gamepad2 },
       { href: '/admin/verification', title: 'Student Verification', text: "Verify players' student details", icon: GraduationCap },
       { href: '/live', title: 'Live Streams', text: 'Watch streams; configure them from each tournament', icon: RadioTower },
