@@ -77,7 +77,7 @@ export default function SiteNavLayout({ children }: { children: ReactNode }) {
   const toggleCollapse = () => writeCollapsed(!isCollapsed);
 
   return (
-    <div className="flex-1 w-full bg-white text-stone-950 uppercase flex flex-col lg:flex-row min-h-[calc(100vh-65px)]">
+    <div className="flex-1 w-full bg-white text-stone-950 flex flex-col lg:flex-row min-h-[calc(100vh-65px)]">
       {/* ----------------- MOBILE NAVIGATION BAR (< lg) ----------------- */}
       <div className="lg:hidden w-full border-b border-stone-200/90 bg-white sticky top-14 z-30">
         <div className="px-5 py-3 flex items-center justify-between">
@@ -203,7 +203,7 @@ function DesktopNavList({ isCollapsed }: { isCollapsed: boolean }) {
             }`}
           >
             <item.icon className={`h-4.5 w-4.5 shrink-0 transition-colors ${isActive ? 'text-maroon' : 'text-stone-500 group-hover:text-gold'}`} />
-            <span className="truncate group-hover:translate-x-0.5 transition-transform">{item.label}</span>
+            <span className="truncate uppercase group-hover:translate-x-0.5 transition-transform">{item.label}</span>
           </Link>
         );
       })}
@@ -237,7 +237,7 @@ function DesktopNavListFallback({ isCollapsed }: { isCollapsed: boolean }) {
             className="flex items-center gap-3.5 px-4 py-3 rounded-xl text-xs sm:text-sm font-extrabold uppercase tracking-wider text-stone-700 hover:text-stone-950 hover:bg-stone-100/80 transition-all cursor-pointer"
           >
             <item.icon className="h-4.5 w-4.5 shrink-0 text-stone-500" />
-            <span className="truncate">{item.label}</span>
+            <span className="truncate uppercase">{item.label}</span>
           </Link>
         );
       })}

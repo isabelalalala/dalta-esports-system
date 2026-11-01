@@ -157,7 +157,7 @@ export default function Dashboard() {
   const visibleCards = allCards.slice(safePageIndex * PAGE_SIZE, (safePageIndex + 1) * PAGE_SIZE);
 
   return (
-    <div className="w-full max-w-7xl mx-auto space-y-8 sm:space-y-10 uppercase">
+    <div className="w-full max-w-7xl mx-auto space-y-8 sm:space-y-10">
       {/* 1. Main Welcome Hero Container with Official Banner */}
       <section className="relative w-full rounded-3xl border border-stone-800/80 bg-stone-950 overflow-hidden shadow-md p-8 sm:p-12 lg:p-14 text-white flex flex-col md:flex-row md:items-center justify-between gap-6 animate-hero-entrance">
         <PageHeroBackground
@@ -184,7 +184,7 @@ export default function Dashboard() {
           </h1>
 
           <p
-            className="text-xs sm:text-sm font-medium tracking-wide uppercase leading-relaxed animate-hero-tagline text-stone-200"
+            className="text-xs sm:text-sm font-medium leading-relaxed animate-hero-tagline text-stone-200"
           >
             DALTA Esports System · Collegiate Tournament Operations, Team Rosters, and Match Schedules.
           </p>
@@ -241,7 +241,7 @@ export default function Dashboard() {
                     <h3 className="font-black text-stone-950 text-base sm:text-lg tracking-wide uppercase group-hover:text-amber-700 transition-colors">
                       {card.title}
                     </h3>
-                    <p className="text-xs sm:text-sm text-stone-600 font-medium tracking-wide leading-relaxed mt-2 uppercase">
+                    <p className="text-xs sm:text-sm text-stone-600 font-medium leading-relaxed mt-2">
                       {card.text}
                     </p>
                   </div>

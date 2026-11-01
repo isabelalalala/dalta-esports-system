@@ -13,10 +13,10 @@ export default function ErrorPage({ error, retry }: { error: Error & { digest?: 
   }, [error]);
 
   return (
-    <main className="flex-1 bg-white text-stone-950 grid place-items-center px-4 py-16 uppercase">
+    <main className="flex-1 bg-white text-stone-950 grid place-items-center px-4 py-16">
       <div role="alert" className="w-full max-w-md bg-white rounded-2xl border border-red-500/30 shadow-sm p-6 sm:p-8 text-center space-y-4">
         <h1 className="text-xl sm:text-2xl font-black text-amber-700 uppercase tracking-wide">Something went wrong</h1>
-        <p className="text-stone-600 font-medium text-xs sm:text-sm uppercase tracking-wide leading-relaxed">
+        <p className="text-stone-600 font-medium text-xs sm:text-sm leading-relaxed">
           This page couldn&apos;t be shown. Check your internet connection and try again. If it keeps happening,
           tell the organizers what you were doing.
         </p>

@@ -12,7 +12,7 @@ export default function PageLoading({ label = 'Loading...', variant = 'grid' }: 
       role="status"
       aria-busy="true"
       aria-label={label}
-      className="w-full space-y-8 uppercase text-stone-950 pb-12 select-none"
+      className="w-full space-y-8 text-stone-950 pb-12 select-none"
     >
       {/* 1. Main Hero Container Skeleton */}
       <HeroSkeleton />

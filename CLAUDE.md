@@ -389,7 +389,7 @@ triggers with readable error messages.
   (bracket, tables) scrolls inside its own `overflow-x-auto` box.
 - New UI uses Tailwind classes, not inline styles (only exception: `utils/og-card.tsx`, because `next/og` can't
   use Tailwind).
-- One look for the whole app, public and logged in (the redesign): white page, uppercase Montserrat, rounded white
+- One look for the whole app, public and logged in (the redesign): white page, Montserrat (uppercase only for titles, buttons and labels), rounded white
   cards (`bg-white border border-stone-200/90 rounded-2xl shadow-xs`), a dark photo hero at the top of each page
   (`PageHeroBackground`), and the logo's gold and maroon as accents. Full rules: `docs/brand.md`. Use the theme
   tokens from `app/globals.css`, never hex colors in classes or inline styles: `text-maroon` for accents on white,

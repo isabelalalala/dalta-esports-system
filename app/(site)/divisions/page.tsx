@@ -20,7 +20,7 @@ export default async function DivisionsPage() {
   const heroBg = heroBannerUrl(content, 'divisions_hero_bg_path');
 
   return (
-    <div className="w-full space-y-8 uppercase">
+    <div className="w-full space-y-8">
       {/* Main Hero Container with dynamic background */}
       <section className="animate-hero-entrance relative w-full rounded-3xl border border-stone-800/80 bg-stone-950 overflow-hidden shadow-md p-8 sm:p-14 lg:p-16 text-center text-white flex flex-col items-center justify-center space-y-4">
         <PageHeroBackground src={heroBg} alt="DALTA Esports Divisions Banner" />
@@ -32,7 +32,7 @@ export default async function DivisionsPage() {
             Game Divisions
           </h1>
           <p
-            className="animate-hero-tagline text-base sm:text-lg font-medium uppercase tracking-wide leading-relaxed text-white"
+            className="animate-hero-tagline text-base sm:text-lg font-medium leading-relaxed text-white"
           >
             Our official teams, one division per game.
           </p>
@@ -99,11 +99,11 @@ export default async function DivisionsPage() {
                     <h2 className="font-black text-stone-950 text-lg uppercase tracking-wide group-hover:text-maroon transition-colors">
                       {d.games?.name}
                     </h2>
-                    <p className="text-xs sm:text-sm text-stone-600 font-medium uppercase tracking-wide mt-1.5 leading-relaxed">
+                    <p className="text-xs sm:text-sm text-stone-600 font-medium mt-1.5 leading-relaxed">
                       {d.tagline}
                     </p>
                   </div>
-                  <p className="text-xs text-maroon font-extrabold uppercase tracking-wider mt-4 flex items-center justify-between group-hover:text-gold transition-colors">
+                  <p className="text-xs text-maroon font-extrabold mt-4 flex items-center justify-between group-hover:text-gold transition-colors">
                     <span>{teamCount === 0 ? 'Teams coming soon' : `${teamCount} official team${teamCount === 1 ? '' : 's'}`}</span>
                     <span className="group-hover:translate-x-1.5 transition-transform">→</span>
                   </p>

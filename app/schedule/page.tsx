@@ -87,7 +87,7 @@ export default function SchedulePage() {
   }
 
   return (
-    <div className="w-full space-y-8 uppercase text-stone-950">
+    <div className="w-full space-y-8 text-stone-950">
       {/* 1. Main Hero Container with Official Banner */}
       <section className="relative w-full rounded-3xl border border-stone-800/80 bg-stone-950 overflow-hidden shadow-md p-8 sm:p-14 lg:p-16 text-center text-white flex flex-col items-center justify-center space-y-4">
         <PageHeroBackground specificKey="hero_banner_path" alt="DALTA Esports Match Schedule Banner" />
@@ -108,7 +108,7 @@ export default function SchedulePage() {
             Schedule &amp; Results
           </h1>
           <p
-            className="text-base sm:text-lg font-medium uppercase tracking-wide leading-relaxed text-white"
+            className="text-base sm:text-lg font-medium leading-relaxed text-white"
           >
             Upcoming tournament fixtures, live arena bouts, and verified match results.
           </p>
@@ -247,7 +247,7 @@ export default function SchedulePage() {
                     <div className="pt-2 flex justify-end">
                       <Link
                         href="/live"
-                        className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gold hover:bg-golddark text-stone-950 font-black text-xs tracking-wider border border-amber-400 shadow-xs hover:-translate-y-0.5 transition-all"
+                        className="uppercase inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gold hover:bg-golddark text-stone-950 font-black text-xs tracking-wider border border-amber-400 shadow-xs hover:-translate-y-0.5 transition-all"
                       >
                         <Tv className="w-3.5 h-3.5" />
                         <span>Watch Stream</span>

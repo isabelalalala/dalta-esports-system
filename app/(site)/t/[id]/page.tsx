@@ -84,7 +84,7 @@ async function TournamentContent({ params }: { params: PageProps<'/t/[id]'>['par
   );
 
   return (
-    <div className="space-y-8 uppercase text-stone-950">
+    <div className="space-y-8 text-stone-950">
       <LiveRefresher tournamentId={t.id} />
 
       {/* 1. Main Hero Container */}
@@ -133,7 +133,7 @@ async function TournamentContent({ params }: { params: PageProps<'/t/[id]'>['par
           {status === 'upcoming' && (
             <Link
               href={`/tournaments/${t.id}`}
-              className="px-4 py-2 rounded-xl bg-gold hover:bg-golddark text-stone-950 text-xs font-black tracking-wider transition-all inline-flex items-center gap-1.5 border border-amber-400"
+              className="uppercase px-4 py-2 rounded-xl bg-gold hover:bg-golddark text-stone-950 text-xs font-black tracking-wider transition-all inline-flex items-center gap-1.5 border border-amber-400"
             >
               <span>Register Team</span>
               <ExternalLink className="w-3.5 h-3.5" />
@@ -203,7 +203,7 @@ async function TournamentContent({ params }: { params: PageProps<'/t/[id]'>['par
               </h2>
             </div>
 
-            <div className="text-stone-800 text-xs sm:text-sm font-medium uppercase tracking-wide leading-relaxed">
+            <div className="text-stone-800 text-xs sm:text-sm font-medium tracking-wide leading-relaxed">
               {t.description ? (
                 <Paragraphs text={t.description} />
               ) : (
@@ -218,7 +218,7 @@ async function TournamentContent({ params }: { params: PageProps<'/t/[id]'>['par
                 </p>
                 <Link
                   href={`/tournaments/${t.id}`}
-                  className="px-5 py-2.5 rounded-xl bg-gold hover:bg-golddark text-stone-950 font-black text-xs uppercase tracking-widest border border-amber-400 shadow-xs hover:-translate-y-0.5 transition-all shrink-0"
+                  className="uppercase px-5 py-2.5 rounded-xl bg-gold hover:bg-golddark text-stone-950 font-black text-xs tracking-widest border border-amber-400 shadow-xs hover:-translate-y-0.5 transition-all shrink-0"
                 >
                   Register Team →
                 </Link>
@@ -235,7 +235,7 @@ async function TournamentContent({ params }: { params: PageProps<'/t/[id]'>['par
             <span className="text-[11px] font-black tracking-widest text-maroon uppercase">Governance</span>
             <h2 className="text-xl sm:text-2xl font-black text-stone-950 uppercase tracking-wide">Rules &amp; Regulations</h2>
           </div>
-          <div className="text-stone-800 text-xs sm:text-sm font-medium uppercase tracking-wide leading-relaxed">
+          <div className="text-stone-800 text-xs sm:text-sm font-medium tracking-wide leading-relaxed">
             <Paragraphs text={t.rules} />
           </div>
         </section>
@@ -256,7 +256,7 @@ async function TournamentContent({ params }: { params: PageProps<'/t/[id]'>['par
             {data.teams.map((team) => (
               <li
                 key={team.id}
-                className="px-4 py-2.5 rounded-xl border border-stone-200 bg-stone-50 text-xs font-black uppercase text-stone-900 shadow-2xs hover:bg-white hover:border-amber-400/60 transition-colors"
+                className="px-4 py-2.5 rounded-xl border border-stone-200 bg-stone-50 text-xs font-black text-stone-900 shadow-2xs hover:bg-white hover:border-amber-400/60 transition-colors"
               >
                 {team.name}
               </li>
@@ -305,7 +305,7 @@ async function TournamentContent({ params }: { params: PageProps<'/t/[id]'>['par
           <div className="border-b border-stone-100 pb-3">
             <span className="text-[11px] font-black tracking-widest text-maroon uppercase">Schedule</span>
             <h2 className="text-xl sm:text-2xl font-black text-stone-950 uppercase tracking-wide">Upcoming Matches</h2>
-            <p className="text-[11px] text-stone-400 font-semibold uppercase mt-0.5">Times are Philippine Time (PHT).</p>
+            <p className="text-[11px] text-stone-400 font-semibold mt-0.5">Times are Philippine Time (PHT).</p>
           </div>
           <ul className="rounded-2xl border border-stone-200/90 bg-white shadow-2xs divide-y divide-stone-100 overflow-hidden">
             {upcoming.map(matchRow)}

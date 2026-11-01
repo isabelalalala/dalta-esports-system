@@ -87,7 +87,7 @@ export default function MyMatches({ userId }: { userId: string }) {
   }, [supabase, userId]);
 
   return (
-    <section className="w-full rounded-3xl border border-stone-200/90 bg-white p-6 sm:p-8 shadow-xs space-y-6 uppercase">
+    <section className="w-full rounded-3xl border border-stone-200/90 bg-white p-6 sm:p-8 shadow-xs space-y-6">
       <div className="flex justify-between items-center pb-4 border-b border-stone-100">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-700 flex items-center justify-center">

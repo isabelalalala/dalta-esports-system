@@ -131,7 +131,7 @@ export default function RegistrationsPage() {
   const activeCount = registrations.filter((r) => ACTIVE_REGISTRATION_STATUSES.includes(r.status)).length;
 
   return (
-    <div className="w-full space-y-8 uppercase text-stone-950">
+    <div className="w-full space-y-8 text-stone-950">
       {/* 1. Main Hero Container */}
       <section className="animate-hero-entrance relative w-full rounded-3xl border border-stone-800/80 bg-stone-950 overflow-hidden shadow-md p-8 sm:p-12 lg:p-14 text-center text-white flex flex-col items-center justify-center space-y-4">
         <PageHeroBackground specificKey="tournaments_hero_bg_path" alt="DALTA Esports Banner" />
@@ -155,7 +155,7 @@ export default function RegistrationsPage() {
             {tournament?.name}
           </h1>
           <p
-            className="animate-hero-tagline text-xs sm:text-sm font-semibold uppercase tracking-wider leading-relaxed text-white"
+            className="animate-hero-tagline text-xs sm:text-sm font-semibold leading-relaxed text-white"
           >
             Manage team registrations, verify student eligibility, and configure slots.
           </p>
@@ -174,7 +174,7 @@ export default function RegistrationsPage() {
       </div>
 
       {error && (
-        <div role="alert" className="rounded-2xl bg-red-500/10 border border-red-500/30 p-4 text-red-700 text-xs sm:text-sm font-bold uppercase tracking-wider flex items-center gap-3">
+        <div role="alert" className="rounded-2xl bg-red-500/10 border border-red-500/30 p-4 text-red-700 text-xs sm:text-sm font-bold tracking-wider flex items-center gap-3">
           <AlertCircle className="w-5 h-5 shrink-0 text-red-600" />
           <span>{error}</span>
         </div>
@@ -183,7 +183,7 @@ export default function RegistrationsPage() {
       {/* 3. Registrations Table Card */}
       {registrations.length === 0 && !error ? (
         <div className="rounded-3xl border border-stone-200/90 bg-white p-12 text-center shadow-xs">
-          <p className="text-stone-500 text-sm font-black uppercase tracking-wider">No registrations yet.</p>
+          <p className="text-stone-500 text-sm font-black">No registrations yet.</p>
         </div>
       ) : (
         <div className="rounded-3xl border border-stone-200/90 bg-white overflow-hidden shadow-xs">
@@ -257,7 +257,7 @@ export default function RegistrationsPage() {
           </div>
 
           {/* Footer */}
-          <div className="bg-stone-50/80 px-6 py-4 border-t border-stone-200/90 text-xs font-bold text-stone-500 uppercase flex flex-wrap justify-between items-center gap-2">
+          <div className="bg-stone-50/80 px-6 py-4 border-t border-stone-200/90 text-xs font-bold text-stone-500 flex flex-wrap justify-between items-center gap-2">
             <span>
               Total active slots: <strong className="text-stone-950">{activeCount}</strong> / {tournament?.max_participants || '∞'}
             </span>

@@ -56,7 +56,7 @@ export default function MatchesOverviewPage() {
   if (!profile && error) return <PageError message={error} />;
   if (profile?.role !== 'admin' && profile?.role !== 'staff') {
     return (
-      <div className="w-full bg-white text-stone-950 p-10 text-center uppercase space-y-4">
+      <div className="w-full bg-white text-stone-950 p-10 text-center space-y-4">
         <p className="font-extrabold text-stone-900">Only tournament organizers can manage matches.</p>
         <Link href="/dashboard" className="inline-block text-amber-700 hover:text-amber-800 font-bold underline">
           ← Back to the dashboard
@@ -66,7 +66,7 @@ export default function MatchesOverviewPage() {
   }
 
   return (
-    <div className="w-full space-y-8 uppercase">
+    <div className="w-full space-y-8">
       {/* 1. Main Hero Container with Official Banner */}
       <section className="relative w-full rounded-3xl border border-stone-800/80 bg-stone-950 overflow-hidden shadow-md p-8 sm:p-14 lg:p-16 text-center text-white flex flex-col items-center justify-center space-y-4">
         <PageHeroBackground specificKey="hero_banner_path" alt="DALTA Esports Match Banner" />
@@ -87,7 +87,7 @@ export default function MatchesOverviewPage() {
             Match Management
           </h1>
           <p
-            className="text-base sm:text-lg font-medium uppercase tracking-wide leading-relaxed text-white"
+            className="text-base sm:text-lg font-medium leading-relaxed text-white"
           >
             Schedule and manage match series, brackets, and live stream broadcasts.
           </p>
@@ -135,7 +135,7 @@ export default function MatchesOverviewPage() {
                     {matchCount > 0 ? (
                       <Link
                         href={`/tournaments/${t.id}/matches`}
-                        className="rounded-xl bg-gold hover:bg-golddark text-stone-950 font-black px-5 py-2.5 text-xs tracking-wider shadow-xs hover:-translate-y-0.5 border border-amber-400 transition-all text-center"
+                        className="uppercase rounded-xl bg-gold hover:bg-golddark text-stone-950 font-black px-5 py-2.5 text-xs tracking-wider shadow-xs hover:-translate-y-0.5 border border-amber-400 transition-all text-center"
                       >
                         Manage {matchCount} Matches
                       </Link>
@@ -149,7 +149,7 @@ export default function MatchesOverviewPage() {
                     )}
                     <Link
                       href={`/tournaments/${t.id}/streams`}
-                      className="rounded-xl border border-stone-300 hover:border-stone-400 bg-white text-stone-800 font-bold px-4 py-2.5 text-xs tracking-wider transition-all"
+                      className="uppercase rounded-xl border border-stone-300 hover:border-stone-400 bg-white text-stone-800 font-bold px-4 py-2.5 text-xs tracking-wider transition-all"
                     >
                       Streams
                     </Link>

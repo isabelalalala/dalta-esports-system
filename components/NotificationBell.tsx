@@ -106,9 +106,9 @@ export default function NotificationBell({ userId }: { userId: string }) {
 
           {/* Phones: a full-width panel under the header (the bell isn't at the screen edge, so a
               dropdown anchored to it would stick out on the left). Larger screens: under the bell. */}
-          <div className="fixed inset-x-4 top-20 z-50 sm:absolute sm:inset-x-auto sm:top-auto sm:right-0 sm:mt-2 sm:w-[22rem] bg-white rounded-2xl border border-stone-200 shadow-xl overflow-hidden uppercase">
+          <div className="fixed inset-x-4 top-20 z-50 sm:absolute sm:inset-x-auto sm:top-auto sm:right-0 sm:mt-2 sm:w-[22rem] bg-white rounded-2xl border border-stone-200 shadow-xl overflow-hidden">
             <div className="flex items-center justify-between px-4 py-3 border-b border-stone-200 bg-stone-50/80">
-              <span className="font-extrabold text-stone-950 text-xs tracking-wider">Notifications</span>
+              <span className="font-extrabold text-stone-950 text-xs uppercase tracking-wider">Notifications</span>
               <button onClick={handleMarkAll} disabled={unread === 0} className="text-xs text-amber-700 hover:text-amber-900 font-bold uppercase tracking-wider disabled:opacity-40 disabled:no-underline">
                 Mark all as read
               </button>
@@ -125,7 +125,7 @@ export default function NotificationBell({ userId }: { userId: string }) {
                   <li key={n.id}>
                     <button
                       onClick={() => handleClick(n)}
-                      className={`w-full text-left px-4 py-3 flex gap-3 hover:bg-amber-50/60 transition-colors ${n.is_read ? 'opacity-60' : ''}`}
+                      className={`w-full text-left normal-case px-4 py-3 flex gap-3 hover:bg-amber-50/60 transition-colors ${n.is_read ? 'opacity-60' : ''}`}
                     >
                       <Icon className="h-4 w-4 mt-1 shrink-0 text-amber-700" />
                       <span className="flex-1 min-w-0">

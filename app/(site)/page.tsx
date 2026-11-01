@@ -20,7 +20,7 @@ export default async function HomePage() {
   ]);
 
   return (
-    <div className="w-full space-y-12 sm:space-y-16 uppercase">
+    <div className="w-full space-y-12 sm:space-y-16">
       {/* Hero Slideshow Background with dark overlay & high-contrast CTA */}
       <HeroSlideshow
         title={content.hero_title}

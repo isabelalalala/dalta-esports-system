@@ -52,10 +52,10 @@ export default function PostSectionCarousel({
       {/* Content Area */}
       {posts.length === 0 ? (
         <div className="w-full rounded-2xl border border-stone-200/80 bg-stone-50/70 p-8 sm:p-12 text-center flex flex-col items-center justify-center gap-2 shadow-xs">
-          <p className="text-stone-800 font-extrabold text-sm uppercase tracking-wider">
+          <p className="text-stone-800 font-extrabold text-sm">
             {emptyText}
           </p>
-          <p className="text-stone-500 text-xs font-semibold uppercase tracking-wide">
+          <p className="text-stone-500 text-xs font-semibold">
             Check back soon for upcoming announcements
           </p>
         </div>

@@ -66,8 +66,7 @@ body {
   background: #ffffff;
   color: #120d0b;
   font-family: var(--font-montserrat-next), "Montserrat", sans-serif;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.01em;
   /* Long words without spaces (emails, links, IGNs) wrap instead of making phones scroll sideways */
   overflow-wrap: break-word;
   margin: 0;
@@ -75,15 +74,16 @@ body {
   width: 100%;
 }
 
-/* Universal Uppercase Montserrat */
+/* Montserrat everywhere. Only titles, buttons, labels and table headers are uppercase;
+   body text, messages and what people type keep their normal case. Small labels and badges
+   add the `uppercase` class themselves (`normal-case` turns it off where needed). */
 @layer base {
   *, *::before, *::after {
     font-family: var(--font-montserrat-next), "Montserrat", sans-serif;
   }
 
   h1, h2, h3, h4, h5, h6,
-  p, span, a, button, input, select, textarea, label,
-  th, td, li, dt, dd, summary {
+  button, label, th, summary {
     text-transform: uppercase;
   }
 
@@ -102,13 +102,11 @@ body {
 
 /* High contrast inputs and text areas */
 input, select, textarea {
-  letter-spacing: 0.04em;
   color: #120d0b;
 }
 
 input::placeholder, textarea::placeholder {
   color: #78716c;
-  text-transform: uppercase;
 }
 
 /* Accessible focus outline */

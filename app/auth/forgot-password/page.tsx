@@ -55,22 +55,22 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <main id="main-content" className="min-h-screen w-full grid place-items-center bg-white px-4 py-12 uppercase">
+    <main id="main-content" className="min-h-screen w-full grid place-items-center bg-white px-4 py-12">
       <div className="w-full max-w-md bg-white rounded-2xl border border-stone-200/90 p-6 sm:p-8 shadow-sm space-y-5">
         <h1 className="text-stone-950 text-2xl sm:text-3xl font-black text-center tracking-wider uppercase mb-2">Forgot password</h1>
 
         {sent ? (
           // Same message whether or not the email has an account, so nobody can
           // use this page to find out who is registered.
-          <p className="text-stone-700 font-medium uppercase tracking-wide text-center text-sm">
+          <p className="text-stone-700 font-medium text-center text-sm">
             If <span className="text-stone-950 font-black">{email}</span> has an account, we sent a link to
             reset the password. Open it on this device and browser.
           </p>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
-            <p className="text-stone-600 font-medium text-xs sm:text-sm uppercase tracking-wide">Enter your email and we&apos;ll send you a link to choose a new password.</p>
-            {error && <div role="alert" className="bg-red-50 border border-red-500/30 rounded-xl text-red-700 px-4 py-2.5 text-xs sm:text-sm font-bold uppercase tracking-wider">{error}</div>}
-            <EmailField value={email} onChange={setEmail} className="w-full p-3.5 rounded-xl bg-white text-stone-950 border border-stone-200 placeholder:text-stone-400 uppercase tracking-wide focus:border-amber-600 focus:ring-2 focus:ring-amber-500/20 shadow-xs outline-none transition-all" />
+            <p className="text-stone-600 font-medium text-xs sm:text-sm">Enter your email and we&apos;ll send you a link to choose a new password.</p>
+            {error && <div role="alert" className="bg-red-50 border border-red-500/30 rounded-xl text-red-700 px-4 py-2.5 text-xs sm:text-sm font-bold tracking-wider">{error}</div>}
+            <EmailField value={email} onChange={setEmail} className="w-full p-3.5 rounded-xl bg-white text-stone-950 border border-stone-200 placeholder:text-stone-400 tracking-wide focus:border-amber-600 focus:ring-2 focus:ring-amber-500/20 shadow-xs outline-none transition-all" />
             <button
               type="submit"
               disabled={loading || cooldown.remaining > 0}

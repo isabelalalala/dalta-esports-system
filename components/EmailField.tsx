@@ -44,7 +44,7 @@ export default function EmailField({ value, onChange, className, placeholder = '
         required
       />
       {showError && (
-        <p id={errorId} className={`mt-1 text-xs font-bold uppercase tracking-wider ${dark ? 'text-red-400' : 'text-red-700'}`}>{error}</p>
+        <p id={errorId} className={`mt-1 text-xs font-bold ${dark ? 'text-red-400' : 'text-red-700'}`}>{error}</p>
       )}
     </div>
   );

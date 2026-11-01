@@ -37,9 +37,9 @@ export default function PickemLeaderboard({ tournamentId, limit }: { tournamentI
   }, [supabase, tournamentId]);
 
   if (loading) return <SectionLoading label="Loading leaderboard..." />;
-  if (error) return <p role="alert" className="text-red-600 text-xs sm:text-sm font-bold uppercase">{error}</p>;
+  if (error) return <p role="alert" className="text-red-600 text-xs sm:text-sm font-bold">{error}</p>;
   if (rows.length === 0) {
-    return <p className="text-stone-500 text-xs sm:text-sm font-medium uppercase tracking-wide">No picks yet. Pick the winners in the bracket to get on the board!</p>;
+    return <p className="text-stone-500 text-xs sm:text-sm font-medium">No picks yet. Pick the winners in the bracket to get on the board!</p>;
   }
 
   const top = limit ? rows.slice(0, limit) : rows;
@@ -51,7 +51,7 @@ export default function PickemLeaderboard({ tournamentId, limit }: { tournamentI
       {shown.map((r, i) => (
         <li
           key={`${r.rank}-${r.display_name}-${i}`}
-          className={`flex items-center gap-3 px-4 py-3 uppercase tracking-wide transition-colors ${
+          className={`flex items-center gap-3 px-4 py-3 tracking-wide transition-colors ${
             r.is_me ? 'bg-amber-500/10' : 'hover:bg-stone-50/70'
           } ${me === r && !top.includes(r) ? 'border-t-2 border-dashed border-stone-300' : ''}`}
         >

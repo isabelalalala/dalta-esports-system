@@ -71,7 +71,7 @@ export default function SavedReportPage() {
   };
 
   return (
-    <div className="w-full space-y-8 uppercase text-stone-950 print:p-0">
+    <div className="w-full space-y-8 text-stone-950 print:p-0">
       {/* 1. Main Hero Container with Official Banner */}
       <section className="relative w-full rounded-3xl border border-stone-800/80 bg-stone-950 overflow-hidden shadow-md p-8 sm:p-14 lg:p-16 text-center text-white flex flex-col items-center justify-center space-y-4 print:hidden">
         <PageHeroBackground specificKey="hero_banner_path" alt="DALTA Esports Analytics Report Banner" />
@@ -109,7 +109,7 @@ export default function SavedReportPage() {
             DALTA Esports Analytics Report
           </h1>
           <p
-            className="text-base sm:text-lg font-medium uppercase tracking-wide leading-relaxed text-white"
+            className="text-base sm:text-lg font-medium leading-relaxed text-white"
           >
             {describeFilters(report.filters)} · Generated {generatedAt}
           </p>

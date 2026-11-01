@@ -140,7 +140,7 @@ export default function Register() {
   };
 
   return (
-    <main id="main-content" className="relative w-full min-h-screen flex flex-col justify-between uppercase overflow-x-hidden">
+    <main id="main-content" className="relative w-full min-h-screen flex flex-col justify-between overflow-x-hidden">
       {/* Full-Page Background Image with Blur & Dim Overlay */}
       <div className="fixed inset-0 -z-10 bg-stone-950 overflow-hidden">
         <Image
@@ -189,7 +189,7 @@ export default function Register() {
             <h1 className="text-stone-950 text-2xl sm:text-3xl lg:text-4xl font-black tracking-wider uppercase leading-tight">
               {sentTo ? 'Check Your Email' : 'Create Account'}
             </h1>
-            <p className="text-stone-500 text-xs sm:text-sm font-bold uppercase tracking-wider mt-1">
+            <p className="text-stone-500 text-xs sm:text-sm font-bold mt-1">
               {sentTo ? 'Verify to activate your account' : 'Official Collegiate Esports Organization'}
             </p>
           </div>
@@ -197,11 +197,11 @@ export default function Register() {
           {sentTo ? (
             /* Email Sent Confirmation View */
             <div className="text-center space-y-5 py-6 max-w-lg mx-auto">
-              <p className="text-stone-700 font-medium uppercase tracking-wide text-xs sm:text-sm leading-relaxed">
+              <p className="text-stone-700 font-medium text-xs sm:text-sm leading-relaxed">
                 We sent a confirmation link to <span className="text-stone-950 font-black">{sentTo}</span>.
                 Open it to activate your account, then log in.
               </p>
-              <p className="text-stone-500 font-bold text-xs uppercase tracking-wider">
+              <p className="text-stone-500 font-bold text-xs">
                 Can&apos;t find it? Check your spam folder, or request another link below.
               </p>
               <button
@@ -227,7 +227,7 @@ export default function Register() {
             /* Registration Form */
             <form ref={formRef} onSubmit={handleRegister} className="space-y-5">
               {error && (
-                <div role="alert" className="bg-red-50 border border-red-200 rounded-xl text-red-700 px-4 py-3 text-xs sm:text-sm font-bold uppercase tracking-wider shadow-xs space-y-3">
+                <div role="alert" className="bg-red-50 border border-red-200 rounded-xl text-red-700 px-4 py-3 text-xs sm:text-sm font-bold tracking-wider shadow-xs space-y-3">
                   <p>{error}</p>
                   {/* Email limit reached: the same form can be sent again after the wait */}
                   {rateLimited && (
@@ -348,11 +348,11 @@ export default function Register() {
               </button>
 
               {/* Bottom Login Link */}
-              <p className="text-center text-stone-600 font-medium uppercase tracking-wide text-xs sm:text-sm pt-2">
+              <p className="text-center text-stone-600 font-medium text-xs sm:text-sm pt-2">
                 Already have an account?{' '}
                 <Link
                   href="/auth/login"
-                  className="text-amber-700 font-black uppercase tracking-wider hover:underline hover:text-amber-800 ml-1.5"
+                  className="text-amber-700 font-black tracking-wider hover:underline hover:text-amber-800 ml-1.5"
                 >
                   Login
                 </Link>

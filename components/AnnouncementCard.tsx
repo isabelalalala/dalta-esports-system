@@ -22,7 +22,7 @@ export default function AnnouncementCard({
 
   return (
     <article
-      className="rounded-2xl border border-stone-200/90 bg-stone-50/60 p-5 sm:p-6 shadow-2xs hover:bg-white hover:border-amber-500/40 hover:shadow-xs transition-all space-y-3 uppercase"
+      className="rounded-2xl border border-stone-200/90 bg-stone-50/60 p-5 sm:p-6 shadow-2xs hover:bg-white hover:border-amber-500/40 hover:shadow-xs transition-all space-y-3"
     >
       <div className="flex flex-wrap items-center gap-2">
         {a.pinned && (
@@ -33,7 +33,7 @@ export default function AnnouncementCard({
         {showTournament && a.tournaments && (
           <Link
             href={`/tournaments/${a.tournaments.id}`}
-            className="text-[11px] font-black uppercase px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-900 border border-amber-500/20 hover:bg-amber-500/20 transition-colors"
+            className="text-[11px] font-black px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-900 border border-amber-500/20 hover:bg-amber-500/20 transition-colors"
           >
             {a.tournaments.name}
           </Link>

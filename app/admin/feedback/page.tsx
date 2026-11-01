@@ -107,7 +107,7 @@ export default function FeedbackAnalysisPage() {
   if (!role && error) return <PageError message={error} />;
   if (role !== 'admin') {
     return (
-      <div className="w-full bg-white text-stone-950 p-10 text-center uppercase space-y-4">
+      <div className="w-full bg-white text-stone-950 p-10 text-center space-y-4">
         <p className="font-extrabold text-stone-900">Only administrators can view the feedback analysis.</p>
         <Link href="/feedback" className="inline-block text-amber-700 hover:text-amber-800 font-bold underline">
           ← Submit feedback instead
@@ -142,7 +142,7 @@ export default function FeedbackAnalysisPage() {
   const topTopics = [...topicCounts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 8);
 
   return (
-    <div className="w-full space-y-8 uppercase">
+    <div className="w-full space-y-8">
       {/* 1. Main Hero Container with Official Banner */}
       <section className="relative w-full rounded-3xl border border-stone-800/80 bg-stone-950 overflow-hidden shadow-md p-8 sm:p-14 lg:p-16 text-center text-white flex flex-col items-center justify-center space-y-4">
         <PageHeroBackground specificKey="hero_banner_path" alt="DALTA Esports Feedback Banner" />
@@ -170,7 +170,7 @@ export default function FeedbackAnalysisPage() {
             Feedback Analysis
           </h1>
           <p
-            className="text-base sm:text-lg font-medium uppercase tracking-wide leading-relaxed text-white"
+            className="text-base sm:text-lg font-medium leading-relaxed text-white"
           >
             Participant sentiment, experience reviews, and satisfaction trends analyzed with Gemini AI.
           </p>

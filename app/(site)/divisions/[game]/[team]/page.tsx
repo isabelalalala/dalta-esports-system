@@ -29,7 +29,7 @@ async function OfficialTeam({ params }: { params: PageProps<'/divisions/[game]/[
   const gameName = team.games?.name ?? game;
 
   return (
-    <div className="w-full space-y-8 uppercase text-stone-950">
+    <div className="w-full space-y-8 text-stone-950">
       {/* 1. Main Hero Container (Matching Tournaments, Campaigns, and Events) */}
       <section className="animate-hero-entrance relative w-full rounded-3xl border border-stone-800/80 bg-stone-950 overflow-hidden shadow-md p-8 sm:p-12 lg:p-14 text-center text-white flex flex-col items-center justify-center space-y-4">
         <PageHeroBackground specificKey="divisions_hero_bg_path" alt="DALTA Esports Official Team Banner" />
@@ -132,11 +132,11 @@ async function OfficialTeam({ params }: { params: PageProps<'/divisions/[game]/[
             {/* Quick Specs Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-3 border-t border-stone-100 text-xs">
               <div className="p-4 rounded-2xl bg-stone-50/70 border border-stone-200/80 space-y-1">
-                <span className="text-stone-500 font-black tracking-wider text-[11px] block">Game Discipline</span>
+                <span className="uppercase text-stone-500 font-black tracking-wider text-[11px] block">Game Discipline</span>
                 <span className="font-extrabold text-stone-950 text-sm tracking-wide block">{gameName}</span>
               </div>
               <div className="p-4 rounded-2xl bg-stone-50/70 border border-stone-200/80 space-y-1">
-                <span className="text-stone-500 font-black tracking-wider text-[11px] block">Active Roster</span>
+                <span className="uppercase text-stone-500 font-black tracking-wider text-[11px] block">Active Roster</span>
                 <span className="font-extrabold text-stone-950 text-sm tracking-wide block">{players.length} Registered Players</span>
               </div>
             </div>
@@ -159,7 +159,7 @@ async function OfficialTeam({ params }: { params: PageProps<'/divisions/[game]/[
                   </p>
                 )}
                 {captain.name && (
-                  <p className="text-xs text-stone-500 font-semibold tracking-wide uppercase mt-1">
+                  <p className="text-xs text-stone-500 font-semibold mt-1">
                     {captain.name}
                   </p>
                 )}
@@ -201,7 +201,7 @@ async function OfficialTeam({ params }: { params: PageProps<'/divisions/[game]/[
                   <PersonPhoto path={p.photo_path} name={p.name || p.ign} size="md" />
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
-                      <p className="font-black text-stone-950 text-base uppercase tracking-wide truncate group-hover:text-maroon transition-colors">
+                      <p className="font-black text-stone-950 text-base truncate group-hover:text-maroon transition-colors">
                         {p.ign}
                       </p>
                       {isCap && (

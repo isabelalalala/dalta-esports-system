@@ -57,7 +57,7 @@ export default function TermsPage() {
   };
 
   return (
-    <main id="main-content" className="min-h-screen w-full bg-white text-stone-900 px-4 sm:px-6 lg:px-8 py-8 sm:py-12 uppercase space-y-10 sm:space-y-12">
+    <main id="main-content" className="min-h-screen w-full bg-white text-stone-900 px-4 sm:px-6 lg:px-8 py-8 sm:py-12 space-y-10 sm:space-y-12">
       {/* 1. Large Main Hero Container */}
       <section className="w-full rounded-3xl border border-stone-200/90 bg-gradient-to-br from-amber-50/70 via-white to-stone-50 p-8 sm:p-14 lg:p-16 text-center shadow-xs flex flex-col items-center justify-center space-y-4">
         <div className="w-full flex justify-start">
@@ -72,16 +72,16 @@ export default function TermsPage() {
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-stone-950 tracking-wider uppercase leading-tight">
             Terms of Service
           </h1>
-          <p className="text-xs sm:text-sm font-bold text-amber-700 uppercase tracking-widest">
+          <p className="text-xs sm:text-sm font-bold text-amber-700">
             Version {TOS_VERSION} · Last updated {formatDate(TOS_VERSION)}
           </p>
-          <p className="text-sm sm:text-base lg:text-lg text-stone-700 font-medium tracking-wide uppercase leading-relaxed pt-2 max-w-3xl mx-auto">
+          <p className="text-sm sm:text-base lg:text-lg text-stone-700 font-medium leading-relaxed pt-2 max-w-3xl mx-auto">
             These terms are the agreement between you and DALTA Esports for using the DALTA Esports Tournament Management System. By creating an account or using the service, you accept them. Please also read our{' '}
-            <Link href="/privacy" className="text-amber-800 font-black uppercase underline hover:text-amber-950">
+            <Link href="/privacy" className="text-amber-800 font-black underline hover:text-amber-950">
               Privacy Notice
             </Link>{' '}
             and{' '}
-            <Link href="/conduct" className="text-amber-800 font-black uppercase underline hover:text-amber-950">
+            <Link href="/conduct" className="text-amber-800 font-black underline hover:text-amber-950">
               Code of Conduct
             </Link>
             , which are part of these terms.
@@ -135,7 +135,7 @@ export default function TermsPage() {
             <ul className="list-disc pl-6 space-y-2.5">
               <li>
                 You must be at least 18 years old, or have the consent of a parent or guardian who has read these terms and the{' '}
-                <Link href="/privacy" className="text-amber-800 font-black uppercase underline hover:text-amber-950">
+                <Link href="/privacy" className="text-amber-800 font-black underline hover:text-amber-950">
                   Privacy Notice
                 </Link>{' '}
                 with you. When you accept these terms you declare that this is true.
@@ -169,7 +169,7 @@ export default function TermsPage() {
             </h2>
             <p>
               You agree to follow the{' '}
-              <Link href="/conduct" className="text-amber-800 font-black uppercase underline hover:text-amber-950">
+              <Link href="/conduct" className="text-amber-800 font-black underline hover:text-amber-950">
                 Code of Conduct
               </Link>
               . In short, you must not:
@@ -284,7 +284,7 @@ export default function TermsPage() {
               These terms are governed by the laws of the Republic of the Philippines. Questions:{' '}
               <a
                 href={`mailto:${PRIVACY_CONTACT_EMAIL}`}
-                className="text-amber-800 font-black uppercase underline hover:text-amber-950"
+                className="text-amber-800 font-black underline hover:text-amber-950"
               >
                 {PRIVACY_CONTACT_EMAIL}
               </a>.

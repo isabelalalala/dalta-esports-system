@@ -161,7 +161,7 @@ export default function EditTournamentPage() {
   }
 
   return (
-    <div className="w-full space-y-8 uppercase text-stone-950">
+    <div className="w-full space-y-8 text-stone-950">
       {/* 1. Main Hero Container */}
       <section className="relative w-full rounded-3xl border border-stone-800/80 bg-stone-950 overflow-hidden shadow-md p-8 sm:p-12 lg:p-14 text-center text-white flex flex-col items-center justify-center space-y-4">
         <PageHeroBackground specificKey="tournaments_hero_bg_path" alt="DALTA Esports Banner" />
@@ -185,7 +185,7 @@ export default function EditTournamentPage() {
             Edit Tournament
           </h1>
           <p
-            className="text-xs sm:text-sm font-semibold uppercase tracking-wider leading-relaxed text-white"
+            className="text-xs sm:text-sm font-semibold leading-relaxed text-white"
           >
             Editing <span className="text-gold font-black">{name || 'Tournament'}</span> · Configure rules, quota, verification, and schedules.
           </p>
@@ -194,7 +194,7 @@ export default function EditTournamentPage() {
 
       {/* 2. Error Notification */}
       {error && (
-        <div role="alert" className="rounded-2xl bg-red-500/10 border border-red-500/30 p-4 sm:p-5 text-red-700 text-xs sm:text-sm font-bold uppercase tracking-wider flex items-center gap-3">
+        <div role="alert" className="rounded-2xl bg-red-500/10 border border-red-500/30 p-4 sm:p-5 text-red-700 text-xs sm:text-sm font-bold tracking-wider flex items-center gap-3">
           <AlertCircle className="w-5 h-5 shrink-0 text-red-600" />
           <span>{error}</span>
         </div>
@@ -234,7 +234,7 @@ export default function EditTournamentPage() {
           ) : (
             <div className="rounded-3xl border border-stone-200/90 bg-stone-50/70 p-8 text-center space-y-2">
               <Trophy className="w-8 h-8 text-maroon mx-auto" />
-              <p className="text-xs font-black text-stone-900 uppercase tracking-wider">
+              <p className="text-xs font-black text-stone-900">
                 {selectedGame ? selectedGame.name : 'Select a game discipline'}
               </p>
             </div>

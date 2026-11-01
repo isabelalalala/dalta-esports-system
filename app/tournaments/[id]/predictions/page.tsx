@@ -41,7 +41,7 @@ export default function PredictionsLeaderboardPage() {
   if (error) return <PageError message={error} backHref="/tournaments" backLabel="Back to Tournaments" />;
 
   return (
-    <div className="w-full space-y-8 uppercase text-stone-950">
+    <div className="w-full space-y-8 text-stone-950">
       {/* 1. Main Hero Container */}
       <section className="relative w-full rounded-3xl border border-stone-800/80 bg-stone-950 overflow-hidden shadow-md p-8 sm:p-12 lg:p-14 text-center text-white flex flex-col items-center justify-center space-y-4">
         <PageHeroBackground specificKey="tournaments_hero_bg_path" alt="DALTA Esports Banner" />
@@ -65,7 +65,7 @@ export default function PredictionsLeaderboardPage() {
             Pick&apos;em Leaderboard
           </h1>
           <p
-            className="text-xs sm:text-sm font-semibold uppercase tracking-wider leading-relaxed text-white"
+            className="text-xs sm:text-sm font-semibold leading-relaxed text-white"
           >
             Ranked by correct picks across matches. Higher accuracy ranks higher.
           </p>
@@ -80,7 +80,7 @@ export default function PredictionsLeaderboardPage() {
             <h2 className="text-xl sm:text-2xl font-black text-stone-950 uppercase tracking-wide">
               Prediction Rankings
             </h2>
-            <p className="text-xs text-stone-500 font-semibold uppercase tracking-wider mt-1">
+            <p className="text-xs text-stone-500 font-semibold mt-1">
               Picks close when each match begins. Make yours on the{' '}
               <Link href={`/tournaments/${id}`} className="text-maroon font-black underline hover:text-gold">
                 tournament bracket

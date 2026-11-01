@@ -72,7 +72,7 @@ export default function TournamentsPage() {
   }
 
   return (
-    <div className="w-full space-y-8 uppercase">
+    <div className="w-full space-y-8">
       {/* 1. Main Hero Container with dynamic background (Matching Events Layout) */}
       <section className="animate-hero-entrance relative w-full rounded-3xl border border-stone-800/80 bg-stone-950 overflow-hidden shadow-md p-8 sm:p-14 lg:p-16 text-center text-white flex flex-col items-center justify-center space-y-4">
         <PageHeroBackground specificKey="tournaments_hero_bg_path" alt="DALTA Esports Tournaments Banner" />
@@ -103,7 +103,7 @@ export default function TournamentsPage() {
             Tournaments
           </h1>
           <p
-            className="animate-hero-tagline text-base sm:text-lg font-medium uppercase tracking-wide leading-relaxed text-white"
+            className="animate-hero-tagline text-base sm:text-lg font-medium leading-relaxed text-white"
           >
             Official championships, brackets, and match schedules.
           </p>
@@ -114,7 +114,7 @@ export default function TournamentsPage() {
       {error && (
         <div
           role="alert"
-          className="rounded-xl bg-red-500/10 border border-red-500/30 p-4 text-red-700 text-sm font-bold uppercase tracking-wider"
+          className="rounded-xl bg-red-500/10 border border-red-500/30 p-4 text-red-700 text-sm font-bold tracking-wider"
         >
           {error}
         </div>
@@ -123,15 +123,15 @@ export default function TournamentsPage() {
       {/* 2. Tournaments Grid / Empty State (Matching Events Layout) */}
       {tournaments.length === 0 && !error ? (
         <div className="animate-stagger-1 w-full rounded-2xl border border-stone-200/80 bg-stone-50/70 p-8 sm:p-14 text-center flex flex-col items-center justify-center gap-2 shadow-xs">
-          <p className="font-black text-stone-900 text-base uppercase tracking-wider">
+          <p className="font-black text-stone-900 text-base">
             No tournaments published yet.
           </p>
           {(profile?.role === 'admin' || profile?.role === 'staff') ? (
-            <p className="text-xs text-stone-500 font-semibold uppercase tracking-wide">
+            <p className="text-xs text-stone-500 font-semibold">
               Click &quot;+ Create Tournament&quot; above to launch a new competition.
             </p>
           ) : (
-            <p className="text-xs text-stone-500 font-semibold uppercase tracking-wide">
+            <p className="text-xs text-stone-500 font-semibold">
               Check back soon or read our announcements for upcoming schedules.
             </p>
           )}
@@ -189,7 +189,7 @@ export default function TournamentsPage() {
                       {tournament.name}
                     </h3>
                     {tournament.description && (
-                      <p className="text-xs sm:text-sm text-stone-600 font-medium uppercase tracking-wide line-clamp-2">
+                      <p className="text-xs sm:text-sm text-stone-600 font-medium line-clamp-2">
                         {tournament.description}
                       </p>
                     )}

@@ -23,7 +23,7 @@ export default function PostCard({ post, href }: { post: SitePost; href: string 
       <div className="p-5 space-y-2 flex-1">
         {post.event_date && <p className="text-xs text-maroon font-extrabold uppercase tracking-wider">{formatDate(post.event_date)}</p>}
         <h3 className="font-black text-stone-950 text-base leading-snug uppercase tracking-wide group-hover:text-gold transition-colors">{post.title}</h3>
-        {post.description && <p className="text-xs sm:text-sm text-stone-600 font-medium uppercase tracking-wide line-clamp-3">{post.description}</p>}
+        {post.description && <p className="text-xs sm:text-sm text-stone-600 font-medium line-clamp-3">{post.description}</p>}
       </div>
     </Link>
   );

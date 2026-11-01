@@ -218,7 +218,7 @@ export default function ProfilePage() {
   return (
     <main
       id="main-content"
-      className="flex-1 w-full min-h-[calc(100vh-160px)] bg-white text-stone-950 px-4 sm:px-6 lg:px-8 xl:px-12 py-8 sm:py-10 uppercase"
+      className="flex-1 w-full min-h-[calc(100vh-160px)] bg-white text-stone-950 px-4 sm:px-6 lg:px-8 xl:px-12 py-8 sm:py-10"
     >
       <div className="w-full max-w-6xl mx-auto space-y-8">
         {/* 1. Main Hero Container (Matching Dashboard & Tournaments Layout) */}
@@ -264,7 +264,7 @@ export default function ProfilePage() {
         {error && (
           <div
             role="alert"
-            className="rounded-2xl bg-red-500/10 border border-red-500/30 p-4 sm:p-5 text-red-700 text-xs sm:text-sm font-bold uppercase tracking-wider flex items-center gap-3 shadow-xs"
+            className="rounded-2xl bg-red-500/10 border border-red-500/30 p-4 sm:p-5 text-red-700 text-xs sm:text-sm font-bold tracking-wider flex items-center gap-3 shadow-xs"
           >
             <AlertCircle className="w-5 h-5 shrink-0 text-red-600" />
             <span>{error}</span>
@@ -273,7 +273,7 @@ export default function ProfilePage() {
         {message && (
           <div
             role="status"
-            className="rounded-2xl bg-emerald-500/10 border border-emerald-500/30 p-4 sm:p-5 text-emerald-800 text-xs sm:text-sm font-bold uppercase tracking-wider flex items-center gap-3 shadow-xs"
+            className="rounded-2xl bg-emerald-500/10 border border-emerald-500/30 p-4 sm:p-5 text-emerald-800 text-xs sm:text-sm font-bold tracking-wider flex items-center gap-3 shadow-xs"
           >
             <CheckCircle2 className="w-5 h-5 shrink-0 text-emerald-600" />
             <span>{message}</span>
@@ -301,7 +301,7 @@ export default function ProfilePage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 text-xs sm:text-sm">
             <div className="p-4 sm:p-5 rounded-2xl bg-stone-50/70 border border-stone-200/80 space-y-1">
-              <span className="block text-stone-500 font-black tracking-wider text-xs flex items-center gap-1.5">
+              <span className="uppercase block text-stone-500 font-black tracking-wider text-xs flex items-center gap-1.5">
                 <Mail className="w-3.5 h-3.5 text-maroon" />
                 Email Address
               </span>
@@ -311,7 +311,7 @@ export default function ProfilePage() {
             </div>
 
             <div className="p-4 sm:p-5 rounded-2xl bg-stone-50/70 border border-stone-200/80 space-y-1">
-              <span className="block text-stone-500 font-black tracking-wider text-xs flex items-center gap-1.5">
+              <span className="uppercase block text-stone-500 font-black tracking-wider text-xs flex items-center gap-1.5">
                 <Shield className="w-3.5 h-3.5 text-maroon" />
                 System Role
               </span>
@@ -321,7 +321,7 @@ export default function ProfilePage() {
             </div>
 
             <div className="md:col-span-2 p-4 sm:p-5 rounded-2xl bg-stone-50/70 border border-stone-200/80 space-y-1.5">
-              <span className="block text-stone-500 font-black tracking-wider text-xs flex items-center gap-1.5">
+              <span className="uppercase block text-stone-500 font-black tracking-wider text-xs flex items-center gap-1.5">
                 <Calendar className="w-3.5 h-3.5 text-maroon" />
                 Privacy & RA 10173 Compliance
               </span>
@@ -422,7 +422,7 @@ export default function ProfilePage() {
                           <h3 className="font-black text-maroon text-sm tracking-wider uppercase">
                             Editing {game.name} Profile
                           </h3>
-                          <p className="text-[11px] text-stone-500 font-medium uppercase tracking-wide">
+                          <p className="text-[11px] text-stone-500 font-medium">
                             Enter your official IGN, role, and current competitive tier.
                           </p>
                         </div>
@@ -694,7 +694,7 @@ function ChangePassword({ email, fullName }: { email: string; fullName: string }
     <form
       ref={formRef}
       onSubmit={handleSubmit}
-      className="bg-white border border-stone-200/90 rounded-3xl p-6 sm:p-8 shadow-xs space-y-6 uppercase"
+      className="bg-white border border-stone-200/90 rounded-3xl p-6 sm:p-8 shadow-xs space-y-6"
     >
       <div className="flex items-center gap-3 pb-4 border-b border-stone-100">
         <div className="w-10 h-10 rounded-xl bg-maroon/10 border border-maroon/20 text-maroon grid place-items-center shadow-2xs">

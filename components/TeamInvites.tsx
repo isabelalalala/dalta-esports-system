@@ -55,7 +55,7 @@ export default function TeamInvites({ onAnswered }: { onAnswered?: () => void })
   if (invites.length === 0 && !error && !message) return null;
 
   return (
-    <section className="w-full rounded-3xl border border-stone-200/90 bg-white p-6 sm:p-8 shadow-xs space-y-6 uppercase">
+    <section className="w-full rounded-3xl border border-stone-200/90 bg-white p-6 sm:p-8 shadow-xs space-y-6">
       <div className="flex items-center gap-3 pb-4 border-b border-stone-100">
         <div className="w-10 h-10 rounded-xl bg-maroon/10 border border-maroon/20 text-maroon flex items-center justify-center shadow-2xs">
           <Mail className="h-5 w-5" />
@@ -71,12 +71,12 @@ export default function TeamInvites({ onAnswered }: { onAnswered?: () => void })
       </div>
 
       {error && (
-        <div className="bg-red-50 border border-red-500/30 rounded-xl text-red-700 px-4 py-3 text-xs sm:text-sm font-bold uppercase tracking-wider">
+        <div className="bg-red-50 border border-red-500/30 rounded-xl text-red-700 px-4 py-3 text-xs sm:text-sm font-bold tracking-wider">
           {error}
         </div>
       )}
       {message && (
-        <div className="bg-emerald-50 border border-emerald-500/30 rounded-xl text-emerald-800 px-4 py-3 text-xs sm:text-sm font-bold uppercase tracking-wider">
+        <div className="bg-emerald-50 border border-emerald-500/30 rounded-xl text-emerald-800 px-4 py-3 text-xs sm:text-sm font-bold tracking-wider">
           {message}
         </div>
       )}

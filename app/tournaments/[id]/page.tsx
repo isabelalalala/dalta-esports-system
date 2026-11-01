@@ -317,7 +317,7 @@ export default function TournamentDetailsPage() {
   ];
 
   return (
-    <div className="w-full space-y-8 uppercase text-stone-950">
+    <div className="w-full space-y-8 text-stone-950">
       {/* 1. Main Hero Container */}
       <section className="animate-hero-entrance relative w-full rounded-3xl border border-stone-800/80 bg-stone-950 overflow-hidden shadow-md p-8 sm:p-12 lg:p-14 text-center text-white flex flex-col items-center justify-center space-y-4">
         <PageHeroBackground specificKey="tournaments_hero_bg_path" alt="DALTA Esports Tournament Banner" />
@@ -366,7 +366,7 @@ export default function TournamentDetailsPage() {
           <CalendarLinks kind="tournament" id={tournament.id} />
           <Link
             href={`/t/${tournament.id}`}
-            className="px-4 py-2 rounded-xl border border-white/20 bg-white/10 hover:bg-white/20 hover:border-gold text-white text-xs font-black tracking-wider transition-all inline-flex items-center gap-1.5"
+            className="uppercase px-4 py-2 rounded-xl border border-white/20 bg-white/10 hover:bg-white/20 hover:border-gold text-white text-xs font-black tracking-wider transition-all inline-flex items-center gap-1.5"
           >
             <span>Public Page</span>
             <ExternalLink className="w-3.5 h-3.5 text-gold" />
@@ -376,13 +376,13 @@ export default function TournamentDetailsPage() {
 
       {/* 2. Error / Status Notifications */}
       {error && (
-        <div role="alert" className="rounded-2xl bg-red-500/10 border border-red-500/30 p-4 sm:p-5 text-red-700 text-xs sm:text-sm font-bold uppercase tracking-wider flex items-center gap-3">
+        <div role="alert" className="rounded-2xl bg-red-500/10 border border-red-500/30 p-4 sm:p-5 text-red-700 text-xs sm:text-sm font-bold tracking-wider flex items-center gap-3">
           <AlertCircle className="w-5 h-5 shrink-0 text-red-600" />
           <span>{error}</span>
         </div>
       )}
       {message && (
-        <div role="status" className="rounded-2xl bg-emerald-500/10 border border-emerald-500/30 p-4 sm:p-5 text-emerald-800 text-xs sm:text-sm font-bold uppercase tracking-wider flex items-center gap-3">
+        <div role="status" className="rounded-2xl bg-emerald-500/10 border border-emerald-500/30 p-4 sm:p-5 text-emerald-800 text-xs sm:text-sm font-bold tracking-wider flex items-center gap-3">
           <CheckCircle2 className="w-5 h-5 shrink-0 text-emerald-600" />
           <span>{message}</span>
         </div>
@@ -400,7 +400,7 @@ export default function TournamentDetailsPage() {
               <Tv className="h-5 w-5 animate-pulse" />
             </span>
             <div className="min-w-0">
-              <div className="text-[10px] font-black text-red-700 uppercase tracking-widest flex items-center gap-1.5">
+              <div className="uppercase text-[10px] font-black text-red-700 tracking-widest flex items-center gap-1.5">
                 <span className="inline-block h-2 w-2 rounded-full bg-red-600 animate-ping" /> Live Match Stream
               </div>
               <p className="font-black text-sm sm:text-base text-stone-950 truncate tracking-wide">{s.title}</p>
@@ -458,7 +458,7 @@ export default function TournamentDetailsPage() {
               </h2>
             </div>
 
-            <div className="text-stone-800 text-xs sm:text-sm font-medium uppercase tracking-wide leading-relaxed whitespace-pre-wrap">
+            <div className="text-stone-800 text-xs sm:text-sm font-medium tracking-wide leading-relaxed whitespace-pre-wrap">
               {tournament.description ? (
                 <p>{tournament.description}</p>
               ) : (
@@ -470,7 +470,7 @@ export default function TournamentDetailsPage() {
             {!isOrganizer && (
               <div id="register-container" ref={registrationRef} className="pt-4 border-t border-stone-100">
                 {closedReason ? (
-                  <div className="rounded-2xl border border-stone-200 bg-stone-50/90 p-4 text-center text-xs font-black uppercase text-stone-600 tracking-wider">
+                  <div className="rounded-2xl border border-stone-200 bg-stone-50/90 p-4 text-center text-xs font-black text-stone-600 tracking-wider">
                     {closedReason}
                   </div>
                 ) : !showForm ? (
@@ -506,7 +506,7 @@ export default function TournamentDetailsPage() {
                         </label>
 
                         {teams.length === 0 ? (
-                          <div className="rounded-xl bg-red-500/10 border border-red-500/30 p-4 text-red-700 text-xs font-bold uppercase tracking-wider">
+                          <div className="rounded-xl bg-red-500/10 border border-red-500/30 p-4 text-red-700 text-xs font-bold tracking-wider">
                             You don&apos;t captain a {tournament.game} team yet. Create one first on the{' '}
                             <Link href="/teams" className="font-black underline hover:text-maroon">
                               Teams
@@ -532,8 +532,8 @@ export default function TournamentDetailsPage() {
                       </div>
 
                       {blockingMembers.length > 0 && (
-                        <div className="rounded-2xl bg-amber-500/15 border border-amber-400 p-4 text-amber-950 text-xs font-semibold uppercase tracking-wider space-y-2.5">
-                          <div className="flex items-center gap-2 font-black text-maroon">
+                        <div className="rounded-2xl bg-amber-500/15 border border-amber-400 p-4 text-amber-950 text-xs font-semibold space-y-2.5">
+                          <div className="flex items-center gap-2 font-black text-maroon uppercase tracking-wider">
                             <ShieldAlert className="h-4 w-4" />
                             <span>Student Verification Required</span>
                           </div>
@@ -593,7 +593,7 @@ export default function TournamentDetailsPage() {
                 <Icon className="h-4 w-4 text-maroon" />
                 <span className="text-[10px] font-black uppercase tracking-wider text-stone-500">{d.label}</span>
               </div>
-              <p className="text-sm sm:text-base font-black text-stone-950 uppercase tracking-wide break-words">{d.value}</p>
+              <p className="text-sm sm:text-base font-black text-stone-950 break-words">{d.value}</p>
             </div>
           );
         })}
@@ -627,7 +627,7 @@ export default function TournamentDetailsPage() {
             <h3 className="font-black text-sm sm:text-base uppercase tracking-wide text-stone-950">
               Spectator &amp; Participant Feedback
             </h3>
-            <p className="text-xs text-stone-600 font-semibold uppercase tracking-wider">
+            <p className="text-xs text-stone-600 font-semibold">
               Share your thoughts, match ratings, and sentiment for DALTA Esports committee review.
             </p>
           </div>
@@ -644,11 +644,11 @@ export default function TournamentDetailsPage() {
           <h2 className="text-xl sm:text-2xl font-black text-stone-950 uppercase tracking-wide">Rules &amp; Regulations</h2>
         </div>
         {tournament.rules ? (
-          <p className="text-stone-800 text-xs sm:text-sm font-medium uppercase tracking-wide leading-relaxed whitespace-pre-wrap">
+          <p className="text-stone-800 text-xs sm:text-sm font-medium leading-relaxed whitespace-pre-wrap">
             {tournament.rules}
           </p>
         ) : (
-          <p className="text-stone-400 text-xs sm:text-sm font-semibold uppercase tracking-wider">
+          <p className="text-stone-400 text-xs sm:text-sm font-semibold">
             No official tournament rules have been published for this tournament yet.
           </p>
         )}
@@ -662,7 +662,7 @@ export default function TournamentDetailsPage() {
             <h2 className="text-xl sm:text-2xl font-black text-stone-950 uppercase tracking-wide">Tournament Bracket</h2>
           </div>
           {matches.length > 0 && !isOrganizer && (
-            <div className="flex items-center gap-1.5 text-xs text-stone-600 font-black uppercase tracking-wider">
+            <div className="flex items-center gap-1.5 text-xs text-stone-600 font-black tracking-wider">
               <Target className="h-4 w-4 text-maroon" />
               <span>Pick&apos;em enabled: pick the winner before match starts</span>
             </div>
@@ -680,8 +680,8 @@ export default function TournamentDetailsPage() {
           </PredictionsProvider>
         ) : (
           <div className="p-8 sm:p-12 text-center rounded-2xl bg-stone-50 border border-stone-200/80">
-            <p className="font-black text-stone-900 text-sm uppercase tracking-wider">No bracket generated yet.</p>
-            <p className="text-xs text-stone-500 font-semibold uppercase tracking-wide mt-1">
+            <p className="font-black text-stone-900 text-sm">No bracket generated yet.</p>
+            <p className="text-xs text-stone-500 font-semibold mt-1">
               Organizers will generate the matchups once registration closes.
             </p>
           </div>
@@ -718,7 +718,7 @@ export default function TournamentDetailsPage() {
           </h2>
         </div>
         {approvedTeams.length === 0 ? (
-          <div className="p-8 text-center rounded-2xl bg-stone-50 border border-stone-200/80 text-stone-500 text-xs font-black uppercase tracking-wider">
+          <div className="p-8 text-center rounded-2xl bg-stone-50 border border-stone-200/80 text-stone-500 text-xs font-black tracking-wider">
             No approved teams registered for this tournament yet.
           </div>
         ) : (
@@ -748,7 +748,7 @@ export default function TournamentDetailsPage() {
               Admin &amp; Organizer Panel
             </h2>
           </div>
-          <p className="text-xs text-stone-600 font-semibold uppercase tracking-wider">
+          <p className="text-xs text-stone-600 font-semibold">
             {matches.length > 0
               ? `Active Bracket: ${matches.length} matches across ${roundCount} rounds.`
               : `No bracket generated yet. Ready to build from ${approvedTeams.length} approved teams.`}

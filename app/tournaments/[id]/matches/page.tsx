@@ -105,7 +105,7 @@ export default function MatchManagementPage() {
   const rounds = Array.from({ length: roundCount }, (_, i) => i + 1);
 
   return (
-    <div className="w-full space-y-8 uppercase text-stone-950">
+    <div className="w-full space-y-8 text-stone-950">
       {/* 1. Main Hero Container */}
       <section className="relative w-full rounded-3xl border border-stone-800/80 bg-stone-950 overflow-hidden shadow-md p-8 sm:p-12 lg:p-14 text-center text-white flex flex-col items-center justify-center space-y-4">
         <PageHeroBackground specificKey="tournaments_hero_bg_path" alt="DALTA Esports Banner" />
@@ -129,7 +129,7 @@ export default function MatchManagementPage() {
             {tournament.name} Matches
           </h1>
           <p
-            className="text-xs sm:text-sm font-semibold uppercase tracking-wider leading-relaxed text-white"
+            className="text-xs sm:text-sm font-semibold leading-relaxed text-white"
           >
             Schedule fixtures, record official match scores, and declare advancing winners.
           </p>
@@ -145,7 +145,7 @@ export default function MatchManagementPage() {
       </div>
 
       {error && (
-        <div role="alert" className="rounded-2xl bg-red-500/10 border border-red-500/30 p-4 text-red-700 text-xs sm:text-sm font-bold uppercase tracking-wider flex items-center gap-3">
+        <div role="alert" className="rounded-2xl bg-red-500/10 border border-red-500/30 p-4 text-red-700 text-xs sm:text-sm font-bold tracking-wider flex items-center gap-3">
           <AlertCircle className="w-5 h-5 shrink-0 text-red-600" />
           <span>{error}</span>
         </div>
@@ -153,7 +153,7 @@ export default function MatchManagementPage() {
 
       {matches.length === 0 && !error ? (
         <div className="rounded-3xl border border-stone-200/90 bg-white p-12 text-center shadow-xs">
-          <p className="text-stone-500 text-sm font-black uppercase tracking-wider">
+          <p className="text-stone-500 text-sm font-black">
             No bracket generated yet. Generate it from the Organizer Panel on the tournament page.
           </p>
         </div>
@@ -216,8 +216,8 @@ function MatchCard({
     const team = match.team_a_id ?? match.team_b_id;
     return (
       <div className="rounded-2xl border border-stone-200/90 bg-stone-50/70 p-5 text-stone-500 shadow-2xs space-y-1">
-        <p className="text-[11px] uppercase font-black tracking-widest text-maroon">Match {match.match_number} · Bye</p>
-        <p className="text-xs sm:text-sm font-black text-stone-950 uppercase tracking-wide">
+        <p className="text-[11px] font-black text-maroon">Match {match.match_number} · Bye</p>
+        <p className="text-xs sm:text-sm font-black text-stone-950">
           <span>{team ? teamNames[team] : 'Unknown team'}</span> advances automatically.
         </p>
       </div>
@@ -302,7 +302,7 @@ function MatchCard({
 
       {/* Teams and scores */}
       <div className="grid grid-cols-[1fr_5rem] gap-3 items-center">
-        <span className={`font-black text-xs sm:text-sm uppercase tracking-wide truncate ${match.winner_team_id === match.team_a_id && match.team_a_id ? 'text-maroon' : 'text-stone-950'}`}>
+        <span className={`font-black text-xs sm:text-sm tracking-wide truncate ${match.winner_team_id === match.team_a_id && match.team_a_id ? 'text-maroon' : 'text-stone-950'}`}>
           {nameA}
         </span>
         <input
@@ -315,7 +315,7 @@ function MatchCard({
           className={inputClass}
           aria-label={`Score for ${nameA}`}
         />
-        <span className={`font-black text-xs sm:text-sm uppercase tracking-wide truncate ${match.winner_team_id === match.team_b_id && match.team_b_id ? 'text-maroon' : 'text-stone-950'}`}>
+        <span className={`font-black text-xs sm:text-sm tracking-wide truncate ${match.winner_team_id === match.team_b_id && match.team_b_id ? 'text-maroon' : 'text-stone-950'}`}>
           {nameB}
         </span>
         <input
@@ -374,7 +374,7 @@ function MatchCard({
         </p>
       )}
 
-      {error && <p role="alert" className="text-xs font-bold text-red-600 uppercase tracking-wider">{error}</p>}
+      {error && <p role="alert" className="text-xs font-bold text-red-600">{error}</p>}
 
       <div className="pt-2">
         <button

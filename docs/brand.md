@@ -2,7 +2,7 @@
 
 The de-facto brand, codified from `app/globals.css` and the DALTA ESPORTS logo. Until an official guide exists, this page is the source of truth: new UI follows it; changes to it are design decisions, not drive-bys.
 
-The current look (since the "Updated UI/UX design" redesign): a white page, uppercase Montserrat, rounded white cards, dark photo heroes at the top of each page, and the logo's gold and maroon as accents.
+The current look (since the "Updated UI/UX design" redesign): a white page, Montserrat with uppercase titles, buttons and labels, rounded white cards, dark photo heroes at the top of each page, and the logo's gold and maroon as accents.
 
 ## Colors
 
@@ -34,9 +34,10 @@ Tokens live in `app/globals.css` `@theme`. Always use the token (`bg-gold`, `tex
 
 ## Typography
 
-- Montserrat everywhere (`font-montserrat`; `font-pixel` is an alias kept for older code), uppercase by default (set in `globals.css`), wide tracking (`tracking-wider`/`tracking-widest`).
+- Montserrat everywhere (`font-montserrat` / `font-sans`; `font-pixel` is an alias kept for older code).
+- Uppercase only for titles, buttons and labels: `globals.css` uppercases `h1`–`h6`, `button`, `label`, `th` and `summary`. Nav links, button-styled links, badges/status chips and small eyebrow labels (`text-xs` + `tracking-wider`/`tracking-widest`) add the `uppercase` class themselves.
+- Everything else keeps normal case: paragraphs, page subtitles, error/success messages, empty states, inline text links, inputs and placeholders, and anything people typed (names, IGNs, team names, comments, announcements). Don't put `uppercase` on containers (`main`, `section`, `form`, wrapping `div`s): it would cascade to all of that text. Use `tracking-wider`/`tracking-widest` only on uppercase text.
 - Headings `font-black`; page titles in heroes `text-3xl sm:text-4xl lg:text-5xl text-white`.
-- User-written text (comments, announcement bodies) may use `normal-case` so it reads as written.
 
 ## Shape & layout
 

@@ -38,7 +38,7 @@ export default function LatestAnnouncements() {
   }, [supabase]);
 
   return (
-    <section className="w-full rounded-3xl border border-stone-200/90 bg-white p-6 sm:p-8 shadow-xs space-y-6 uppercase">
+    <section className="w-full rounded-3xl border border-stone-200/90 bg-white p-6 sm:p-8 shadow-xs space-y-6">
       <div className="flex justify-between items-center pb-4 border-b border-stone-100">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-700 flex items-center justify-center">
@@ -55,7 +55,7 @@ export default function LatestAnnouncements() {
         </div>
         <Link
           href="/announcements"
-          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-stone-50 border border-stone-200 text-xs font-black text-amber-700 hover:text-amber-800 hover:bg-amber-50/50 tracking-wider shadow-2xs transition-all"
+          className="uppercase inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-stone-50 border border-stone-200 text-xs font-black text-amber-700 hover:text-amber-800 hover:bg-amber-50/50 tracking-wider shadow-2xs transition-all"
         >
           <span>View all</span>
           <span>→</span>

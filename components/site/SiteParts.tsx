@@ -11,7 +11,7 @@ export function PageTitle({ title, subtitle }: { title: string; subtitle?: strin
   return (
     <header className="mb-8 space-y-2">
       <h1 className="font-black text-stone-950 text-2xl sm:text-4xl tracking-wider uppercase leading-tight">{title}</h1>
-      {subtitle && <p className="text-stone-600 text-sm sm:text-base font-semibold tracking-wide uppercase">{subtitle}</p>}
+      {subtitle && <p className="text-stone-600 text-sm sm:text-base font-semibold">{subtitle}</p>}
     </header>
   );
 }
@@ -34,8 +34,8 @@ export function SectionTitle({ children }: { children: ReactNode }) {
 export function EmptyNote({ children }: { children: ReactNode }) {
   return (
     <div className="w-full rounded-2xl border border-stone-200/80 bg-stone-50/70 p-8 sm:p-12 text-center flex flex-col items-center justify-center gap-1.5 shadow-xs">
-      <p className="text-stone-800 font-extrabold text-sm uppercase tracking-wider">{children}</p>
-      <p className="text-stone-500 text-xs font-semibold uppercase tracking-wide">Nothing published here yet</p>
+      <p className="text-stone-800 font-extrabold text-sm">{children}</p>
+      <p className="text-stone-500 text-xs font-semibold">Nothing published here yet</p>
     </div>
   );
 }
@@ -43,7 +43,7 @@ export function EmptyNote({ children }: { children: ReactNode }) {
 // Text typed in /admin/website: keep the line breaks the admin typed
 export function Paragraphs({ text }: { text: string }) {
   if (!text) return null;
-  return <p className="whitespace-pre-wrap leading-relaxed text-stone-800 font-medium uppercase tracking-wide">{text}</p>;
+  return <p className="whitespace-pre-wrap leading-relaxed text-stone-800 font-medium">{text}</p>;
 }
 
 // Photo from the site-images bucket, or the person's initials when there is none
@@ -97,7 +97,7 @@ export function PersonCard({
           />
         ) : (
           <div className="absolute inset-0 bg-gradient-to-b from-stone-50 via-stone-100 to-stone-50/40 flex flex-col items-center justify-center p-4 text-center">
-            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-white border border-stone-200/90 shadow-2xs flex items-center justify-center text-maroon font-black text-xl sm:text-2xl uppercase tracking-wider mb-2">
+            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-white border border-stone-200/90 shadow-2xs flex items-center justify-center text-maroon font-black text-xl sm:text-2xl tracking-wider mb-2">
               {initials || '?'}
             </div>
             <span className="text-[10px] font-black uppercase tracking-widest text-stone-400">

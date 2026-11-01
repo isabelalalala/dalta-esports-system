@@ -59,7 +59,7 @@ export default function StudentDetails({ profile, onSaved }: Props) {
   };
 
   return (
-    <form onSubmit={handleSave} className="bg-white border border-stone-200/90 rounded-3xl p-6 sm:p-8 shadow-xs space-y-6 uppercase">
+    <form onSubmit={handleSave} className="bg-white border border-stone-200/90 rounded-3xl p-6 sm:p-8 shadow-xs space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-stone-100">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-maroon/10 border border-maroon/20 text-maroon grid place-items-center shadow-2xs">

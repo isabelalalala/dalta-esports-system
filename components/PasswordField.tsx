@@ -56,7 +56,7 @@ export function PasswordRules({
           </span>
         </div>
       )}
-      <ul className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1.5 text-xs uppercase tracking-wide">
+      <ul className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1.5 text-xs tracking-wide">
         {checks.map((check) => (
           <li
             key={check.label}
@@ -134,7 +134,7 @@ export default function PasswordField({ value, onChange, className, placeholder,
       )}
 
       {mismatch && (
-        <p id={hintId} className={`mt-1 text-xs font-bold uppercase tracking-wider ${dark ? 'text-red-400' : 'text-red-700'}`}>The passwords do not match.</p>
+        <p id={hintId} className={`mt-1 text-xs font-bold ${dark ? 'text-red-400' : 'text-red-700'}`}>The passwords do not match.</p>
       )}
     </div>
   );

@@ -105,7 +105,7 @@ export default function TeamsPage() {
   return (
     <main
       id="main-content"
-      className="flex-1 w-full min-h-[calc(100vh-160px)] bg-white text-stone-950 px-4 sm:px-6 lg:px-8 xl:px-12 py-8 sm:py-10 uppercase"
+      className="flex-1 w-full min-h-[calc(100vh-160px)] bg-white text-stone-950 px-4 sm:px-6 lg:px-8 xl:px-12 py-8 sm:py-10"
     >
       <div className="w-full max-w-6xl mx-auto space-y-8">
         {/* 1. Main Hero Container */}
@@ -137,7 +137,7 @@ export default function TeamsPage() {
               My Teams
             </h1>
             <p
-              className="animate-hero-tagline text-xs sm:text-sm font-semibold uppercase tracking-wider leading-relaxed text-white"
+              className="animate-hero-tagline text-xs sm:text-sm font-semibold leading-relaxed text-white"
             >
               Manage your competitive squads, rosters, and tournament lineups.
             </p>
@@ -148,7 +148,7 @@ export default function TeamsPage() {
         {error && (
           <div
             role="alert"
-            className="rounded-2xl bg-red-500/10 border border-red-500/30 p-4 sm:p-5 text-red-700 text-xs sm:text-sm font-bold uppercase tracking-wider flex items-center gap-3 shadow-xs"
+            className="rounded-2xl bg-red-500/10 border border-red-500/30 p-4 sm:p-5 text-red-700 text-xs sm:text-sm font-bold tracking-wider flex items-center gap-3 shadow-xs"
           >
             <AlertCircle className="w-5 h-5 shrink-0 text-red-600" />
             <span>{error}</span>
@@ -265,10 +265,10 @@ export default function TeamsPage() {
             <div className="w-12 h-12 rounded-2xl bg-stone-200/80 grid place-items-center text-stone-600 mb-1">
               <Users className="w-6 h-6" />
             </div>
-            <p className="font-black text-stone-900 text-base uppercase tracking-wider">
+            <p className="font-black text-stone-900 text-base">
               You are not on any team yet.
             </p>
-            <p className="text-xs text-stone-500 font-medium uppercase tracking-wide max-w-md">
+            <p className="text-xs text-stone-500 font-medium max-w-md">
               Click &quot;+ Create Team&quot; above to start a roster, or ask a team captain to send you an invite.
             </p>
           </div>

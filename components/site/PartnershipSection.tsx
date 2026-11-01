@@ -38,7 +38,7 @@ export default function PartnershipSection() {
   return (
     <section
       aria-label="Official Partnerships"
-      className="relative w-full max-w-5xl mx-auto rounded-3xl border border-transparent bg-white overflow-hidden py-8 sm:py-10 text-center text-stone-950 space-y-5 sm:space-y-6 uppercase"
+      className="relative w-full max-w-5xl mx-auto rounded-3xl border border-transparent bg-white overflow-hidden py-8 sm:py-10 text-center text-stone-950 space-y-5 sm:space-y-6"
     >
       {/* Inline styles ensure the right-to-left marquee animation runs immediately without browser cache or reduced-motion blockers */}
       <style>{`
@@ -72,7 +72,7 @@ export default function PartnershipSection() {
             PARTNERSHIP
           </h2>
         </div>
-        <p className="text-xs sm:text-sm font-bold text-maroon uppercase tracking-widest leading-relaxed">
+        <p className="text-xs sm:text-sm font-bold text-maroon leading-relaxed">
           Empowering collegiate esports through strategic alliances.
         </p>
       </div>
@@ -101,7 +101,7 @@ export default function PartnershipSection() {
 
               {/* Hover overlay with partner details */}
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent opacity-0 group-hover/card:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-2.5 sm:p-3 text-left">
-                <span className="text-white text-[11px] sm:text-xs font-black tracking-wide uppercase line-clamp-1 drop-shadow-sm">
+                <span className="text-white text-[11px] sm:text-xs font-black tracking-wide line-clamp-1 drop-shadow-sm">
                   {partner.name}
                 </span>
                 {partner.tagline && (
@@ -132,7 +132,7 @@ export default function PartnershipSection() {
 
               {/* Hover overlay with partner details */}
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent opacity-0 group-hover/card:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-2.5 sm:p-3 text-left">
-                <span className="text-white text-[11px] sm:text-xs font-black tracking-wide uppercase line-clamp-1 drop-shadow-sm">
+                <span className="text-white text-[11px] sm:text-xs font-black tracking-wide line-clamp-1 drop-shadow-sm">
                   {partner.name}
                 </span>
                 {partner.tagline && (

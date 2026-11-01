@@ -41,20 +41,20 @@ export default function AcceptTermsPage() {
   };
 
   return (
-    <main id="main-content" className="min-h-screen w-full grid place-items-center bg-white px-4 py-12 uppercase">
+    <main id="main-content" className="min-h-screen w-full grid place-items-center bg-white px-4 py-12">
       <form
         onSubmit={handleAgree}
         className="w-full max-w-lg bg-white rounded-2xl border border-stone-200/90 p-6 sm:p-8 shadow-sm space-y-5"
       >
         <h1 className="text-stone-950 text-2xl sm:text-3xl font-black text-center tracking-wider uppercase mb-2">Terms of Service</h1>
-        <p className="text-stone-700 font-medium uppercase tracking-wide text-xs sm:text-sm leading-relaxed">
+        <p className="text-stone-700 font-medium text-xs sm:text-sm leading-relaxed">
           Before you continue, please read our{' '}
-          <Link href="/terms" target="_blank" className="text-amber-800 font-extrabold uppercase underline hover:text-amber-950">Terms of Service</Link> and{' '}
-          <Link href="/conduct" target="_blank" className="text-amber-800 font-extrabold uppercase underline hover:text-amber-950">Code of Conduct</Link>. They cover
+          <Link href="/terms" target="_blank" className="text-amber-800 font-extrabold underline hover:text-amber-950">Terms of Service</Link> and{' '}
+          <Link href="/conduct" target="_blank" className="text-amber-800 font-extrabold underline hover:text-amber-950">Code of Conduct</Link>. They cover
           accounts, acceptable use, tournaments and results, pick&apos;em predictions and the content you share.
         </p>
 
-        {error && <div role="alert" className="bg-red-50 border border-red-500/30 rounded-xl text-red-700 px-4 py-2.5 text-xs sm:text-sm font-bold uppercase tracking-wider">{error}</div>}
+        {error && <div role="alert" className="bg-red-50 border border-red-500/30 rounded-xl text-red-700 px-4 py-2.5 text-xs sm:text-sm font-bold tracking-wider">{error}</div>}
 
         <TermsCheckbox checked={consent} onChange={setConsent} />
 
@@ -66,7 +66,7 @@ export default function AcceptTermsPage() {
           {saving ? 'Saving...' : 'Accept and continue'}
         </button>
 
-        <div className="border-t border-stone-100 pt-4 text-xs text-stone-600 font-medium uppercase tracking-wide space-y-2">
+        <div className="border-t border-stone-100 pt-4 text-xs text-stone-600 font-medium tracking-wide space-y-2">
           <p>If you don&apos;t accept, you can log out.</p>
           <button type="button" onClick={handleLogout} className="text-red-700 font-black uppercase tracking-wider hover:underline">
             Log out

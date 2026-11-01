@@ -110,7 +110,7 @@ export default function ActivityLogPage() {
   if (!role && error) return <PageError message={error} />;
   if (role !== 'admin') {
     return (
-      <div className="w-full bg-white text-stone-950 p-10 text-center uppercase space-y-4">
+      <div className="w-full bg-white text-stone-950 p-10 text-center space-y-4">
         <p className="font-extrabold text-stone-900">Only administrators can view the activity log.</p>
         <Link href="/dashboard" className="inline-block text-amber-700 hover:text-amber-800 font-bold underline">
           ← Back to Dashboard
@@ -122,7 +122,7 @@ export default function ActivityLogPage() {
   const sortedActors = [...actors].sort((a, b) => (a.actor_name || '').localeCompare(b.actor_name || ''));
 
   return (
-    <div className="w-full space-y-8 uppercase">
+    <div className="w-full space-y-8">
       {/* 1. Main Hero Container with Official Banner */}
       <section className="relative w-full rounded-3xl border border-stone-800/80 bg-stone-950 overflow-hidden shadow-md p-8 sm:p-14 lg:p-16 text-center text-white flex flex-col items-center justify-center space-y-4">
         <PageHeroBackground specificKey="hero_banner_path" alt="DALTA Esports Activity Banner" />
@@ -143,7 +143,7 @@ export default function ActivityLogPage() {
             Activity Log
           </h1>
           <p
-            className="text-base sm:text-lg font-medium uppercase tracking-wide leading-relaxed text-white"
+            className="text-base sm:text-lg font-medium leading-relaxed text-white"
           >
             Recorded automatically by the database. Entries cannot be edited or deleted and are kept for one year.
           </p>

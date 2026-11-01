@@ -297,7 +297,7 @@ export default function ManageTeamPage() {
   return (
     <main
       id="main-content"
-      className="flex-1 w-full min-h-[calc(100vh-160px)] bg-white text-stone-950 px-4 sm:px-6 lg:px-8 xl:px-12 py-8 sm:py-10 uppercase"
+      className="flex-1 w-full min-h-[calc(100vh-160px)] bg-white text-stone-950 px-4 sm:px-6 lg:px-8 xl:px-12 py-8 sm:py-10"
     >
       <div className="w-full max-w-5xl mx-auto space-y-8">
         {/* 1. Main Hero Container */}
@@ -350,7 +350,7 @@ export default function ManageTeamPage() {
         {error && (
           <div
             role="alert"
-            className="rounded-2xl bg-red-500/10 border border-red-500/30 p-4 sm:p-5 text-red-700 text-xs sm:text-sm font-bold uppercase tracking-wider flex items-center gap-3 shadow-xs"
+            className="rounded-2xl bg-red-500/10 border border-red-500/30 p-4 sm:p-5 text-red-700 text-xs sm:text-sm font-bold tracking-wider flex items-center gap-3 shadow-xs"
           >
             <AlertCircle className="w-5 h-5 shrink-0 text-red-600" />
             <span>{error}</span>
@@ -359,7 +359,7 @@ export default function ManageTeamPage() {
         {message && (
           <div
             role="status"
-            className="rounded-2xl bg-emerald-500/10 border border-emerald-500/30 p-4 sm:p-5 text-emerald-800 text-xs sm:text-sm font-bold uppercase tracking-wider flex items-center gap-3 shadow-xs"
+            className="rounded-2xl bg-emerald-500/10 border border-emerald-500/30 p-4 sm:p-5 text-emerald-800 text-xs sm:text-sm font-bold tracking-wider flex items-center gap-3 shadow-xs"
           >
             <CheckCircle2 className="w-5 h-5 shrink-0 text-emerald-600" />
             <span>{message}</span>
@@ -475,7 +475,7 @@ export default function ManageTeamPage() {
           </div>
 
           {roster.length < minPlayers && (
-            <div className="rounded-2xl bg-amber-500/10 border border-amber-500/30 p-4 text-xs font-bold uppercase tracking-wider text-amber-800">
+            <div className="rounded-2xl bg-amber-500/10 border border-amber-500/30 p-4 text-xs font-bold tracking-wider text-amber-800">
               This squad needs at least {minPlayers} players before it can register for tournaments.
             </div>
           )}
@@ -488,7 +488,7 @@ export default function ManageTeamPage() {
               >
                 <div>
                   <div className="flex items-center gap-2">
-                    <p className="font-black text-stone-950 text-base uppercase tracking-wide">
+                    <p className="font-black text-stone-950 text-base">
                       {member.ign || <span className="text-stone-400 italic">No IGN</span>}
                     </p>
                     {member.role === 'captain' && (
@@ -498,7 +498,7 @@ export default function ManageTeamPage() {
                     )}
                     <VerifiedBadge verified={member.is_verified} />
                   </div>
-                  <p className="text-xs text-stone-500 font-semibold tracking-wide uppercase mt-1">
+                  <p className="text-xs text-stone-500 font-semibold mt-1">
                     {member.in_game_role && <span className="text-maroon font-extrabold">{member.in_game_role}</span>}
                     {member.in_game_role && member.full_name && <span> · </span>}
                     {member.full_name && <span>{member.full_name}</span>}

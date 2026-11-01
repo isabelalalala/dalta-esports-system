@@ -57,7 +57,7 @@ export default function PrivacyNoticePage() {
   };
 
   return (
-    <main id="main-content" className="min-h-screen w-full bg-white text-stone-900 px-4 sm:px-6 lg:px-8 py-8 sm:py-12 uppercase space-y-10 sm:space-y-12">
+    <main id="main-content" className="min-h-screen w-full bg-white text-stone-900 px-4 sm:px-6 lg:px-8 py-8 sm:py-12 space-y-10 sm:space-y-12">
       {/* 1. Large Main Hero Container */}
       <section className="w-full rounded-3xl border border-stone-200/90 bg-gradient-to-br from-amber-50/70 via-white to-stone-50 p-8 sm:p-14 lg:p-16 text-center shadow-xs flex flex-col items-center justify-center space-y-4">
         <div className="w-full flex justify-start">
@@ -72,10 +72,10 @@ export default function PrivacyNoticePage() {
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-stone-950 tracking-wider uppercase leading-tight">
             Privacy Notice
           </h1>
-          <p className="text-xs sm:text-sm font-bold text-amber-700 uppercase tracking-widest">
+          <p className="text-xs sm:text-sm font-bold text-amber-700">
             Last updated {formatDate(PRIVACY_NOTICE_VERSION)}
           </p>
-          <p className="text-sm sm:text-base lg:text-lg text-stone-700 font-medium tracking-wide uppercase leading-relaxed pt-2 max-w-3xl mx-auto">
+          <p className="text-sm sm:text-base lg:text-lg text-stone-700 font-medium leading-relaxed pt-2 max-w-3xl mx-auto">
             DALTA Esports respects your privacy. This notice explains what personal data the DALTA Esports Tournament Management System collects, why, who can see it, how long we keep it, and what you can do about it, as required by the Data Privacy Act of 2012 (Republic Act No. 10173).
           </p>
         </div>
@@ -121,7 +121,7 @@ export default function PrivacyNoticePage() {
               Questions or requests: <strong className="text-stone-950 font-black">{PRIVACY_CONTACT_PERSON}</strong>,{' '}
               <a
                 href={`mailto:${PRIVACY_CONTACT_EMAIL}`}
-                className="text-amber-800 font-black uppercase underline hover:text-amber-950"
+                className="text-amber-800 font-black underline hover:text-amber-950"
               >
                 {PRIVACY_CONTACT_EMAIL}
               </a>.
@@ -282,7 +282,7 @@ export default function PrivacyNoticePage() {
               <li><strong className="text-stone-950 font-black">Access</strong> your data and get a copy of it.</li>
               <li>
                 <strong className="text-stone-950 font-black">Correct</strong> wrong data. You can change your name, player details and password on your{' '}
-                <Link href="/profile" className="text-amber-800 font-black uppercase underline hover:text-amber-950">
+                <Link href="/profile" className="text-amber-800 font-black underline hover:text-amber-950">
                   Profile
                 </Link>.
               </li>
@@ -302,7 +302,7 @@ export default function PrivacyNoticePage() {
               For anything you can&apos;t do yourself, email{' '}
               <a
                 href={`mailto:${PRIVACY_CONTACT_EMAIL}`}
-                className="text-amber-800 font-black uppercase underline hover:text-amber-950"
+                className="text-amber-800 font-black underline hover:text-amber-950"
               >
                 {PRIVACY_CONTACT_EMAIL}
               </a>. We will reply within 15 working days.
@@ -329,7 +329,7 @@ export default function PrivacyNoticePage() {
             </h2>
             <p>
               Students under 18 may create an account only with the consent of a parent or guardian, who should read this notice with them. When you accept the{' '}
-              <Link href="/terms" className="text-amber-800 font-black uppercase underline hover:text-amber-950">
+              <Link href="/terms" className="text-amber-800 font-black underline hover:text-amber-950">
                 Terms of Service
               </Link>{' '}
               you declare that you are at least 18 or have that consent; we record the date and version of your acceptance. A parent or guardian can contact us to access or delete their child&apos;s data.

@@ -45,7 +45,7 @@ export default function SecurityPage() {
   };
 
   return (
-    <main id="main-content" className="min-h-screen w-full bg-white text-stone-900 px-4 sm:px-6 lg:px-8 py-8 sm:py-12 uppercase space-y-10 sm:space-y-12">
+    <main id="main-content" className="min-h-screen w-full bg-white text-stone-900 px-4 sm:px-6 lg:px-8 py-8 sm:py-12 space-y-10 sm:space-y-12">
       {/* 1. Large Main Hero Container */}
       <section className="w-full rounded-3xl border border-stone-200/90 bg-gradient-to-br from-amber-50/70 via-white to-stone-50 p-8 sm:p-14 lg:p-16 text-center shadow-xs flex flex-col items-center justify-center space-y-4">
         <div className="w-full flex justify-start">
@@ -60,10 +60,10 @@ export default function SecurityPage() {
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-stone-950 tracking-wider uppercase leading-tight">
             Security Policy
           </h1>
-          <p className="text-xs sm:text-sm font-bold text-amber-700 uppercase tracking-widest">
+          <p className="text-xs sm:text-sm font-bold text-amber-700">
             Vulnerability Reporting &amp; System Safeguards
           </p>
-          <p className="text-sm sm:text-base lg:text-lg text-stone-700 font-medium tracking-wide uppercase leading-relaxed pt-2 max-w-3xl mx-auto">
+          <p className="text-sm sm:text-base lg:text-lg text-stone-700 font-medium leading-relaxed pt-2 max-w-3xl mx-auto">
             DALTA Esports is dedicated to securing our tournament infrastructure and defending our student community. This page outlines our coordinated vulnerability disclosure program and the defense mechanisms safeguarding our system.
           </p>
         </div>
@@ -110,7 +110,7 @@ export default function SecurityPage() {
                 Primary Security Contact:{' '}
                 <a
                   href={`mailto:${PRIVACY_CONTACT_EMAIL}`}
-                  className="text-amber-800 font-black uppercase underline hover:text-amber-950"
+                  className="text-amber-800 font-black underline hover:text-amber-950"
                 >
                   {PRIVACY_CONTACT_EMAIL}
                 </a>

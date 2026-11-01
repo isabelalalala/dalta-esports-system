@@ -71,14 +71,14 @@ async function MatchContent({ params }: { params: PageProps<'/t/[id]/match/[matc
     done ? (match.winner_team_id === teamId ? 'text-amber-700 font-black' : 'text-stone-400') : 'text-stone-950 font-black';
 
   return (
-    <div className="space-y-8 uppercase">
+    <div className="space-y-8">
       <LiveRefresher tournamentId={id} />
       <Link href={publicTournamentPath(id)} className="inline-flex items-center gap-1.5 text-xs font-black text-amber-800 hover:text-amber-900 tracking-wider">
         ← {data.tournament.name}
       </Link>
 
       <section className="rounded-2xl border border-stone-200/90 bg-white shadow-xs p-6 sm:p-8 space-y-5 text-center">
-        <p className="text-xs uppercase tracking-widest text-amber-800 font-extrabold">
+        <p className="text-xs text-amber-800 font-extrabold">
           {data.tournament.game} · {info.round} · Match {match.match_number}
         </p>
         <h1 className="sr-only">{teamA} vs {teamB}</h1>

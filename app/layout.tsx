@@ -24,7 +24,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       lang="en"
       className={`${montserrat.variable} h-full antialiased`}
     >
-      <body className="min-h-full w-full flex flex-col bg-white text-stone-950 uppercase">
+      <body className="min-h-full w-full flex flex-col bg-white text-stone-950">
         <a
           href="#main-content"
           className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:bg-gold focus:text-stone-950 focus:px-4 focus:py-2 focus:border-2 focus:border-brown focus:font-bold uppercase"

@@ -28,7 +28,7 @@ export function ReportCard({ title, note, children }: { title: string; note?: st
 // Shown instead of a chart that has no data
 export function NoData({ text = 'No data for these filters.' }: { text?: string }) {
   return (
-    <div className="rounded-xl border border-stone-200/80 bg-stone-50/70 p-8 text-center text-stone-500 font-bold tracking-wider text-xs uppercase">
+    <div className="rounded-xl border border-stone-200/80 bg-stone-50/70 p-8 text-center text-stone-500 font-bold tracking-wider text-xs">
       {text}
     </div>
   );
@@ -41,7 +41,7 @@ export function ReportTable({ columns, rows }: { columns: string[]; rows: ReactN
     <div className="overflow-x-auto">
       <table className="w-full text-xs sm:text-sm">
         <thead>
-          <tr className="text-left text-xs uppercase font-black text-stone-500 tracking-wider border-b border-stone-200">
+          <tr className="text-left text-xs font-black text-stone-500 tracking-wider border-b border-stone-200">
             {columns.map((c, i) => (
               <th key={c} className={`py-3 pr-4 ${i > 0 ? 'text-right' : ''}`}>{c}</th>
             ))}

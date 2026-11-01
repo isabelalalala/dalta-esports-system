@@ -22,7 +22,7 @@ export default function TermsCheckbox({ checked, onChange, dark }: Props) {
       />
       <span>
         I agree to the{' '}
-        <Link href="/terms" target="_blank" className={`${dark ? 'text-amber-400 hover:text-amber-300' : 'text-amber-800 hover:text-amber-950'} font-black uppercase underline`}>
+        <Link href="/terms" target="_blank" className={`${dark ? 'text-amber-400 hover:text-amber-300' : 'text-amber-800 hover:text-amber-950'} font-black underline`}>
           Terms of Service
         </Link>{' '}
         and confirm I am at least 18 years old, or have my parent&apos;s or guardian&apos;s consent.

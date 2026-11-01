@@ -26,7 +26,7 @@ async function Division({ params }: { params: PageProps<'/divisions/[game]'>['pa
   if (!division) notFound();
 
   return (
-    <div className="w-full space-y-8 uppercase text-stone-950">
+    <div className="w-full space-y-8 text-stone-950">
       {/* 1. Main Hero Container with dynamic background */}
       <section className="animate-hero-entrance relative w-full rounded-3xl border border-stone-800/80 bg-stone-950 overflow-hidden shadow-md p-8 sm:p-12 lg:p-14 text-center text-white flex flex-col items-center justify-center space-y-4">
         <PageHeroBackground specificKey="divisions_hero_bg_path" alt="DALTA Esports Divisions Banner" />
@@ -52,7 +52,7 @@ async function Division({ params }: { params: PageProps<'/divisions/[game]'>['pa
           </h1>
           {division.tagline && (
             <p
-              className="animate-hero-tagline text-base sm:text-lg font-medium uppercase tracking-wide leading-relaxed text-white"
+              className="animate-hero-tagline text-base sm:text-lg font-medium leading-relaxed text-white"
             >
               {division.tagline}
             </p>
@@ -106,7 +106,7 @@ async function Division({ params }: { params: PageProps<'/divisions/[game]'>['pa
                     ) : (
                       <div className="flex flex-col items-center gap-2 text-stone-400">
                         <Gamepad2 className="w-8 h-8" />
-                        <span className="font-black text-stone-600 text-sm uppercase tracking-wider">
+                        <span className="font-black text-stone-600 text-sm tracking-wider">
                           {team.name}
                         </span>
                       </div>
@@ -123,7 +123,7 @@ async function Division({ params }: { params: PageProps<'/divisions/[game]'>['pa
                         </p>
                       )}
                     </div>
-                    <div className="text-xs font-black uppercase tracking-wider mt-5 pt-3 border-t border-stone-100 flex items-center justify-between text-maroon">
+                    <div className="text-xs font-black tracking-wider mt-5 pt-3 border-t border-stone-100 flex items-center justify-between text-maroon">
                       <span>
                         {team.official_team_players?.length ?? 0} Players
                         {captain && ` · Cpt: ${captain.ign}`}

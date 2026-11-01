@@ -340,7 +340,7 @@ export default function ListEditor({
                       {thumb ? (
                         <Image src={thumb} alt="" fill sizes="96px" className="object-cover" />
                       ) : (
-                        <div className="w-full h-full grid place-items-center text-[10px] text-stone-400 font-bold uppercase">No img</div>
+                        <div className="w-full h-full grid place-items-center text-[10px] text-stone-400 font-bold">No img</div>
                       )}
                     </div>
                   )}

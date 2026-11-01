@@ -15,7 +15,7 @@ export default function FacebookPlayer({ url, title }: { url: string; title: str
           allowFullScreen
         />
       </div>
-      <p className="mt-2 text-xs font-semibold text-stone-500 uppercase tracking-wider">
+      <p className="mt-2 text-xs font-semibold text-stone-500">
         Video not displaying? Stream must be set to Public on Facebook.{' '}
         <a href={url} target="_blank" rel="noopener noreferrer" className="text-maroon font-black underline hover:text-gold">
           Open on Facebook ↗

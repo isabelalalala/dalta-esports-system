@@ -21,13 +21,13 @@ export default function PrivacyConsentCheckbox({ checked, onChange, dark }: Prop
         />
         <span>
           I agree to the collection and processing of my personal data as described in the{' '}
-          <Link href="/privacy" target="_blank" className={`${dark ? 'text-amber-400 hover:text-amber-300' : 'text-amber-800 hover:text-amber-950'} font-black uppercase underline`}>
+          <Link href="/privacy" target="_blank" className={`${dark ? 'text-amber-400 hover:text-amber-300' : 'text-amber-800 hover:text-amber-950'} font-black underline`}>
             Privacy Notice
           </Link>
           .
         </span>
       </label>
-      <p className={`text-xs ${dark ? 'text-stone-400' : 'text-stone-500'} font-medium uppercase tracking-wider pl-7`}>
+      <p className={`text-xs ${dark ? 'text-stone-400' : 'text-stone-500'} font-medium pl-7`}>
         Under 18? Your parent or guardian must read the Privacy Notice and agree to it with you.
       </p>
     </div>

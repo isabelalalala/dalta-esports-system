@@ -61,25 +61,25 @@ export default function ResetPasswordPage() {
   };
 
   return (
-    <main id="main-content" className="min-h-screen w-full grid place-items-center bg-white px-4 py-12 uppercase">
+    <main id="main-content" className="min-h-screen w-full grid place-items-center bg-white px-4 py-12">
       <div className="w-full max-w-md bg-white rounded-2xl border border-stone-200/90 p-6 sm:p-8 shadow-sm space-y-5">
         <h1 className="text-stone-950 text-2xl sm:text-3xl font-black text-center tracking-wider uppercase mb-2">Choose a new password</h1>
 
         {hasSession === null ? (
-          <p className="text-stone-500 font-semibold uppercase tracking-wider text-center">Checking your link...</p>
+          <p className="text-stone-500 font-semibold text-center">Checking your link...</p>
         ) : !hasSession ? (
           <div className="text-center space-y-4">
-            <p className="text-stone-700 font-medium uppercase tracking-wide text-sm">
+            <p className="text-stone-700 font-medium text-sm">
               This reset link is invalid or has expired. Links only work once, for a limited time,
               and in the browser where you requested them.
             </p>
-            <Link href="/auth/forgot-password" className="text-amber-800 font-extrabold uppercase tracking-wider hover:underline text-sm">
+            <Link href="/auth/forgot-password" className="text-amber-800 font-extrabold tracking-wider hover:underline text-sm">
               Request a new link
             </Link>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
-            {error && <div role="alert" className="bg-red-50 border border-red-500/30 rounded-xl text-red-700 px-4 py-2.5 text-xs sm:text-sm font-bold uppercase tracking-wider">{error}</div>}
+            {error && <div role="alert" className="bg-red-50 border border-red-500/30 rounded-xl text-red-700 px-4 py-2.5 text-xs sm:text-sm font-bold tracking-wider">{error}</div>}
             <PasswordField
               value={password} onChange={setPassword} placeholder="New password"
               className="w-full p-3.5 rounded-xl bg-white text-stone-950 border border-stone-200 placeholder:text-stone-400 uppercase tracking-wide focus:border-amber-600 focus:ring-2 focus:ring-amber-500/20 shadow-xs outline-none transition-all"

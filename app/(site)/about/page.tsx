@@ -34,7 +34,7 @@ export default async function AboutPage() {
   const beliefLead = beliefWords.join(' ');
 
   return (
-    <div className="w-full space-y-8 uppercase">
+    <div className="w-full space-y-8">
       {/* 1. Large Main Container with Dynamic Background Image from Site Text */}
       <section className="relative w-full rounded-3xl border border-stone-800/80 bg-stone-950 overflow-hidden shadow-md p-8 sm:p-14 lg:p-16 text-center text-white flex flex-col items-center justify-center space-y-4 animate-hero-entrance">
         <PageHeroBackground
@@ -50,10 +50,10 @@ export default async function AboutPage() {
             About Us
           </h1>
           {content.founded && (
-            <p className="text-xs sm:text-sm font-black tracking-widest text-gold">Founded {content.founded}</p>
+            <p className="uppercase text-xs sm:text-sm font-black tracking-widest text-gold">Founded {content.founded}</p>
           )}
           <p
-            className="text-base sm:text-lg font-medium uppercase tracking-wide leading-relaxed animate-hero-tagline text-white"
+            className="text-base sm:text-lg font-medium leading-relaxed animate-hero-tagline text-white"
           >
             {content.about_intro || defaultIntro}
           </p>
@@ -67,7 +67,7 @@ export default async function AboutPage() {
             Our Story
           </h2>
         </div>
-        <p className="text-sm sm:text-base text-stone-700 font-medium uppercase tracking-wide leading-relaxed whitespace-pre-wrap">
+        <p className="text-sm sm:text-base text-stone-700 font-medium leading-relaxed whitespace-pre-wrap">
           {content.our_story || defaultStory}
         </p>
       </section>
@@ -80,7 +80,7 @@ export default async function AboutPage() {
             <h2 className="text-xl sm:text-2xl font-black text-stone-950 tracking-wider uppercase">
               Mission
             </h2>
-            <p className="text-xs sm:text-sm text-stone-700 font-medium uppercase tracking-wide leading-relaxed whitespace-pre-wrap">
+            <p className="text-xs sm:text-sm text-stone-700 font-medium leading-relaxed whitespace-pre-wrap">
               {content.mission || defaultMission}
             </p>
           </div>
@@ -92,7 +92,7 @@ export default async function AboutPage() {
             <h2 className="text-xl sm:text-2xl font-black text-stone-950 tracking-wider uppercase">
               Vision
             </h2>
-            <p className="text-xs sm:text-sm text-stone-700 font-medium uppercase tracking-wide leading-relaxed whitespace-pre-wrap">
+            <p className="text-xs sm:text-sm text-stone-700 font-medium leading-relaxed whitespace-pre-wrap">
               {content.vision || defaultVision}
             </p>
           </div>
@@ -107,7 +107,7 @@ export default async function AboutPage() {
         <h2 className="text-2xl sm:text-4xl lg:text-5xl font-black text-stone-950 tracking-wider uppercase leading-tight">
           {beliefLead} <span className="text-amber-600">{beliefLast}</span>
         </h2>
-        <p className="text-xs sm:text-sm text-stone-700 max-w-3xl mx-auto font-medium uppercase tracking-wide leading-relaxed whitespace-pre-wrap">
+        <p className="text-xs sm:text-sm text-stone-700 max-w-3xl mx-auto font-medium leading-relaxed whitespace-pre-wrap">
           {content.core_belief_text || defaultCoreBelief}
         </p>
       </section>

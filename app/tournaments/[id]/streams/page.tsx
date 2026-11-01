@@ -149,7 +149,7 @@ export default function ManageStreamsPage() {
 
   if (profile?.role !== 'admin' && profile?.role !== 'staff') {
     return (
-      <div className="w-full p-12 text-center text-xs font-black uppercase tracking-wider text-stone-600">
+      <div className="w-full p-12 text-center text-xs font-black tracking-wider text-stone-600">
         Only organizers can configure streams.{' '}
         <Link href="/live" className="text-maroon underline hover:text-gold">Watch live streams</Link>
       </div>
@@ -157,7 +157,7 @@ export default function ManageStreamsPage() {
   }
 
   return (
-    <div className="w-full space-y-8 uppercase text-stone-950">
+    <div className="w-full space-y-8 text-stone-950">
       {/* 1. Main Hero Container */}
       <section className="relative w-full rounded-3xl border border-stone-800/80 bg-stone-950 overflow-hidden shadow-md p-8 sm:p-12 lg:p-14 text-center text-white flex flex-col items-center justify-center space-y-4">
         <PageHeroBackground specificKey="tournaments_hero_bg_path" alt="DALTA Esports Banner" />
@@ -181,7 +181,7 @@ export default function ManageStreamsPage() {
             Manage Streams
           </h1>
           <p
-            className="text-xs sm:text-sm font-semibold uppercase tracking-wider leading-relaxed text-white"
+            className="text-xs sm:text-sm font-semibold leading-relaxed text-white"
           >
             {tournament.name} · Configure live broadcasts, link match fixtures, and manage on-air streams.
           </p>
@@ -202,7 +202,7 @@ export default function ManageStreamsPage() {
 
       {/* 2. Error Notice */}
       {error && (
-        <div role="alert" className="rounded-2xl bg-red-500/10 border border-red-500/30 p-4 sm:p-5 text-red-700 text-xs sm:text-sm font-bold uppercase tracking-wider flex items-center gap-3">
+        <div role="alert" className="rounded-2xl bg-red-500/10 border border-red-500/30 p-4 sm:p-5 text-red-700 text-xs sm:text-sm font-bold tracking-wider flex items-center gap-3">
           <AlertCircle className="w-5 h-5 shrink-0 text-red-600" />
           <span>{error}</span>
         </div>
@@ -247,10 +247,10 @@ export default function ManageStreamsPage() {
           <div className="w-14 h-14 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-maroon flex items-center justify-center">
             <Tv className="w-7 h-7" />
           </div>
-          <p className="text-stone-900 text-sm font-black uppercase tracking-wider">
+          <p className="text-stone-900 text-sm font-black">
             No live streams configured for this tournament yet.
           </p>
-          <p className="text-xs text-stone-500 font-semibold uppercase tracking-wider max-w-md">
+          <p className="text-xs text-stone-500 font-semibold max-w-md">
             Link a Facebook Live video to enable in-system live streaming for participants and spectators.
           </p>
           <button
@@ -418,7 +418,7 @@ function StreamForm({
       </div>
 
       {error && (
-        <div role="alert" className="rounded-2xl bg-red-500/10 border border-red-500/30 p-4 text-red-700 text-xs sm:text-sm font-bold uppercase tracking-wider flex items-center gap-3">
+        <div role="alert" className="rounded-2xl bg-red-500/10 border border-red-500/30 p-4 text-red-700 text-xs sm:text-sm font-bold tracking-wider flex items-center gap-3">
           <AlertCircle className="w-5 h-5 shrink-0 text-red-600" />
           <span>{error}</span>
         </div>
@@ -453,7 +453,7 @@ function StreamForm({
           required
         />
         {url && (
-          <p role={urlError ? 'alert' : 'status'} className={`mt-2 text-xs font-bold uppercase tracking-wider ${urlError ? 'text-red-600' : 'text-emerald-700'}`}>
+          <p role={urlError ? 'alert' : 'status'} className={`mt-2 text-xs font-bold ${urlError ? 'text-red-600' : 'text-emerald-700'}`}>
             {urlError || <span className="inline-flex items-center gap-1.5"><CircleCheck className="h-4 w-4" /> Valid Facebook link. Verified playable preview below.</span>}
           </p>
         )}

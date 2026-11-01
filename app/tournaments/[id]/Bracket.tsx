@@ -31,7 +31,7 @@ export default function Bracket({
   return (
     <div className="w-full">
       {champion && (
-        <div className="mb-6 rounded-2xl bg-amber-500/10 border border-amber-400/80 text-amber-950 px-5 py-3.5 text-center font-black uppercase tracking-wider flex items-center justify-center gap-2 shadow-xs">
+        <div className="mb-6 rounded-2xl bg-amber-500/10 border border-amber-400/80 text-amber-950 px-5 py-3.5 text-center font-black tracking-wider flex items-center justify-center gap-2 shadow-xs">
           <Trophy className="h-5 w-5 text-amber-600" /> Champion: {champion}
         </div>
       )}
@@ -101,12 +101,12 @@ function MatchBox({ match, teamNames, timeZone }: { match: Match; teamNames: Rec
                 : 'text-stone-900 font-bold'
             } ${teamId === null ? 'italic text-stone-400' : ''}`}
           >
-            <span className="truncate uppercase">{name}</span>
+            <span className="truncate">{name}</span>
             <span className="tabular-nums font-black">{won && match.is_forfeit ? 'FF' : score ?? ''}</span>
           </div>
         );
       })}
-      <div className="px-3.5 py-1.5 bg-stone-50 border-t border-stone-100 text-[10px] sm:text-[11px] font-bold text-stone-500 uppercase flex justify-between gap-2 tracking-wider">
+      <div className="px-3.5 py-1.5 bg-stone-50 border-t border-stone-100 text-[10px] sm:text-[11px] font-bold text-stone-500 flex justify-between gap-2 tracking-wider">
         <span>{bye ? 'Advances automatically' : formatDateTime(match.scheduled_at, timeZone)}</span>
         {match.status === 'live' && <span className="text-emerald-600 font-black animate-pulse">LIVE</span>}
       </div>

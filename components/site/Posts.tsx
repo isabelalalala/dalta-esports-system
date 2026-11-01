@@ -36,7 +36,7 @@ export async function PostDetail({ table, id, backLabel }: { table: PostTable; i
   const categoryLabel = table === 'campaigns' ? 'Official Campaign Initiative' : 'Official Event';
 
   return (
-    <article className="space-y-8 uppercase">
+    <article className="space-y-8">
       {/* 1. Main Hero Container with Background Banner */}
       <section className="animate-hero-entrance relative w-full rounded-3xl border border-stone-800/80 bg-stone-950 overflow-hidden shadow-md p-8 sm:p-12 lg:p-14 text-center text-white flex flex-col items-center justify-center space-y-4">
         <PageHeroBackground
@@ -107,7 +107,7 @@ export async function PostDetail({ table, id, backLabel }: { table: PostTable; i
               </h2>
             </div>
 
-            <div className="text-stone-800 text-xs sm:text-sm font-medium uppercase tracking-wide leading-relaxed">
+            <div className="text-stone-800 text-xs sm:text-sm font-medium tracking-wide leading-relaxed">
               <Paragraphs text={post.description} />
             </div>
 

@@ -49,7 +49,7 @@ export default async function CommunityPage() {
   }
 
   return (
-    <div className="w-full space-y-12 sm:space-y-16 uppercase">
+    <div className="w-full space-y-12 sm:space-y-16">
       {/* 1. Main Hero Container with Background & In-Container Jump Navigation */}
       <section className="animate-hero-entrance relative w-full rounded-3xl border border-stone-800/80 bg-stone-950 overflow-hidden shadow-md p-8 sm:p-14 lg:p-16 text-center text-white flex flex-col items-center justify-center space-y-6">
         <PageHeroBackground src={heroBg} alt="The DALTA Community Banner" />
@@ -61,7 +61,7 @@ export default async function CommunityPage() {
             The DALTA Community
           </h1>
           <p
-            className="animate-hero-tagline text-base sm:text-lg font-medium uppercase tracking-wide leading-relaxed text-white"
+            className="animate-hero-tagline text-base sm:text-lg font-medium leading-relaxed text-white"
           >
             The people behind DALTA Esports.
           </p>
@@ -119,7 +119,7 @@ export default async function CommunityPage() {
               </div>
             ))}
 
-            <p className="text-xs sm:text-sm text-stone-600 font-semibold uppercase tracking-wide pt-2">
+            <p className="text-xs sm:text-sm text-stone-600 font-semibold pt-2">
               See each team on{' '}
               <Link
                 href="/divisions"

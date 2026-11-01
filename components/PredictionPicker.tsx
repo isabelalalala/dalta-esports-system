@@ -24,7 +24,7 @@ export default function PredictionPicker({
 
   if (!state || !canBePicked(match)) {
     if (compact) return null;
-    return <p className="text-xs sm:text-sm text-stone-500 font-medium uppercase tracking-wide">Picks open once both teams of this match are known.</p>;
+    return <p className="text-xs sm:text-sm text-stone-500 font-medium">Picks open once both teams of this match are known.</p>;
   }
 
   const teamA = match.team_a_id!;
@@ -73,7 +73,7 @@ export default function PredictionPicker({
       <div>
         {!compact && <p className="text-[11px] uppercase font-black text-stone-500 tracking-wider mb-1">Community Pick</p>}
         {split.total === 0 ? (
-          <p className={`text-stone-400 font-semibold uppercase ${compact ? 'text-[10px]' : 'text-xs'}`}>No picks yet</p>
+          <p className={`text-stone-400 font-semibold ${compact ? 'text-[10px]' : 'text-xs'}`}>No picks yet</p>
         ) : (
           <>
             <progress
@@ -82,7 +82,7 @@ export default function PredictionPicker({
               aria-label={`${split.a}% picked ${nameA}, ${split.b}% picked ${nameB}`}
               className={`w-full block appearance-none rounded-full overflow-hidden border border-stone-200 bg-stone-100 [&::-webkit-progress-bar]:bg-stone-100 [&::-webkit-progress-value]:bg-amber-400 [&::-moz-progress-bar]:bg-amber-400 ${compact ? 'h-1.5' : 'h-2.5'}`}
             />
-            <p className={`flex justify-between gap-2 text-stone-600 font-bold uppercase tracking-wider ${compact ? 'text-[10px]' : 'text-xs mt-1'}`}>
+            <p className={`flex justify-between gap-2 text-stone-600 font-bold ${compact ? 'text-[10px]' : 'text-xs mt-1'}`}>
               <span className="truncate">{split.a}%{compact ? '' : ` ${nameA}`}</span>
               {!compact && <span className="text-stone-400 shrink-0 font-medium">{split.total} {split.total === 1 ? 'pick' : 'picks'}</span>}
               <span className="truncate text-right">{split.b}%{compact ? '' : ` ${nameB}`}</span>
@@ -104,7 +104,7 @@ export default function PredictionPicker({
 
       {/* Your pick (also after the lock) and the result */}
       {mine && (
-        <p className={`text-stone-600 font-semibold uppercase tracking-wider ${compact ? 'text-[10px]' : 'text-xs'}`}>
+        <p className={`text-stone-600 font-semibold ${compact ? 'text-[10px]' : 'text-xs'}`}>
           Your pick: <span className="text-maroon font-black">{teamNames[mine.predicted_winner_team_id] ?? 'a team'}</span>
           {verdict && <> · {verdict}</>}
           {canPick && !compact && <span className="text-stone-400 font-medium"> (tap it again to remove it)</span>}
@@ -113,15 +113,15 @@ export default function PredictionPicker({
 
       {note === 'login' ? (
         !compact && (
-          <p className="text-xs text-stone-500 font-semibold uppercase tracking-wider">
+          <p className="text-xs text-stone-500 font-semibold">
             <Link href="/auth/login" className="text-maroon font-black underline hover:text-gold">Log in</Link> to make your pick.
           </p>
         )
       ) : note && !compact ? (
-        <p className="text-xs text-stone-500 font-semibold uppercase tracking-wider">{note}</p>
+        <p className="text-xs text-stone-500 font-semibold">{note}</p>
       ) : null}
 
-      {error && <p role="alert" className={`text-red-600 font-bold uppercase tracking-wider ${compact ? 'text-[10px]' : 'text-xs'}`}>{error}</p>}
+      {error && <p role="alert" className={`text-red-600 font-bold ${compact ? 'text-[10px]' : 'text-xs'}`}>{error}</p>}
     </div>
   );
 }
