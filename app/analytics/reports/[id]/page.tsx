@@ -38,7 +38,7 @@ export default function SavedReportPage() {
           .maybeSingle();
         if (loadError) throw loadError;
         if (!data) throw new Error('Report not found, or only admins can view it.');
-        setReport(data);
+        setReport(data as unknown as SavedReport);
       } catch (err) {
         setError(getErrorMessage(err, 'Failed to load the report'));
       } finally {
@@ -104,14 +104,12 @@ export default function SavedReportPage() {
 
         <div className="relative z-10 max-w-4xl mx-auto space-y-3 pt-2">
           <h1
-            className="text-4xl sm:text-5xl lg:text-6xl font-black !text-white text-white tracking-wider uppercase leading-tight"
-            style={{ color: '#ffffff' }}
+            className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-wider uppercase leading-tight text-white"
           >
             DALTA Esports Analytics Report
           </h1>
           <p
-            className="text-base sm:text-lg !text-white text-stone-200 font-medium uppercase tracking-wide leading-relaxed"
-            style={{ color: '#ffffff' }}
+            className="text-base sm:text-lg font-medium uppercase tracking-wide leading-relaxed text-white"
           >
             {describeFilters(report.filters)} · Generated {generatedAt}
           </p>

@@ -98,7 +98,7 @@ export default function NotificationsPage() {
         <div className="relative z-10 w-full flex items-center justify-between">
           <Link
             href="/dashboard"
-            className="inline-flex items-center gap-1.5 text-xs font-black text-[#FFCC37] hover:text-[#FFE066] uppercase tracking-wider transition-colors"
+            className="inline-flex items-center gap-1.5 text-xs font-black text-gold hover:text-goldlight uppercase tracking-wider transition-colors"
           >
             ← Back to Dashboard
           </Link>
@@ -106,14 +106,12 @@ export default function NotificationsPage() {
 
         <div className="relative z-10 max-w-4xl mx-auto space-y-3 pt-2">
           <h1
-            className="text-4xl sm:text-5xl lg:text-6xl font-black !text-white text-white tracking-wider uppercase leading-tight"
-            style={{ color: '#ffffff' }}
+            className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-wider uppercase leading-tight text-white"
           >
             Notifications
           </h1>
           <p
-            className="text-base sm:text-lg !text-white text-stone-200 font-medium uppercase tracking-wide leading-relaxed"
-            style={{ color: '#ffffff' }}
+            className="text-base sm:text-lg font-medium uppercase tracking-wide leading-relaxed text-white"
           >
             Match alerts, tournament registrations, verification updates, and organizer notices.
           </p>
@@ -144,8 +142,8 @@ export default function NotificationsPage() {
                   unreadOnly === id
                     ? 'bg-gold text-stone-950 border border-amber-400 shadow-xs'
                     : highlight
-                    ? 'bg-stone-50 text-[#5B271E] border border-[#5B271E]/20 hover:bg-[#FFCC37]/15'
-                    : 'bg-stone-100 text-stone-700 hover:text-[#5B271E] hover:bg-stone-200/80 border border-transparent'
+                    ? 'bg-stone-50 text-maroon border border-maroon/20 hover:bg-gold/15'
+                    : 'bg-stone-100 text-stone-700 hover:text-maroon hover:bg-stone-200/80 border border-transparent'
                 }`}
               >
                 {label}
@@ -156,9 +154,9 @@ export default function NotificationsPage() {
           {unreadCount > 0 && (
             <button
               onClick={handleMarkAll}
-              className="rounded-xl border border-stone-300 hover:border-[#FFCC37] bg-white text-stone-800 hover:text-[#5B271E] font-bold px-4 py-2 text-xs tracking-wider transition-all inline-flex items-center gap-1.5 cursor-pointer shadow-2xs hover:-translate-y-0.5"
+              className="rounded-xl border border-stone-300 hover:border-gold bg-white text-stone-800 hover:text-maroon font-bold px-4 py-2 text-xs tracking-wider transition-all inline-flex items-center gap-1.5 cursor-pointer shadow-2xs hover:-translate-y-0.5"
             >
-              <CheckCheck className="w-3.5 h-3.5 text-[#5B271E]" />
+              <CheckCheck className="w-3.5 h-3.5 text-maroon" />
               <span>Mark all as read</span>
             </button>
           )}
@@ -167,7 +165,7 @@ export default function NotificationsPage() {
 
       {/* 3. Notifications List */}
       <div className="space-y-4">
-        {items.length === 0 ? (
+        {items.length === 0 && error ? null : items.length === 0 ? (
           <div className="rounded-2xl border border-stone-200/80 bg-stone-50/70 p-12 text-center text-stone-500 font-bold tracking-wider text-xs">
             {unreadOnly ? 'You have no unread notifications.' : 'No notifications yet.'}
           </div>
@@ -180,8 +178,7 @@ export default function NotificationsPage() {
               return (
                 <div
                   key={n.id}
-                  onClick={() => handleOpen(n)}
-                  className={`rounded-2xl p-5 border transition-all cursor-pointer flex items-start gap-4 ${
+                  className={`rounded-2xl p-5 border transition-all flex items-start gap-4 ${
                     isUnread
                       ? 'bg-white border-amber-400/90 shadow-xs ring-1 ring-amber-400/20 hover:border-amber-500'
                       : 'bg-white/80 border-stone-200/90 shadow-2xs hover:bg-white hover:border-stone-300'
@@ -191,21 +188,21 @@ export default function NotificationsPage() {
                   <div
                     className={`w-10 h-10 rounded-xl grid place-items-center shrink-0 ${
                       isUnread
-                        ? 'bg-[#5B271E]/10 text-[#5B271E] border border-[#5B271E]/20'
+                        ? 'bg-maroon/10 text-maroon border border-maroon/20'
                         : 'bg-stone-100 text-stone-600 border border-stone-200'
                     }`}
                   >
                     <Icon className="w-4 h-4" />
                   </div>
 
-                  {/* Body content */}
-                  <div className="flex-1 min-w-0 space-y-1">
+                  {/* Body content: a button so it also opens with the keyboard */}
+                  <button type="button" onClick={() => handleOpen(n)} className="flex-1 min-w-0 space-y-1 text-left cursor-pointer">
                     <div className="flex items-center gap-2 flex-wrap">
                       <p className={`text-sm ${isUnread ? 'font-black text-stone-950' : 'font-bold text-stone-800'}`}>
                         {n.title}
                       </p>
                       {isUnread && (
-                        <span className="h-2 w-2 rounded-full bg-[#FFCC37]" />
+                        <span className="h-2 w-2 rounded-full bg-gold" role="img" aria-label="unread" />
                       )}
                     </div>
 
@@ -219,7 +216,7 @@ export default function NotificationsPage() {
                         timeStyle: 'short',
                       })}
                     </p>
-                  </div>
+                  </button>
 
                   {/* Action buttons */}
                   <div className="shrink-0 flex items-center gap-2 self-center">
@@ -227,7 +224,8 @@ export default function NotificationsPage() {
                       <button
                         onClick={(e) => handleMarkRead(e, n)}
                         title="Mark as read"
-                        className="p-2 rounded-xl text-stone-400 hover:text-[#5B271E] hover:bg-[#FFCC37]/20 transition-colors"
+                        aria-label="Mark as read"
+                        className="p-2 rounded-xl text-stone-400 hover:text-maroon hover:bg-gold/20 transition-colors"
                       >
                         <Check className="w-4 h-4" />
                       </button>

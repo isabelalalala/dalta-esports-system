@@ -138,14 +138,12 @@ export default function ActivityLogPage() {
 
         <div className="relative z-10 max-w-4xl mx-auto space-y-3 pt-2">
           <h1
-            className="text-3xl sm:text-4xl lg:text-5xl font-black !text-white text-white tracking-wider uppercase leading-tight"
-            style={{ color: '#ffffff' }}
+            className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-wider uppercase leading-tight text-white"
           >
             Activity Log
           </h1>
           <p
-            className="text-base sm:text-lg !text-white text-stone-200 font-medium uppercase tracking-wide leading-relaxed"
-            style={{ color: '#ffffff' }}
+            className="text-base sm:text-lg font-medium uppercase tracking-wide leading-relaxed text-white"
           >
             Recorded automatically by the database. Entries cannot be edited or deleted and are kept for one year.
           </p>

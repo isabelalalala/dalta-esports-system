@@ -13,25 +13,7 @@ import PageLoading from '@/components/PageLoading';
 import { usePageTitle } from '@/utils/page-title';
 import PageHeroBackground from '@/components/site/PageHeroBackground';
 
-// Match tournament game to official game asset logo
-function getGameLogo(game: string, gameId?: string | null): string | null {
-  const g = (game || '').toLowerCase().trim();
-  const id = (gameId || '').toLowerCase().trim();
-
-  if (g.includes('mlbb') || g.includes('mobile legends') || id.includes('mlbb')) {
-    return '/MLBB LOGO.png';
-  }
-  if (g.includes('valo') || g.includes('valorant') || id.includes('valo')) {
-    return '/VALO LOGO.png';
-  }
-  if (g.includes('tekken') || id.includes('tekken')) {
-    return '/TEKKEMN 8 LOGO.png';
-  }
-  if (g.includes('codm') || g.includes('call of duty') || id.includes('cod')) {
-    return '/CODM LOGO.png';
-  }
-  return null;
-}
+import { getGameLogo } from '@/utils/game-logos';
 
 export default function TournamentsPage() {
   usePageTitle('Tournaments');
@@ -74,7 +56,7 @@ export default function TournamentsPage() {
           .order('created_at', { ascending: false });
 
         if (tourError) throw tourError;
-        setTournaments(data || []);
+        setTournaments((data || []) as Tournament[]);
       } catch (err) {
         setError(getErrorMessage(err, 'Failed to load tournaments'));
       } finally {
@@ -116,14 +98,12 @@ export default function TournamentsPage() {
 
         <div className="relative z-10 max-w-4xl mx-auto space-y-3 pt-2">
           <h1
-            className="animate-hero-title text-4xl sm:text-5xl lg:text-6xl font-black !text-white text-white tracking-wider uppercase leading-tight"
-            style={{ color: '#ffffff' }}
+            className="animate-hero-title text-4xl sm:text-5xl lg:text-6xl font-black tracking-wider uppercase leading-tight text-white"
           >
             Tournaments
           </h1>
           <p
-            className="animate-hero-tagline text-base sm:text-lg !text-white text-stone-200 font-medium uppercase tracking-wide leading-relaxed"
-            style={{ color: '#ffffff' }}
+            className="animate-hero-tagline text-base sm:text-lg font-medium uppercase tracking-wide leading-relaxed text-white"
           >
             Official championships, brackets, and match schedules.
           </p>

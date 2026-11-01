@@ -12,29 +12,7 @@ interface Props {
   content?: Partial<SiteContent> | null;
 }
 
-// Curated high-res esports tournament stage and competitive gaming imagery
-const DEFAULT_SLIDES = [
-  {
-    url: '/Home Page Photo.png',
-    alt: 'DALTA Esports official tournament organization',
-  },
-  {
-    url: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=1920&q=80',
-    alt: 'Collegiate esports tournament arena stage with stadium spotlights',
-  },
-  {
-    url: 'https://images.unsplash.com/photo-1511512578047-dfb367046420?auto=format&fit=crop&w=1920&q=80',
-    alt: 'Competitive gaming battlestations during an esports match',
-  },
-  {
-    url: 'https://images.unsplash.com/photo-1538481199705-c710c4e965fc?auto=format&fit=crop&w=1920&q=80',
-    alt: 'Esports championship main stage with live audience',
-  },
-  {
-    url: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=1920&q=80',
-    alt: 'Tournament hardware setup with neon arena lighting',
-  },
-];
+const DEFAULT_ALT = 'DALTA Esports official tournament organization';
 
 export default function HeroSlideshow({ title, tagline, images = [], content }: Props) {
   // 1. Direct slide uploads from Site Text media editor
@@ -61,11 +39,9 @@ export default function HeroSlideshow({ title, tagline, images = [], content }: 
     }))
     .filter((s) => Boolean(s.url));
 
-  // 3. Fallback slides with dynamic hero banner for slide 0 if uploaded
-  const baseHeroBanner = heroBannerUrl(content);
-  const fallbackSlides = DEFAULT_SLIDES.map((slide, idx) =>
-    idx === 0 ? { ...slide, url: baseHeroBanner } : slide
-  );
+  // 3. Nothing uploaded: one slide with the hero banner (uploaded one, or the photo in /public).
+  //    Only the org's own images are shown on the official site, no third-party stock photos.
+  const fallbackSlides = [{ url: heroBannerUrl(content), alt: DEFAULT_ALT }];
 
   const slides =
     uploadedSlides.length > 0
@@ -102,10 +78,9 @@ export default function HeroSlideshow({ title, tagline, images = [], content }: 
         {slides.map((slide, idx) => (
           <div
             key={slide.url}
-            className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
+            className={`absolute inset-0 transition-[opacity,transform] duration-1000 ease-in-out ${
               idx === current ? 'opacity-100 scale-100' : 'opacity-0 scale-105 pointer-events-none'
             }`}
-            style={{ transitionProperty: 'opacity, transform', transitionDuration: '1000ms' }}
           >
             <Image
               src={slide.url}
@@ -129,26 +104,10 @@ export default function HeroSlideshow({ title, tagline, images = [], content }: 
           {title.toUpperCase().includes('DALTA') ? (
             <>
               <span className="text-white drop-shadow-[0_4px_24px_rgba(0,0,0,0.85)]">DALTA</span>{' '}
-              <span
-                className="text-gold"
-                style={{
-                  color: '#FFCC37',
-                  textShadow: '0 4px 28px rgba(255, 204, 55, 0.45)',
-                }}
-              >
-                ESPORTS
-              </span>
+              <span className="text-gold text-glow-gold">ESPORTS</span>
             </>
           ) : (
-            <span
-              className="text-gold"
-              style={{
-                color: '#FFCC37',
-                textShadow: '0 4px 28px rgba(255, 204, 55, 0.45)',
-              }}
-            >
-              {title}
-            </span>
+            <span className="text-gold text-glow-gold">{title}</span>
           )}
         </h1>
 

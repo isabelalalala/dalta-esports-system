@@ -19,8 +19,8 @@ export default function SiteHeader() {
             <HeaderLogo />
           </Suspense>
           <span className="flex flex-col justify-center font-black text-xs sm:text-sm leading-tight tracking-wider uppercase transition-colors">
-            <span style={{ color: '#5B271E' }} className="text-[#5B271E]">DALTA</span>
-            <span style={{ color: '#C89300' }} className="font-extrabold text-[11px] sm:text-xs tracking-widest">ESPORTS</span>
+            <span className="text-maroon">DALTA</span>
+            <span className="font-extrabold text-[11px] sm:text-xs tracking-widest text-golddeep">ESPORTS</span>
           </span>
         </Link>
 

@@ -3,6 +3,9 @@ import { createClient } from '@/utils/supabase/server';
 import { analyzeFeedback } from '@/utils/feedback-analysis';
 import { getErrorMessage } from '@/utils/errors';
 
+// Vercel may stop a function after 10 s on the free plan; sending waits up to 15 s for Gemini
+export const maxDuration = 30;
+
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 // "Submit feedback & ratings" (use case, Audience / Players), which includes

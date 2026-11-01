@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -8,7 +8,10 @@ import { createClient } from '@/utils/supabase/client';
 import { getErrorMessage } from '@/utils/errors';
 import { PRIVACY_NOTICE_VERSION } from '@/utils/privacy';
 import { TOS_VERSION } from '@/utils/terms';
-import { confirmEmailRedirect, getEmailError } from '@/utils/auth';
+import {
+  confirmEmailRedirect, EMAIL_COOLDOWN_SECONDS, emailRateLimitMessage, emailRetryDelay, getEmailError, isEmailRateLimited,
+} from '@/utils/auth';
+import { useCooldown } from '@/utils/use-cooldown';
 import { getPasswordError } from '@/utils/password';
 import EmailField from '@/components/EmailField';
 import PasswordField, { PasswordRules } from '@/components/PasswordField';
@@ -35,10 +38,21 @@ export default function Register() {
   // Set after signing up when Supabase requires email confirmation
   const [sentTo, setSentTo] = useState('');
   const [resendMessage, setResendMessage] = useState('');
+  const [resendError, setResendError] = useState('');
+  const [resending, setResending] = useState(false);
+  // True when the last sign-up failed because the email limit was reached: shows "Try again"
+  const [rateLimited, setRateLimited] = useState(false);
+  // Waits before another email may be requested (sign-up retry or resend)
+  const cooldown = useCooldown();
+  // Blocks a second submit (double-click, Enter held down) before `loading` has re-rendered the button
+  const submittingRef = useRef(false);
+  const formRef = useRef<HTMLFormElement>(null);
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (submittingRef.current || cooldown.remaining > 0) return;
     setError('');
+    setRateLimited(false);
 
     const emailError = getEmailError(email);
     if (emailError) {
@@ -63,6 +77,7 @@ export default function Register() {
       return;
     }
 
+    submittingRef.current = true;
     setLoading(true);
     try {
       const { data, error } = await supabase.auth.signUp({
@@ -88,21 +103,42 @@ export default function Register() {
         return;
       }
       setSentTo(email.trim());
+      // An email was just sent: "Resend" waits a minute
+      cooldown.start(EMAIL_COOLDOWN_SECONDS);
     } catch (err) {
-      setError(getErrorMessage(err, 'Registration failed'));
+      if (isEmailRateLimited(err)) {
+        setRateLimited(true);
+        setError(emailRateLimitMessage(err, 'signup'));
+        cooldown.start(emailRetryDelay(err));
+      } else {
+        setError(getErrorMessage(err, 'Registration failed'));
+      }
     } finally {
+      submittingRef.current = false;
       setLoading(false);
     }
   };
 
   const handleResend = async () => {
+    if (resending || cooldown.remaining > 0) return;
+    setResending(true);
     setResendMessage('');
+    setResendError('');
     const { error } = await supabase.auth.resend({
       type: 'signup',
       email: sentTo,
       options: { emailRedirectTo: confirmEmailRedirect() },
     });
-    setResendMessage(error ? getErrorMessage(error, 'Could not resend the email.') : 'Sent again. Check your inbox and spam folder.');
+    setResending(false);
+    if (!error) {
+      setResendMessage('Sent again. Check your inbox and spam folder.');
+      cooldown.start(EMAIL_COOLDOWN_SECONDS);
+    } else if (isEmailRateLimited(error)) {
+      setResendError(emailRateLimitMessage(error, 'resend'));
+      cooldown.start(emailRetryDelay(error));
+    } else {
+      setResendError(getErrorMessage(error, 'Could not resend the email.'));
+    }
   };
 
   return (
@@ -173,11 +209,13 @@ export default function Register() {
               <button
                 type="button"
                 onClick={handleResend}
-                className="w-full sm:w-auto px-8 py-3.5 rounded-xl bg-gold hover:bg-golddark text-stone-950 font-black text-xs uppercase tracking-widest shadow-md hover:-translate-y-0.5 transition-all cursor-pointer"
+                disabled={resending || cooldown.remaining > 0}
+                className="w-full sm:w-auto px-8 py-3.5 rounded-xl bg-gold hover:bg-golddark text-stone-950 font-black text-xs uppercase tracking-widest shadow-md hover:-translate-y-0.5 transition-all cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:translate-y-0"
               >
-                Resend email
+                {resending ? 'Sending...' : cooldown.remaining > 0 ? `Resend in ${cooldown.remaining}s` : 'Resend email'}
               </button>
-              {resendMessage && <p className="text-xs font-bold text-amber-700">{resendMessage}</p>}
+              {resendMessage && <p role="status" className="text-xs font-bold text-emerald-700">{resendMessage}</p>}
+              {resendError && <p role="alert" className="text-xs font-bold text-red-700">{resendError}</p>}
               <p className="pt-2">
                 <Link
                   href="/auth/login"
@@ -189,10 +227,21 @@ export default function Register() {
             </div>
           ) : (
             /* Registration Form */
-            <form onSubmit={handleRegister} className="space-y-5">
+            <form ref={formRef} onSubmit={handleRegister} className="space-y-5">
               {error && (
-                <div role="alert" className="bg-red-50 border border-red-200 rounded-xl text-red-700 px-4 py-3 text-xs sm:text-sm font-bold uppercase tracking-wider shadow-xs">
-                  {error}
+                <div role="alert" className="bg-red-50 border border-red-200 rounded-xl text-red-700 px-4 py-3 text-xs sm:text-sm font-bold uppercase tracking-wider shadow-xs space-y-3">
+                  <p>{error}</p>
+                  {/* Email limit reached: the same form can be sent again after the wait */}
+                  {rateLimited && (
+                    <button
+                      type="button"
+                      onClick={() => formRef.current?.requestSubmit()}
+                      disabled={loading || cooldown.remaining > 0}
+                      className="px-4 py-2 rounded-xl bg-white border border-red-300 text-red-700 font-black text-xs uppercase tracking-widest hover:bg-red-100 transition-colors cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+                    >
+                      {cooldown.remaining > 0 ? `Try again in ${cooldown.remaining}s` : 'Try again'}
+                    </button>
+                  )}
                 </div>
               )}
 
@@ -294,10 +343,10 @@ export default function Register() {
               {/* Submit Button */}
               <button
                 type="submit"
-                disabled={loading || !consent || !tosConsent}
+                disabled={loading || !consent || !tosConsent || cooldown.remaining > 0}
                 className="w-full py-4 rounded-xl bg-gold hover:bg-golddark text-stone-950 font-black text-xs sm:text-sm uppercase tracking-widest shadow-md hover:-translate-y-0.5 transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
               >
-                {loading ? 'Creating account...' : 'Sign Up'}
+                {loading ? 'Creating account...' : cooldown.remaining > 0 ? `Sign Up (wait ${cooldown.remaining}s)` : 'Sign Up'}
               </button>
 
               {/* Bottom Login Link */}

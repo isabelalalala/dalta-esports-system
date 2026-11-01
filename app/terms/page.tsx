@@ -236,7 +236,7 @@ export default function TermsPage() {
               9. Third-party services
             </h2>
             <p>
-              Live streams are provided through Facebook and logins, the database and emails through Supabase; the website is hosted on Railway; feedback analysis uses Google Gemini. Their own terms and privacy policies apply to their parts of the service.
+              Live streams are provided through Facebook and logins, the database and emails through Supabase (emails are delivered by Brevo); the website is hosted on Vercel; feedback analysis uses Google Gemini. Their own terms and privacy policies apply to their parts of the service.
             </p>
           </section>
 

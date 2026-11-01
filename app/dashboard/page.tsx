@@ -134,7 +134,7 @@ export default function Dashboard() {
         return;
       }
 
-      setProfile(profileData);
+      setProfile(profileData as Profile);
       setLoading(false);
     };
 
@@ -169,24 +169,22 @@ export default function Dashboard() {
         <div className="relative z-10 space-y-3 max-w-3xl">
           <div className="flex flex-wrap items-center gap-2.5">
             <span className="px-3.5 py-1 rounded-full bg-white/10 border border-white/20 text-white text-xs font-black tracking-widest uppercase inline-flex items-center gap-1.5 backdrop-blur-xs">
-              {RoleIcon && <RoleIcon className="h-3.5 w-3.5 text-[#FFCC37]" />}
+              {RoleIcon && <RoleIcon className="h-3.5 w-3.5 text-gold" />}
               <span>{roleLabels[role ?? ''] ?? 'User'}</span>
             </span>
-            <span className="px-3 py-1 rounded-full bg-[#FFCC37]/20 border border-[#FFCC37]/30 text-[#FFCC37] text-xs font-black tracking-widest uppercase">
+            <span className="px-3 py-1 rounded-full bg-gold/20 border border-gold/30 text-gold text-xs font-black tracking-widest uppercase">
               Official Portal
             </span>
           </div>
 
           <h1
-            className="text-3xl sm:text-4xl lg:text-5xl font-black !text-white text-white tracking-wider uppercase leading-tight animate-hero-title"
-            style={{ color: '#ffffff' }}
+            className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-wider uppercase leading-tight animate-hero-title text-white"
           >
-            Welcome, <span style={{ color: '#FFCC37' }}>{profile?.full_name || user?.email}</span>
+            Welcome, <span className="text-gold">{profile?.full_name || user?.email}</span>
           </h1>
 
           <p
-            className="text-xs sm:text-sm !text-stone-200 text-stone-200 font-medium tracking-wide uppercase leading-relaxed animate-hero-tagline"
-            style={{ color: '#e7e5e4' }}
+            className="text-xs sm:text-sm font-medium tracking-wide uppercase leading-relaxed animate-hero-tagline text-stone-200"
           >
             DALTA Esports System · Collegiate Tournament Operations, Team Rosters, and Match Schedules.
           </p>

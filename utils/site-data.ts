@@ -72,7 +72,8 @@ export async function getOfficers(): Promise<Officer[]> {
   cacheSite();
   const { data } = await createPublicClient()
     .from('officers').select('*, games(name)').order('display_order').order('name');
-  return data ?? [];
+  // category is limited to the OfficerCategory values by a CHECK constraint
+  return (data ?? []) as Officer[];
 }
 
 // Published official teams with their players (optionally for one game)

@@ -81,8 +81,10 @@ export default function AnnouncementsPage() {
     if (!confirm(`Delete announcement "${a.title}"?`)) return;
     setError('');
     try {
-      const { error: deleteError } = await supabase.from('announcements').delete().eq('id', a.id);
+      // .select() returns the deleted rows. If RLS blocked the delete, nothing comes back.
+      const { data, error: deleteError } = await supabase.from('announcements').delete().eq('id', a.id).select('id');
       if (deleteError) throw deleteError;
+      if (!data || data.length === 0) throw new Error('Only admins can delete announcements.');
       setReloadCount((n) => n + 1);
     } catch (err) {
       setError(getErrorMessage(err, 'Failed to delete announcement'));
@@ -122,14 +124,12 @@ export default function AnnouncementsPage() {
 
         <div className="relative z-10 max-w-4xl mx-auto space-y-3 pt-2">
           <h1
-            className="text-4xl sm:text-5xl lg:text-6xl font-black !text-white text-white tracking-wider uppercase leading-tight"
-            style={{ color: '#ffffff' }}
+            className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-wider uppercase leading-tight text-white"
           >
             Announcements
           </h1>
           <p
-            className="text-base sm:text-lg !text-white text-stone-200 font-medium uppercase tracking-wide leading-relaxed"
-            style={{ color: '#ffffff' }}
+            className="text-base sm:text-lg font-medium uppercase tracking-wide leading-relaxed text-white"
           >
             Official bulletins, tournament schedules, operational updates, and news.
           </p>
@@ -248,18 +248,12 @@ function AnnouncementForm({
     };
 
     try {
-      if (existing) {
-        const { error: updateError } = await supabase
-          .from('announcements')
-          .update(fields)
-          .eq('id', existing.id);
-        if (updateError) throw updateError;
-      } else {
-        const { error: insertError } = await supabase
-          .from('announcements')
-          .insert([{ ...fields, author_id: userId }]);
-        if (insertError) throw insertError;
-      }
+      // .select() returns the saved row. If RLS blocked the change, nothing comes back.
+      const { data, error: saveError } = existing
+        ? await supabase.from('announcements').update(fields).eq('id', existing.id).select('id')
+        : await supabase.from('announcements').insert([{ ...fields, created_by: userId }]).select('id');
+      if (saveError) throw saveError;
+      if (!data || data.length === 0) throw new Error('Only admins can post or edit announcements.');
       onSaved();
     } catch (err) {
       setError(getErrorMessage(err, 'Failed to save announcement'));

@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useEffect, useState, type ReactNode } from 'react';
+import { Suspense, useState, useSyncExternalStore, type ReactNode } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
@@ -34,35 +34,47 @@ const NAV_ITEMS: NavItem[] = [
   { href: '/community', label: 'Community', icon: Users },
 ];
 
-export default function SiteNavLayout({ children }: { children: ReactNode }) {
-  const [isCollapsed, setIsCollapsed] = useState(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [mounted, setMounted] = useState(false);
+// The "collapse menu" choice, saved in localStorage (kept in memory when storage is blocked,
+// e.g. private browsing). Read through useSyncExternalStore so the server and browser agree.
+const COLLAPSE_KEY = 'dalta_site_nav_collapsed';
+const collapseListeners = new Set<() => void>();
+let collapsedInMemory = false;
 
-  // Restore collapse preference from localStorage
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem('dalta_site_nav_collapsed');
-      if (saved === 'true') {
-        setIsCollapsed(true);
-      }
-    } catch {
-      // Ignore storage errors in private/restricted browsing modes
-    }
-    setMounted(true);
-  }, []);
+function readCollapsed() {
+  try {
+    return localStorage.getItem(COLLAPSE_KEY) === 'true';
+  } catch {
+    return collapsedInMemory;
+  }
+}
 
-  const toggleCollapse = () => {
-    setIsCollapsed((prev) => {
-      const next = !prev;
-      try {
-        localStorage.setItem('dalta_site_nav_collapsed', String(next));
-      } catch {
-        // Ignore storage errors
-      }
-      return next;
-    });
+function writeCollapsed(value: boolean) {
+  collapsedInMemory = value;
+  try {
+    localStorage.setItem(COLLAPSE_KEY, String(value));
+  } catch {
+    // Storage blocked: the in-memory value is used instead
+  }
+  collapseListeners.forEach((notify) => notify());
+}
+
+function subscribeCollapsed(notify: () => void) {
+  collapseListeners.add(notify);
+  return () => {
+    collapseListeners.delete(notify);
   };
+}
+
+const subscribeNothing = () => () => {};
+
+export default function SiteNavLayout({ children }: { children: ReactNode }) {
+  // The server always renders the menu expanded; the browser then switches to the saved choice
+  const isCollapsed = useSyncExternalStore(subscribeCollapsed, readCollapsed, () => false);
+  // false on the server and the first render, true after: no width animation on page load
+  const mounted = useSyncExternalStore(subscribeNothing, () => true, () => false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const toggleCollapse = () => writeCollapsed(!isCollapsed);
 
   return (
     <div className="flex-1 w-full bg-white text-stone-950 uppercase flex flex-col lg:flex-row min-h-[calc(100vh-65px)]">
@@ -112,10 +124,10 @@ export default function SiteNavLayout({ children }: { children: ReactNode }) {
             onClick={toggleCollapse}
             aria-label={isCollapsed ? 'Expand navigation menu' : 'Collapse navigation menu'}
             title={isCollapsed ? 'Expand menu' : 'Collapse menu'}
-            className="p-2 rounded-xl text-stone-500 hover:text-[#5B271E] hover:bg-stone-100 border border-transparent hover:border-stone-200 transition-all cursor-pointer"
+            className="p-2 rounded-xl text-stone-500 hover:text-maroon hover:bg-stone-100 border border-transparent hover:border-stone-200 transition-all cursor-pointer"
           >
             {isCollapsed ? (
-              <PanelLeftOpen className="h-5 w-5 text-[#5B271E]" />
+              <PanelLeftOpen className="h-5 w-5 text-maroon" />
             ) : (
               <PanelLeftClose className="h-5 w-5" />
             )}
@@ -163,11 +175,11 @@ function DesktopNavList({ isCollapsed }: { isCollapsed: boolean }) {
                 aria-label={item.label}
                 className={`flex items-center justify-center w-11 h-11 rounded-xl transition-all cursor-pointer ${
                   isActive
-                    ? 'bg-[#5B271E]/10 text-[#5B271E] font-black border border-[#5B271E]/25 shadow-2xs'
-                    : 'text-stone-600 hover:text-[#5B271E] hover:bg-[#FFCC37]/15'
+                    ? 'bg-maroon/10 text-maroon font-black border border-maroon/25 shadow-2xs'
+                    : 'text-stone-600 hover:text-maroon hover:bg-gold/15'
                 }`}
               >
-                <item.icon className={`h-5 w-5 shrink-0 transition-colors ${isActive ? 'text-[#5B271E]' : 'text-stone-600 group-hover:text-[#FFCC37]'}`} />
+                <item.icon className={`h-5 w-5 shrink-0 transition-colors ${isActive ? 'text-maroon' : 'text-stone-600 group-hover:text-gold'}`} />
               </Link>
 
               {/* Flyout Tooltip when Minimized */}
@@ -186,11 +198,11 @@ function DesktopNavList({ isCollapsed }: { isCollapsed: boolean }) {
             href={item.href}
             className={`flex items-center gap-3.5 px-4 py-3 rounded-xl text-xs sm:text-sm font-extrabold uppercase tracking-wider transition-all cursor-pointer group ${
               isActive
-                ? 'bg-[#5B271E]/10 text-[#5B271E] font-black border border-[#5B271E]/25 shadow-2xs'
-                : 'text-stone-700 hover:text-[#5B271E] hover:bg-[#FFCC37]/15'
+                ? 'bg-maroon/10 text-maroon font-black border border-maroon/25 shadow-2xs'
+                : 'text-stone-700 hover:text-maroon hover:bg-gold/15'
             }`}
           >
-            <item.icon className={`h-4.5 w-4.5 shrink-0 transition-colors ${isActive ? 'text-[#5B271E]' : 'text-stone-500 group-hover:text-[#FFCC37]'}`} />
+            <item.icon className={`h-4.5 w-4.5 shrink-0 transition-colors ${isActive ? 'text-maroon' : 'text-stone-500 group-hover:text-gold'}`} />
             <span className="truncate group-hover:translate-x-0.5 transition-transform">{item.label}</span>
           </Link>
         );
@@ -251,11 +263,11 @@ function MobileNavList({ onSelect }: { onSelect: () => void }) {
             onClick={onSelect}
             className={`flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all group ${
               isActive
-                ? 'bg-[#5B271E]/10 text-[#5B271E] font-black border border-[#5B271E]/25'
-                : 'text-stone-700 hover:bg-[#FFCC37]/15 hover:text-[#5B271E]'
+                ? 'bg-maroon/10 text-maroon font-black border border-maroon/25'
+                : 'text-stone-700 hover:bg-gold/15 hover:text-maroon'
             }`}
           >
-            <item.icon className={`h-4 w-4 shrink-0 transition-colors ${isActive ? 'text-[#5B271E]' : 'text-stone-500 group-hover:text-[#FFCC37]'}`} />
+            <item.icon className={`h-4 w-4 shrink-0 transition-colors ${isActive ? 'text-maroon' : 'text-stone-500 group-hover:text-gold'}`} />
             <span>{item.label}</span>
           </Link>
         );

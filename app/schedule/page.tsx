@@ -95,7 +95,7 @@ export default function SchedulePage() {
         <div className="relative z-10 w-full flex items-center justify-between">
           <Link
             href="/dashboard"
-            className="inline-flex items-center gap-1.5 text-xs font-black text-[#FFCC37] hover:text-[#FFE066] uppercase tracking-wider transition-colors"
+            className="inline-flex items-center gap-1.5 text-xs font-black text-gold hover:text-goldlight uppercase tracking-wider transition-colors"
           >
             ← Back to Dashboard
           </Link>
@@ -103,14 +103,12 @@ export default function SchedulePage() {
 
         <div className="relative z-10 max-w-4xl mx-auto space-y-3 pt-2">
           <h1
-            className="text-4xl sm:text-5xl lg:text-6xl font-black !text-white text-white tracking-wider uppercase leading-tight"
-            style={{ color: '#ffffff' }}
+            className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-wider uppercase leading-tight text-white"
           >
             Schedule &amp; Results
           </h1>
           <p
-            className="text-base sm:text-lg !text-white text-stone-200 font-medium uppercase tracking-wide leading-relaxed"
-            style={{ color: '#ffffff' }}
+            className="text-base sm:text-lg font-medium uppercase tracking-wide leading-relaxed text-white"
           >
             Upcoming tournament fixtures, live arena bouts, and verified match results.
           </p>
@@ -128,7 +126,7 @@ export default function SchedulePage() {
         <div className="bg-white border border-stone-200/90 rounded-2xl p-4 sm:p-6 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
           {/* Tournament selector */}
           <div className="flex items-center gap-3 w-full md:w-auto">
-            <Filter className="w-4 h-4 text-[#5B271E] shrink-0" />
+            <Filter className="w-4 h-4 text-maroon shrink-0" />
             <label htmlFor="tournament-filter" className="sr-only">Filter by Tournament</label>
             <select
               id="tournament-filter"
@@ -193,7 +191,7 @@ export default function SchedulePage() {
               {live.length > 0 && (
                 <Link
                   href="/live"
-                  className="inline-flex items-center gap-1 text-xs font-bold text-[#5B271E] hover:text-[#FFCC37] tracking-wider transition-colors"
+                  className="inline-flex items-center gap-1 text-xs font-bold text-maroon hover:text-gold tracking-wider transition-colors"
                 >
                   <Tv className="w-3.5 h-3.5" />
                   <span>Open Live Broadcasts</span>
@@ -222,7 +220,7 @@ export default function SchedulePage() {
                       </span>
                       <Link
                         href={`/tournaments/${m.tournament_id}`}
-                        className="text-[11px] font-bold text-stone-600 hover:text-[#FFCC37] transition-colors"
+                        className="text-[11px] font-bold text-stone-600 hover:text-gold transition-colors"
                       >
                         {m.tournaments?.name} · {roundLabel(m.round, roundCounts[m.tournament_id] || m.round)}
                       </Link>
@@ -298,7 +296,7 @@ export default function SchedulePage() {
                       <div className="flex items-center gap-2 text-xs text-stone-500 font-medium tracking-wide">
                         <Link
                           href={`/tournaments/${m.tournament_id}`}
-                          className="hover:text-[#FFCC37] underline font-semibold transition-colors"
+                          className="hover:text-gold underline font-semibold transition-colors"
                         >
                           {m.tournaments?.name}
                         </Link>
@@ -308,7 +306,7 @@ export default function SchedulePage() {
                     </div>
 
                     <div className="shrink-0 flex items-center gap-2 text-stone-600 text-xs font-bold tracking-wider sm:text-right bg-stone-50 sm:bg-transparent px-3 py-1.5 sm:p-0 rounded-xl">
-                      <Calendar className="w-3.5 h-3.5 text-[#5B271E] shrink-0" />
+                      <Calendar className="w-3.5 h-3.5 text-maroon shrink-0" />
                       <span>{formatDateTime(m.scheduled_at)}</span>
                     </div>
                   </div>
@@ -349,15 +347,15 @@ export default function SchedulePage() {
                             <span
                               className={`text-sm sm:text-base ${
                                 isTeamAWinner
-                                  ? 'font-black text-[#5B271E]'
+                                  ? 'font-black text-maroon'
                                   : 'font-medium text-stone-500'
                               }`}
                             >
                               {name(m.team_a_id)}
                             </span>
                             {isTeamAWinner && (
-                              <span className="px-1.5 py-0.5 rounded bg-amber-100 text-[#5B271E] text-[10px] font-black inline-flex items-center gap-0.5">
-                                <Trophy className="w-2.5 h-2.5 text-[#5B271E]" />
+                              <span className="px-1.5 py-0.5 rounded bg-amber-100 text-maroon text-[10px] font-black inline-flex items-center gap-0.5">
+                                <Trophy className="w-2.5 h-2.5 text-maroon" />
                                 WIN
                               </span>
                             )}
@@ -379,15 +377,15 @@ export default function SchedulePage() {
                             <span
                               className={`text-sm sm:text-base ${
                                 isTeamBWinner
-                                  ? 'font-black text-[#5B271E]'
+                                  ? 'font-black text-maroon'
                                   : 'font-medium text-stone-500'
                               }`}
                             >
                               {name(m.team_b_id)}
                             </span>
                             {isTeamBWinner && (
-                              <span className="px-1.5 py-0.5 rounded bg-amber-100 text-[#5B271E] text-[10px] font-black inline-flex items-center gap-0.5">
-                                <Trophy className="w-2.5 h-2.5 text-[#5B271E]" />
+                              <span className="px-1.5 py-0.5 rounded bg-amber-100 text-maroon text-[10px] font-black inline-flex items-center gap-0.5">
+                                <Trophy className="w-2.5 h-2.5 text-maroon" />
                                 WIN
                               </span>
                             )}
@@ -397,7 +395,7 @@ export default function SchedulePage() {
                         <div className="flex items-center gap-2 text-xs text-stone-500 font-medium tracking-wide">
                           <Link
                             href={`/tournaments/${m.tournament_id}`}
-                            className="hover:text-[#FFCC37] underline font-semibold transition-colors"
+                            className="hover:text-gold underline font-semibold transition-colors"
                           >
                             {m.tournaments?.name}
                           </Link>
@@ -409,7 +407,7 @@ export default function SchedulePage() {
                       <div className="shrink-0 flex items-center justify-between sm:justify-end gap-3 pt-2 sm:pt-0 border-t sm:border-t-0 border-stone-100">
                         <Link
                           href={`/tournaments/${m.tournament_id}`}
-                          className="text-xs font-bold text-[#5B271E] hover:text-[#FFCC37] inline-flex items-center gap-1 transition-colors"
+                          className="text-xs font-bold text-maroon hover:text-gold inline-flex items-center gap-1 transition-colors"
                         >
                           <span>View Bracket</span>
                           <ChevronRight className="w-3.5 h-3.5" />

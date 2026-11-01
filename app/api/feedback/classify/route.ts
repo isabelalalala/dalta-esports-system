@@ -3,6 +3,9 @@ import { createClient } from '@/utils/supabase/server';
 import { analyzeFeedback } from '@/utils/feedback-analysis';
 import { MAX_FEEDBACK_ANALYSIS_ATTEMPTS } from '@/utils/feedback';
 
+// Vercel may stop a function after 10 s on the free plan; one batch waits up to 15 s for Gemini
+export const maxDuration = 30;
+
 // How many comments go to Gemini in one request
 const BATCH_SIZE = 20;
 

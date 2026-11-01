@@ -8,6 +8,8 @@ import { getErrorMessage } from '@/utils/errors';
 import { defaultParticipants, participantRangeLabel, validateParticipants, validateTournamentDates } from '@/utils/tournaments';
 import type { Game } from '@/utils/types';
 import { usePageTitle } from '@/utils/page-title';
+import PageLoading from '@/components/PageLoading';
+import PageError from '@/components/PageError';
 import PageHeroBackground from '@/components/site/PageHeroBackground';
 import {
   AlertCircle,
@@ -39,11 +41,15 @@ export default function CreateTournamentPage() {
   const [registrationDeadline, setRegistrationDeadline] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  // null while loading; only admin/staff may create (RLS enforces it too)
+  const [role, setRole] = useState<string | null>(null);
 
   const router = useRouter();
 
   useEffect(() => {
     const fetchGames = async () => {
+      const { data: myRole } = await supabase.rpc('get_my_role');
+      setRole(myRole ?? '');
       const { data, error: gamesError } = await supabase.from('games').select('*').order('name');
       if (gamesError) setError(getErrorMessage(gamesError, 'Could not load the list of games. Please reload the page.'));
       setGames(data || []);
@@ -92,8 +98,8 @@ export default function CreateTournamentPage() {
         .from('tournaments')
         .insert([
           {
-            name,
-            description,
+            name: name.trim(),
+            description: description.trim() || null,
             rules: rules.trim() || null,
             game_id: gameId,
             game: games.find((g) => g.id === gameId)?.name ?? '',
@@ -120,6 +126,11 @@ export default function CreateTournamentPage() {
     }
   };
 
+  if (role === null) return <PageLoading />;
+  if (role !== 'admin' && role !== 'staff') {
+    return <PageError message="Only organizers can create tournaments." backHref="/tournaments" backLabel="Back to Tournaments" />;
+  }
+
   return (
     <div className="w-full space-y-8 uppercase text-stone-950">
       {/* 1. Main Hero Container */}
@@ -129,25 +140,23 @@ export default function CreateTournamentPage() {
         <div className="relative z-10 w-full flex flex-wrap items-center justify-between gap-4">
           <Link
             href="/tournaments"
-            className="inline-flex items-center gap-1.5 text-xs font-black text-[#FFCC37] hover:text-[#FFE066] uppercase tracking-wider transition-colors"
+            className="inline-flex items-center gap-1.5 text-xs font-black text-gold hover:text-goldlight uppercase tracking-wider transition-colors"
           >
             ← Back to Tournaments
           </Link>
           <span className="text-xs font-black text-stone-300 uppercase tracking-wider flex items-center gap-1.5">
-            <Plus className="w-4 h-4 text-[#FFCC37]" /> Create Tournament
+            <Plus className="w-4 h-4 text-gold" /> Create Tournament
           </span>
         </div>
 
         <div className="relative z-10 max-w-4xl mx-auto space-y-3 pt-2">
           <h1
-            className="text-3xl sm:text-4xl lg:text-5xl font-black !text-white text-white tracking-wider uppercase leading-tight"
-            style={{ color: '#ffffff' }}
+            className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-wider uppercase leading-tight text-white"
           >
             Create New Tournament
           </h1>
           <p
-            className="text-xs sm:text-sm text-stone-200 font-semibold uppercase tracking-wider leading-relaxed"
-            style={{ color: '#ffffff' }}
+            className="text-xs sm:text-sm font-semibold uppercase tracking-wider leading-relaxed text-white"
           >
             Launch official collegiate competitions, define registration windows, and configure student verification.
           </p>
@@ -168,9 +177,9 @@ export default function CreateTournamentPage() {
         <div className="lg:col-span-7 space-y-6">
           <div className="rounded-3xl border border-stone-200/90 bg-white p-6 sm:p-8 lg:p-10 shadow-xs space-y-5">
             <div className="border-b border-stone-100 pb-3">
-              <span className="text-[11px] font-black tracking-widest text-[#5B271E] uppercase">Core Details</span>
+              <span className="text-[11px] font-black tracking-widest text-maroon uppercase">Core Details</span>
               <h2 className="text-xl sm:text-2xl font-black text-stone-950 uppercase tracking-wide flex items-center gap-2">
-                <Trophy className="w-5 h-5 text-[#5B271E]" /> Tournament Identity
+                <Trophy className="w-5 h-5 text-maroon" /> Tournament Identity
               </h2>
             </div>
 
@@ -224,9 +233,9 @@ export default function CreateTournamentPage() {
 
           <div className="rounded-3xl border border-stone-200/90 bg-white p-6 sm:p-8 lg:p-10 shadow-xs space-y-5">
             <div className="border-b border-stone-100 pb-3">
-              <span className="text-[11px] font-black tracking-widest text-[#5B271E] uppercase">Rules &amp; Regulations</span>
+              <span className="text-[11px] font-black tracking-widest text-maroon uppercase">Rules &amp; Regulations</span>
               <h2 className="text-xl sm:text-2xl font-black text-stone-950 uppercase tracking-wide flex items-center gap-2">
-                <Layers className="w-5 h-5 text-[#5B271E]" /> Match Guidelines
+                <Layers className="w-5 h-5 text-maroon" /> Match Guidelines
               </h2>
             </div>
 
@@ -247,9 +256,9 @@ export default function CreateTournamentPage() {
 
           <div className="rounded-3xl border border-stone-200/90 bg-white p-6 sm:p-8 shadow-xs space-y-4">
             <div className="border-b border-stone-100 pb-3">
-              <span className="text-[11px] font-black tracking-widest text-[#5B271E] uppercase">Compliance</span>
+              <span className="text-[11px] font-black tracking-widest text-maroon uppercase">Compliance</span>
               <h2 className="text-lg sm:text-xl font-black text-stone-950 uppercase tracking-wide flex items-center gap-2">
-                <ShieldCheck className="w-5 h-5 text-[#5B271E]" /> Eligibility Verification
+                <ShieldCheck className="w-5 h-5 text-maroon" /> Eligibility Verification
               </h2>
             </div>
 
@@ -276,9 +285,9 @@ export default function CreateTournamentPage() {
         <div className="lg:col-span-5 space-y-6">
           <div className="rounded-3xl border border-stone-200/90 bg-white p-6 sm:p-8 shadow-xs space-y-5">
             <div className="border-b border-stone-100 pb-3">
-              <span className="text-[11px] font-black tracking-widest text-[#5B271E] uppercase">Roster Capacity</span>
+              <span className="text-[11px] font-black tracking-widest text-maroon uppercase">Roster Capacity</span>
               <h2 className="text-lg sm:text-xl font-black text-stone-950 uppercase tracking-wide flex items-center gap-2">
-                <Users className="w-5 h-5 text-[#5B271E]" /> Quota &amp; Check-In
+                <Users className="w-5 h-5 text-maroon" /> Quota &amp; Check-In
               </h2>
             </div>
 
@@ -327,9 +336,9 @@ export default function CreateTournamentPage() {
 
           <div className="rounded-3xl border border-stone-200/90 bg-white p-6 sm:p-8 shadow-xs space-y-5">
             <div className="border-b border-stone-100 pb-3">
-              <span className="text-[11px] font-black tracking-widest text-[#5B271E] uppercase">Schedules</span>
+              <span className="text-[11px] font-black tracking-widest text-maroon uppercase">Schedules</span>
               <h2 className="text-lg sm:text-xl font-black text-stone-950 uppercase tracking-wide flex items-center gap-2">
-                <Calendar className="w-5 h-5 text-[#5B271E]" /> Timeline Dates
+                <Calendar className="w-5 h-5 text-maroon" /> Timeline Dates
               </h2>
             </div>
 

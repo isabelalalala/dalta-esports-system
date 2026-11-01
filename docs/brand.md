@@ -1,37 +1,56 @@
 # DALTA Esports brand guide
 
-The de-facto brand, codified from `app/globals.css` and `public/daltaesportslogo.jpg`. Until an official guide exists, this page is the source of truth — new UI follows it; changes to it are design decisions, not drive-bys.
+The de-facto brand, codified from `app/globals.css` and the DALTA ESPORTS logo. Until an official guide exists, this page is the source of truth: new UI follows it; changes to it are design decisions, not drive-bys.
+
+The current look (since the "Updated UI/UX design" redesign): a white page, uppercase Montserrat, rounded white cards, dark photo heroes at the top of each page, and the logo's gold and maroon as accents.
 
 ## Colors
 
-Tokens live in `app/globals.css` `@theme`. Always use the token (`bg-sitebg`, `text-gold`), never the hex.
+Tokens live in `app/globals.css` `@theme`. Always use the token (`bg-gold`, `text-maroon`), never the hex in a class or an inline `style`.
 
 | Token | Hex | Use |
 |---|---|---|
-| `gold` | `#fccb35` | Primary accent: headings, CTAs, links on hover, logo border |
-| `golddark` | `#e0b22a` | Hover state on gold buttons |
-| `brown` | `#5c241c` | Strong borders, shadow color |
-| `brownlight` | `#a0522d` | Secondary borders |
-| `sitebg` | `#120d0b` | Page background |
-| `sitecard` | `#1f1714` | Card/panel surfaces |
+| `gold` | `#FFCC37` | Primary accent: solid buttons, badges and text **on dark** (heroes) |
+| `golddark` | `#E5B72E` | Hover on gold buttons |
+| `goldlight` | `#FFE066` | Hover on gold text inside dark heroes |
+| `golddeep` | `#C89300` | Gold text that must stay readable on white (header "ESPORTS") |
+| `maroon` (= `brown`) | `#5B271E` | Accent text, links, icons and focus rings **on white** |
+| `maroondark` / `maroonlight` | `#431B14` / `#7A3529` | Darker/lighter maroon |
+| `ink` | `#0E0C0B` | Near-black panels behind game logos and photos |
+| `negative` | `#e66767` | Negative sentiment (same as the chart color, color-blind checked) |
+| `sitebg`, `sitecard` | `#ffffff` | Page and card surfaces |
 
-Status colors in use (to be tokenized when the palette is extended): verified blue `#3987e5`/`#8fbcf2`, live/danger red (`red-500`/`red-400` utilities), positive/negative sentiment greens and `#e66767`. Body text: `text-gray-200`–`text-gray-300`; muted: `text-gray-400`.
+- Tailwind's `amber-600` … `amber-950` are remapped to maroon shades in `@theme`, so `text-amber-700` renders maroon.
+- Gold text on white is too faint (contrast 1.6:1): on white use `maroon` (or `golddeep` for a gold look).
+- Text: `text-stone-950` (main), `text-stone-600`/`text-stone-500` (muted). No light grays (`gray-200…400`) on white.
+- Meaning colors stay Tailwind's own: red (errors, live), emerald (success), yellow (pending), blue (Verified badge). Light tints for boxes, e.g. `bg-red-50 text-red-700 border-red-200`.
+- Chart colors are hex in `utils/reports.ts` (Chart.js can't read Tailwind classes).
+
+## Utilities (in `app/globals.css`)
+
+- `bg-logo-stage` / `bg-logo-stage-strong`: the dark radial spotlight behind game logos and team photos.
+- `text-glow-gold`: the soft gold glow on the home page title.
+- Animations: `animate-hero-entrance`, `animate-hero-title`, `animate-hero-tagline`, `animate-stagger-1…3`, `animate-marquee`.
 
 ## Typography
 
-- `font-pixel` (Press Start 2P, loaded in `app/layout.tsx`): the DALTA wordmark and page/section headings on the public site. Never below `text-xs` — it's illegible at small sizes.
-- Body/UI text: Arial/Helvetica/sans-serif (the `body` default). A dedicated display/body pair is a planned improvement; until then, headings `font-bold`, muted text one shade down.
+- Montserrat everywhere (`font-montserrat`; `font-pixel` is an alias kept for older code), uppercase by default (set in `globals.css`), wide tracking (`tracking-wider`/`tracking-widest`).
+- Headings `font-black`; page titles in heroes `text-3xl sm:text-4xl lg:text-5xl text-white`.
+- User-written text (comments, announcement bodies) may use `normal-case` so it reads as written.
 
-## Shape & motion
+## Shape & layout
 
-- Cards/panels: `border-2 border-brownlight bg-sitecard shadow-[4px_4px_0_var(--color-brown)]` (hard offset shadow — the signature look; `6px` for heroes/forms).
-- Buttons: gold solid (`bg-gold text-black`/`text-sitebg`) or gold outline (`border-2 border-gold text-gold`); `hover:translate-y-px` on primary CTAs.
-- Live indicators: a colored dot (`rounded-full bg-red-500`/`bg-current` + `animate-pulse`) + text, never an emoji.
-- Icons: `lucide-react`, imported individually, sized `h-4 w-4`/`h-5 w-5`, `inline-flex items-center gap-*` when paired with text.
+- Cards: `bg-white border border-stone-200/90 rounded-2xl shadow-xs`, padding `p-5 sm:p-6` (forms `p-6 sm:p-8`, larger panels `rounded-3xl`).
+- Page hero: `relative rounded-3xl border border-stone-800/80 bg-stone-950 overflow-hidden` with `<PageHeroBackground>` (admin-editable banner) and white title text.
+- Buttons: gold solid (`bg-gold text-stone-950 rounded-xl font-black uppercase tracking-widest hover:bg-golddark`) or outline (`border border-maroon text-maroon rounded-xl`).
+- Inputs: `rounded-xl bg-white border border-stone-300 focus:border-amber-600 focus:ring-2 focus:ring-amber-500/20`.
+- Logged-in and public pages share `SiteNavLayout` (collapsible side nav); it renders the page's `<main id="main-content">`, so pages inside it start with a `<div>`, not another `<main>`.
+- Live indicators: a dot (`rounded-full bg-current animate-pulse`) + text, never an emoji.
+- Icons: `lucide-react`, imported individually, `h-4 w-4`/`h-5 w-5`.
 
 ## Logo
 
-`public/daltaesportslogo.jpg` (served via `logoUrl()` from site content). Shown at 44–48px in a `border-2 border-gold bg-white` box in header and footer, next to the stacked "DALTA ESPORTS" pixel wordmark or the footer tagline. Don't recolor, crop or place it on non-white backgrounds without the bordered box.
+`public/DALTA ESPORTS LOGO TRNPRNT.png` (transparent), unless an admin uploads one on `/admin/website` (served via `logoUrl()`). In the header it sits next to the stacked wordmark: "DALTA" in `text-maroon`, "ESPORTS" in `text-golddeep`. Game logos: `getGameLogo()` in `utils/game-logos.ts`, shown on `bg-ink`/`bg-logo-stage`.
 
 ## Voice
 

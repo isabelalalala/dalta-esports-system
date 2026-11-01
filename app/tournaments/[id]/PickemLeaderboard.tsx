@@ -60,7 +60,7 @@ export default function PickemLeaderboard({ tournamentId, limit }: { tournamentI
           </span>
           <span className="flex-1 min-w-0 truncate font-black text-xs sm:text-sm text-stone-900">
             {r.display_name}
-            {r.is_me && <span className="ml-2 text-xs font-black text-[#5B271E]">(you)</span>}
+            {r.is_me && <span className="ml-2 text-xs font-black text-maroon">(you)</span>}
           </span>
           <span className="shrink-0 text-right text-xs sm:text-sm">
             <span className="font-black text-stone-950 tabular-nums">{r.correct}</span>

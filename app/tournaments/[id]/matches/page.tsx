@@ -12,7 +12,7 @@ import PageLoading from '@/components/PageLoading';
 import PageError from '@/components/PageError';
 import { usePageTitle } from '@/utils/page-title';
 import PageHeroBackground from '@/components/site/PageHeroBackground';
-import { AlertCircle, Calendar, CheckCircle2, ChevronRight, Swords } from 'lucide-react';
+import { AlertCircle, ChevronRight, Swords } from 'lucide-react';
 
 const inputClass =
   'w-full border border-stone-300 bg-stone-50 px-3 py-2 text-stone-950 font-bold text-xs uppercase rounded-xl outline-none focus:border-amber-600 focus:bg-white focus:ring-2 focus:ring-amber-500/20 disabled:opacity-50 transition-all';
@@ -44,17 +44,17 @@ export default function MatchManagementPage() {
           .eq('id', session.user.id)
           .single();
         if (profileError) throw profileError;
-        setProfile(profileData);
+        setProfile(profileData as Profile);
 
         const [tournRes, matchesRes] = await Promise.all([
           supabase.from('tournaments').select('*').eq('id', id).single(),
           supabase.from('matches').select('*').eq('tournament_id', id).order('round').order('match_number'),
         ]);
         if (tournRes.error) throw tournRes.error;
-        setTournament(tournRes.data);
+        setTournament(tournRes.data as Tournament);
         const matchesData = matchesRes.data;
         if (matchesRes.error) throw matchesRes.error;
-        setMatches(matchesData || []);
+        setMatches((matchesData || []) as Match[]);
 
         const bracketTeamIds = new Set<string>();
         for (const m of matchesData || []) {
@@ -96,6 +96,10 @@ export default function MatchManagementPage() {
   if (!tournament) {
     return <PageError message={error || 'Tournament not found'} backHref="/tournaments" backLabel="Back to Tournaments" />;
   }
+  // Players and spectators can't change matches (RLS blocks it anyway); don't show them the forms
+  if (profile?.role !== 'admin' && profile?.role !== 'staff') {
+    return <PageError message="Only organizers can manage matches." backHref={`/tournaments/${id}`} backLabel="Back to the tournament" />;
+  }
 
   const roundCount = matches.reduce((max, m) => Math.max(max, m.round), 0);
   const rounds = Array.from({ length: roundCount }, (_, i) => i + 1);
@@ -109,25 +113,23 @@ export default function MatchManagementPage() {
         <div className="relative z-10 w-full flex flex-wrap items-center justify-between gap-4">
           <Link
             href={`/tournaments/${id}`}
-            className="inline-flex items-center gap-1.5 text-xs font-black text-[#FFCC37] hover:text-[#FFE066] uppercase tracking-wider transition-colors"
+            className="inline-flex items-center gap-1.5 text-xs font-black text-gold hover:text-goldlight uppercase tracking-wider transition-colors"
           >
             ← Back to Tournament
           </Link>
           <span className="text-xs font-black text-stone-300 uppercase tracking-wider flex items-center gap-1.5">
-            <Swords className="w-4 h-4 text-[#FFCC37]" /> Match Management
+            <Swords className="w-4 h-4 text-gold" /> Match Management
           </span>
         </div>
 
         <div className="relative z-10 max-w-4xl mx-auto space-y-3 pt-2">
           <h1
-            className="text-3xl sm:text-4xl lg:text-5xl font-black !text-white text-white tracking-wider uppercase leading-tight"
-            style={{ color: '#ffffff' }}
+            className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-wider uppercase leading-tight text-white"
           >
             {tournament.name} Matches
           </h1>
           <p
-            className="text-xs sm:text-sm text-stone-200 font-semibold uppercase tracking-wider leading-relaxed"
-            style={{ color: '#ffffff' }}
+            className="text-xs sm:text-sm font-semibold uppercase tracking-wider leading-relaxed text-white"
           >
             Schedule fixtures, record official match scores, and declare advancing winners.
           </p>
@@ -160,7 +162,7 @@ export default function MatchManagementPage() {
           {rounds.map((round) => (
             <section key={round} className="space-y-4">
               <div className="border-b border-stone-200/90 pb-3">
-                <span className="text-[11px] font-black tracking-widest text-[#5B271E] uppercase">Playoff Stage</span>
+                <span className="text-[11px] font-black tracking-widest text-maroon uppercase">Playoff Stage</span>
                 <h2 className="text-xl sm:text-2xl font-black text-stone-950 uppercase tracking-wide">
                   {roundLabel(round, roundCount)}
                 </h2>
@@ -214,7 +216,7 @@ function MatchCard({
     const team = match.team_a_id ?? match.team_b_id;
     return (
       <div className="rounded-2xl border border-stone-200/90 bg-stone-50/70 p-5 text-stone-500 shadow-2xs space-y-1">
-        <p className="text-[11px] uppercase font-black tracking-widest text-[#5B271E]">Match {match.match_number} · Bye</p>
+        <p className="text-[11px] uppercase font-black tracking-widest text-maroon">Match {match.match_number} · Bye</p>
         <p className="text-xs sm:text-sm font-black text-stone-950 uppercase tracking-wide">
           <span>{team ? teamNames[team] : 'Unknown team'}</span> advances automatically.
         </p>
@@ -292,7 +294,7 @@ function MatchCard({
             Check-in: {checkinCount} / 2
           </span>
         ) : <span />}
-        <Link href={`/matches/${match.id}`} className="text-xs font-black text-[#5B271E] hover:text-[#FFCC37] uppercase tracking-wider inline-flex items-center gap-1">
+        <Link href={`/matches/${match.id}`} className="text-xs font-black text-maroon hover:text-gold uppercase tracking-wider inline-flex items-center gap-1">
           <span>Open Match</span>
           <ChevronRight className="h-3 w-3" />
         </Link>
@@ -300,7 +302,7 @@ function MatchCard({
 
       {/* Teams and scores */}
       <div className="grid grid-cols-[1fr_5rem] gap-3 items-center">
-        <span className={`font-black text-xs sm:text-sm uppercase tracking-wide truncate ${match.winner_team_id === match.team_a_id && match.team_a_id ? 'text-[#5B271E]' : 'text-stone-950'}`}>
+        <span className={`font-black text-xs sm:text-sm uppercase tracking-wide truncate ${match.winner_team_id === match.team_a_id && match.team_a_id ? 'text-maroon' : 'text-stone-950'}`}>
           {nameA}
         </span>
         <input
@@ -313,7 +315,7 @@ function MatchCard({
           className={inputClass}
           aria-label={`Score for ${nameA}`}
         />
-        <span className={`font-black text-xs sm:text-sm uppercase tracking-wide truncate ${match.winner_team_id === match.team_b_id && match.team_b_id ? 'text-[#5B271E]' : 'text-stone-950'}`}>
+        <span className={`font-black text-xs sm:text-sm uppercase tracking-wide truncate ${match.winner_team_id === match.team_b_id && match.team_b_id ? 'text-maroon' : 'text-stone-950'}`}>
           {nameB}
         </span>
         <input

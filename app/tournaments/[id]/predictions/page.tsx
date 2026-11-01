@@ -49,25 +49,23 @@ export default function PredictionsLeaderboardPage() {
         <div className="relative z-10 w-full flex flex-wrap items-center justify-between gap-4">
           <Link
             href={`/tournaments/${id}`}
-            className="inline-flex items-center gap-1.5 text-xs font-black text-[#FFCC37] hover:text-[#FFE066] uppercase tracking-wider transition-colors"
+            className="inline-flex items-center gap-1.5 text-xs font-black text-gold hover:text-goldlight uppercase tracking-wider transition-colors"
           >
             ← Back to {name || 'Tournament'}
           </Link>
           <span className="text-xs font-black text-stone-300 uppercase tracking-wider flex items-center gap-1.5">
-            <Target className="w-4 h-4 text-[#FFCC37]" /> Community Predictions
+            <Target className="w-4 h-4 text-gold" /> Community Predictions
           </span>
         </div>
 
         <div className="relative z-10 max-w-4xl mx-auto space-y-3 pt-2">
           <h1
-            className="text-3xl sm:text-4xl lg:text-5xl font-black !text-white text-white tracking-wider uppercase leading-tight"
-            style={{ color: '#ffffff' }}
+            className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-wider uppercase leading-tight text-white"
           >
             Pick&apos;em Leaderboard
           </h1>
           <p
-            className="text-xs sm:text-sm text-stone-200 font-semibold uppercase tracking-wider leading-relaxed"
-            style={{ color: '#ffffff' }}
+            className="text-xs sm:text-sm font-semibold uppercase tracking-wider leading-relaxed text-white"
           >
             Ranked by correct picks across matches. Higher accuracy ranks higher.
           </p>
@@ -78,13 +76,13 @@ export default function PredictionsLeaderboardPage() {
       <div className="max-w-4xl mx-auto w-full space-y-6">
         <div className="rounded-3xl border border-stone-200/90 bg-white p-6 sm:p-8 lg:p-10 shadow-xs space-y-6">
           <div className="border-b border-stone-100 pb-4">
-            <span className="text-[11px] font-black tracking-widest text-[#5B271E] uppercase">Standings</span>
+            <span className="text-[11px] font-black tracking-widest text-maroon uppercase">Standings</span>
             <h2 className="text-xl sm:text-2xl font-black text-stone-950 uppercase tracking-wide">
               Prediction Rankings
             </h2>
             <p className="text-xs text-stone-500 font-semibold uppercase tracking-wider mt-1">
               Picks close when each match begins. Make yours on the{' '}
-              <Link href={`/tournaments/${id}`} className="text-[#5B271E] font-black underline hover:text-[#FFCC37]">
+              <Link href={`/tournaments/${id}`} className="text-maroon font-black underline hover:text-gold">
                 tournament bracket
               </Link>
               .

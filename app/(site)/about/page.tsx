@@ -28,6 +28,11 @@ export default async function AboutPage() {
   const defaultCoreBelief =
     'At DALTA Esports, competition is more than just victory on the screen. We believe gaming is a powerful vehicle for character development, camaraderie, discipline, and community impact. Every match we play and event we organize is driven by dedication to our university, our teammates, and our passion.';
 
+  // The motto (editable on /admin/website), with its last word highlighted: "Game With *Purpose*"
+  const beliefWords = (content.core_belief_title || 'Game With Purpose').trim().split(/\s+/);
+  const beliefLast = beliefWords.pop();
+  const beliefLead = beliefWords.join(' ');
+
   return (
     <div className="w-full space-y-8 uppercase">
       {/* 1. Large Main Container with Dynamic Background Image from Site Text */}
@@ -40,14 +45,15 @@ export default async function AboutPage() {
 
         <div className="relative z-10 max-w-4xl mx-auto space-y-3">
           <h1
-            className="text-4xl sm:text-5xl lg:text-6xl font-black !text-white text-white tracking-wider uppercase leading-tight animate-hero-title"
-            style={{ color: '#ffffff' }}
+            className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-wider uppercase leading-tight animate-hero-title text-white"
           >
             About Us
           </h1>
+          {content.founded && (
+            <p className="text-xs sm:text-sm font-black tracking-widest text-gold">Founded {content.founded}</p>
+          )}
           <p
-            className="text-base sm:text-lg !text-white text-stone-200 font-medium uppercase tracking-wide leading-relaxed animate-hero-tagline"
-            style={{ color: '#ffffff' }}
+            className="text-base sm:text-lg font-medium uppercase tracking-wide leading-relaxed animate-hero-tagline text-white"
           >
             {content.about_intro || defaultIntro}
           </p>
@@ -99,7 +105,7 @@ export default async function AboutPage() {
           Official Organization Motto
         </div>
         <h2 className="text-2xl sm:text-4xl lg:text-5xl font-black text-stone-950 tracking-wider uppercase leading-tight">
-          Game With <span className="text-amber-600">Purpose</span>
+          {beliefLead} <span className="text-amber-600">{beliefLast}</span>
         </h2>
         <p className="text-xs sm:text-sm text-stone-700 max-w-3xl mx-auto font-medium uppercase tracking-wide leading-relaxed whitespace-pre-wrap">
           {content.core_belief_text || defaultCoreBelief}

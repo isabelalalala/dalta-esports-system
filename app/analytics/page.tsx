@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
 import { getErrorMessage } from '@/utils/errors';
+import type { Json } from '@/utils/database.types';
 import ReportFilters, { filterNames, useFilterOptions } from '@/components/ReportFilters';
 import {
   describeFilters, emptyFilters, fetchFullReport, validateFilters,
@@ -76,7 +77,8 @@ export default function AnalyticsPage() {
       const data = await fetchFullReport(supabase, filters);
       const { data: saved, error: saveError } = await supabase
         .from('analytics_reports')
-        .insert([{ filters: filterNames(filters, options), data, generated_by: session.user.id }])
+        // data is saved as jsonb exactly as the report functions returned it
+        .insert([{ filters: filterNames(filters, options), data: data as unknown as NonNullable<Json>, generated_by: session.user.id }])
         .select('id')
         .single();
       if (saveError) throw saveError;
@@ -136,14 +138,12 @@ export default function AnalyticsPage() {
 
         <div className="relative z-10 max-w-4xl mx-auto space-y-3 pt-2">
           <h1
-            className="text-3xl sm:text-4xl lg:text-5xl font-black !text-white text-white tracking-wider uppercase leading-tight"
-            style={{ color: '#ffffff' }}
+            className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-wider uppercase leading-tight text-white"
           >
             Analytics &amp; Reports
           </h1>
           <p
-            className="text-base sm:text-lg !text-white text-stone-200 font-medium uppercase tracking-wide leading-relaxed"
-            style={{ color: '#ffffff' }}
+            className="text-base sm:text-lg font-medium uppercase tracking-wide leading-relaxed text-white"
           >
             Generate comprehensive reports on tournament activity, sentiment analysis, and audience engagement.
           </p>

@@ -8,7 +8,7 @@ import { SCHOOL_SUGGESTIONS, verificationLabels, verificationStyles } from '@/ut
 import { BadgeCheck, GraduationCap, ShieldCheck } from 'lucide-react';
 
 const inputClass =
-  'w-full p-3.5 rounded-xl bg-white text-stone-950 border border-stone-300 placeholder:text-stone-400 uppercase tracking-wide focus:border-[#FFCC37] focus:ring-2 focus:ring-[#FFCC37]/25 shadow-xs outline-none transition-all font-medium text-xs sm:text-sm';
+  'w-full p-3.5 rounded-xl bg-white text-stone-950 border border-stone-300 placeholder:text-stone-400 uppercase tracking-wide focus:border-gold focus:ring-2 focus:ring-gold/25 shadow-xs outline-none transition-all font-medium text-xs sm:text-sm';
 
 interface Props {
   profile: Profile;
@@ -62,7 +62,7 @@ export default function StudentDetails({ profile, onSaved }: Props) {
     <form onSubmit={handleSave} className="bg-white border border-stone-200/90 rounded-3xl p-6 sm:p-8 shadow-xs space-y-6 uppercase">
       <div className="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-stone-100">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-[#5B271E]/10 border border-[#5B271E]/20 text-[#5B271E] grid place-items-center shadow-2xs">
+          <div className="w-10 h-10 rounded-xl bg-maroon/10 border border-maroon/20 text-maroon grid place-items-center shadow-2xs">
             <GraduationCap className="w-5 h-5" />
           </div>
           <div>

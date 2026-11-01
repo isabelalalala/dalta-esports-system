@@ -18,7 +18,6 @@ import {
   AlertCircle,
   CircleCheck,
   Edit2,
-  ExternalLink,
   Plus,
   Radio,
   Swords,
@@ -80,8 +79,8 @@ export default function ManageStreamsPage() {
         if (streamsRes.error) throw streamsRes.error;
         if (matchesRes.error) throw matchesRes.error;
 
-        setTournament(tournRes.data);
-        setStreams(streamsRes.data || []);
+        setTournament(tournRes.data as Tournament);
+        setStreams((streamsRes.data || []) as Stream[]);
 
         const matches = (matchesRes.data || []) as Match[];
         const roundCount = matches.reduce((max, m) => Math.max(max, m.round), 0);
@@ -121,7 +120,7 @@ export default function ManageStreamsPage() {
   };
 
   const handleDelete = async (stream: Stream) => {
-    if (!confirm(`Delete stream "${stream.title}"?`)) return;
+    if (!confirm(`Delete the stream "${stream.title}"? Its viewing stats are deleted too.`)) return;
     setError('');
     try {
       const { data, error: deleteError } = await supabase
@@ -152,7 +151,7 @@ export default function ManageStreamsPage() {
     return (
       <div className="w-full p-12 text-center text-xs font-black uppercase tracking-wider text-stone-600">
         Only organizers can configure streams.{' '}
-        <Link href="/live" className="text-[#5B271E] underline hover:text-[#FFCC37]">Watch live streams</Link>
+        <Link href="/live" className="text-maroon underline hover:text-gold">Watch live streams</Link>
       </div>
     );
   }
@@ -166,25 +165,23 @@ export default function ManageStreamsPage() {
         <div className="relative z-10 w-full flex flex-wrap items-center justify-between gap-4">
           <Link
             href={`/tournaments/${id}`}
-            className="inline-flex items-center gap-1.5 text-xs font-black text-[#FFCC37] hover:text-[#FFE066] uppercase tracking-wider transition-colors"
+            className="inline-flex items-center gap-1.5 text-xs font-black text-gold hover:text-goldlight uppercase tracking-wider transition-colors"
           >
             ← Back to Tournament
           </Link>
           <span className="text-xs font-black text-stone-300 uppercase tracking-wider flex items-center gap-1.5">
-            <Radio className="w-4 h-4 text-[#FFCC37]" /> Facebook Live Broadcast
+            <Radio className="w-4 h-4 text-gold" /> Facebook Live Broadcast
           </span>
         </div>
 
         <div className="relative z-10 max-w-4xl mx-auto space-y-3 pt-2">
           <h1
-            className="text-3xl sm:text-4xl lg:text-5xl font-black !text-white text-white tracking-wider uppercase leading-tight"
-            style={{ color: '#ffffff' }}
+            className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-wider uppercase leading-tight text-white"
           >
             Manage Streams
           </h1>
           <p
-            className="text-xs sm:text-sm text-stone-200 font-semibold uppercase tracking-wider leading-relaxed"
-            style={{ color: '#ffffff' }}
+            className="text-xs sm:text-sm font-semibold uppercase tracking-wider leading-relaxed text-white"
           >
             {tournament.name} · Configure live broadcasts, link match fixtures, and manage on-air streams.
           </p>
@@ -228,7 +225,7 @@ export default function ManageStreamsPage() {
       {/* 4. Stream Feed Header */}
       <div className="flex flex-wrap items-center justify-between gap-4 border-b border-stone-200/90 pb-3">
         <div>
-          <span className="text-[11px] font-black tracking-widest text-[#5B271E] uppercase">Broadcast Roster</span>
+          <span className="text-[11px] font-black tracking-widest text-maroon uppercase">Broadcast Roster</span>
           <h2 className="text-xl sm:text-2xl font-black text-stone-950 uppercase tracking-wide">
             Configured Streams ({streams.length})
           </h2>
@@ -247,7 +244,7 @@ export default function ManageStreamsPage() {
       {/* 5. Streams Showcase Grid */}
       {streams.length === 0 && !error && !showForm && !editingId ? (
         <div className="rounded-3xl border border-stone-200/90 bg-white p-12 text-center shadow-xs flex flex-col items-center justify-center gap-3">
-          <div className="w-14 h-14 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-[#5B271E] flex items-center justify-center">
+          <div className="w-14 h-14 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-maroon flex items-center justify-center">
             <Tv className="w-7 h-7" />
           </div>
           <p className="text-stone-900 text-sm font-black uppercase tracking-wider">
@@ -291,7 +288,7 @@ export default function ManageStreamsPage() {
                     </span>
                     {stream.match_id && (
                       <span className="text-[11px] font-bold text-stone-500 uppercase tracking-wider flex items-center gap-1">
-                        <Swords className="w-3.5 h-3.5 text-[#5B271E]" />
+                        <Swords className="w-3.5 h-3.5 text-maroon" />
                         {matchLabels[stream.match_id] ?? 'Linked Match'}
                       </span>
                     )}
@@ -414,9 +411,9 @@ function StreamForm({
       className="rounded-3xl border border-amber-400/80 bg-white p-6 sm:p-8 lg:p-10 shadow-md space-y-6"
     >
       <div className="border-b border-stone-100 pb-3">
-        <span className="text-[11px] font-black tracking-widest text-[#5B271E] uppercase">Broadcast Studio</span>
+        <span className="text-[11px] font-black tracking-widest text-maroon uppercase">Broadcast Studio</span>
         <h2 className="text-xl sm:text-2xl font-black text-stone-950 uppercase tracking-wide flex items-center gap-2">
-          <Video className="w-5 h-5 text-[#5B271E]" /> {existing ? 'Edit Broadcast Stream' : 'Configure New Live Stream'}
+          <Video className="w-5 h-5 text-maroon" /> {existing ? 'Edit Broadcast Stream' : 'Configure New Live Stream'}
         </h2>
       </div>
 

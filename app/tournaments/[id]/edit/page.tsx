@@ -14,25 +14,15 @@ import PageHeroBackground from '@/components/site/PageHeroBackground';
 import {
   AlertCircle,
   Calendar,
-  CheckCircle2,
-  Clock,
   Edit3,
   Layers,
   Save,
-  ShieldAlert,
   ShieldCheck,
   Trophy,
   Users,
 } from 'lucide-react';
 
-function getGameLogo(game: string): string | null {
-  const g = (game || '').toLowerCase().trim();
-  if (g.includes('mlbb') || g.includes('mobile legends')) return '/MLBB LOGO.png';
-  if (g.includes('valo') || g.includes('valorant')) return '/VALO LOGO.png';
-  if (g.includes('tekken')) return '/TEKKEMN 8 LOGO.png';
-  if (g.includes('codm') || g.includes('call of duty')) return '/CODM LOGO.png';
-  return null;
-}
+import { getGameLogo } from '@/utils/game-logos';
 
 const inputClass =
   'w-full p-3.5 rounded-xl bg-stone-50 border border-stone-300 text-stone-950 font-bold text-xs uppercase tracking-wide outline-none focus:border-amber-600 focus:bg-white focus:ring-2 focus:ring-amber-500/20 shadow-xs transition-all';
@@ -139,11 +129,11 @@ export default function EditTournamentPage() {
       const { data: updated, error: updateError } = await supabase
         .from('tournaments')
         .update({
-          name,
-          description: description || null,
-          rules: rules || null,
+          name: name.trim(),
+          description: description.trim() || null,
+          rules: rules.trim() || null,
           game: selectedGame?.name || '',
-          game_id: gameId || null,
+          game_id: gameId,
           max_participants: parseInt(maxParticipants, 10),
           checkin_window_minutes: parseInt(checkinMinutes || '0', 10),
           requires_verification: requiresVerification,
@@ -179,27 +169,25 @@ export default function EditTournamentPage() {
         <div className="relative z-10 w-full flex flex-wrap items-center justify-between gap-4">
           <Link
             href={`/tournaments/${id}`}
-            className="inline-flex items-center gap-1.5 text-xs font-black text-[#FFCC37] hover:text-[#FFE066] uppercase tracking-wider transition-colors"
+            className="inline-flex items-center gap-1.5 text-xs font-black text-gold hover:text-goldlight uppercase tracking-wider transition-colors"
           >
             ← Back to Tournament
           </Link>
           <span className="text-xs font-black text-stone-300 uppercase tracking-wider flex items-center gap-1.5">
-            <Edit3 className="w-4 h-4 text-[#FFCC37]" /> Tournament Administration
+            <Edit3 className="w-4 h-4 text-gold" /> Tournament Administration
           </span>
         </div>
 
         <div className="relative z-10 max-w-4xl mx-auto space-y-3 pt-2">
           <h1
-            className="text-3xl sm:text-4xl lg:text-5xl font-black !text-white text-white tracking-wider uppercase leading-tight"
-            style={{ color: '#ffffff' }}
+            className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-wider uppercase leading-tight text-white"
           >
             Edit Tournament
           </h1>
           <p
-            className="text-xs sm:text-sm text-stone-200 font-semibold uppercase tracking-wider leading-relaxed"
-            style={{ color: '#ffffff' }}
+            className="text-xs sm:text-sm font-semibold uppercase tracking-wider leading-relaxed text-white"
           >
-            Editing <span className="text-[#FFCC37] font-black">{name || 'Tournament'}</span> · Configure rules, quota, verification, and schedules.
+            Editing <span className="text-gold font-black">{name || 'Tournament'}</span> · Configure rules, quota, verification, and schedules.
           </p>
         </div>
       </section>
@@ -218,16 +206,12 @@ export default function EditTournamentPage() {
         <div className="lg:col-span-5 space-y-6">
           {/* Card 1: Game Division Visual Showcase */}
           {gameLogo ? (
-            <div className="relative aspect-[4/3] max-h-[340px] w-full rounded-3xl border border-stone-800/80 bg-[#0e0c0b] overflow-hidden shadow-md flex items-center justify-center p-6 sm:p-8">
+            <div className="relative aspect-[4/3] max-h-[340px] w-full rounded-3xl border border-stone-800/80 bg-ink overflow-hidden shadow-md flex items-center justify-center p-6 sm:p-8">
               <div
-                className="absolute inset-0 pointer-events-none"
-                style={{
-                  background:
-                    'radial-gradient(circle at 85% 85%, rgba(164, 148, 140, 0.35) 0%, rgba(35, 30, 27, 0.7) 45%, #0e0c0b 100%)',
-                }}
+                className="absolute inset-0 pointer-events-none bg-logo-stage"
               />
               <div className="absolute top-4 right-4 z-10">
-                <span className="text-[10px] font-black tracking-widest px-3 py-1 rounded-md border border-[#FFCC37]/50 bg-[#FFCC37]/15 text-[#FFCC37] uppercase">
+                <span className="text-[10px] font-black tracking-widest px-3 py-1 rounded-md border border-gold/50 bg-gold/15 text-gold uppercase">
                   {cancelled ? 'Cancelled' : 'Active'}
                 </span>
               </div>
@@ -249,7 +233,7 @@ export default function EditTournamentPage() {
             </div>
           ) : (
             <div className="rounded-3xl border border-stone-200/90 bg-stone-50/70 p-8 text-center space-y-2">
-              <Trophy className="w-8 h-8 text-[#5B271E] mx-auto" />
+              <Trophy className="w-8 h-8 text-maroon mx-auto" />
               <p className="text-xs font-black text-stone-900 uppercase tracking-wider">
                 {selectedGame ? selectedGame.name : 'Select a game discipline'}
               </p>
@@ -259,9 +243,9 @@ export default function EditTournamentPage() {
           {/* Card 2: Student Verification Compliance */}
           <div className="rounded-3xl border border-stone-200/90 bg-white p-6 sm:p-8 shadow-xs space-y-4">
             <div className="border-b border-stone-100 pb-3">
-              <span className="text-[11px] font-black tracking-widest text-[#5B271E] uppercase">Compliance</span>
+              <span className="text-[11px] font-black tracking-widest text-maroon uppercase">Compliance</span>
               <h2 className="text-lg sm:text-xl font-black text-stone-950 uppercase tracking-wide flex items-center gap-2">
-                <ShieldCheck className="w-5 h-5 text-[#5B271E]" /> Student Eligibility
+                <ShieldCheck className="w-5 h-5 text-maroon" /> Student Eligibility
               </h2>
             </div>
 
@@ -328,9 +312,9 @@ export default function EditTournamentPage() {
           {/* Card 5: Core Identity */}
           <div className="rounded-3xl border border-stone-200/90 bg-white p-6 sm:p-8 lg:p-10 shadow-xs space-y-5">
             <div className="border-b border-stone-100 pb-3">
-              <span className="text-[11px] font-black tracking-widest text-[#5B271E] uppercase">Core Details</span>
+              <span className="text-[11px] font-black tracking-widest text-maroon uppercase">Core Details</span>
               <h2 className="text-xl sm:text-2xl font-black text-stone-950 uppercase tracking-wide flex items-center gap-2">
-                <Trophy className="w-5 h-5 text-[#5B271E]" /> Tournament Settings
+                <Trophy className="w-5 h-5 text-maroon" /> Tournament Settings
               </h2>
             </div>
 
@@ -385,9 +369,9 @@ export default function EditTournamentPage() {
           {/* Card 6: Participation Quota & Check-In */}
           <div className="rounded-3xl border border-stone-200/90 bg-white p-6 sm:p-8 shadow-xs space-y-5">
             <div className="border-b border-stone-100 pb-3">
-              <span className="text-[11px] font-black tracking-widest text-[#5B271E] uppercase">Roster Capacity</span>
+              <span className="text-[11px] font-black tracking-widest text-maroon uppercase">Roster Capacity</span>
               <h2 className="text-lg sm:text-xl font-black text-stone-950 uppercase tracking-wide flex items-center gap-2">
-                <Users className="w-5 h-5 text-[#5B271E]" /> Quota &amp; Check-In
+                <Users className="w-5 h-5 text-maroon" /> Quota &amp; Check-In
               </h2>
             </div>
 
@@ -438,9 +422,9 @@ export default function EditTournamentPage() {
           {/* Card 7: Timeline & Critical Dates */}
           <div className="rounded-3xl border border-stone-200/90 bg-white p-6 sm:p-8 shadow-xs space-y-5">
             <div className="border-b border-stone-100 pb-3">
-              <span className="text-[11px] font-black tracking-widest text-[#5B271E] uppercase">Schedules</span>
+              <span className="text-[11px] font-black tracking-widest text-maroon uppercase">Schedules</span>
               <h2 className="text-lg sm:text-xl font-black text-stone-950 uppercase tracking-wide flex items-center gap-2">
-                <Calendar className="w-5 h-5 text-[#5B271E]" /> Timeline Dates
+                <Calendar className="w-5 h-5 text-maroon" /> Timeline Dates
               </h2>
             </div>
 
@@ -495,9 +479,9 @@ export default function EditTournamentPage() {
           {/* Card 8: Rules & Match Format */}
           <div className="rounded-3xl border border-stone-200/90 bg-white p-6 sm:p-8 lg:p-10 shadow-xs space-y-5">
             <div className="border-b border-stone-100 pb-3">
-              <span className="text-[11px] font-black tracking-widest text-[#5B271E] uppercase">Rules &amp; Regulations</span>
+              <span className="text-[11px] font-black tracking-widest text-maroon uppercase">Rules &amp; Regulations</span>
               <h2 className="text-xl sm:text-2xl font-black text-stone-950 uppercase tracking-wide flex items-center gap-2">
-                <Layers className="w-5 h-5 text-[#5B271E]" /> Match Guidelines
+                <Layers className="w-5 h-5 text-maroon" /> Match Guidelines
               </h2>
             </div>
 

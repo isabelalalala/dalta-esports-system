@@ -3,6 +3,9 @@ import { createClient } from '@/utils/supabase/server';
 import { getErrorMessage } from '@/utils/errors';
 import { buildExport, EXPORT_ROLES, isExportType, toCsv, toXlsx } from '@/utils/exports';
 
+// Big exports page through many 1000-row requests; give them more than Vercel's 10 s default
+export const maxDuration = 60;
+
 // GET /api/exports/<type>?format=xlsx|csv&tournament=<id>&game=<id>
 // Builds the file on the server with the logged-in user's own session (RLS applies),
 // after checking the role, and logs the export before sending it.

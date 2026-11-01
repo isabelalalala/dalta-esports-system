@@ -62,7 +62,7 @@ export default function MyRegistrationsPage() {
           .in('team_id', teamIds)
           .order('registered_at', { ascending: false });
         if (regsError) throw regsError;
-        setRegistrations(data || []);
+        setRegistrations((data || []) as MyRegistration[]);
       } catch (err) {
         setError(getErrorMessage(err, 'Failed to load your registrations'));
       } finally {
@@ -114,7 +114,7 @@ export default function MyRegistrationsPage() {
           <div className="relative z-10 w-full flex flex-wrap items-center justify-between gap-4">
             <Link
               href="/dashboard"
-              className="inline-flex items-center gap-1.5 text-xs font-black text-[#FFCC37] hover:text-[#FFE066] uppercase tracking-wider transition-colors"
+              className="inline-flex items-center gap-1.5 text-xs font-black text-gold hover:text-goldlight uppercase tracking-wider transition-colors"
             >
               ← Back to Dashboard
             </Link>
@@ -134,14 +134,12 @@ export default function MyRegistrationsPage() {
 
           <div className="relative z-10 max-w-4xl mx-auto space-y-3 pt-2">
             <h1
-              className="animate-hero-title text-3xl sm:text-4xl lg:text-5xl font-black !text-white text-white tracking-wider uppercase leading-tight"
-              style={{ color: '#ffffff' }}
+              className="animate-hero-title text-3xl sm:text-4xl lg:text-5xl font-black tracking-wider uppercase leading-tight text-white"
             >
               My Registrations
             </h1>
             <p
-              className="animate-hero-tagline text-xs sm:text-sm text-stone-200 font-semibold uppercase tracking-wider leading-relaxed"
-              style={{ color: '#ffffff' }}
+              className="animate-hero-tagline text-xs sm:text-sm font-semibold uppercase tracking-wider leading-relaxed text-white"
             >
               Active tournament entries, team registration statuses, and schedule records.
             </p>
@@ -196,7 +194,7 @@ export default function MyRegistrationsPage() {
                     <div className="flex flex-wrap items-center gap-2.5">
                       <Link
                         href={`/tournaments/${reg.tournament_id}`}
-                        className="text-lg sm:text-xl font-black text-stone-950 hover:text-[#5B271E] uppercase tracking-wide transition-colors truncate"
+                        className="text-lg sm:text-xl font-black text-stone-950 hover:text-maroon uppercase tracking-wide transition-colors truncate"
                       >
                         {reg.tournaments?.name}
                       </Link>
@@ -210,7 +208,7 @@ export default function MyRegistrationsPage() {
 
                     <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs font-semibold text-stone-600 uppercase">
                       <div className="flex items-center gap-1.5">
-                        <Shield className="w-3.5 h-3.5 text-[#5B271E]" />
+                        <Shield className="w-3.5 h-3.5 text-maroon" />
                         <span className="font-black text-stone-900">{reg.teams?.name}</span>
                         {isCaptain && (
                           <span className="text-[10px] font-black px-2 py-0.5 rounded-md bg-amber-500/15 text-amber-800 border border-amber-300">
@@ -219,7 +217,7 @@ export default function MyRegistrationsPage() {
                         )}
                       </div>
                       <span>•</span>
-                      <span className="text-[#5B271E] font-black">{reg.tournaments?.game}</span>
+                      <span className="text-maroon font-black">{reg.tournaments?.game}</span>
                       <span>•</span>
                       <div className="flex items-center gap-1">
                         <Calendar className="w-3.5 h-3.5 text-stone-400" />

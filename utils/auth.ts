@@ -29,6 +29,42 @@ export function isEmailNotConfirmed(err: unknown) {
   return code === 'email_not_confirmed' || /email not confirmed/i.test(message ?? '')
 }
 
+// --- Email sending limits ---------------------------------------------------
+// Supabase refuses to send an auth email (sign-up confirmation, resend, password reset) when
+// a limit is reached, with the code over_email_send_rate_limit (HTTP 429). Two limits:
+// - the project-wide "emails per hour" (Authentication > Rate Limits; tiny without custom SMTP)
+// - the minimum gap between emails to the same address: "...only request this after 37 seconds."
+// When Supabase refuses, nothing is sent and (for sign-up) the account isn't created, so the
+// same request can simply be tried again later.
+
+// How long the "Resend" / "Try again" buttons wait (matches Supabase's per-address gap)
+export const EMAIL_COOLDOWN_SECONDS = 60
+
+type AuthErrorLike = { code?: string; status?: number; message?: string }
+
+export function isEmailRateLimited(err: unknown) {
+  if (!err || typeof err !== 'object') return false
+  const { code, status, message } = err as AuthErrorLike
+  return code === 'over_email_send_rate_limit' || (status === 429 && /email/i.test(message ?? ''))
+}
+
+// Seconds to wait before trying again: what Supabase says ("after 37 seconds"), else the default
+export function emailRetryDelay(err: unknown) {
+  const message = err && typeof err === 'object' ? (err as AuthErrorLike).message ?? '' : ''
+  const match = /after (\d+) seconds?/i.exec(message)
+  return match ? Math.max(1, Number(match[1])) : EMAIL_COOLDOWN_SECONDS
+}
+
+// A plain explanation for the person, who usually did nothing wrong
+export function emailRateLimitMessage(err: unknown, action: 'signup' | 'resend' | 'reset') {
+  const message = err && typeof err === 'object' ? (err as AuthErrorLike).message ?? '' : ''
+  if (/after \d+ seconds?/i.test(message)) {
+    return `We just sent you an email. You can ask for another one in ${emailRetryDelay(err)} seconds.`
+  }
+  const what = action === 'signup' ? 'Your account was not created yet.' : 'Nothing was sent.'
+  return `Our email service is busy because many people are signing up right now. ${what} Please try again in a minute.`
+}
+
 // Email format check for the auth forms. Stricter than the browser's type="email",
 // which accepts "juan@gmail" (no dot in the domain). Requires name@domain.tld with
 // a 2+ letter ending, no spaces, and no dots at the start, end or twice in a row.

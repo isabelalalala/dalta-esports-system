@@ -8,7 +8,7 @@ import Link from 'next/link';
 // page itself; this is only the last safety net.
 export default function ErrorPage({ error, retry }: { error: Error & { digest?: string }; retry: () => void }) {
   useEffect(() => {
-    // Visible in the browser console (and Railway logs for server errors) for debugging
+    // Visible in the browser console (and Vercel logs for server errors) for debugging
     console.error(error);
   }, [error]);
 

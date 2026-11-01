@@ -42,25 +42,25 @@ function FooterBody({ content, logo }: { content: SiteContent; logo: string }) {
           />
           <div>
             <p className="font-extrabold text-stone-950 text-xs sm:text-sm leading-tight tracking-wider uppercase">{content.footer_tagline}</p>
-            <p className="text-xs text-[#5B271E] font-bold tracking-widest mt-1">UPHSD - Molino Campus</p>
+            <p className="text-xs text-maroon font-bold tracking-widest mt-1">UPHSD - Molino Campus</p>
           </div>
         </div>
 
         <nav aria-label="Footer" className="flex flex-col gap-2">
           <p className="font-extrabold text-stone-950 text-xs tracking-widest mb-1">Pages</p>
-          <Link href="/about" className="hover:text-[#FFCC37] font-semibold tracking-wide transition-colors">About Us</Link>
-          <Link href="/divisions" className="hover:text-[#FFCC37] font-semibold tracking-wide transition-colors">Esports Division</Link>
-          <Link href="/community" className="hover:text-[#FFCC37] font-semibold tracking-wide transition-colors">Community</Link>
-          <Link href="/tournaments" className="hover:text-[#FFCC37] font-semibold tracking-wide transition-colors">Tournaments</Link>
+          <Link href="/about" className="hover:text-gold font-semibold tracking-wide transition-colors">About Us</Link>
+          <Link href="/divisions" className="hover:text-gold font-semibold tracking-wide transition-colors">Esports Division</Link>
+          <Link href="/community" className="hover:text-gold font-semibold tracking-wide transition-colors">Community</Link>
+          <Link href="/tournaments" className="hover:text-gold font-semibold tracking-wide transition-colors">Tournaments</Link>
         </nav>
 
         <nav aria-label="Legal" className="flex flex-col gap-2">
           <p className="font-extrabold text-stone-950 text-xs tracking-widest mb-1">Compliance & Policies</p>
-          <Link href="/privacy" className="hover:text-[#FFCC37] font-semibold tracking-wide transition-colors">Privacy Notice</Link>
-          <Link href="/terms" className="hover:text-[#FFCC37] font-semibold tracking-wide transition-colors">Terms of Service</Link>
-          <Link href="/conduct" className="hover:text-[#FFCC37] font-semibold tracking-wide transition-colors">Code of Conduct</Link>
-          <Link href="/cookies" className="hover:text-[#FFCC37] font-semibold tracking-wide transition-colors">Cookie Policy</Link>
-          <Link href="/security" className="hover:text-[#FFCC37] font-semibold tracking-wide transition-colors">Security</Link>
+          <Link href="/privacy" className="hover:text-gold font-semibold tracking-wide transition-colors">Privacy Notice</Link>
+          <Link href="/terms" className="hover:text-gold font-semibold tracking-wide transition-colors">Terms of Service</Link>
+          <Link href="/conduct" className="hover:text-gold font-semibold tracking-wide transition-colors">Code of Conduct</Link>
+          <Link href="/cookies" className="hover:text-gold font-semibold tracking-wide transition-colors">Cookie Policy</Link>
+          <Link href="/security" className="hover:text-gold font-semibold tracking-wide transition-colors">Security</Link>
         </nav>
 
         <div>
@@ -69,7 +69,7 @@ function FooterBody({ content, logo }: { content: SiteContent; logo: string }) {
           <ul className="flex flex-col gap-2">
             {socials.map((s) => (
               <li key={s.label}>
-                <a href={s.href} target="_blank" rel="noreferrer" className="hover:text-[#FFCC37] font-semibold tracking-wide transition-colors">
+                <a href={s.href} target="_blank" rel="noreferrer" className="hover:text-gold font-semibold tracking-wide transition-colors">
                   {s.label} →
                 </a>
               </li>

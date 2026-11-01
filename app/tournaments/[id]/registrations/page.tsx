@@ -9,9 +9,10 @@ import { ACTIVE_REGISTRATION_STATUSES } from '@/utils/types';
 import type { Registration, RegistrationStatus, Team, Tournament } from '@/utils/types';
 import ExportButtons from '@/components/ExportButtons';
 import PageLoading from '@/components/PageLoading';
+import PageError from '@/components/PageError';
 import { usePageTitle } from '@/utils/page-title';
 import PageHeroBackground from '@/components/site/PageHeroBackground';
-import { AlertCircle, CheckCircle2, ShieldCheck, Users, XCircle } from 'lucide-react';
+import { AlertCircle, Users } from 'lucide-react';
 
 const statusStyles: Record<RegistrationStatus, string> = {
   pending: 'bg-amber-500/15 text-amber-800 border-amber-500/40',
@@ -27,6 +28,8 @@ export default function RegistrationsPage() {
   const [tournament, setTournament] = useState<Tournament | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  // Only admin/staff review registrations (RLS enforces it too)
+  const [role, setRole] = useState('');
   const [busyId, setBusyId] = useState<string | null>(null);
 
   const params = useParams();
@@ -35,6 +38,11 @@ export default function RegistrationsPage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        const { data: myRole, error: roleError } = await supabase.rpc('get_my_role');
+        if (roleError) throw roleError;
+        setRole(myRole ?? '');
+        if (myRole !== 'admin' && myRole !== 'staff') return;
+
         const { data: tournamentData, error: tournError } = await supabase
           .from('tournaments')
           .select('*')
@@ -42,7 +50,7 @@ export default function RegistrationsPage() {
           .single();
 
         if (tournError) throw tournError;
-        setTournament(tournamentData);
+        setTournament(tournamentData as Tournament);
 
         const { data: regsData, error: regsError } = await supabase
           .from('tournament_registrations')
@@ -51,7 +59,7 @@ export default function RegistrationsPage() {
           .order('registered_at', { ascending: false });
 
         if (regsError) throw regsError;
-        setRegistrations(regsData || []);
+        setRegistrations((regsData || []) as Registration[]);
       } catch (err) {
         setError(getErrorMessage(err, 'Failed to load registrations'));
       } finally {
@@ -113,6 +121,12 @@ export default function RegistrationsPage() {
   if (loading) {
     return <PageLoading label="Loading registrations..." />;
   }
+  if (role && role !== 'admin' && role !== 'staff') {
+    return <PageError message="Only organizers can review registrations." backHref={`/tournaments/${id}`} backLabel="Back to the tournament" />;
+  }
+  if (!tournament) {
+    return <PageError message={error || 'Tournament not found'} backHref="/tournaments" backLabel="Back to Tournaments" />;
+  }
 
   const activeCount = registrations.filter((r) => ACTIVE_REGISTRATION_STATUSES.includes(r.status)).length;
 
@@ -125,25 +139,23 @@ export default function RegistrationsPage() {
         <div className="relative z-10 w-full flex flex-wrap items-center justify-between gap-4">
           <Link
             href={`/tournaments/${id}`}
-            className="inline-flex items-center gap-1.5 text-xs font-black text-[#FFCC37] hover:text-[#FFE066] uppercase tracking-wider transition-colors"
+            className="inline-flex items-center gap-1.5 text-xs font-black text-gold hover:text-goldlight uppercase tracking-wider transition-colors"
           >
             ← Back to Tournament
           </Link>
           <span className="text-xs font-black text-stone-300 uppercase tracking-wider flex items-center gap-1.5">
-            <Users className="w-4 h-4 text-[#FFCC37]" /> Team Registrations
+            <Users className="w-4 h-4 text-gold" /> Team Registrations
           </span>
         </div>
 
         <div className="relative z-10 max-w-4xl mx-auto space-y-3 pt-2">
           <h1
-            className="animate-hero-title text-3xl sm:text-4xl lg:text-5xl font-black !text-white text-white tracking-wider uppercase leading-tight"
-            style={{ color: '#ffffff' }}
+            className="animate-hero-title text-3xl sm:text-4xl lg:text-5xl font-black tracking-wider uppercase leading-tight text-white"
           >
             {tournament?.name}
           </h1>
           <p
-            className="animate-hero-tagline text-xs sm:text-sm text-stone-200 font-semibold uppercase tracking-wider leading-relaxed"
-            style={{ color: '#ffffff' }}
+            className="animate-hero-tagline text-xs sm:text-sm font-semibold uppercase tracking-wider leading-relaxed text-white"
           >
             Manage team registrations, verify student eligibility, and configure slots.
           </p>
@@ -157,7 +169,7 @@ export default function RegistrationsPage() {
           <ExportButtons type="rosters" label="Team rosters" params={{ tournament: id }} />
         </div>
         <div className="text-xs font-black text-stone-600 uppercase tracking-wider">
-          Active: <span className="text-[#5B271E] font-black">{activeCount}</span> / {tournament?.max_participants || '∞'} Teams
+          Active: <span className="text-maroon font-black">{activeCount}</span> / {tournament?.max_participants || '∞'} Teams
         </div>
       </div>
 

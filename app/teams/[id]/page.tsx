@@ -26,7 +26,7 @@ import {
 } from 'lucide-react';
 
 const inputClass =
-  'w-full p-3.5 rounded-xl bg-white text-stone-950 border border-stone-300 placeholder:text-stone-400 uppercase tracking-wide focus:border-[#FFCC37] focus:ring-2 focus:ring-[#FFCC37]/25 shadow-xs outline-none transition-all font-medium text-xs sm:text-sm';
+  'w-full p-3.5 rounded-xl bg-white text-stone-950 border border-stone-300 placeholder:text-stone-400 uppercase tracking-wide focus:border-gold focus:ring-2 focus:ring-gold/25 shadow-xs outline-none transition-all font-medium text-xs sm:text-sm';
 
 export default function ManageTeamPage() {
   usePageTitle('Manage Team');
@@ -76,7 +76,7 @@ export default function ManageTeamPage() {
           { p_team_id: id }
         );
         if (rosterError) throw rosterError;
-        setRoster(rosterData || []);
+        setRoster((rosterData || []) as RosterMember[]);
 
         if (teamData.captain_id === session.user.id) {
           const { data: invitesData, error: invitesError } = await supabase.rpc(
@@ -265,8 +265,10 @@ export default function ManageTeamPage() {
     setError('');
 
     try {
-      const { error: deleteError } = await supabase.from('teams').delete().eq('id', id);
+      // .select() returns the deleted row. If RLS blocked the delete, nothing comes back.
+      const { data, error: deleteError } = await supabase.from('teams').delete().eq('id', id).select('id');
       if (deleteError) throw deleteError;
+      if (!data || data.length === 0) throw new Error('Only the captain can delete this team.');
       router.push('/teams');
     } catch (err) {
       setError(getErrorMessage(err, 'Failed to delete team'));
@@ -306,13 +308,13 @@ export default function ManageTeamPage() {
           <div className="relative z-10 w-full flex flex-wrap items-center justify-between gap-4">
             <Link
               href="/teams"
-              className="inline-flex items-center gap-1.5 text-xs font-black text-[#FFCC37] hover:text-[#FFE066] uppercase tracking-wider transition-colors"
+              className="inline-flex items-center gap-1.5 text-xs font-black text-gold hover:text-goldlight uppercase tracking-wider transition-colors"
             >
               ← Back to My Teams
             </Link>
 
             <div className="flex flex-wrap items-center gap-2">
-              <span className="text-[10px] sm:text-xs font-black px-3 py-1 rounded-md border border-[#FFCC37]/50 bg-[#FFCC37]/15 text-[#FFCC37] uppercase tracking-wider shadow-2xs">
+              <span className="text-[10px] sm:text-xs font-black px-3 py-1 rounded-md border border-gold/50 bg-gold/15 text-gold uppercase tracking-wider shadow-2xs">
                 {team.games?.name}
               </span>
               <span className="text-[10px] sm:text-xs font-black px-3.5 py-1 rounded-md border border-white/20 bg-white/10 text-stone-200 uppercase tracking-widest backdrop-blur-xs shadow-2xs">
@@ -328,14 +330,12 @@ export default function ManageTeamPage() {
 
           <div className="relative z-10 max-w-4xl mx-auto space-y-3 pt-2">
             <h1
-              className="animate-hero-title text-3xl sm:text-4xl lg:text-5xl font-black !text-white text-white tracking-wider uppercase leading-tight"
-              style={{ color: '#ffffff' }}
+              className="animate-hero-title text-3xl sm:text-4xl lg:text-5xl font-black tracking-wider uppercase leading-tight text-white"
             >
               {team.name}
             </h1>
             <p
-              className="animate-hero-tagline text-xs sm:text-sm text-stone-200 font-semibold uppercase tracking-wider flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5"
-              style={{ color: '#ffffff' }}
+              className="animate-hero-tagline text-xs sm:text-sm font-semibold uppercase tracking-wider flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 text-white"
             >
               <span>{team.games?.name} Squad</span>
               <span>•</span>
@@ -370,7 +370,7 @@ export default function ManageTeamPage() {
         <div className="animate-stagger-1 rounded-3xl border border-stone-200/90 bg-white p-6 sm:p-8 shadow-xs space-y-5">
           <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-stone-100">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-[#5B271E]/10 border border-[#5B271E]/20 text-[#5B271E] grid place-items-center shadow-2xs">
+              <div className="w-10 h-10 rounded-xl bg-maroon/10 border border-maroon/20 text-maroon grid place-items-center shadow-2xs">
                 <Shield className="w-5 h-5" />
               </div>
               <div>
@@ -388,7 +388,7 @@ export default function ManageTeamPage() {
                 onClick={startEditing}
                 className="rounded-xl border border-stone-300 hover:border-amber-400 bg-white text-stone-800 font-bold px-4 py-2 text-xs uppercase tracking-wider shadow-2xs hover:-translate-y-0.5 transition-all inline-flex items-center gap-1.5 cursor-pointer"
               >
-                <Edit2 className="w-3.5 h-3.5 text-[#5B271E]" /> Edit Squad
+                <Edit2 className="w-3.5 h-3.5 text-maroon" /> Edit Squad
               </button>
             )}
           </div>
@@ -456,7 +456,7 @@ export default function ManageTeamPage() {
         <div className="animate-stagger-2 rounded-3xl border border-stone-200/90 bg-white p-6 sm:p-8 shadow-xs space-y-6">
           <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-stone-100">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-[#5B271E]/10 border border-[#5B271E]/20 text-[#5B271E] grid place-items-center shadow-2xs">
+              <div className="w-10 h-10 rounded-xl bg-maroon/10 border border-maroon/20 text-maroon grid place-items-center shadow-2xs">
                 <Users className="w-5 h-5" />
               </div>
               <div>
@@ -484,7 +484,7 @@ export default function ManageTeamPage() {
             {roster.map((member) => (
               <div
                 key={member.user_id}
-                className="p-4 sm:p-5 rounded-2xl border border-stone-200/80 bg-stone-50/60 hover:bg-white hover:border-[#FFCC37]/70 transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-2xs"
+                className="p-4 sm:p-5 rounded-2xl border border-stone-200/80 bg-stone-50/60 hover:bg-white hover:border-gold/70 transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-2xs"
               >
                 <div>
                   <div className="flex items-center gap-2">
@@ -492,14 +492,14 @@ export default function ManageTeamPage() {
                       {member.ign || <span className="text-stone-400 italic">No IGN</span>}
                     </p>
                     {member.role === 'captain' && (
-                      <span className="inline-flex items-center gap-1 text-[10px] font-black px-2 py-0.5 rounded-md bg-[#5B271E] text-white uppercase tracking-wider">
-                        <Crown className="w-3 h-3 text-[#FFCC37]" /> Captain
+                      <span className="inline-flex items-center gap-1 text-[10px] font-black px-2 py-0.5 rounded-md bg-maroon text-white uppercase tracking-wider">
+                        <Crown className="w-3 h-3 text-gold" /> Captain
                       </span>
                     )}
                     <VerifiedBadge verified={member.is_verified} />
                   </div>
                   <p className="text-xs text-stone-500 font-semibold tracking-wide uppercase mt-1">
-                    {member.in_game_role && <span className="text-[#5B271E] font-extrabold">{member.in_game_role}</span>}
+                    {member.in_game_role && <span className="text-maroon font-extrabold">{member.in_game_role}</span>}
                     {member.in_game_role && member.full_name && <span> · </span>}
                     {member.full_name && <span>{member.full_name}</span>}
                   </p>
@@ -537,7 +537,7 @@ export default function ManageTeamPage() {
         {isCaptain && (
           <div className="animate-stagger-3 rounded-3xl border border-stone-200/90 bg-white p-6 sm:p-8 shadow-xs space-y-6">
             <div className="flex items-center gap-3 pb-4 border-b border-stone-100">
-              <div className="w-10 h-10 rounded-xl bg-[#5B271E]/10 border border-[#5B271E]/20 text-[#5B271E] grid place-items-center shadow-2xs">
+              <div className="w-10 h-10 rounded-xl bg-maroon/10 border border-maroon/20 text-maroon grid place-items-center shadow-2xs">
                 <UserPlus className="w-5 h-5" />
               </div>
               <div>

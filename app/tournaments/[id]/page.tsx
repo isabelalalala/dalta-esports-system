@@ -31,7 +31,6 @@ import {
   ExternalLink,
   MessageSquare,
   ShieldAlert,
-  Sparkles,
   Swords,
   Target,
   Trash2,
@@ -40,24 +39,7 @@ import {
   Users,
 } from 'lucide-react';
 
-function getGameLogo(game: string, gameId?: string | null): string | null {
-  const g = (game || '').toLowerCase().trim();
-  const id = (gameId || '').toLowerCase().trim();
-
-  if (g.includes('mlbb') || g.includes('mobile legends') || id.includes('mlbb')) {
-    return '/MLBB LOGO.png';
-  }
-  if (g.includes('valo') || g.includes('valorant') || id.includes('valo')) {
-    return '/VALO LOGO.png';
-  }
-  if (g.includes('tekken') || id.includes('tekken')) {
-    return '/TEKKEMN 8 LOGO.png';
-  }
-  if (g.includes('codm') || g.includes('call of duty') || id.includes('cod')) {
-    return '/CODM LOGO.png';
-  }
-  return null;
-}
+import { getGameLogo } from '@/utils/game-logos';
 
 export default function TournamentDetailsPage() {
   usePageTitle('Tournament');
@@ -96,12 +78,14 @@ export default function TournamentDetailsPage() {
   };
 
   useEffect(() => {
-    if (typeof window !== 'undefined' && window.location.hash === '#register') {
+    // A link to /tournaments/<id>#register opens the form once the page has loaded.
+    // The state is set inside the timer (not directly in the effect) to avoid an extra render.
+    if (loading || window.location.hash !== '#register') return;
+    const timer = setTimeout(() => {
       setShowForm(true);
-      setTimeout(() => {
-        registrationRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }, 300);
-    }
+      registrationRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 300);
+    return () => clearTimeout(timer);
   }, [loading]);
 
   useEffect(() => {
@@ -119,7 +103,7 @@ export default function TournamentDetailsPage() {
           .eq('id', session.user.id)
           .single();
         if (profileError) throw profileError;
-        setProfile(profileData);
+        setProfile(profileData as Profile);
 
         const [tournRes, regsRes, matchesRes, annRes, streamsRes] = await Promise.all([
           supabase
@@ -160,11 +144,11 @@ export default function TournamentDetailsPage() {
 
         const data = tournRes.data;
         const matchesData = matchesRes.data;
-        setTournament(data);
-        setRegistrations(regsRes.data || []);
-        setMatches(matchesData || []);
+        setTournament(data as Tournament);
+        setRegistrations((regsRes.data || []) as Registration[]);
+        setMatches((matchesData || []) as Match[]);
         setAnnouncements(annRes.data || []);
-        setLiveStreams(streamsRes.data || []);
+        setLiveStreams((streamsRes.data || []) as Stream[]);
 
         const bracketTeamIds = new Set<string>();
         for (const m of matchesData || []) {
@@ -342,7 +326,7 @@ export default function TournamentDetailsPage() {
         <div className="relative z-10 w-full flex flex-wrap items-center justify-between gap-4">
           <Link
             href="/tournaments"
-            className="inline-flex items-center gap-1.5 text-xs font-black text-[#FFCC37] hover:text-[#FFE066] uppercase tracking-wider transition-colors"
+            className="inline-flex items-center gap-1.5 text-xs font-black text-gold hover:text-goldlight uppercase tracking-wider transition-colors"
           >
             ← Back to Tournaments
           </Link>
@@ -361,16 +345,14 @@ export default function TournamentDetailsPage() {
         {/* Title & Metadata */}
         <div className="relative z-10 max-w-4xl mx-auto space-y-3 pt-2">
           <h1
-            className="animate-hero-title text-3xl sm:text-4xl lg:text-5xl font-black !text-white text-white tracking-wider uppercase leading-tight"
-            style={{ color: '#ffffff' }}
+            className="animate-hero-title text-3xl sm:text-4xl lg:text-5xl font-black tracking-wider uppercase leading-tight text-white"
           >
             {tournament.name}
           </h1>
           <p
-            className="animate-hero-tagline text-xs sm:text-sm text-stone-200 font-semibold uppercase tracking-wider flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5"
-            style={{ color: '#ffffff' }}
+            className="animate-hero-tagline text-xs sm:text-sm font-semibold uppercase tracking-wider flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 text-white"
           >
-            <span className="text-[#FFCC37] font-black">{tournament.game}</span>
+            <span className="text-gold font-black">{tournament.game}</span>
             <span>•</span>
             <span>{formatDate(tournament.start_date)} – {formatDate(tournament.end_date)}</span>
             <span>•</span>
@@ -384,10 +366,10 @@ export default function TournamentDetailsPage() {
           <CalendarLinks kind="tournament" id={tournament.id} />
           <Link
             href={`/t/${tournament.id}`}
-            className="px-4 py-2 rounded-xl border border-white/20 bg-white/10 hover:bg-white/20 hover:border-[#FFCC37] text-white text-xs font-black tracking-wider transition-all inline-flex items-center gap-1.5"
+            className="px-4 py-2 rounded-xl border border-white/20 bg-white/10 hover:bg-white/20 hover:border-gold text-white text-xs font-black tracking-wider transition-all inline-flex items-center gap-1.5"
           >
             <span>Public Page</span>
-            <ExternalLink className="w-3.5 h-3.5 text-[#FFCC37]" />
+            <ExternalLink className="w-3.5 h-3.5 text-gold" />
           </Link>
         </div>
       </section>
@@ -435,17 +417,13 @@ export default function TournamentDetailsPage() {
         {/* Left Column: Constrained Game Media Card */}
         {logo ? (
           <div className="lg:col-span-5 w-full">
-            <div className="relative aspect-[4/3] max-h-[380px] w-full rounded-3xl border border-stone-800/80 bg-[#0e0c0b] overflow-hidden shadow-md flex items-center justify-center p-6 sm:p-8">
+            <div className="relative aspect-[4/3] max-h-[380px] w-full rounded-3xl border border-stone-800/80 bg-ink overflow-hidden shadow-md flex items-center justify-center p-6 sm:p-8">
               {/* Radial gradient spotlight matching division cards */}
               <div
-                className="absolute inset-0 pointer-events-none"
-                style={{
-                  background:
-                    'radial-gradient(circle at 85% 85%, rgba(164, 148, 140, 0.35) 0%, rgba(35, 30, 27, 0.7) 45%, #0e0c0b 100%)',
-                }}
+                className="absolute inset-0 pointer-events-none bg-logo-stage"
               />
               <div className="absolute top-4 right-4 z-20 pointer-events-none">
-                <span className="text-[10px] font-black tracking-widest px-3 py-1.5 rounded-md border border-[#FFCC37]/60 bg-[#0e0c0b]/85 text-[#FFCC37] uppercase backdrop-blur-md shadow-md">
+                <span className="text-[10px] font-black tracking-widest px-3 py-1.5 rounded-md border border-gold/60 bg-ink/85 text-gold uppercase backdrop-blur-md shadow-md">
                   {statusLabels[status]}
                 </span>
               </div>
@@ -472,7 +450,7 @@ export default function TournamentDetailsPage() {
         <div className={logo ? 'lg:col-span-7 w-full space-y-6' : 'w-full space-y-6'}>
           <div className="rounded-3xl border border-stone-200/90 bg-white p-6 sm:p-8 lg:p-10 shadow-xs space-y-5">
             <div className="border-b border-stone-100 pb-4 space-y-1">
-              <span className="text-[11px] font-black tracking-widest text-[#5B271E] uppercase">
+              <span className="text-[11px] font-black tracking-widest text-maroon uppercase">
                 Competition Details
               </span>
               <h2 className="text-xl sm:text-2xl font-black text-stone-950 uppercase tracking-wide">
@@ -506,14 +484,14 @@ export default function TournamentDetailsPage() {
                   <div className="rounded-2xl border-2 border-amber-400/90 bg-amber-50/40 p-5 sm:p-6 space-y-4 animate-hero-entrance">
                     <div className="flex items-center justify-between gap-2 border-b border-amber-200/80 pb-3">
                       <div>
-                        <span className="text-[10px] font-black tracking-widest text-[#5B271E] uppercase">
+                        <span className="text-[10px] font-black tracking-widest text-maroon uppercase">
                           Team Enrollment
                         </span>
                         <h3 className="text-base sm:text-lg font-black text-stone-950 uppercase tracking-wide">
                           Register Your Squad ({tournament.game})
                         </h3>
                       </div>
-                      <span className="text-[10px] font-black px-2.5 py-1 rounded-md bg-[#5B271E] text-white uppercase tracking-wider">
+                      <span className="text-[10px] font-black px-2.5 py-1 rounded-md bg-maroon text-white uppercase tracking-wider">
                         Active Step
                       </span>
                     </div>
@@ -530,7 +508,7 @@ export default function TournamentDetailsPage() {
                         {teams.length === 0 ? (
                           <div className="rounded-xl bg-red-500/10 border border-red-500/30 p-4 text-red-700 text-xs font-bold uppercase tracking-wider">
                             You don&apos;t captain a {tournament.game} team yet. Create one first on the{' '}
-                            <Link href="/teams" className="font-black underline hover:text-[#5B271E]">
+                            <Link href="/teams" className="font-black underline hover:text-maroon">
                               Teams
                             </Link>{' '}
                             page.
@@ -540,7 +518,7 @@ export default function TournamentDetailsPage() {
                             id="register-team"
                             value={selectedTeamId}
                             onChange={(e) => setSelectedTeamId(e.target.value)}
-                            className="w-full p-3.5 rounded-xl bg-white border border-stone-300 text-stone-950 font-bold text-xs uppercase tracking-wide outline-none focus:border-[#FFCC37] focus:ring-2 focus:ring-[#FFCC37]/25 shadow-xs transition-all"
+                            className="w-full p-3.5 rounded-xl bg-white border border-stone-300 text-stone-950 font-bold text-xs uppercase tracking-wide outline-none focus:border-gold focus:ring-2 focus:ring-gold/25 shadow-xs transition-all"
                             required
                           >
                             <option value="">-- Choose Roster --</option>
@@ -555,7 +533,7 @@ export default function TournamentDetailsPage() {
 
                       {blockingMembers.length > 0 && (
                         <div className="rounded-2xl bg-amber-500/15 border border-amber-400 p-4 text-amber-950 text-xs font-semibold uppercase tracking-wider space-y-2.5">
-                          <div className="flex items-center gap-2 font-black text-[#5B271E]">
+                          <div className="flex items-center gap-2 font-black text-maroon">
                             <ShieldAlert className="h-4 w-4" />
                             <span>Student Verification Required</span>
                           </div>
@@ -612,7 +590,7 @@ export default function TournamentDetailsPage() {
               className="rounded-2xl border border-stone-200/90 bg-stone-50/70 p-5 shadow-2xs hover:bg-white hover:border-amber-400/50 hover:shadow-xs transition-all space-y-2"
             >
               <div className="flex items-center gap-2 text-stone-500">
-                <Icon className="h-4 w-4 text-[#5B271E]" />
+                <Icon className="h-4 w-4 text-maroon" />
                 <span className="text-[10px] font-black uppercase tracking-wider text-stone-500">{d.label}</span>
               </div>
               <p className="text-sm sm:text-base font-black text-stone-950 uppercase tracking-wide break-words">{d.value}</p>
@@ -625,7 +603,7 @@ export default function TournamentDetailsPage() {
       {announcements.length > 0 && (
         <section className="space-y-4">
           <div className="border-b border-stone-200/90 pb-3">
-            <span className="text-[11px] font-black tracking-widest text-[#5B271E] uppercase">Updates</span>
+            <span className="text-[11px] font-black tracking-widest text-maroon uppercase">Updates</span>
             <h2 className="text-xl sm:text-2xl font-black text-stone-950 uppercase tracking-wide">Announcements</h2>
           </div>
           <div className="space-y-3">
@@ -642,7 +620,7 @@ export default function TournamentDetailsPage() {
         className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-5 sm:p-6 rounded-3xl border border-amber-500/25 bg-amber-500/5 hover:bg-amber-500/10 hover:border-amber-500/40 text-stone-950 transition-all shadow-2xs group"
       >
         <div className="flex items-center gap-3">
-          <span className="p-3 rounded-2xl bg-white border border-amber-400/40 text-[#5B271E] group-hover:bg-[#FFCC37] group-hover:text-stone-950 transition-colors shadow-2xs">
+          <span className="p-3 rounded-2xl bg-white border border-amber-400/40 text-maroon group-hover:bg-gold group-hover:text-stone-950 transition-colors shadow-2xs">
             <MessageSquare className="h-5 w-5" />
           </span>
           <div>
@@ -654,7 +632,7 @@ export default function TournamentDetailsPage() {
             </p>
           </div>
         </div>
-        <span className="text-xs font-black text-[#5B271E] group-hover:text-[#FFCC37] uppercase tracking-widest shrink-0 self-end sm:self-center transition-colors">
+        <span className="text-xs font-black text-maroon group-hover:text-gold uppercase tracking-widest shrink-0 self-end sm:self-center transition-colors">
           Give Feedback →
         </span>
       </Link>
@@ -662,7 +640,7 @@ export default function TournamentDetailsPage() {
       {/* 8. Rules Section */}
       <section className="rounded-3xl border border-stone-200/90 bg-white p-6 sm:p-8 lg:p-10 shadow-xs space-y-4">
         <div className="border-b border-stone-100 pb-3">
-          <span className="text-[11px] font-black tracking-widest text-[#5B271E] uppercase">Governance</span>
+          <span className="text-[11px] font-black tracking-widest text-maroon uppercase">Governance</span>
           <h2 className="text-xl sm:text-2xl font-black text-stone-950 uppercase tracking-wide">Rules &amp; Regulations</h2>
         </div>
         {tournament.rules ? (
@@ -680,12 +658,12 @@ export default function TournamentDetailsPage() {
       <section className="rounded-3xl border border-stone-200/90 bg-white p-6 sm:p-8 lg:p-10 shadow-xs space-y-5">
         <div className="border-b border-stone-100 pb-3 flex flex-wrap items-center justify-between gap-3">
           <div>
-            <span className="text-[11px] font-black tracking-widest text-[#5B271E] uppercase">Playoffs</span>
+            <span className="text-[11px] font-black tracking-widest text-maroon uppercase">Playoffs</span>
             <h2 className="text-xl sm:text-2xl font-black text-stone-950 uppercase tracking-wide">Tournament Bracket</h2>
           </div>
           {matches.length > 0 && !isOrganizer && (
             <div className="flex items-center gap-1.5 text-xs text-stone-600 font-black uppercase tracking-wider">
-              <Target className="h-4 w-4 text-[#5B271E]" />
+              <Target className="h-4 w-4 text-maroon" />
               <span>Pick&apos;em enabled: pick the winner before match starts</span>
             </div>
           )}
@@ -715,14 +693,14 @@ export default function TournamentDetailsPage() {
         <section className="rounded-3xl border border-stone-200/90 bg-white p-6 sm:p-8 lg:p-10 shadow-xs space-y-4">
           <div className="flex flex-wrap items-center justify-between gap-2 border-b border-stone-100 pb-3">
             <div>
-              <span className="text-[11px] font-black tracking-widest text-[#5B271E] uppercase">Community</span>
+              <span className="text-[11px] font-black tracking-widest text-maroon uppercase">Community</span>
               <h2 className="text-xl sm:text-2xl font-black text-stone-950 uppercase tracking-wide flex items-center gap-2">
-                <Target className="h-5 w-5 text-[#5B271E]" /> Pick&apos;em Leaderboard
+                <Target className="h-5 w-5 text-maroon" /> Pick&apos;em Leaderboard
               </h2>
             </div>
             <Link
               href={`/tournaments/${id}/predictions`}
-              className="text-xs font-black text-[#5B271E] hover:text-[#FFCC37] uppercase tracking-wider transition-colors"
+              className="text-xs font-black text-maroon hover:text-gold uppercase tracking-wider transition-colors"
             >
               Full Leaderboard →
             </Link>
@@ -734,7 +712,7 @@ export default function TournamentDetailsPage() {
       {/* 11. Approved Teams List */}
       <section className="rounded-3xl border border-stone-200/90 bg-white p-6 sm:p-8 lg:p-10 shadow-xs space-y-4">
         <div className="border-b border-stone-100 pb-3">
-          <span className="text-[11px] font-black tracking-widest text-[#5B271E] uppercase">Roster</span>
+          <span className="text-[11px] font-black tracking-widest text-maroon uppercase">Roster</span>
           <h2 className="text-xl sm:text-2xl font-black text-stone-950 uppercase tracking-wide">
             Approved Teams ({approvedTeams.length})
           </h2>
@@ -765,7 +743,7 @@ export default function TournamentDetailsPage() {
       {isOrganizer && (
         <section className="rounded-3xl border border-amber-500/30 bg-amber-500/5 p-6 sm:p-8 lg:p-10 shadow-xs space-y-5">
           <div className="border-b border-amber-500/20 pb-3">
-            <span className="text-[11px] font-black tracking-widest text-[#5B271E] uppercase">Operations</span>
+            <span className="text-[11px] font-black tracking-widest text-maroon uppercase">Operations</span>
             <h2 className="text-xl sm:text-2xl font-black text-stone-950 uppercase tracking-wide">
               Admin &amp; Organizer Panel
             </h2>
@@ -789,7 +767,7 @@ export default function TournamentDetailsPage() {
                 href={`/tournaments/${id}/matches`}
                 className="px-5 py-2.5 rounded-xl bg-white hover:bg-stone-50 text-stone-950 font-black text-xs uppercase tracking-widest border border-stone-200 shadow-xs hover:-translate-y-0.5 transition-all inline-flex items-center gap-2"
               >
-                <Swords className="w-3.5 h-3.5 text-[#5B271E]" />
+                <Swords className="w-3.5 h-3.5 text-maroon" />
                 <span>Manage Matches</span>
               </Link>
             )}
@@ -804,7 +782,7 @@ export default function TournamentDetailsPage() {
               href={`/tournaments/${id}/registrations`}
               className="px-5 py-2.5 rounded-xl bg-white hover:bg-stone-50 text-stone-950 hover:text-purple-700 font-black text-xs uppercase tracking-widest border border-stone-200 hover:border-purple-300 shadow-xs hover:-translate-y-0.5 transition-all inline-flex items-center gap-2"
             >
-              <Users className="w-3.5 h-3.5 text-[#5B271E]" />
+              <Users className="w-3.5 h-3.5 text-maroon" />
               <span>View Registrations</span>
             </Link>
             <button

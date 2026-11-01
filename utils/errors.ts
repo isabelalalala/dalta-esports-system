@@ -31,7 +31,7 @@ export function getErrorMessage(err: unknown, fallback: string) {
     // Supabase Auth (login, sign-up, password changes)
     case 'invalid_credentials': return 'Wrong email or password.';
     case 'over_request_rate_limit': return 'Too many attempts. Please wait a few minutes and try again.';
-    case 'over_email_send_rate_limit': return 'Too many emails were sent. Please wait a while before asking for another one.';
+    case 'over_email_send_rate_limit': return 'Too many emails are being sent right now. Please wait a minute and try again.';
     case 'weak_password': return 'This password is too weak. Use at least 10 characters with uppercase and lowercase letters, a number and a symbol.';
     case 'email_address_invalid': return "This email address can't be used. Please check it or use another one.";
     case 'same_password': return 'The new password must be different from your current one.';

@@ -23,7 +23,7 @@ export const getPublicTournament = cache(async (id: string): Promise<PublicTourn
   if (!/^[0-9a-f-]{36}$/i.test(id)) return null;
   const { data, error } = await createPublicClient().rpc('get_public_tournament', { p_tournament_id: id });
   if (error || !data) return null;
-  return data as PublicTournament;
+  return data as unknown as PublicTournament;
 });
 
 // Team id -> name, for the bracket and schedule

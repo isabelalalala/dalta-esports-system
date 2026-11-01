@@ -48,7 +48,8 @@ export default function ResetPasswordPage() {
 
     setSaving(true);
     try {
-      const { error: updateError } = await supabase.auth.updateUser({ password });
+      // The new password passed the rules above, so lift the weak-password gate (proxy.ts)
+      const { error: updateError } = await supabase.auth.updateUser({ password, data: { weak_password: false } });
       if (updateError) throw updateError;
       router.push('/dashboard');
     } catch (err) {

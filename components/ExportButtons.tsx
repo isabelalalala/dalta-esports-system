@@ -47,12 +47,12 @@ export default function ExportButtons({ type, label, params = {} }: Props) {
   };
 
   const buttonClass =
-    'inline-flex items-center gap-1.5 border border-gold text-gold px-3 py-1.5 text-sm font-bold hover:bg-gold/10 disabled:opacity-50';
+    'inline-flex items-center gap-1.5 border border-maroon text-maroon rounded-xl px-3 py-1.5 text-sm font-bold hover:bg-gold/10 disabled:opacity-50';
 
   return (
     <div className="inline-flex flex-col gap-1 print:hidden">
       <div className="flex flex-wrap items-center gap-2">
-        <span className="text-sm text-gray-400">{label}:</span>
+        <span className="text-sm text-stone-500">{label}:</span>
         <button onClick={() => download('xlsx')} disabled={busy !== null} className={buttonClass}>
           {busy === 'xlsx' ? 'Preparing...' : <><Download className="h-4 w-4" /> Excel</>}
         </button>
@@ -60,7 +60,7 @@ export default function ExportButtons({ type, label, params = {} }: Props) {
           {busy === 'csv' ? 'Preparing...' : <><Download className="h-4 w-4" /> CSV</>}
         </button>
       </div>
-      {error && <p className="text-sm text-red-300" role="alert">{error}</p>}
+      {error && <p className="text-sm text-red-700" role="alert">{error}</p>}
     </div>
   );
 }

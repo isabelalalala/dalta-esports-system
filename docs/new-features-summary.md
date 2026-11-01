@@ -46,7 +46,7 @@ updated to match the final system.
   registration, re-consent when the notice changes, account self-deletion, and retention rules (activity log
   1 year, read notifications 90 days, AI rate-limit records 1 day).
 - **Budget:** still ₱0. Everything uses free tiers: Supabase (database, auth, storage, Realtime, pg_cron, Vault),
-  the Gemini free tier with a built-in rate limit, Railway, and Facebook embeds.
+  the Gemini free tier with a built-in rate limit, Vercel hosting, Brevo for account emails, and Facebook embeds.
 
 ### 2.2 Context Flow Diagram (external entities)
 | Entity | New? | Flows with the system |

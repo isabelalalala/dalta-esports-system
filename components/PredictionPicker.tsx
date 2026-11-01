@@ -105,7 +105,7 @@ export default function PredictionPicker({
       {/* Your pick (also after the lock) and the result */}
       {mine && (
         <p className={`text-stone-600 font-semibold uppercase tracking-wider ${compact ? 'text-[10px]' : 'text-xs'}`}>
-          Your pick: <span className="text-[#5B271E] font-black">{teamNames[mine.predicted_winner_team_id] ?? 'a team'}</span>
+          Your pick: <span className="text-maroon font-black">{teamNames[mine.predicted_winner_team_id] ?? 'a team'}</span>
           {verdict && <> · {verdict}</>}
           {canPick && !compact && <span className="text-stone-400 font-medium"> (tap it again to remove it)</span>}
         </p>
@@ -114,7 +114,7 @@ export default function PredictionPicker({
       {note === 'login' ? (
         !compact && (
           <p className="text-xs text-stone-500 font-semibold uppercase tracking-wider">
-            <Link href="/auth/login" className="text-[#5B271E] font-black underline hover:text-[#FFCC37]">Log in</Link> to make your pick.
+            <Link href="/auth/login" className="text-maroon font-black underline hover:text-gold">Log in</Link> to make your pick.
           </p>
         )
       ) : note && !compact ? (

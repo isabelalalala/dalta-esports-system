@@ -31,10 +31,12 @@ async function fetchBannerMap(): Promise<Record<string, string>> {
     const supabase = createClient();
     cachedFetchPromise = (async () => {
       try {
-        const { data } = await supabase
+        const { data, error } = await supabase
           .from('site_content')
           .select('key, value')
           .in('key', BANNER_KEYS);
+        // Don't cache a failed load, or every page shows the default banner until a full reload
+        if (error) return {};
         const map: Record<string, string> = {};
         for (const row of data || []) {
           if (row.value) map[row.key] = row.value;
@@ -68,8 +70,8 @@ export default function PageHeroBackground({
   className = 'object-cover object-center scale-105',
   overlayClassName = 'absolute inset-0 bg-stone-950/75',
 }: PageHeroBackgroundProps) {
+  // The banner looked up from site_content (used only when no `src` is given)
   const [resolvedSrc, setResolvedSrc] = useState<string>(() => {
-    if (src) return src;
     if (cachedSiteBannerMap) {
       if (specificKey && cachedSiteBannerMap[specificKey]) {
         return siteImageUrl(cachedSiteBannerMap[specificKey]) ?? DEFAULT_HERO_BANNER;
@@ -82,10 +84,7 @@ export default function PageHeroBackground({
   });
 
   useEffect(() => {
-    if (src) {
-      setResolvedSrc(src);
-      return;
-    }
+    if (src) return;
     let cancelled = false;
     fetchBannerMap().then((map) => {
       if (cancelled) return;
@@ -107,7 +106,7 @@ export default function PageHeroBackground({
   return (
     <div className="absolute inset-0 -z-0 pointer-events-none overflow-hidden" aria-hidden="true">
       <Image
-        src={resolvedSrc}
+        src={src || resolvedSrc}
         alt={alt}
         fill
         sizes="(max-width: 1024px) 100vw, 1200px"

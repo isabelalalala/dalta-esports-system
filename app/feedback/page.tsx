@@ -11,7 +11,7 @@ import StarRating from '@/components/StarRating';
 import PageLoading from '@/components/PageLoading';
 import { usePageTitle } from '@/utils/page-title';
 import PageHeroBackground from '@/components/site/PageHeroBackground';
-import { CheckCircle2, MessageSquare, Send, Sparkles, Star } from 'lucide-react';
+import { CheckCircle2, MessageSquare, Send } from 'lucide-react';
 
 const inputClass =
   'w-full p-3 rounded-xl bg-white text-stone-950 border border-stone-300 placeholder:text-stone-400 tracking-wide focus:border-amber-600 focus:ring-2 focus:ring-amber-500/20 shadow-xs outline-none transition-all font-medium text-xs sm:text-sm uppercase';
@@ -70,7 +70,7 @@ function FeedbackPageContent() {
         if (tourRes.error) throw tourRes.error;
         if (fbRes.error) throw fbRes.error;
         setTournaments(tourRes.data || []);
-        setMyFeedback(fbRes.data || []);
+        setMyFeedback((fbRes.data || []) as Feedback[]);
       } catch (err) {
         setError(getErrorMessage(err, 'Failed to load the feedback page'));
       } finally {
@@ -92,23 +92,34 @@ function FeedbackPageContent() {
         .eq('tournament_id', tournamentId)
         .order('round')
         .order('match_number');
-      if (matchesError || cancelled) return;
+      if (cancelled) return;
+      if (matchesError) {
+        setError(getErrorMessage(matchesError, 'Failed to load the matches of this tournament'));
+        return;
+      }
 
       const teamIds = [
         ...new Set((matches || []).flatMap((m) => [m.team_a_id, m.team_b_id]).filter(Boolean)),
       ] as string[];
       let teamMap: Record<string, string> = {};
       if (teamIds.length > 0) {
-        const { data: teams } = await supabase.from('teams').select('id, name').in('id', teamIds);
+        const { data: teams, error: teamsError } = await supabase.from('teams').select('id, name').in('id', teamIds);
+        if (cancelled) return;
+        if (teamsError) {
+          setError(getErrorMessage(teamsError, 'Failed to load the team names'));
+          return;
+        }
         teamMap = Object.fromEntries((teams || []).map((t) => [t.id, t.name]));
       }
       if (cancelled) return;
 
       const labels: Record<string, string> = {};
       const options: MatchOption[] = [];
+      // "Final", "Semifinals"... depend on how many rounds this bracket has
+      const roundCount = (matches || []).reduce((max, m) => Math.max(max, m.round), 0);
       for (const m of (matches || []) as Match[]) {
         if (isBye(m)) continue;
-        const round = roundLabel(m.round, 4);
+        const round = roundLabel(m.round, roundCount);
         const a = m.team_a_id ? teamMap[m.team_a_id] ?? 'TBD' : 'TBD';
         const b = m.team_b_id ? teamMap[m.team_b_id] ?? 'TBD' : 'TBD';
         const lbl = `${round} · ${a} vs ${b}`;
@@ -195,7 +206,7 @@ function FeedbackPageContent() {
         <div className="relative z-10 w-full flex items-center justify-between">
           <Link
             href="/dashboard"
-            className="inline-flex items-center gap-1.5 text-xs font-black text-[#FFCC37] hover:text-[#FFE066] uppercase tracking-wider transition-colors"
+            className="inline-flex items-center gap-1.5 text-xs font-black text-gold hover:text-goldlight uppercase tracking-wider transition-colors"
           >
             ← Back to Dashboard
           </Link>
@@ -203,14 +214,12 @@ function FeedbackPageContent() {
 
         <div className="relative z-10 max-w-4xl mx-auto space-y-3 pt-2">
           <h1
-            className="text-4xl sm:text-5xl lg:text-6xl font-black !text-white text-white tracking-wider uppercase leading-tight"
-            style={{ color: '#ffffff' }}
+            className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-wider uppercase leading-tight text-white"
           >
             Feedback &amp; Ratings
           </h1>
           <p
-            className="text-base sm:text-lg !text-white text-stone-200 font-medium uppercase tracking-wide leading-relaxed"
-            style={{ color: '#ffffff' }}
+            className="text-base sm:text-lg font-medium uppercase tracking-wide leading-relaxed text-white"
           >
             Share your voice on tournament organization, broadcast quality, and competitive experiences.
           </p>
@@ -222,7 +231,7 @@ function FeedbackPageContent() {
         {/* Left Form: Submit Feedback */}
         <section className="lg:col-span-7 bg-white border border-stone-200/90 rounded-2xl p-6 sm:p-8 shadow-xs space-y-6">
           <div>
-            <h2 className="text-base sm:text-lg font-black text-[#5B271E] tracking-wider uppercase">
+            <h2 className="text-base sm:text-lg font-black text-maroon tracking-wider uppercase">
               Submit Your Review
             </h2>
             <p className="text-xs text-stone-500 font-medium normal-case mt-0.5">
@@ -340,7 +349,7 @@ function FeedbackPageContent() {
         <section className="lg:col-span-5 bg-white border border-stone-200/90 rounded-2xl p-6 sm:p-8 shadow-xs space-y-5">
           <div className="flex items-center justify-between gap-2 border-b border-stone-100 pb-3">
             <h2 className="text-base sm:text-lg font-black text-stone-950 tracking-wider uppercase flex items-center gap-2">
-              <MessageSquare className="w-4 h-4 text-[#5B271E]" />
+              <MessageSquare className="w-4 h-4 text-maroon" />
               <span>My History</span>
             </h2>
             <span className="text-xs font-black text-stone-500">
@@ -366,7 +375,7 @@ function FeedbackPageContent() {
                     </span>
                   </div>
 
-                  <p className="text-xs font-bold text-[#5B271E] tracking-wider">
+                  <p className="text-xs font-bold text-maroon tracking-wider">
                     {aboutLabel(f)}
                   </p>
 

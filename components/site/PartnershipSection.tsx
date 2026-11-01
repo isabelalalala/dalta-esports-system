@@ -65,15 +65,14 @@ export default function PartnershipSection() {
       {/* Header: Handshake icon, PARTNERSHIP title in pure black, and brand maroon subtitle */}
       <div className="relative z-10 max-w-2xl mx-auto px-4 space-y-1.5 flex flex-col items-center justify-center">
         <div className="inline-flex items-center justify-center gap-2.5">
-          <Handshake className="h-6 w-6 sm:h-7 sm:w-7 text-[#5B271E] shrink-0" />
+          <Handshake className="h-6 w-6 sm:h-7 sm:w-7 text-maroon shrink-0" />
           <h2
-            className="text-2xl sm:text-3xl font-black !text-black text-black tracking-widest uppercase leading-none"
-            style={{ color: '#000000' }}
+            className="text-2xl sm:text-3xl font-black tracking-widest uppercase leading-none text-black"
           >
             PARTNERSHIP
           </h2>
         </div>
-        <p className="text-xs sm:text-sm font-bold text-[#5B271E] uppercase tracking-widest leading-relaxed">
+        <p className="text-xs sm:text-sm font-bold text-maroon uppercase tracking-widest leading-relaxed">
           Empowering collegiate esports through strategic alliances.
         </p>
       </div>
@@ -89,7 +88,7 @@ export default function PartnershipSection() {
           {trackItems.map((partner, idx) => (
             <div
               key={`track1-${partner.name}-${idx}`}
-              className="group/card relative w-28 h-28 sm:w-36 sm:h-36 md:w-40 md:h-40 shrink-0 rounded-2xl overflow-hidden border border-stone-200/90 bg-white shadow-xs transition-all duration-300 hover:scale-105 hover:border-[#FFCC37]/70 hover:shadow-md cursor-pointer"
+              className="group/card relative w-28 h-28 sm:w-36 sm:h-36 md:w-40 md:h-40 shrink-0 rounded-2xl overflow-hidden border border-stone-200/90 bg-white shadow-xs transition-all duration-300 hover:scale-105 hover:border-gold/70 hover:shadow-md cursor-pointer"
               title={partner.name}
             >
               <Image
@@ -120,7 +119,7 @@ export default function PartnershipSection() {
           {trackItems.map((partner, idx) => (
             <div
               key={`track2-${partner.name}-${idx}`}
-              className="group/card relative w-28 h-28 sm:w-36 sm:h-36 md:w-40 md:h-40 shrink-0 rounded-2xl overflow-hidden border border-stone-200/90 bg-white shadow-xs transition-all duration-300 hover:scale-105 hover:border-[#FFCC37]/70 hover:shadow-md cursor-pointer"
+              className="group/card relative w-28 h-28 sm:w-36 sm:h-36 md:w-40 md:h-40 shrink-0 rounded-2xl overflow-hidden border border-stone-200/90 bg-white shadow-xs transition-all duration-300 hover:scale-105 hover:border-gold/70 hover:shadow-md cursor-pointer"
               title={partner.name}
             >
               <Image

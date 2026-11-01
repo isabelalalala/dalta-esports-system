@@ -12,34 +12,18 @@ import { usePageTitle } from '@/utils/page-title';
 import PageHeroBackground from '@/components/site/PageHeroBackground';
 import { Users, Plus, Shield, AlertCircle, Gamepad2 } from 'lucide-react';
 
+import { getGameLogo } from '@/utils/game-logos';
+
 const inputClass =
-  'w-full p-3.5 rounded-xl bg-white text-stone-950 border border-stone-300 placeholder:text-stone-400 uppercase tracking-wide focus:border-[#FFCC37] focus:ring-2 focus:ring-[#FFCC37]/25 shadow-xs outline-none transition-all font-medium text-xs sm:text-sm';
-
-// Match game name or id to official logo asset
-function getGameLogo(game: string, gameId?: string | null): string | null {
-  const g = (game || '').toLowerCase().trim();
-  const id = (gameId || '').toLowerCase().trim();
-
-  if (g.includes('mlbb') || g.includes('mobile legends') || id.includes('mlbb')) {
-    return '/MLBB LOGO.png';
-  }
-  if (g.includes('valo') || g.includes('valorant') || id.includes('valo')) {
-    return '/VALO LOGO.png';
-  }
-  if (g.includes('tekken') || id.includes('tekken')) {
-    return '/TEKKEMN 8 LOGO.png';
-  }
-  if (g.includes('codm') || g.includes('call of duty') || id.includes('cod')) {
-    return '/CODM LOGO.png';
-  }
-  return null;
-}
+  'w-full p-3.5 rounded-xl bg-white text-stone-950 border border-stone-300 placeholder:text-stone-400 uppercase tracking-wide focus:border-gold focus:ring-2 focus:ring-gold/25 shadow-xs outline-none transition-all font-medium text-xs sm:text-sm';
 
 export default function TeamsPage() {
   usePageTitle('My Teams');
   const supabase = createClient();
   const [teams, setTeams] = useState<Team[]>([]);
   const [games, setGames] = useState<Game[]>([]);
+  // Games the player has a game profile (IGN) for: a team can only be created for these
+  const [profileGameIds, setProfileGameIds] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [showCreate, setShowCreate] = useState(false);
@@ -57,15 +41,18 @@ export default function TeamsPage() {
         } = await supabase.auth.getSession();
         if (!session) return;
 
-        const [gamesRes, teamsRes] = await Promise.all([
+        const [gamesRes, teamsRes, profilesRes] = await Promise.all([
           supabase.from('games').select('*').order('name'),
           supabase
             .from('team_members')
             .select('teams(*, games(*), team_members(count))')
             .eq('user_id', session.user.id),
+          supabase.from('player_game_profiles').select('game_id').eq('user_id', session.user.id),
         ]);
         if (gamesRes.error) throw gamesRes.error;
         if (teamsRes.error) throw teamsRes.error;
+        if (profilesRes.error) throw profilesRes.error;
+        setProfileGameIds((profilesRes.data || []).map((p) => p.game_id));
         setGames(gamesRes.data || []);
         setTeams((teamsRes.data || []).map((row) => row.teams as unknown as Team));
       } catch (err) {
@@ -129,7 +116,7 @@ export default function TeamsPage() {
           <div className="relative z-10 w-full flex flex-wrap items-center justify-between gap-4">
             <Link
               href="/dashboard"
-              className="inline-flex items-center gap-1.5 text-xs font-black text-[#FFCC37] hover:text-[#FFE066] uppercase tracking-wider transition-colors"
+              className="inline-flex items-center gap-1.5 text-xs font-black text-gold hover:text-goldlight uppercase tracking-wider transition-colors"
             >
               ← Back to Dashboard
             </Link>
@@ -145,14 +132,12 @@ export default function TeamsPage() {
 
           <div className="relative z-10 max-w-4xl mx-auto space-y-3 pt-2">
             <h1
-              className="animate-hero-title text-3xl sm:text-4xl lg:text-5xl font-black !text-white text-white tracking-wider uppercase leading-tight"
-              style={{ color: '#ffffff' }}
+              className="animate-hero-title text-3xl sm:text-4xl lg:text-5xl font-black tracking-wider uppercase leading-tight text-white"
             >
               My Teams
             </h1>
             <p
-              className="animate-hero-tagline text-xs sm:text-sm text-stone-200 font-semibold uppercase tracking-wider leading-relaxed"
-              style={{ color: '#ffffff' }}
+              className="animate-hero-tagline text-xs sm:text-sm font-semibold uppercase tracking-wider leading-relaxed text-white"
             >
               Manage your competitive squads, rosters, and tournament lineups.
             </p>
@@ -180,7 +165,7 @@ export default function TeamsPage() {
             className="animate-stagger-1 rounded-3xl border border-stone-200/90 bg-white p-6 sm:p-8 shadow-md space-y-6"
           >
             <div className="flex items-center gap-3 pb-4 border-b border-stone-100">
-              <div className="w-10 h-10 rounded-xl bg-[#5B271E]/10 border border-[#5B271E]/20 text-[#5B271E] grid place-items-center shadow-2xs">
+              <div className="w-10 h-10 rounded-xl bg-maroon/10 border border-maroon/20 text-maroon grid place-items-center shadow-2xs">
                 <Shield className="w-5 h-5" />
               </div>
               <div>
@@ -222,11 +207,22 @@ export default function TeamsPage() {
                 >
                   <option value="">-- Select Game Discipline --</option>
                   {games.map((g) => (
-                    <option key={g.id} value={g.id}>
+                    <option key={g.id} value={g.id} disabled={!profileGameIds.includes(g.id)}>
                       {g.name} (Max {g.max_players} {g.max_players === 1 ? 'Player' : 'Players'})
+                      {!profileGameIds.includes(g.id) && ' (add game profile first)'}
                     </option>
                   ))}
                 </select>
+                {/* The captain needs an IGN for the team's game, like every invited player */}
+                {games.some((g) => !profileGameIds.includes(g.id)) && (
+                  <p className="mt-2 text-xs font-medium text-stone-500 normal-case">
+                    You can only create a team for a game you have a game profile (IGN) for.{' '}
+                    <Link href="/profile" className="font-bold text-maroon underline">
+                      Add one on your Profile
+                    </Link>
+                    .
+                  </p>
+                )}
               </div>
             </div>
 
@@ -289,16 +285,12 @@ export default function TeamsPage() {
               return (
                 <div
                   key={team.id}
-                  className="group rounded-3xl border border-stone-200/90 bg-white shadow-xs hover:shadow-xl hover:-translate-y-1.5 hover:border-[#FFCC37]/80 transition-all duration-300 overflow-hidden flex flex-col"
+                  className="group rounded-3xl border border-stone-200/90 bg-white shadow-xs hover:shadow-xl hover:-translate-y-1.5 hover:border-gold/80 transition-all duration-300 overflow-hidden flex flex-col"
                 >
                   {/* Game Showcase Header */}
-                  <div className="relative aspect-video bg-[#0e0c0b] border-b border-stone-100 overflow-hidden flex items-center justify-center">
+                  <div className="relative aspect-video bg-ink border-b border-stone-100 overflow-hidden flex items-center justify-center">
                     <div
-                      className="absolute inset-0 pointer-events-none"
-                      style={{
-                        background:
-                          'radial-gradient(circle at 85% 85%, rgba(164, 148, 140, 0.35) 0%, rgba(35, 30, 27, 0.7) 45%, #0e0c0b 100%)',
-                      }}
+                      className="absolute inset-0 pointer-events-none bg-logo-stage"
                     />
                     {logo ? (
                       <div className="relative z-10 w-24 h-24 group-hover:scale-105 transition-transform duration-300">
@@ -324,14 +316,14 @@ export default function TeamsPage() {
                   <div className="p-6 flex-1 flex flex-col justify-between space-y-4">
                     <div>
                       <div className="flex items-center justify-between gap-2 mb-1.5">
-                        <span className="text-[10px] font-black text-[#5B271E] tracking-widest uppercase bg-[#5B271E]/10 px-2.5 py-0.5 rounded-md">
+                        <span className="text-[10px] font-black text-maroon tracking-widest uppercase bg-maroon/10 px-2.5 py-0.5 rounded-md">
                           {team.games?.name}
                         </span>
                         <span className="text-[11px] font-bold text-stone-500 uppercase tracking-wider">
                           {membersCount} / {maxPlayers} Players
                         </span>
                       </div>
-                      <h2 className="text-lg sm:text-xl font-black text-stone-950 uppercase tracking-wide group-hover:text-[#5B271E] transition-colors break-words">
+                      <h2 className="text-lg sm:text-xl font-black text-stone-950 uppercase tracking-wide group-hover:text-maroon transition-colors break-words">
                         {team.name}
                       </h2>
                       {team.description && (
@@ -347,7 +339,7 @@ export default function TeamsPage() {
                       </span>
                       <Link
                         href={`/teams/${team.id}`}
-                        className="inline-flex items-center gap-1 text-xs font-black text-[#5B271E] group-hover:text-[#FFCC37] uppercase tracking-wider transition-colors"
+                        className="inline-flex items-center gap-1 text-xs font-black text-maroon group-hover:text-gold uppercase tracking-wider transition-colors"
                       >
                         Manage Team →
                       </Link>

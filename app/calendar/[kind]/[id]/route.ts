@@ -13,9 +13,9 @@ export async function GET(_request: NextRequest, ctx: RouteContext<'/calendar/[k
   }
 
   const { data, error } = await createPublicClient().rpc('get_public_calendar', {
-    p_match_id: kind === 'match' ? id : null,
-    p_tournament_id: kind === 'tournament' ? id : null,
-    p_team_id: kind === 'team' ? id : null,
+    p_match_id: kind === 'match' ? id : undefined,
+    p_tournament_id: kind === 'tournament' ? id : undefined,
+    p_team_id: kind === 'team' ? id : undefined,
   });
   if (error) {
     return NextResponse.json({ error: 'The calendar could not be created.' }, { status: 500 });

@@ -8,7 +8,8 @@
 // 2026-10-18: added pick'em predictions and leaderboards (first name + initial shown to logged-in users).
 // 2026-10-18.2: disclosed match-proof retention, exports, public rosters/officers, check-ins.
 // 2026-10-18.3: the under-18 section now points to the Terms of Service age declaration.
-export const PRIVACY_NOTICE_VERSION = '2026-10-18.3';
+// 2026-11-01: account emails are now sent through Brevo; the website is hosted on Vercel (was Railway).
+export const PRIVACY_NOTICE_VERSION = '2026-11-01';
 
 // Where people send privacy requests and questions. Set the real contact in
 // NEXT_PUBLIC_PRIVACY_CONTACT_* before going live; the fallbacks are placeholders.

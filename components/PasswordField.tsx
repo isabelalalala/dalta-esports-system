@@ -110,7 +110,9 @@ export default function PasswordField({ value, onChange, className, placeholder,
           onChange={(e) => onChange(e.target.value)}
           aria-invalid={!!validity}
           aria-describedby={rules || mismatch ? hintId : undefined}
-          className={`${className} pr-12`}
+          // normal-case: passwords are case-sensitive, so "Show password" must show the real letters
+          // (the page's input styles and globals.css make inputs uppercase)
+          className={`${className} pr-12 normal-case`}
           autoComplete={autoComplete}
           required
         />

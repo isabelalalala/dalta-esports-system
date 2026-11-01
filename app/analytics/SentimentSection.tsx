@@ -101,9 +101,9 @@ export default function SentimentSection({ report }: { report: SentimentReport }
         <ReportCard title="Examples of negative feedback">
           <ul className="space-y-3">
             {report.negative_examples.map((f, i) => (
-              <li key={i} className="border-l-2 border-[#e66767] pl-3">
-                <p className="text-gray-200 whitespace-pre-wrap print:text-black">{f.comment}</p>
-                <p className="text-xs text-gray-400 mt-1">
+              <li key={i} className="border-l-2 border-negative pl-3">
+                <p className="text-stone-800 whitespace-pre-wrap print:text-black">{f.comment}</p>
+                <p className="text-xs text-stone-500 mt-1">
                   {f.rating} <Star className="inline h-3 w-3 fill-yellow-400 text-yellow-400" /> · {f.tournament_name ?? 'General'} ·{' '}
                   {new Date(f.created_at).toLocaleDateString(undefined, { dateStyle: 'medium' })}
                   {f.topics.length > 0 && ` · ${f.topics.join(', ')}`}

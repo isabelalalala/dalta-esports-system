@@ -5,7 +5,7 @@ import { getPost, getPosts } from '@/utils/site-data';
 import { siteImageUrl } from '@/utils/site';
 import { formatDate } from '@/utils/tournaments';
 import PostCard from './PostCard';
-import { EmptyNote, PageTitle, Paragraphs, SiteBox } from './SiteParts';
+import { EmptyNote, PageTitle, Paragraphs } from './SiteParts';
 import { Calendar, ExternalLink, Trophy } from 'lucide-react';
 import PageHeroBackground from './PageHeroBackground';
 
@@ -33,7 +33,6 @@ export async function PostDetail({ table, id, backLabel }: { table: PostTable; i
   if (!post) notFound();
   const image = siteImageUrl(post.image_path);
   const externalLink = post.link?.startsWith('https://');
-  const sectionLabel = table === 'campaigns' ? 'Campaigns' : 'Events';
   const categoryLabel = table === 'campaigns' ? 'Official Campaign Initiative' : 'Official Event';
 
   return (
@@ -48,14 +47,14 @@ export async function PostDetail({ table, id, backLabel }: { table: PostTable; i
         <div className="relative z-10 w-full flex items-center justify-between flex-wrap gap-3">
           <Link
             href={`/${table}`}
-            className="inline-flex items-center gap-1.5 text-xs font-black text-[#FFCC37] hover:text-[#FFE066] uppercase tracking-wider transition-colors"
+            className="inline-flex items-center gap-1.5 text-xs font-black text-gold hover:text-goldlight uppercase tracking-wider transition-colors"
           >
             ← {backLabel}
           </Link>
 
           {post.event_date && (
             <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-white/10 border border-white/20 text-stone-200 text-xs font-black tracking-wider backdrop-blur-xs shadow-2xs">
-              <Calendar className="w-3.5 h-3.5 text-[#FFCC37]" />
+              <Calendar className="w-3.5 h-3.5 text-gold" />
               <span>{formatDate(post.event_date)}</span>
             </span>
           )}
@@ -63,8 +62,7 @@ export async function PostDetail({ table, id, backLabel }: { table: PostTable; i
 
         <div className="relative z-10 max-w-4xl mx-auto space-y-3 pt-2">
           <h1
-            className="animate-hero-title text-3xl sm:text-4xl lg:text-5xl font-black !text-white text-white tracking-wider uppercase leading-tight"
-            style={{ color: '#ffffff' }}
+            className="animate-hero-title text-3xl sm:text-4xl lg:text-5xl font-black tracking-wider uppercase leading-tight text-white"
           >
             {post.title}
           </h1>
@@ -76,14 +74,10 @@ export async function PostDetail({ table, id, backLabel }: { table: PostTable; i
         {/* Left Media Card: Sized Proportionately without Screen Dominance */}
         {image && (
           <div className="lg:col-span-5 w-full">
-            <div className="relative w-full aspect-[4/3] max-h-[380px] sm:max-h-[420px] rounded-3xl border border-stone-200/90 bg-[#0e0c0b] overflow-hidden shadow-xs grid place-items-center">
+            <div className="relative w-full aspect-[4/3] max-h-[380px] sm:max-h-[420px] rounded-3xl border border-stone-200/90 bg-ink overflow-hidden shadow-xs grid place-items-center">
               {/* Subtle ambient lighting behind graphic */}
               <div
-                className="absolute inset-0 pointer-events-none"
-                style={{
-                  background:
-                    'radial-gradient(circle at 85% 85%, rgba(164, 148, 140, 0.35) 0%, rgba(35, 30, 27, 0.7) 45%, #0e0c0b 100%)',
-                }}
+                className="absolute inset-0 pointer-events-none bg-logo-stage"
               />
               <div className="relative z-0 w-full h-full p-6 flex items-center justify-center">
                 <div className="relative w-full h-full">
@@ -105,7 +99,7 @@ export async function PostDetail({ table, id, backLabel }: { table: PostTable; i
         <div className={image ? 'lg:col-span-7 w-full' : 'w-full max-w-4xl mx-auto'}>
           <div className="rounded-3xl border border-stone-200/90 bg-white p-6 sm:p-8 lg:p-10 shadow-xs space-y-6">
             <div className="border-b border-stone-100 pb-4 space-y-1">
-              <span className="text-[11px] font-black tracking-widest text-[#5B271E] uppercase">
+              <span className="text-[11px] font-black tracking-widest text-maroon uppercase">
                 {categoryLabel}
               </span>
               <h2 className="text-lg sm:text-xl font-black text-stone-950 uppercase tracking-wide">
@@ -132,10 +126,10 @@ export async function PostDetail({ table, id, backLabel }: { table: PostTable; i
                   <a
                     href={post.link}
                     {...(externalLink ? { target: '_blank', rel: 'noreferrer' } : {})}
-                    className="px-6 py-3 rounded-xl border border-stone-300 hover:border-[#FFCC37] bg-white text-stone-950 hover:text-[#5B271E] font-black text-xs uppercase tracking-widest shadow-xs hover:-translate-y-0.5 transition-all inline-flex items-center gap-2"
+                    className="px-6 py-3 rounded-xl border border-stone-300 hover:border-gold bg-white text-stone-950 hover:text-maroon font-black text-xs uppercase tracking-widest shadow-xs hover:-translate-y-0.5 transition-all inline-flex items-center gap-2"
                   >
                     <span>More Details</span>
-                    {externalLink && <ExternalLink className="w-3.5 h-3.5 text-[#5B271E]" />}
+                    {externalLink && <ExternalLink className="w-3.5 h-3.5 text-maroon" />}
                   </a>
                 )}
               </div>

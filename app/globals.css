@@ -15,6 +15,12 @@
   --color-maroondark: #431B14;
   --color-maroonlight: #7A3529;
   --color-logoblack: #202020;
+  /* Near-black behind game logos and photos */
+  --color-ink: #0E0C0B;
+  /* Darker gold that stays readable on white (header "ESPORTS") */
+  --color-golddeep: #C89300;
+  /* "Negative" sentiment, same as the chart colour in utils/reports.ts (color-blind checked) */
+  --color-negative: #e66767;
   --color-sitebg: #ffffff;
   --color-sitecard: #ffffff;
   --font-montserrat: var(--font-montserrat), "Montserrat", sans-serif;
@@ -36,6 +42,21 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+}
+
+/* Dark spotlight behind game logos and team photos (bottom-right glow fading to ink) */
+@utility bg-logo-stage {
+  background: radial-gradient(circle at 85% 85%, rgb(164 148 140 / 0.35) 0%, rgb(35 30 27 / 0.7) 45%, var(--color-ink) 100%);
+}
+
+/* Slightly brighter version, used on the Game Divisions cards */
+@utility bg-logo-stage-strong {
+  background: radial-gradient(circle at 88% 88%, rgb(164 148 140 / 0.45) 0%, rgb(35 30 27 / 0.8) 45%, var(--color-ink) 100%);
+}
+
+/* Soft gold glow for the home page title */
+@utility text-glow-gold {
+  text-shadow: 0 4px 28px rgb(255 204 55 / 0.45);
 }
 
 body {

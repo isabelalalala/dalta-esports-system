@@ -4,6 +4,7 @@ import { useEffect, useState, type ReactNode } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { ChevronDown, ChevronUp } from 'lucide-react';
+import type { SupabaseClient } from '@supabase/supabase-js';
 import { createClient } from '@/utils/supabase/client';
 import { getErrorMessage } from '@/utils/errors';
 import { siteImageUrl } from '@/utils/site';
@@ -12,6 +13,11 @@ import { refreshSite } from './actions';
 import ImageField from './ImageField';
 
 export type Row = Record<string, unknown>;
+
+// The website tables this editor can edit
+export type SiteTable =
+  | 'hero_images' | 'campaigns' | 'events' | 'game_divisions'
+  | 'officers' | 'official_teams' | 'official_team_players';
 
 export interface FieldConfig {
   name: string;
@@ -23,7 +29,7 @@ export interface FieldConfig {
 }
 
 interface Props {
-  table: string;
+  table: SiteTable;
   idKey?: string;
   fields: FieldConfig[];
   titleOf: (row: Row) => string;
@@ -49,6 +55,9 @@ export default function ListEditor({
   hasPublish = true, filter, imageFolder, beforeSave, renderExtra, viewHref,
 }: Props) {
   const supabase = createClient();
+  // Rows are edited generically (the columns come from `fields`), so these queries can't be
+  // checked against the generated types. The table name still is (SiteTable).
+  const db = supabase as unknown as SupabaseClient;
   const [rows, setRows] = useState<Row[]>([]);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [draft, setDraft] = useState<Row>({});
@@ -64,14 +73,14 @@ export default function ListEditor({
 
   useEffect(() => {
     const load = async () => {
-      let query = supabase.from(table).select('*').order('display_order');
+      let query = db.from(table).select('*').order('display_order');
       if (filterColumn) query = query.eq(filterColumn, filterValue);
       const { data, error: loadError } = await query;
       if (loadError) setError(getErrorMessage(loadError, 'Failed to load'));
       else setRows((data || []) as Row[]);
     };
     load();
-  }, [supabase, table, filterColumn, filterValue, reloadCount]);
+  }, [db, table, filterColumn, filterValue, reloadCount]);
 
   const run = async (action: () => Promise<void>, done: string, fallback: string) => {
     setBusy(true);
@@ -124,7 +133,7 @@ export default function ListEditor({
       }
       if (beforeSave) await beforeSave({ ...original, ...payload });
 
-      const { data, error: saveError } = await supabase
+      const { data, error: saveError } = await db
         .from(table).update(payload).eq(idKey, original[idKey] as string).select(idKey);
       if (saveError) throw saveError;
       if (!data || data.length === 0) throw new Error('Nothing was saved. Are you still logged in as an admin?');
@@ -137,11 +146,18 @@ export default function ListEditor({
     }, 'Changes saved.', 'Failed to save');
   };
 
+  // Next position at the end of the list (max + 1, so gaps left by deletes don't cause duplicates)
+  const nextOrder = () => rows.reduce((max, r) => Math.max(max, Number(r.display_order) || 0), 0) + 1;
+
   const handleAdd = () => {
     if (!newRow) return;
     run(async () => {
-      const { error: insertError } = await supabase.from(table).insert([{ ...newRow, display_order: rows.length + 1 }]);
+      // Filtered lists (players of one team) must save the filter column too, e.g. team_id
+      const row = { ...newRow, display_order: nextOrder(), ...(filter ? { [filter.column]: filter.value } : {}) };
+      const { data, error: insertError } = await db.from(table).insert([row]).select('*').single();
       if (insertError) throw insertError;
+      // Open the new item straight away so the placeholder text gets replaced
+      startEdit(data as Row);
     }, 'Item added.', 'Failed to add item');
   };
 
@@ -149,9 +165,9 @@ export default function ListEditor({
     if (!file || !addWithImage) return;
     run(async () => {
       const path = await uploadSiteImage(supabase, file, imageFolder);
-      const { error: insertError } = await supabase
+      const { error: insertError } = await db
         .from(table)
-        .insert([{ [addWithImage]: path, display_order: rows.length + 1 }]);
+        .insert([{ [addWithImage]: path, display_order: nextOrder() }]);
       if (insertError) {
         await deleteSiteImage(supabase, path);
         throw insertError;
@@ -162,8 +178,10 @@ export default function ListEditor({
   const handleDelete = (row: Row) => {
     if (!confirm(`Delete "${titleOf(row)}"? This action cannot be undone.`)) return;
     run(async () => {
-      const { error: deleteError } = await supabase.from(table).delete().eq(idKey, row[idKey] as string);
+      // Check a row was really deleted before removing its images (RLS blocks silently)
+      const { data, error: deleteError } = await db.from(table).delete().eq(idKey, row[idKey] as string).select(idKey);
       if (deleteError) throw deleteError;
+      if (!data || data.length === 0) throw new Error('Nothing was deleted. Are you still logged in as an admin?');
       for (const name of imageFields) {
         if (row[name]) await deleteSiteImage(supabase, str(row[name]));
       }
@@ -173,9 +191,10 @@ export default function ListEditor({
   const togglePublish = (row: Row) => {
     const next = !row.is_published;
     run(async () => {
-      const { error: updateError } = await supabase
-        .from(table).update({ is_published: next }).eq(idKey, row[idKey] as string);
+      const { data, error: updateError } = await db
+        .from(table).update({ is_published: next }).eq(idKey, row[idKey] as string).select(idKey);
       if (updateError) throw updateError;
+      if (!data || data.length === 0) throw new Error('Nothing was saved. Are you still logged in as an admin?');
     }, next ? 'Published.' : 'Hidden.', 'Failed to update visibility');
   };
 
@@ -187,9 +206,10 @@ export default function ListEditor({
     run(async () => {
       for (let i = 0; i < ordered.length; i++) {
         if (Number(ordered[i].display_order) !== i + 1) {
-          const { error: orderError } = await supabase
-            .from(table).update({ display_order: i + 1 }).eq(idKey, ordered[i][idKey] as string);
+          const { data, error: orderError } = await db
+            .from(table).update({ display_order: i + 1 }).eq(idKey, ordered[i][idKey] as string).select(idKey);
           if (orderError) throw orderError;
+          if (!data || data.length === 0) throw new Error('The order was not saved. Are you still logged in as an admin?');
         }
       }
     }, 'Order saved.', 'Failed to reorder');

@@ -62,12 +62,12 @@ export default function MatchPage() {
         const { data: matchData, error: matchError } = await supabase
           .from('matches').select('*').eq('id', id).single();
         if (matchError) throw matchError;
-        setMatch(matchData);
+        setMatch(matchData as Match);
 
         const [tournamentRes, teamsRes, checkinsRes, roundsRes, resultsRes] = await Promise.all([
           supabase.from('tournaments').select('id, name, game, checkin_window_minutes').eq('id', matchData.tournament_id).single(),
           supabase.from('teams').select('id, name, captain_id')
-            .in('id', [matchData.team_a_id, matchData.team_b_id].filter(Boolean)),
+            .in('id', [matchData.team_a_id, matchData.team_b_id].filter((t): t is string => !!t)),
           supabase.from('match_checkins').select('*').eq('match_id', id),
           supabase.from('matches').select('round').eq('tournament_id', matchData.tournament_id)
             .order('round', { ascending: false }).limit(1),
@@ -78,10 +78,10 @@ export default function MatchPage() {
         if (teamsRes.error) throw teamsRes.error;
         if (checkinsRes.error) throw checkinsRes.error;
         if (resultsRes.error) throw resultsRes.error;
-        setTournament(tournamentRes.data);
+        setTournament(tournamentRes.data as MatchTournament);
         setTeams(teamsRes.data || []);
         setCheckins(checkinsRes.data || []);
-        setSubmissions(resultsRes.data || []);
+        setSubmissions((resultsRes.data || []) as MatchResultSubmission[]);
         setRoundCount(roundsRes.data?.[0]?.round ?? matchData.round);
         setNow(Date.now());
       } catch (err) {
@@ -133,44 +133,44 @@ export default function MatchPage() {
 
   const teamClass = (teamId: string | undefined) =>
     match.status === 'completed'
-      ? match.winner_team_id === teamId ? 'text-gold' : 'text-gray-400'
-      : 'text-white';
+      ? match.winner_team_id === teamId ? 'text-maroon' : 'text-stone-500'
+      : 'text-stone-950';
 
   return (
-    <main id="main-content" className="min-h-screen bg-sitebg text-white px-4 py-10">
+    <div className="w-full text-stone-950">
       <div className="max-w-3xl mx-auto space-y-6">
-        <Link href={`/tournaments/${tournament.id}`} className="inline-block text-gold hover:underline">
+        <Link href={`/tournaments/${tournament.id}`} className="inline-block text-maroon hover:underline">
           ← {tournament.name}
         </Link>
 
         {/* Match header */}
-        <div className="bg-sitecard border-2 border-gold shadow-[6px_6px_0_var(--color-brown)] p-4 sm:p-6 space-y-4">
-          <h1 className="text-xs uppercase font-bold text-gray-400 tracking-widest">
+        <div className="bg-white border border-stone-200/90 rounded-2xl shadow-xs p-4 sm:p-6 space-y-4">
+          <h1 className="text-xs uppercase font-bold text-stone-500 tracking-widest">
             {tournament.game} · {roundLabel(match.round, roundCount)} · Match {match.match_number}
           </h1>
           <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2 sm:gap-4 text-center">
-            <p className={`text-lg sm:text-2xl font-bold break-words ${teamClass(teamA?.id)}`}>{teamA?.name ?? <span className="italic text-gray-400">TBD</span>}</p>
+            <p className={`text-lg sm:text-2xl font-bold break-words ${teamClass(teamA?.id)}`}>{teamA?.name ?? <span className="italic text-stone-500">TBD</span>}</p>
             <p className="text-2xl sm:text-3xl font-bold tabular-nums">
               {match.status === 'completed' && !match.is_forfeit
                 ? `${match.score_a ?? '-'} : ${match.score_b ?? '-'}`
-                : <span className="text-gray-400 text-xl">vs</span>}
+                : <span className="text-stone-500 text-xl">vs</span>}
             </p>
-            <p className={`text-lg sm:text-2xl font-bold break-words ${teamClass(teamB?.id)}`}>{teamB?.name ?? <span className="italic text-gray-400">TBD</span>}</p>
+            <p className={`text-lg sm:text-2xl font-bold break-words ${teamClass(teamB?.id)}`}>{teamB?.name ?? <span className="italic text-stone-500">TBD</span>}</p>
           </div>
           <div className="flex flex-wrap justify-center items-center gap-3 text-sm">
-            <span className="text-gray-300">{formatDateTime(match.scheduled_at)}</span>
+            <span className="text-stone-700">{formatDateTime(match.scheduled_at)}</span>
             {match.status === 'live' && (
-              <span className="bg-green-500/20 text-green-400 border border-green-500/50 px-2 py-0.5 rounded-full font-bold text-xs">LIVE</span>
+              <span className="bg-green-500/20 text-emerald-700 border border-green-500/50 px-2 py-0.5 rounded-full font-bold text-xs">LIVE</span>
             )}
             {match.status === 'completed' && winnerName && (
-              <span className="text-gold font-semibold">
+              <span className="text-maroon font-semibold">
                 {winnerName} won{match.is_forfeit ? ' by forfeit' : ''}
               </span>
             )}
           </div>
           {/* The public match page works without logging in, so it's the one to share */}
           <div className="flex flex-wrap justify-center items-center gap-3 pt-2">
-            <Link href={`/t/${tournament.id}/match/${match.id}`} className="text-sm text-gold hover:underline">Public page ↗</Link>
+            <Link href={`/t/${tournament.id}/match/${match.id}`} className="text-sm text-maroon hover:underline">Public page ↗</Link>
             <ShareButton
               path={`/t/${tournament.id}/match/${match.id}`}
               title={`${teamA?.name ?? 'TBD'} vs ${teamB?.name ?? 'TBD'}`}
@@ -180,11 +180,11 @@ export default function MatchPage() {
           </div>
         </div>
 
-        {error && <div role="alert" className="bg-red-500/10 border border-red-500 text-red-300 px-4 py-3">{error}</div>}
+        {error && <div role="alert" className="bg-red-500/10 border border-red-500 text-red-700 px-4 py-3">{error}</div>}
 
         {/* Pick'em: the community split, and pick buttons for the audience (not the two teams) */}
         {teamA && teamB && (
-          <section className="bg-sitecard border border-brownlight p-4 sm:p-6 space-y-3">
+          <section className="bg-white border border-stone-200/90 rounded-2xl shadow-xs p-4 sm:p-6 space-y-3">
             <h2 className="text-xl font-bold flex items-center gap-2"><Target className="h-5 w-5" /> Who will win?</h2>
             <PredictionsProvider matches={[match]}>
               <PredictionPicker match={match} teamNames={{ [teamA.id]: teamA.name, [teamB.id]: teamB.name }} />
@@ -216,12 +216,12 @@ export default function MatchPage() {
         />
 
         {isStaff && (
-          <p className="text-sm text-gray-400">
+          <p className="text-sm text-stone-500">
             To change the time, status or score directly, use{' '}
-            <Link href={`/tournaments/${tournament.id}/matches`} className="text-gold underline">Manage Matches</Link>.
+            <Link href={`/tournaments/${tournament.id}/matches`} className="text-maroon underline">Manage Matches</Link>.
           </p>
         )}
       </div>
-    </main>
+    </div>
   );
 }

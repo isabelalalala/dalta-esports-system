@@ -6,7 +6,7 @@ begin;
 
 create extension if not exists pgtap;
 
-select plan(9);
+select plan(12);
 
 set local session_replication_role = 'replica';
 
@@ -65,7 +65,20 @@ begin
 
   insert into public.tournament_registrations (tournament_id, user_id, team_id, status)
   values (t_id, admin_id, (select val from fx where key = 'team_a'), 'approved');
-end $$;
+
+  -- triggers are off here, so add the captain row that setup_new_team() would add
+  insert into public.team_members (team_id, user_id, role)
+  values ((select val from fx where key = 'team_a'), admin_id, 'captain');
+
+  -- Alice: a Tekken 8 game profile and a spot on a third team (not in the match above,
+  -- so her prediction tests still work)
+  insert into public.player_game_profiles (user_id, game_id, ign)
+  values ((select val from fx where key = 'alice'), 'tekken8', 'AliceIGN');
+  insert into public.teams (name, game_id, captain_id)
+  values ('RLS Team C', 'tekken8', admin_id) returning id into m_id;
+  insert into public.team_members (team_id, user_id, role)
+  values (m_id, (select val from fx where key = 'alice'), 'player');
+end $;
 
 set local session_replication_role = 'origin';
 
@@ -126,6 +139,34 @@ select is_empty(
 select isnt_empty(
   $$select * from public.tournament_registrations$$,
   'logged-in users can read registrations');
+
+-- ---------- game profiles (202611011100) ----------
+
+select set_config('request.jwt.claims',
+  '{"sub":"' || (select val from fx where key = 'alice') || '","role":"authenticated"}', true);
+
+select throws_matching(
+  $insert into public.teams (name, game_id, captain_id)
+    values ('No Profile Team', 'mlbb', (select val from fx where key = 'alice'))$,
+  'game profile',
+  'a player cannot create a team for a game they have no game profile for');
+
+select throws_matching(
+  $delete from public.player_game_profiles
+    where user_id = (select val from fx where key = 'alice') and game_id = 'tekken8'$,
+  'Leave the team first',
+  'a player cannot delete the game profile of a game they have a team in');
+
+-- ---------- act as the admin ----------
+
+select set_config('request.jwt.claims',
+  '{"sub":"' || (select val from fx where key = 'admin') || '","role":"authenticated"}', true);
+
+select throws_matching(
+  $$delete from public.team_members
+    where team_id = (select val from fx where key = 'team_a') and role = 'captain'$$,
+  'captain can''t be removed',
+  'not even an admin can remove a team''s captain row');
 
 -- ---------- anon ----------
 

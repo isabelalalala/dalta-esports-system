@@ -41,7 +41,8 @@ export async function analyzeFeedback(
     p_key: key,
     p_items: items.length,
   });
-  if (claimError) return { classified: 0, pendingReason: claimError.message };
+  // Record the reason (and the attempt) so admins see why it is still pending
+  if (claimError) return markPending(claimError.message);
   if (limitReason) return markPending(limitReason as string);
 
   // 2. Gemini

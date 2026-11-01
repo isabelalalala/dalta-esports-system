@@ -14,7 +14,8 @@ Full title: "DALTA Esports: Tournament Management System with AI-Powered Feedbac
 - Tailwind CSS v4: theme lives in `app/globals.css` under `@theme`. There is no `tailwind.config.js`.
 - Supabase: auth, Postgres and RLS, accessed through `@supabase/ssr` (cookie-based sessions)
 - Google Gemini API (sentiment, Module 5), Facebook Live embeds (streaming, Module 4), Chart.js (reports, Module 6)
-- Deployment: Railway. Version control: Git/GitHub.
+- Deployment: Vercel (the `Dockerfile` still works for any container host). Version control: Git/GitHub.
+- Auth emails: Supabase Auth sends them through Brevo (custom SMTP, set in the Supabase dashboard; no code or key in the app).
 - Next.js 16 note: middleware is `proxy.ts` in the project root, not `middleware.ts`.
 - Brand guide (colors, fonts, logo, voice): `docs/brand.md` — the `@theme` tokens in `app/globals.css` are the source of truth.
 
@@ -34,11 +35,14 @@ Full title: "DALTA Esports: Tournament Management System with AI-Powered Feedbac
 - `FEEDBACK_SERVER_KEY`: server only. Must equal the Vault secret `feedback_server_key` (see
   `202610181000_feedback_protection.sql`); lets the server save sentiment and use the Gemini rate limit.
   Without it, feedback is saved but stays "pending analysis".
-- `NEXT_PUBLIC_SITE_URL`: the app's public address, e.g. `https://<app>.up.railway.app` (no trailing slash). Used
-  for link previews (metadataBase), shared links and calendar files. Defaults to http://localhost:3000.
+- `NEXT_PUBLIC_SITE_URL`: the app's public address, e.g. `https://<app>.vercel.app` (no trailing slash). Used
+  for link previews (metadataBase), shared links and calendar files. Falls back to Vercel's production domain
+  (`NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL`), then http://localhost:3000 (`utils/site-url.ts`).
 - `NEXT_PUBLIC_PRIVACY_CONTACT_EMAIL`, `NEXT_PUBLIC_PRIVACY_CONTACT_PERSON`: optional; the privacy notice's
   data protection contact. The fallbacks in `utils/privacy.ts` are placeholders: set the real ones before launch.
-- All of them live in `.env` (git-ignored) and must also be set in Railway when deploying.
+- All of them live in `.env` (git-ignored) and must also be set in Vercel (Project → Settings → Environment
+  Variables) when deploying. `NEXT_PUBLIC_*` values are built into the app: redeploy after changing them.
+- Vercel time limits: the API routes set `maxDuration` (feedback 30 s, exports 60 s) because Gemini can take 15 s.
 
 ## Auth pages and Supabase settings
 - `/auth/login`, `/auth/register`, `/auth/forgot-password`, `/auth/reset-password`.
@@ -46,15 +50,20 @@ Full title: "DALTA Esports: Tournament Management System with AI-Powered Feedbac
 - Admin "Add account" on `/admin/users` signs people up with `utils/supabase/signup-client.ts`. This is a separate
   client that doesn't save a session, so the admin stays logged in. It's the only place not using the clients above.
 - Supabase dashboard → Authentication → URL Configuration: Site URL = the app URL; Redirect URLs include
-  `http://localhost:3000/**` and the Railway domain `/**`.
+  `http://localhost:3000/**` and the Vercel domain `/**`.
 - Reset links work only in the browser that requested them. To make them work on any device, change the
   "Reset Password" email template link to
   `{{ .SiteURL }}/auth/callback?token_hash={{ .TokenHash }}&type=recovery&next=/auth/reset-password`.
-- Supabase's built-in email sender allows only a few emails per hour; set up custom SMTP for demos.
+- Emails go through Brevo (Supabase → Authentication → Emails → SMTP Settings); the per-hour limit is under
+  Authentication → Rate Limits. Without custom SMTP, Supabase's built-in sender allows only a few emails per
+  hour for the whole project. When a limit is hit, Supabase returns `over_email_send_rate_limit`: the auth pages
+  explain it (`isEmailRateLimited()`, `emailRateLimitMessage()` in `utils/auth.ts`) and every button that sends
+  an email waits 60 s afterwards (`useCooldown()` in `utils/use-cooldown.ts`). Register also blocks double submits.
 - Email confirmation: keep Authentication → Sign In / Providers → Email → "Confirm email" ON, and set the minimum
   password length to 10 and "Password requirements" to lowercase, uppercase, digits and symbols (the app checks
   the same rules, plus no common password and no name/email, in `utils/password.ts` with `components/PasswordField.tsx`;
-  login sends users whose old password breaks them to `/profile?weak=1`). Email fields use `components/EmailField.tsx`
+  login flags users whose old password breaks them (`user_metadata.weak_password`) and `proxy.ts` keeps sending
+  them to `/profile?weak=1` until they change it; changing or resetting the password clears the flag). Email fields use `components/EmailField.tsx`
   (`isValidEmail()` in `utils/auth.ts`). Register works either way: no session after `signUp()` = show
   "Check your email"; a session = go to the dashboard. The confirmation link goes through `/auth/callback` to
   `/auth/login?confirmed=1`. Login shows a "confirm your email first" message with a resend button
@@ -88,7 +97,7 @@ Enforced by a CHECK constraint on `profiles.role` (migration `202610161200_role_
 - RLS policies check roles with `public.get_my_role()`.
 
 ## Current schema (public)
-All migrations are in `supabase/migrations/`, run in filename order (202610151100 … 202610251000). `202610151100_base_schema` creates the three pre-migration base tables (`profiles`, `tournaments`, `tournament_registrations`). It is `if not exists`, so it is a no-op on databases that already have them.
+All migrations are in `supabase/migrations/`, run in filename order (202610151100 … 202611011100). `202610151100_base_schema` creates the three pre-migration base tables (`profiles`, `tournaments`, `tournament_registrations`). It is `if not exists`, so it is a no-op on databases that already have them.
 `202610181000_feedback_protection` also needs its one-time Vault key setup (the `feedback_server_key` secret +
 `FEEDBACK_SERVER_KEY`); the steps are at the top of that file.
 Readers: "anyone" = also logged out; "logged-in" = any role; "admin/staff" = organizers only.
@@ -123,15 +132,17 @@ Readers: "anyone" = also logged out; "logged-in" = any role; "admin/staff" = org
   The status shown in the app (upcoming / registration closed / ongoing / completed / cancelled) is calculated
   from the dates by `getTournamentStatus()` in `utils/tournaments.ts`.
 - `player_game_profiles`: id, user_id, game_id (→ games), ign, in_game_role, rank, created_at.
-  UNIQUE (user_id, game_id). Logged-in read; players write their own.
+  UNIQUE (user_id, game_id). Logged-in read; players write their own. Can't be deleted (or moved to another game)
+  while its owner is on a team for that game (202611011100); editing IGN/role/rank is fine.
 - `teams`: id, name, description, game_id (→ games), captain_id (→ profiles), created_at. UNIQUE (name, game_id).
+  The captain needs a game profile for the team's game, on create and on captaincy transfer (202611011100).
   The captain can edit name and description; game and captain can't change. Teams in a bracket can't be deleted,
   and neither can teams with a pending/approved registration for a tournament that hasn't ended
   (remove the registration first: 202610181200). Team names are unique per game ignoring case/whitespace.
 - `team_members`: id, team_id, user_id, role (`captain`/`player`), joined_at. The captain is added automatically;
   other players join only by accepting an invite (no insert policy). Members leave and the captain removes players
   (delete policy), except while the team is registered (pending/approved) for a tournament that hasn't ended
-  (roster lock trigger; admin/staff are exempt). `transfer_team_captaincy(team, user)` hands over the team.
+  (roster lock trigger; admin/staff are exempt). Nobody, not even admin/staff, removes the captain row (202611011000): transfer the captaincy or delete the team. `transfer_team_captaincy(team, user)` hands over the team.
 - `team_invites`: id, team_id, invited_user_id, invited_by, status (`pending`/`accepted`/`declined`/`cancelled`),
   created_at, responded_at. One pending invite per team+player. The captain inserts (trigger checks game profile,
   other team for the same game, roster size, solo games) and cancels; the player answers with
@@ -355,7 +366,7 @@ triggers with readable error messages.
   `utils/verification.ts` (status labels, school suggestions), `utils/activity.ts` (activity log sentences),
   `utils/notifications.ts` (notification types, icons, read/unread), `utils/checkin.ts` (check-in window),
   `utils/tournaments.ts` (dates, status, round labels), `utils/matches.ts` (team names, round counts),
-  `utils/streams.ts` (Facebook link check and embed URL), `utils/errors.ts` (`getErrorMessage`).
+  `utils/streams.ts` (Facebook link check and embed URL), `utils/errors.ts` (`getErrorMessage`), `utils/game-logos.ts` (`getGameLogo()`, logos in `public/`).
 - `proxy.ts` lists every page that requires login; add new protected pages there.
 - States: `components/PageLoading.tsx` (`PageLoading` full page, `SectionLoading` inline), `components/PageError.tsx`
   (page couldn't load), `app/not-found.tsx`, `app/error.tsx`, `app/global-error.tsx` (Next 16: props `error, retry`).
@@ -375,13 +386,14 @@ triggers with readable error messages.
   (bracket, tables) scrolls inside its own `overflow-x-auto` box.
 - New UI uses Tailwind classes, not inline styles (only exception: `utils/og-card.tsx`, because `next/og` can't
   use Tailwind).
-- One look for the whole app, public and logged in: the logo's yellow and brown on a dark background (the
-  client's wireframe style). Use the theme tokens from `app/globals.css`, never hex colors in classes:
-  `bg-sitebg` (page), `bg-sitecard` (cards), `text-gold` / `bg-gold` + `hover:bg-golddark` (accents, buttons with
-  `text-black`), `border-brownlight` / `border-brown` (lines), `shadow-[4px_4px_0_var(--color-brown)]` or `6px`
-  (hard offset shadow), square corners (`rounded-full` only for pills and dots), `font-pixel` for page titles
-  (`font-pixel text-xl sm:text-2xl leading-relaxed text-gold`). Red/green/yellow and the blue Verified badge are
-  for meaning (errors, success, pending, verified), not decoration.
+- One look for the whole app, public and logged in (the redesign): white page, uppercase Montserrat, rounded white
+  cards (`bg-white border border-stone-200/90 rounded-2xl shadow-xs`), a dark photo hero at the top of each page
+  (`PageHeroBackground`), and the logo's gold and maroon as accents. Full rules: `docs/brand.md`. Use the theme
+  tokens from `app/globals.css`, never hex colors in classes or inline styles: `text-maroon` for accents on white,
+  `text-gold` / `bg-gold` + `hover:bg-golddark` (buttons with `text-stone-950`, gold text only on dark),
+  `bg-ink`, `bg-logo-stage`, `text-glow-gold`. Body text `text-stone-950`, muted `text-stone-500`/`600`; no
+  light grays on white. Pages inside `SiteNavLayout` start with a `<div>` (the layout renders `<main>`).
+  Red/emerald/yellow and the blue Verified badge are for meaning (errors, success, pending, verified), not decoration.
 - The Supabase API returns at most 1000 rows per request by default, and anything beyond that is cut off without
   an error. Count or aggregate big tables (`stream_views`, `feedback`) in SQL instead of loading every row.
 
@@ -424,7 +436,7 @@ All extra features are done (the prompts file itself isn't in `docs/`):
     404/error pages; feedback protection with Gemini rate limit and "pending analysis" retry
     (`202610181000_feedback_protection`).
 11. Pick'em predictions and leaderboard (`202610181100_predictions`).
-Also done: the yellow/brown restyle of every page (one look for public and logged-in pages).
+Also done: the light redesign of every page (one look for public and logged-in pages; `docs/brand.md`).
 The final feature list for the documents is docs/new-features-summary.md.
 
 ## How things work (read before adding a feature)
@@ -444,7 +456,7 @@ The final feature list for the documents is docs/new-features-summary.md.
   `marking_predictions`.
 - **Redefining an existing function or trigger function**: always start from its LATEST version (create or
   replace keeps only what you write). Latest versions: `check_tournament_registration`, `check_registration_update`
-  → `202610171000_student_verification`; `check_team_member` → `202610171000`; `get_team_roster` → `202610171000`;
+  → `202610171000_student_verification`; `check_team_member` → `202610171000`; `check_team_member_leave` → `202611011000_roster_captain_guard`; `get_team_roster` → `202610171000`;
   `search_players` → `202610171300_team_invites`; `protect_team_fields` → `202610171300`; `protect_profile_role`,
   `handle_new_user` → `202610170900_privacy_consent`; `log_match` → `202610171400_match_checkin`;
   `get_needs_attention` → `202610171500_match_results`; `notifications_type_check` → `202610171500`;
@@ -457,7 +469,7 @@ The final feature list for the documents is docs/new-features-summary.md.
   `utils/database.types.ts` from the local schema; CI diffs it to catch drift.
 - **Scheduled jobs (pg_cron, enabled)**: `dalta-checkin-open-notifications` every 5 minutes. Manual cleanups run in
   the SQL Editor: `purge_old_activity_logs()` (1 year), `purge_old_notifications()` (read, 90 days).
-- **Privacy Notice**: current version `2026-10-18` (`utils/privacy.ts`; pick'em leaderboards). A new kind of personal data, or a new
+- **Privacy Notice**: current version `2026-11-01` (`utils/privacy.ts`; Brevo emails, Vercel hosting). A new kind of personal data, or a new
   group who can see it, means updating `/privacy` and the version (everyone agrees again); small clarifications
   don't change the version.
 - **Logged-out data** comes only from published website rows and the `get_public_tournament()` /
@@ -466,13 +478,13 @@ The final feature list for the documents is docs/new-features-summary.md.
 - **New protected pages** go in `proxy.ts`. Public pages (website, `/t`, `/calendar`, `/privacy`) must not.
 
 ### Notes on reports (Module 6)
-- Chart colors are in `utils/reports.ts` and were checked for color-blind safety on the card color `#1f1714`.
+- Chart colors are in `utils/reports.ts` and were checked for color-blind safety (originally on the old dark card `#1f1714`; cards are white since the redesign, so recheck contrast if a color is changed).
   Sentiment uses blue (positive) / gray (neutral) / red (negative); other charts use `categoryColors` in order.
 - Viewership is counted by the app, not by Facebook: one view per logged-in person per stream per day.
   Official Facebook viewer counts would need the Graph API (a Facebook App and page tokens). That isn't built.
 - Realtime Presence needs Realtime enabled for the project (it is, for `matches`); public channels must be allowed.
 
-Restyle: done. Every page uses Tailwind and the yellow/brown theme (no inline styles left).
+Restyle: done. Every page uses Tailwind and the light gold/maroon theme tokens (no inline styles or hex classes left).
 
 Supported games: MLBB, Valorant, Tekken 8, League of Legends, CODM.
 

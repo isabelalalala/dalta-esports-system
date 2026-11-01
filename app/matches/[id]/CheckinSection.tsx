@@ -80,31 +80,31 @@ export default function CheckinSection({ match, windowMinutes, teamA, teamB, che
   };
 
   return (
-    <section className="bg-sitecard border border-brownlight p-6 space-y-4">
+    <section className="bg-white border border-stone-200/90 rounded-2xl shadow-xs p-6 space-y-4">
       <h2 className="text-xl font-bold">Check-in</h2>
 
-      {state === 'off' && <p className="text-gray-400 text-sm">This tournament doesn&apos;t use check-in.</p>}
-      {state === 'no_time' && <p className="text-gray-400 text-sm">Check-in opens once the match has a time.</p>}
+      {state === 'off' && <p className="text-stone-500 text-sm">This tournament doesn&apos;t use check-in.</p>}
+      {state === 'no_time' && <p className="text-stone-500 text-sm">Check-in opens once the match has a time.</p>}
       {checkinWindow && (
-        <p className="text-gray-300 text-sm">
+        <p className="text-stone-700 text-sm">
           Opens {new Date(checkinWindow.opensAt).toLocaleString(undefined, timeFormat)}, closes at the match time{' '}
           {new Date(checkinWindow.closesAt).toLocaleString(undefined, timeFormat)}.{' '}
-          {state === 'not_open' && <span className="text-yellow-300">Opens {formatCountdown(checkinWindow.opensAt - now)}.</span>}
-          {state === 'open' && <span className="text-green-300 font-semibold">Open now, closes {formatCountdown(checkinWindow.closesAt - now)}.</span>}
-          {state === 'closed' && <span className="text-gray-400">Closed.</span>}
+          {state === 'not_open' && <span className="text-yellow-700">Opens {formatCountdown(checkinWindow.opensAt - now)}.</span>}
+          {state === 'open' && <span className="text-emerald-700 font-semibold">Open now, closes {formatCountdown(checkinWindow.closesAt - now)}.</span>}
+          {state === 'closed' && <span className="text-stone-500">Closed.</span>}
         </p>
       )}
 
-      {error && <div role="alert" className="bg-red-500/10 border border-red-500 text-red-300 px-4 py-3">{error}</div>}
+      {error && <div role="alert" className="bg-red-500/10 border border-red-500 text-red-700 px-4 py-3">{error}</div>}
 
       {state !== 'off' && (
         <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {[teamA, teamB].map((team, i) => {
             const row = checkedIn(team?.id);
             return (
-              <li key={i} className={`border p-3 ${row ? 'border-green-500/60 bg-green-500/10' : 'border-gray-700'}`}>
-                <p className="font-semibold">{team?.name ?? <span className="italic text-gray-400">TBD</span>}</p>
-                <p className={`text-sm inline-flex items-center gap-1.5 ${row ? 'text-green-300' : 'text-gray-400'}`}>
+              <li key={i} className={`border p-3 ${row ? 'border-green-500/60 bg-green-500/10' : 'border-stone-200'}`}>
+                <p className="font-semibold">{team?.name ?? <span className="italic text-stone-500">TBD</span>}</p>
+                <p className={`text-sm inline-flex items-center gap-1.5 ${row ? 'text-emerald-700' : 'text-stone-500'}`}>
                   {row ? <CircleCheck className="h-4 w-4" /> : <Hourglass className="h-4 w-4" />}
                   {row
                     ? `Checked in ${new Date(row.checked_in_at).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })}`
@@ -128,16 +128,16 @@ export default function CheckinSection({ match, windowMinutes, teamA, teamB, che
       )}
 
       {canForfeit && (
-        <div className="border-t border-gray-700 pt-4 space-y-2">
-          <p className="text-sm font-semibold text-yellow-300">Staff: declare a forfeit</p>
-          <p className="text-xs text-gray-400">
+        <div className="border-t border-stone-200 pt-4 space-y-2">
+          <p className="text-sm font-semibold text-yellow-700">Staff: declare a forfeit</p>
+          <p className="text-xs text-stone-500">
             Use this when a team didn&apos;t show up. The match is completed without a score and the winner advances.
           </p>
           <div className="flex flex-col sm:flex-row gap-2">
             <select
               value={chosenWinner}
               onChange={(e) => setForfeitWinner(e.target.value)}
-              className="border border-brownlight bg-sitebg px-3 py-2 text-white"
+              className="border border-stone-300 bg-white rounded-xl px-3 py-2 text-stone-950"
               aria-label="Forfeit winner"
             >
               <option value="">Choose the winner</option>
@@ -148,7 +148,7 @@ export default function CheckinSection({ match, windowMinutes, teamA, teamB, che
             <button
               onClick={handleForfeit}
               disabled={busy || !chosenWinner}
-              className="border border-yellow-500 text-yellow-300 px-4 py-2 font-bold hover:bg-yellow-500/10 disabled:opacity-50"
+              className="border border-yellow-500 text-yellow-700 px-4 py-2 font-bold hover:bg-yellow-500/10 disabled:opacity-50"
             >
               Declare forfeit
             </button>

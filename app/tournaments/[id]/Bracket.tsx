@@ -95,7 +95,7 @@ function MatchBox({ match, teamNames, timeZone }: { match: Match; teamNames: Rec
             key={i}
             className={`flex justify-between items-center gap-2 px-3.5 py-2.5 ${i === 0 ? 'border-b border-stone-100' : ''} ${
               won
-                ? 'text-[#5B271E] font-black bg-amber-500/5'
+                ? 'text-maroon font-black bg-amber-500/5'
                 : lost
                 ? 'text-stone-400 font-semibold'
                 : 'text-stone-900 font-bold'

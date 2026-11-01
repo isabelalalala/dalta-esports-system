@@ -48,7 +48,7 @@ export default function VerificationPage() {
           .eq('verification_status', tab)
           .order('submitted_at', { ascending: true });
         if (listError) throw listError;
-        setPlayers(data || []);
+        setPlayers((data || []) as Profile[]);
       } catch (err) {
         setError(getErrorMessage(err, 'Failed to load players'));
       } finally {
@@ -64,9 +64,9 @@ export default function VerificationPage() {
     setMessage('');
     try {
       const { error: reviewError } = await supabase.rpc('review_student_verification', {
-        target_user: player.id,
-        verified,
-        note: verified ? null : reason.trim() || null,
+        p_user_id: player.id,
+        p_approve: verified,
+        p_note: verified ? undefined : reason.trim() || undefined,
       });
       if (reviewError) throw reviewError;
 
@@ -121,14 +121,12 @@ export default function VerificationPage() {
 
         <div className="relative z-10 max-w-4xl mx-auto space-y-3 pt-2">
           <h1
-            className="text-3xl sm:text-4xl lg:text-5xl font-black !text-white text-white tracking-wider uppercase leading-tight"
-            style={{ color: '#ffffff' }}
+            className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-wider uppercase leading-tight text-white"
           >
             Student Verification
           </h1>
           <p
-            className="text-base sm:text-lg !text-white text-stone-200 font-medium uppercase tracking-wide leading-relaxed"
-            style={{ color: '#ffffff' }}
+            className="text-base sm:text-lg font-medium uppercase tracking-wide leading-relaxed text-white"
           >
             Review player credentials against institutional records before verified tournament participation.
           </p>

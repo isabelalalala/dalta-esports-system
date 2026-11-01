@@ -102,6 +102,16 @@ export async function proxy(request: NextRequest) {
       response.cookies.getAll().forEach((cookie) => redirect.cookies.set(cookie));
       return redirect;
     }
+
+    // Login found an old password that breaks the current rules (app/auth/login/page.tsx):
+    // the user must change it on /profile before using the rest of the app. Changing or
+    // resetting the password clears the flag. (The flag is in the user's own metadata, so
+    // this is a firm nudge, not a security boundary.)
+    if (user.user_metadata?.weak_password === true && path !== '/profile') {
+      const redirect = NextResponse.redirect(new URL('/profile?weak=1', request.url));
+      response.cookies.getAll().forEach((cookie) => redirect.cookies.set(cookie));
+      return redirect;
+    }
   }
 
   return response;

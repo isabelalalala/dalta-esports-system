@@ -57,7 +57,7 @@ export default function TeamInvites({ onAnswered }: { onAnswered?: () => void })
   return (
     <section className="w-full rounded-3xl border border-stone-200/90 bg-white p-6 sm:p-8 shadow-xs space-y-6 uppercase">
       <div className="flex items-center gap-3 pb-4 border-b border-stone-100">
-        <div className="w-10 h-10 rounded-xl bg-[#5B271E]/10 border border-[#5B271E]/20 text-[#5B271E] flex items-center justify-center shadow-2xs">
+        <div className="w-10 h-10 rounded-xl bg-maroon/10 border border-maroon/20 text-maroon flex items-center justify-center shadow-2xs">
           <Mail className="h-5 w-5" />
         </div>
         <div>

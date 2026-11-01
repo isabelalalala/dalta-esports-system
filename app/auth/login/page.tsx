@@ -6,7 +6,11 @@ import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/utils/supabase/client'
 import { getErrorMessage } from '@/utils/errors'
-import { confirmEmailRedirect, getEmailError, isEmailNotConfirmed } from '@/utils/auth'
+import {
+  confirmEmailRedirect, EMAIL_COOLDOWN_SECONDS, emailRateLimitMessage, emailRetryDelay, getEmailError,
+  isEmailNotConfirmed, isEmailRateLimited,
+} from '@/utils/auth'
+import { useCooldown } from '@/utils/use-cooldown'
 import { getPasswordError } from '@/utils/password'
 import EmailField from '@/components/EmailField'
 import PasswordField from '@/components/PasswordField'
@@ -35,6 +39,10 @@ function LoginContent() {
   // Set when the login failed because the email isn't confirmed yet
   const [notConfirmed, setNotConfirmed] = useState(false)
   const [resendMessage, setResendMessage] = useState('')
+  const [resendError, setResendError] = useState('')
+  const [resending, setResending] = useState(false)
+  // "Resend" waits a minute after each email, so repeated clicks can't use up the email limit
+  const resendCooldown = useCooldown()
   const [loading, setLoading] = useState(false)
 
   // Prevent background scrolling while the full-screen login pane is active
@@ -73,9 +81,13 @@ function LoginContent() {
       const { data, error } = await supabase.auth.signInWithPassword({ email: email.trim(), password })
       if (error) throw error
       // Accounts made before the stronger rules may still have a weak password. Let them in,
-      // but send them to change it. Supabase also reports this (weakPassword) once its
-      // password requirements are turned on in the dashboard.
-      if (data.weakPassword || getPasswordError(password, { email })) {
+      // but make them change it: the weak_password flag makes proxy.ts send them to
+      // /profile?weak=1 from every protected page until the password is changed.
+      // Supabase also reports this (weakPassword) once its password requirements are
+      // turned on in the dashboard.
+      const fullName = data.user?.user_metadata?.full_name ?? ''
+      if (data.weakPassword || getPasswordError(password, { email, fullName })) {
+        await supabase.auth.updateUser({ data: { weak_password: true } })
         router.push('/profile?weak=1')
         return
       }
@@ -92,13 +104,25 @@ function LoginContent() {
   }
 
   const handleResend = async () => {
+    if (resending || resendCooldown.remaining > 0) return
+    setResending(true)
     setResendMessage('')
+    setResendError('')
     const { error } = await supabase.auth.resend({
       type: 'signup',
       email: email.trim(),
       options: { emailRedirectTo: confirmEmailRedirect() },
     })
-    setResendMessage(error ? getErrorMessage(error, 'Could not resend the email.') : 'Sent. Check your inbox and spam folder.')
+    setResending(false)
+    if (!error) {
+      setResendMessage('Sent. Check your inbox and spam folder.')
+      resendCooldown.start(EMAIL_COOLDOWN_SECONDS)
+    } else if (isEmailRateLimited(error)) {
+      setResendError(emailRateLimitMessage(error, 'resend'))
+      resendCooldown.start(emailRetryDelay(error))
+    } else {
+      setResendError(getErrorMessage(error, 'Could not resend the email.'))
+    }
   }
 
   return (
@@ -187,10 +211,20 @@ function LoginContent() {
                   Please confirm your email first. Open the link we sent to{' '}
                   <span className="font-black text-stone-950">{email.trim()}</span> when you registered.
                 </p>
-                <button type="button" onClick={handleResend} className="underline font-black text-amber-700 hover:text-amber-800 uppercase tracking-wider cursor-pointer">
-                  Resend confirmation email
+                <button
+                  type="button"
+                  onClick={handleResend}
+                  disabled={resending || resendCooldown.remaining > 0}
+                  className="underline font-black text-amber-700 hover:text-amber-800 uppercase tracking-wider cursor-pointer disabled:no-underline disabled:opacity-60 disabled:cursor-not-allowed"
+                >
+                  {resending
+                    ? 'Sending...'
+                    : resendCooldown.remaining > 0
+                      ? `Resend in ${resendCooldown.remaining}s`
+                      : 'Resend confirmation email'}
                 </button>
-                {resendMessage && <p className="text-xs font-bold text-amber-800">{resendMessage}</p>}
+                {resendMessage && <p role="status" className="text-xs font-bold text-emerald-700">{resendMessage}</p>}
+                {resendError && <p role="alert" className="text-xs font-bold text-red-700">{resendError}</p>}
               </div>
             )}
 

@@ -228,10 +228,13 @@ export default function PrivacyNoticePage() {
             </h2>
             <ul className="list-disc pl-6 space-y-3">
               <li>
-                <strong className="text-stone-950 font-black">Supabase:</strong> stores the database and handles logins and emails (confirmation and password reset).
+                <strong className="text-stone-950 font-black">Supabase:</strong> stores the database and handles logins, including the account emails (confirmation and password reset).
               </li>
               <li>
-                <strong className="text-stone-950 font-black">Railway:</strong> hosts the website.
+                <strong className="text-stone-950 font-black">Brevo:</strong> delivers those account emails for Supabase. It receives your email address and the content of the email (for example the confirmation link), and keeps delivery logs under its own privacy policy.
+              </li>
+              <li>
+                <strong className="text-stone-950 font-black">Vercel:</strong> hosts the website and keeps short-lived technical logs of requests (such as IP address and pages visited) to run and protect it.
               </li>
               <li>
                 <strong className="text-stone-950 font-black">Google Gemini:</strong> detects the sentiment and topics of feedback. Only the comment and rating are sent, without your name or email. Google may keep and review this content under its own terms, so please don&apos;t write personal information in feedback.

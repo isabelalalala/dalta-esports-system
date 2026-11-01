@@ -42,7 +42,7 @@ export default function PostSectionCarousel({
         {posts.length > 0 && (
           <Link
             href={moreHref}
-            className="text-xs sm:text-sm font-extrabold text-[#5B271E] uppercase tracking-widest hover:text-[#FFCC37] transition-colors"
+            className="text-xs sm:text-sm font-extrabold text-maroon uppercase tracking-widest hover:text-gold transition-colors"
           >
             See all →
           </Link>

@@ -39,7 +39,7 @@ find.
 - ~~Bracket regen deletes unreviewed results; `next_match_id` unchecked~~. Regen refuses while submissions are open; `check_match` enforces same-tournament/not-self/scheduled-target.
 - ~~One-team-per-game race; case/whitespace team names; client-writable `registered_at`/`predictions.created_at`~~: profile-row lock, `lower(btrim(name))` index, server-side pinning.
 - ~~`tournaments.status` nullable; `topics ≤3` no CHECK; email leak in `unverified_team_members()`; approved registration vanishing on team delete~~: all fixed (NOT NULL, cardinality CHECK, name fallback, delete blocked while registered).
-- **Remaining:** `give_privacy_consent` accepts any version string (fail-closed: a bogus version just keeps the gate locked); captain needs no game profile for the team's game (spec unclear); `gemini_calls.user_id` index; staff can still remove a captain's member row.
+- **Remaining:** `give_privacy_consent` accepts any version string (fail-closed: a bogus version just keeps the gate locked; not fixed on purpose, the DB doesn't know the current version); ~~captain needs no game profile for the team's game~~: RESOLVED in `202611011100_captain_game_profile` (also blocks deleting a profile while on a team for that game). ~~`gemini_calls.user_id` index; staff can still remove a captain's member row~~: RESOLVED in `202611011000_roster_captain_guard`.
 
 **Live/engagement** (G, F)
 - ~~Presence "Watching now" is spoofable~~. **RESOLVED (202610181300):** `stream_presence`

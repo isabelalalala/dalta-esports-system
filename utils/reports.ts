@@ -22,13 +22,14 @@ export interface ReportFilters {
 
 export const emptyFilters: ReportFilters = { tournamentId: '', gameId: '', from: '', to: '' };
 
-// Turns the filters into the arguments of the report functions (null = all)
+// Turns the filters into the arguments of the report functions.
+// An empty filter is left out, so the function uses its default (null = all).
 export function toRpcArgs(filters: ReportFilters) {
   return {
-    p_tournament_id: filters.tournamentId || null,
-    p_game_id: filters.gameId || null,
-    p_from: filters.from || null,
-    p_to: filters.to || null,
+    p_tournament_id: filters.tournamentId || undefined,
+    p_game_id: filters.gameId || undefined,
+    p_from: filters.from || undefined,
+    p_to: filters.to || undefined,
   };
 }
 
@@ -158,7 +159,7 @@ export interface SavedReport {
 export async function fetchEngagementReport(supabase: SupabaseClient, filters: ReportFilters) {
   const { data, error } = await supabase.rpc('report_engagement', toRpcArgs(filters));
   if (error) throw error;
-  return data as EngagementReport;
+  return data as unknown as EngagementReport;
 }
 
 // Runs all three reports at the same time (admin only)
@@ -172,7 +173,12 @@ export async function fetchFullReport(supabase: SupabaseClient, filters: ReportF
   if (activity.error) throw activity.error;
   if (sentiment.error) throw sentiment.error;
   if (engagement.error) throw engagement.error;
-  return { activity: activity.data, sentiment: sentiment.data, engagement: engagement.data };
+  // The functions return jsonb; the shapes are the types above
+  return {
+    activity: activity.data as unknown as ActivityReport,
+    sentiment: sentiment.data as unknown as SentimentReport,
+    engagement: engagement.data as unknown as EngagementReport,
+  };
 }
 
 // Readable filters, e.g. "All tournaments · MLBB · 2026-10-01 to 2026-10-31"

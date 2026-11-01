@@ -44,7 +44,7 @@ const responseSchema = {
 export async function classifyFeedback(items: FeedbackToClassify[]): Promise<SentimentResult[]> {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
-    throw new Error('GEMINI_API_KEY is not set. Add it to .env (and to Railway when deploying).');
+    throw new Error('GEMINI_API_KEY is not set. Add it to .env (and to Vercel when deploying).');
   }
   const model = process.env.GEMINI_MODEL || DEFAULT_MODEL;
 

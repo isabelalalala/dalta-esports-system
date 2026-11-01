@@ -56,14 +56,12 @@ export default async function CommunityPage() {
 
         <div className="relative z-10 max-w-4xl mx-auto space-y-3">
           <h1
-            className="animate-hero-title text-4xl sm:text-5xl lg:text-6xl font-black !text-white text-white tracking-wider uppercase leading-tight"
-            style={{ color: '#ffffff' }}
+            className="animate-hero-title text-4xl sm:text-5xl lg:text-6xl font-black tracking-wider uppercase leading-tight text-white"
           >
             The DALTA Community
           </h1>
           <p
-            className="animate-hero-tagline text-base sm:text-lg !text-white text-stone-200 font-medium uppercase tracking-wide leading-relaxed"
-            style={{ color: '#ffffff' }}
+            className="animate-hero-tagline text-base sm:text-lg font-medium uppercase tracking-wide leading-relaxed text-white"
           >
             The people behind DALTA Esports.
           </p>

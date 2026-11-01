@@ -12,33 +12,16 @@ import FacebookPlayer from '@/components/FacebookPlayer';
 import ShareButton from '@/components/ShareButton';
 import CalendarLinks from '@/components/CalendarLinks';
 import LiveRefresher from '@/components/site/LiveRefresher';
-import { EmptyNote, Paragraphs, SectionTitle, SiteBox } from '@/components/site/SiteParts';
+import { EmptyNote, Paragraphs } from '@/components/site/SiteParts';
 import { SectionLoading } from '@/components/PageLoading';
 import PredictionsProvider from '@/components/PredictionsProvider';
 import PredictionPicker from '@/components/PredictionPicker';
 import PageHeroBackground from '@/components/site/PageHeroBackground';
-import { BadgeCheck, Calendar, Clock, ExternalLink, MessageSquare, Target, Trophy, Tv, Users } from 'lucide-react';
+import { BadgeCheck, ExternalLink, Target } from 'lucide-react';
+
+import { getGameLogo } from '@/utils/game-logos';
 
 const TZ = 'Asia/Manila';
-
-function getGameLogo(game: string, gameId?: string | null): string | null {
-  const g = (game || '').toLowerCase().trim();
-  const id = (gameId || '').toLowerCase().trim();
-
-  if (g.includes('mlbb') || g.includes('mobile legends') || id.includes('mlbb')) {
-    return '/MLBB LOGO.png';
-  }
-  if (g.includes('valo') || g.includes('valorant') || id.includes('valo')) {
-    return '/VALO LOGO.png';
-  }
-  if (g.includes('tekken') || id.includes('tekken')) {
-    return '/TEKKEMN 8 LOGO.png';
-  }
-  if (g.includes('codm') || g.includes('call of duty') || id.includes('cod')) {
-    return '/CODM LOGO.png';
-  }
-  return null;
-}
 
 export async function generateMetadata({ params }: PageProps<'/t/[id]'>): Promise<Metadata> {
   const { id } = await params;
@@ -86,11 +69,11 @@ async function TournamentContent({ params }: { params: PageProps<'/t/[id]'>['par
     <li key={m.id}>
       <Link href={publicMatchPath(t.id, m.id)} className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 px-5 py-3.5 hover:bg-amber-50/50 transition-colors">
         <span>
-          <span className={m.status === 'completed' && m.winner_team_id === m.team_a_id ? 'text-[#5B271E] font-black' : 'text-stone-950 font-bold'}>{name(m.team_a_id)}</span>
+          <span className={m.status === 'completed' && m.winner_team_id === m.team_a_id ? 'text-maroon font-black' : 'text-stone-950 font-bold'}>{name(m.team_a_id)}</span>
           {m.status === 'completed'
             ? <span className="mx-2 tabular-nums text-stone-900 font-extrabold">{m.is_forfeit ? 'forfeit' : `${m.score_a ?? '-'} : ${m.score_b ?? '-'}`}</span>
             : <span className="mx-2 text-stone-400 font-medium">vs</span>}
-          <span className={m.status === 'completed' && m.winner_team_id === m.team_b_id ? 'text-[#5B271E] font-black' : 'text-stone-950 font-bold'}>{name(m.team_b_id)}</span>
+          <span className={m.status === 'completed' && m.winner_team_id === m.team_b_id ? 'text-maroon font-black' : 'text-stone-950 font-bold'}>{name(m.team_b_id)}</span>
           {m.status === 'live' && <span className="ml-2 text-xs text-red-600 font-black"><span className="inline-block h-1.5 w-1.5 rounded-full bg-current animate-pulse" /> LIVE</span>}
         </span>
         <span className="text-xs text-stone-500 font-medium">
@@ -111,7 +94,7 @@ async function TournamentContent({ params }: { params: PageProps<'/t/[id]'>['par
         <div className="relative z-10 w-full flex flex-wrap items-center justify-between gap-4">
           <Link
             href="/tournaments"
-            className="inline-flex items-center gap-1.5 text-xs font-black text-[#FFCC37] hover:text-[#FFE066] uppercase tracking-wider transition-colors"
+            className="inline-flex items-center gap-1.5 text-xs font-black text-gold hover:text-goldlight uppercase tracking-wider transition-colors"
           >
             ← Back to Tournaments
           </Link>
@@ -129,16 +112,14 @@ async function TournamentContent({ params }: { params: PageProps<'/t/[id]'>['par
 
         <div className="relative z-10 max-w-4xl mx-auto space-y-3 pt-2">
           <h1
-            className="animate-hero-title text-3xl sm:text-4xl lg:text-5xl font-black !text-white text-white tracking-wider uppercase leading-tight"
-            style={{ color: '#ffffff' }}
+            className="animate-hero-title text-3xl sm:text-4xl lg:text-5xl font-black tracking-wider uppercase leading-tight text-white"
           >
             {t.name}
           </h1>
           <p
-            className="animate-hero-tagline text-xs sm:text-sm text-stone-200 font-semibold uppercase tracking-wider flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5"
-            style={{ color: '#ffffff' }}
+            className="animate-hero-tagline text-xs sm:text-sm font-semibold uppercase tracking-wider flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 text-white"
           >
-            <span className="text-[#FFCC37] font-black">{t.game}</span>
+            <span className="text-gold font-black">{t.game}</span>
             <span>•</span>
             <span>{formatDate(t.start_date)} – {formatDate(t.end_date)}</span>
             <span>•</span>
@@ -165,7 +146,7 @@ async function TournamentContent({ params }: { params: PageProps<'/t/[id]'>['par
       {data.live_streams.length > 0 && (
         <section className="space-y-4">
           <div className="border-b border-stone-200/90 pb-3">
-            <span className="text-[11px] font-black tracking-widest text-[#5B271E] uppercase">Live Broadcast</span>
+            <span className="text-[11px] font-black tracking-widest text-maroon uppercase">Live Broadcast</span>
             <h2 className="text-xl sm:text-2xl font-black text-stone-950 uppercase tracking-wide flex items-center gap-2">
               <span className="inline-block h-3 w-3 rounded-full bg-red-600 animate-ping mr-1" />
               Live Stream Now
@@ -183,16 +164,12 @@ async function TournamentContent({ params }: { params: PageProps<'/t/[id]'>['par
       <div className="animate-stagger-1 grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 items-start">
         {logo ? (
           <div className="lg:col-span-5 w-full">
-            <div className="relative aspect-[4/3] max-h-[380px] w-full rounded-3xl border border-stone-800/80 bg-[#0e0c0b] overflow-hidden shadow-md flex items-center justify-center p-6 sm:p-8">
+            <div className="relative aspect-[4/3] max-h-[380px] w-full rounded-3xl border border-stone-800/80 bg-ink overflow-hidden shadow-md flex items-center justify-center p-6 sm:p-8">
               <div
-                className="absolute inset-0 pointer-events-none"
-                style={{
-                  background:
-                    'radial-gradient(circle at 85% 85%, rgba(164, 148, 140, 0.35) 0%, rgba(35, 30, 27, 0.7) 45%, #0e0c0b 100%)',
-                }}
+                className="absolute inset-0 pointer-events-none bg-logo-stage"
               />
               <div className="absolute top-4 right-4 z-20 pointer-events-none">
-                <span className="text-[10px] font-black tracking-widest px-3 py-1.5 rounded-md border border-[#FFCC37]/60 bg-[#0e0c0b]/85 text-[#FFCC37] uppercase backdrop-blur-md shadow-md">
+                <span className="text-[10px] font-black tracking-widest px-3 py-1.5 rounded-md border border-gold/60 bg-ink/85 text-gold uppercase backdrop-blur-md shadow-md">
                   {statusLabels[status]}
                 </span>
               </div>
@@ -218,7 +195,7 @@ async function TournamentContent({ params }: { params: PageProps<'/t/[id]'>['par
         <div className={logo ? 'lg:col-span-7 w-full space-y-6' : 'w-full space-y-6'}>
           <div className="rounded-3xl border border-stone-200/90 bg-white p-6 sm:p-8 lg:p-10 shadow-xs space-y-5">
             <div className="border-b border-stone-100 pb-4 space-y-1">
-              <span className="text-[11px] font-black tracking-widest text-[#5B271E] uppercase">
+              <span className="text-[11px] font-black tracking-widest text-maroon uppercase">
                 Competition Details
               </span>
               <h2 className="text-xl sm:text-2xl font-black text-stone-950 uppercase tracking-wide">
@@ -255,7 +232,7 @@ async function TournamentContent({ params }: { params: PageProps<'/t/[id]'>['par
       {t.rules && (
         <section className="rounded-3xl border border-stone-200/90 bg-white p-6 sm:p-8 lg:p-10 shadow-xs space-y-4">
           <div className="border-b border-stone-100 pb-3">
-            <span className="text-[11px] font-black tracking-widest text-[#5B271E] uppercase">Governance</span>
+            <span className="text-[11px] font-black tracking-widest text-maroon uppercase">Governance</span>
             <h2 className="text-xl sm:text-2xl font-black text-stone-950 uppercase tracking-wide">Rules &amp; Regulations</h2>
           </div>
           <div className="text-stone-800 text-xs sm:text-sm font-medium uppercase tracking-wide leading-relaxed">
@@ -267,7 +244,7 @@ async function TournamentContent({ params }: { params: PageProps<'/t/[id]'>['par
       {/* 5. Approved Teams */}
       <section className="rounded-3xl border border-stone-200/90 bg-white p-6 sm:p-8 lg:p-10 shadow-xs space-y-4">
         <div className="border-b border-stone-100 pb-3">
-          <span className="text-[11px] font-black tracking-widest text-[#5B271E] uppercase">Roster</span>
+          <span className="text-[11px] font-black tracking-widest text-maroon uppercase">Roster</span>
           <h2 className="text-xl sm:text-2xl font-black text-stone-950 uppercase tracking-wide">
             Participating Teams ({data.teams.length})
           </h2>
@@ -292,13 +269,13 @@ async function TournamentContent({ params }: { params: PageProps<'/t/[id]'>['par
       <section className="rounded-3xl border border-stone-200/90 bg-white p-6 sm:p-8 lg:p-10 shadow-xs space-y-5">
         <div className="border-b border-stone-100 pb-3 flex flex-wrap items-center justify-between gap-3">
           <div>
-            <span className="text-[11px] font-black tracking-widest text-[#5B271E] uppercase">Playoffs</span>
+            <span className="text-[11px] font-black tracking-widest text-maroon uppercase">Playoffs</span>
             <h2 className="text-xl sm:text-2xl font-black text-stone-950 uppercase tracking-wide">Tournament Bracket</h2>
           </div>
           {data.matches.length > 0 && (
             <div className="flex items-center gap-1.5 text-xs text-stone-600 font-black uppercase tracking-wider">
-              <Target className="h-4 w-4 text-[#5B271E]" />
-              <Link href={`/tournaments/${t.id}/predictions`} className="text-[#5B271E] hover:text-[#FFCC37] underline">
+              <Target className="h-4 w-4 text-maroon" />
+              <Link href={`/tournaments/${t.id}/predictions`} className="text-maroon hover:text-gold underline">
                 Pick&apos;em Leaderboard →
               </Link>
             </div>
@@ -326,7 +303,7 @@ async function TournamentContent({ params }: { params: PageProps<'/t/[id]'>['par
       {upcoming.length > 0 && (
         <section className="rounded-3xl border border-stone-200/90 bg-white p-6 sm:p-8 lg:p-10 shadow-xs space-y-4">
           <div className="border-b border-stone-100 pb-3">
-            <span className="text-[11px] font-black tracking-widest text-[#5B271E] uppercase">Schedule</span>
+            <span className="text-[11px] font-black tracking-widest text-maroon uppercase">Schedule</span>
             <h2 className="text-xl sm:text-2xl font-black text-stone-950 uppercase tracking-wide">Upcoming Matches</h2>
             <p className="text-[11px] text-stone-400 font-semibold uppercase mt-0.5">Times are Philippine Time (PHT).</p>
           </div>
@@ -339,7 +316,7 @@ async function TournamentContent({ params }: { params: PageProps<'/t/[id]'>['par
       {results.length > 0 && (
         <section className="rounded-3xl border border-stone-200/90 bg-white p-6 sm:p-8 lg:p-10 shadow-xs space-y-4">
           <div className="border-b border-stone-100 pb-3">
-            <span className="text-[11px] font-black tracking-widest text-[#5B271E] uppercase">Archive</span>
+            <span className="text-[11px] font-black tracking-widest text-maroon uppercase">Archive</span>
             <h2 className="text-xl sm:text-2xl font-black text-stone-950 uppercase tracking-wide">Match Results</h2>
           </div>
           <ul className="rounded-2xl border border-stone-200/90 bg-white shadow-2xs divide-y divide-stone-100 overflow-hidden">

@@ -26,7 +26,7 @@ AI-Powered Feedback Sentiment Analytics"*.
 - Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS v4
 - Supabase (auth, Postgres + RLS, Realtime, Storage, Vault, pg_cron)
 - Google Gemini (feedback sentiment), Facebook Live embeds, Chart.js (reports)
-- Deployed on Railway. Detailed architecture/rules: `CLAUDE.md`, requirements: `docs/`.
+- Deployed on Vercel; auth emails sent through Brevo (SMTP). Detailed architecture/rules: `CLAUDE.md`, requirements: `docs/`.
 
 ## Prerequisites
 
@@ -65,12 +65,15 @@ sentiment stays "pending analysis".
 **5. Configure Authentication** (Supabase dashboard):
 
 - URL Configuration → Site URL = `http://localhost:3000`; Redirect URLs: add
-  `http://localhost:3000/**` (and later your Railway domain `/**`)
-- Email → keep "Confirm email" ON, minimum password length 8
+  `http://localhost:3000/**` (and later your Vercel domain `/**`)
+- Email → keep "Confirm email" ON, minimum password length 10, password requirements:
+  lowercase, uppercase, digits and symbols (the app checks the same rules)
 - Email templates → Reset Password: change the link to
   `{{ .SiteURL }}/auth/callback?token_hash={{ .TokenHash }}&type=recovery&next=/auth/reset-password`
   so reset links work on any device
-- Custom SMTP: the built-in sender allows only a few emails/hour; needed for demos
+- Custom SMTP (Brevo): the built-in sender allows only a few emails per hour for the
+  whole project, so a handful of people registering at once fails with "email rate
+  limit exceeded". See "Email (Brevo SMTP)" below.
 
 **6. Create `.env` in the repository root** (the same folder as
 `package.json` / `next.config.ts`). Next.js only loads env files from the project
@@ -85,7 +88,7 @@ git-ignored, so it will not show up in `git status`. Check for it with
 | `GEMINI_API_KEY` | Server-only, free key from Google AI Studio. Without it, feedback stays "pending analysis" |
 | `GEMINI_MODEL` | Optional, defaults to `gemini-3.5-flash-lite` |
 | `FEEDBACK_SERVER_KEY` | Server-only, must equal the Vault secret from step 4 |
-| `NEXT_PUBLIC_SITE_URL` | Public app URL, e.g. `https://<app>.up.railway.app`: OG images, shared links, calendar files. Defaults to `http://localhost:3000` |
+| `NEXT_PUBLIC_SITE_URL` | Public app URL, e.g. `https://<app>.vercel.app`: OG images, shared links, calendar files. Falls back to Vercel's production domain, then `http://localhost:3000` |
 | `NEXT_PUBLIC_PRIVACY_CONTACT_EMAIL` / `NEXT_PUBLIC_PRIVACY_CONTACT_PERSON` | Data-privacy contact shown on `/privacy` (placeholder fallback until set) |
 
 The two `NEXT_PUBLIC_*` Supabase vars are **required at both build time and runtime**:
@@ -187,17 +190,62 @@ Or with compose — it reads the same `.env` automatically:
 docker compose up --build   # serves http://localhost:3000
 ```
 
-Works on any container host: Railway (Dockerfile deploy), Render, Fly.io, Cloud Run,
+Works on any container host: Render, Fly.io, Railway, Cloud Run,
 DigitalOcean, a VPS with Coolify/Dokploy, or plain Docker. Remember `NEXT_PUBLIC_*`
 changes need a rebuild; `GEMINI_API_KEY`/`FEEDBACK_SERVER_KEY` are runtime env vars.
 
-## Deploying (Railway)
+## Deploying (Vercel)
 
-Set all env vars in Railway **before** the first build. `NEXT_PUBLIC_*` values are
-inlined at build time, so changing `NEXT_PUBLIC_SITE_URL` later requires a rebuild.
-Node is pinned to 22 LTS via `.nvmrc` and `engines` in `package.json`. No extra
-builder config needed. Apply the same dashboard steps (migrations, Vault secret,
-auth URLs with your Railway domain, SMTP).
+1. **Import the repo:** vercel.com → Add New → Project → import the GitHub repository.
+   The framework is detected as Next.js; keep the default build command and output.
+2. **Environment variables** (Project → Settings → Environment Variables, for
+   Production and Preview): every variable from the table above. `NEXT_PUBLIC_*`
+   values are built into the app, so **redeploy** after changing them.
+   `NEXT_PUBLIC_SITE_URL` = your production URL, e.g. `https://dalta-esports.vercel.app`.
+3. **Node version:** Settings → Build and Deployment → Node.js Version = 22.x
+   (matches `.nvmrc` and `engines`).
+4. **Function region:** Settings → Functions → Function Region = the region closest to
+   your Supabase project (Supabase → Project Settings → General shows it; e.g.
+   Singapore → `sin1`). Every page talks to Supabase, so this matters for speed.
+5. **Supabase auth URLs:** Authentication → URL Configuration → Site URL = the Vercel
+   URL; Redirect URLs: add `https://<your-app>.vercel.app/**` (keep the localhost one).
+   Preview deployments get other URLs; add `https://*-<your-team>.vercel.app/**` if you
+   want email links to work on previews too.
+6. Deploy, then register a test account to check that the confirmation email arrives.
+
+The API routes set `maxDuration` (feedback 30 s, exports 60 s) because Vercel can stop
+a function after 10 s on the free plan and Gemini can take up to 15 s.
+`output: 'standalone'` in `next.config.ts` is only used outside Vercel (Docker).
+
+## Email (Brevo SMTP)
+
+Supabase sends the sign-up confirmation and password reset emails. Its built-in sender
+allows only a few emails per hour for the whole project; Brevo's free plan allows about
+300 per day.
+
+1. **Brevo account:** sign up at brevo.com (free plan).
+2. **Sender:** Brevo → Senders, Domains & Dedicated IPs → Senders → Add a sender, e.g.
+   `DALTA Esports` / `daltaesports@gmail.com`, then click the link Brevo emails you.
+   (Optional, better delivery: verify your own domain under Domains, with the SPF/DKIM
+   records Brevo gives you.)
+3. **SMTP key:** Brevo → SMTP & API → SMTP tab → Generate a new SMTP key. Note the
+   server `smtp-relay.brevo.com`, port `587`, and the **login** shown there (it is
+   not your Brevo email address).
+4. **Supabase:** Authentication → Emails → SMTP Settings → Enable custom SMTP:
+   - Sender email = the verified sender from step 2; Sender name = `DALTA Esports`
+   - Host = `smtp-relay.brevo.com`, Port = `587`
+   - Username = the SMTP login from step 3; Password = the SMTP key
+   - Save.
+5. **Rate limits:** Authentication → Rate Limits (editable once custom SMTP is on):
+   - Rate limit for sending emails: e.g. `100` per hour (stay under Brevo's daily cap).
+   - Rate limit for sign-ups and sign-ins: everyone on campus Wi-Fi shares one IP
+     address, so raise it before a registration event (e.g. `150` per 5 minutes).
+6. **Per-address gap:** Authentication → Providers → Email: keep the minimum interval
+   between emails to one address at 60 seconds (the app's "Resend" buttons wait the same).
+7. **Test:** register a throwaway account and check the email arrives (also check spam).
+   Brevo → Transactional → Logs shows every email it sent or rejected.
+
+The Privacy Notice already lists Brevo and Vercel (version `2026-11-01`).
 
 ## Troubleshooting
 
@@ -208,8 +256,9 @@ auth URLs with your Railway domain, SMTP).
   Database → Extensions.
 - **Sentiment stuck on "pending analysis"**: `FEEDBACK_SERVER_KEY` doesn't match
   the Vault secret, or `GEMINI_API_KEY` is missing.
-- **Reset/confirmation emails don't arrive**: the built-in sender is rate-limited;
-  configure custom SMTP. Reset links only work in the requesting browser unless the
+- **Reset/confirmation emails don't arrive, or "email rate limit exceeded"**: the
+  built-in sender is rate-limited; set up Brevo SMTP and raise the limit (see above).
+  If Brevo is set up, check Brevo → Transactional → Logs and that the sender is verified. Reset links only work in the requesting browser unless the
   template is updated (step 5).
 - **Asked to accept the privacy notice repeatedly**: `PRIVACY_NOTICE_VERSION` in
   `utils/privacy.ts` was bumped; every account must re-consent by design.

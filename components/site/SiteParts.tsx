@@ -57,7 +57,7 @@ export function PersonPhoto({ path, name, size = 'md' }: { path: string | null; 
       {url ? (
         <Image src={url} alt={name} fill sizes="160px" className="object-cover" />
       ) : (
-        <span className="font-black text-[#5B271E] text-sm uppercase tracking-wider" aria-hidden>{initials || '?'}</span>
+        <span className="font-black text-maroon text-sm uppercase tracking-wider" aria-hidden>{initials || '?'}</span>
       )}
     </div>
   );
@@ -97,7 +97,7 @@ export function PersonCard({
           />
         ) : (
           <div className="absolute inset-0 bg-gradient-to-b from-stone-50 via-stone-100 to-stone-50/40 flex flex-col items-center justify-center p-4 text-center">
-            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-white border border-stone-200/90 shadow-2xs flex items-center justify-center text-[#5B271E] font-black text-xl sm:text-2xl uppercase tracking-wider mb-2">
+            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-white border border-stone-200/90 shadow-2xs flex items-center justify-center text-maroon font-black text-xl sm:text-2xl uppercase tracking-wider mb-2">
               {initials || '?'}
             </div>
             <span className="text-[10px] font-black uppercase tracking-widest text-stone-400">
@@ -109,18 +109,18 @@ export function PersonCard({
 
       {/* Details below photo */}
       <div className="p-4 sm:p-5 flex flex-col justify-start text-left flex-1 space-y-1">
-        <h4 className="font-black text-stone-950 text-base sm:text-lg uppercase tracking-wide leading-snug group-hover:text-[#FFCC37] transition-colors">
+        <h4 className="font-black text-stone-950 text-base sm:text-lg uppercase tracking-wide leading-snug group-hover:text-gold transition-colors">
           {name}
         </h4>
         {line && (
-          <p className="text-xs sm:text-sm font-extrabold text-[#5B271E] uppercase tracking-wider">
+          <p className="text-xs sm:text-sm font-extrabold text-maroon uppercase tracking-wider">
             {line}
           </p>
         )}
         {extra && (
           <div className="pt-2 mt-auto">
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-stone-100 border border-stone-200/80 text-[10px] sm:text-[11px] font-black text-stone-700 uppercase tracking-wider">
-              <Gamepad2 className="h-3.5 w-3.5 text-[#5B271E] shrink-0" />
+              <Gamepad2 className="h-3.5 w-3.5 text-maroon shrink-0" />
               <span className="truncate">{extra}</span>
             </span>
           </div>

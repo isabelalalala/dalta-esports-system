@@ -25,31 +25,12 @@ import {
   CheckCircle2,
   Mail,
   Calendar,
-  Sparkles,
 } from 'lucide-react';
 
+import { getGameLogo } from '@/utils/game-logos';
+
 const inputClass =
-  'w-full p-3.5 rounded-xl bg-white text-stone-950 border border-stone-300 placeholder:text-stone-400 uppercase tracking-wide focus:border-[#FFCC37] focus:ring-2 focus:ring-[#FFCC37]/25 shadow-xs outline-none transition-all font-medium text-xs sm:text-sm';
-
-// Match game name to official logo asset
-function getGameLogo(game: string, gameId?: string | null): string | null {
-  const g = (game || '').toLowerCase().trim();
-  const id = (gameId || '').toLowerCase().trim();
-
-  if (g.includes('mlbb') || g.includes('mobile legends') || id.includes('mlbb')) {
-    return '/MLBB LOGO.png';
-  }
-  if (g.includes('valo') || g.includes('valorant') || id.includes('valo')) {
-    return '/VALO LOGO.png';
-  }
-  if (g.includes('tekken') || id.includes('tekken')) {
-    return '/TEKKEMN 8 LOGO.png';
-  }
-  if (g.includes('codm') || g.includes('call of duty') || id.includes('cod')) {
-    return '/CODM LOGO.png';
-  }
-  return null;
-}
+  'w-full p-3.5 rounded-xl bg-white text-stone-950 border border-stone-300 placeholder:text-stone-400 uppercase tracking-wide focus:border-gold focus:ring-2 focus:ring-gold/25 shadow-xs outline-none transition-all font-medium text-xs sm:text-sm';
 
 export default function ProfilePage() {
   usePageTitle('Profile');
@@ -93,7 +74,7 @@ export default function ProfilePage() {
           .eq('id', session.user.id)
           .single();
         if (profileError) throw profileError;
-        setProfile(profileData);
+        setProfile(profileData as Profile);
         setFullName(profileData.full_name || '');
 
         const [gamesRes, gpRes] = await Promise.all([
@@ -177,16 +158,19 @@ export default function ProfilePage() {
   };
 
   const handleRemoveGameProfile = async (gp: PlayerGameProfile, gameName: string) => {
-    if (!confirm(`Remove your ${gameName} profile?`)) return;
+    if (!confirm(`Remove your ${gameName} profile? (Not possible while you are on a ${gameName} team.)`)) return;
     setSaving(true);
     setError('');
 
     try {
-      const { error: deleteError } = await supabase
+      // The database refuses while the player is on a team for this game (its message is shown as is)
+      const { data, error: deleteError } = await supabase
         .from('player_game_profiles')
         .delete()
-        .eq('id', gp.id);
+        .eq('id', gp.id)
+        .select('id');
       if (deleteError) throw deleteError;
+      if (!data || data.length === 0) throw new Error('The game profile could not be removed.');
       setReloadCount((n) => n + 1);
       setMessage('Game profile removed.');
     } catch (err) {
@@ -241,7 +225,7 @@ export default function ProfilePage() {
           <div className="relative z-10 w-full flex flex-wrap items-center justify-between gap-4">
             <Link
               href="/dashboard"
-              className="inline-flex items-center gap-1.5 text-xs font-black text-[#FFCC37] hover:text-[#FFE066] uppercase tracking-wider transition-colors"
+              className="inline-flex items-center gap-1.5 text-xs font-black text-gold hover:text-goldlight uppercase tracking-wider transition-colors"
             >
               ← Back to Dashboard
             </Link>
@@ -256,18 +240,16 @@ export default function ProfilePage() {
 
           {/* User Identity Display */}
           <div className="relative z-10 max-w-4xl mx-auto space-y-3 pt-2 flex flex-col items-center">
-            <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-3xl bg-gradient-to-br from-[#5B271E]/40 via-stone-900 to-black border-2 border-[#FFCC37]/60 text-[#FFCC37] font-black text-2xl sm:text-3xl grid place-items-center tracking-widest shadow-xl shadow-black/50">
+            <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-3xl bg-gradient-to-br from-maroon/40 via-stone-900 to-black border-2 border-gold/60 text-gold font-black text-2xl sm:text-3xl grid place-items-center tracking-widest shadow-xl shadow-black/50">
               {initials}
             </div>
             <h1
-              className="animate-hero-title text-3xl sm:text-4xl lg:text-5xl font-black !text-white text-white tracking-wider uppercase leading-tight"
-              style={{ color: '#ffffff' }}
+              className="animate-hero-title text-3xl sm:text-4xl lg:text-5xl font-black tracking-wider uppercase leading-tight text-white"
             >
               {profile.full_name || 'My Profile'}
             </h1>
             <p
-              className="animate-hero-tagline text-xs sm:text-sm text-stone-300 font-semibold tracking-wider normal-case"
-              style={{ color: '#ffffff' }}
+              className="animate-hero-tagline text-xs sm:text-sm font-semibold tracking-wider normal-case text-white"
             >
               {profile.email}
             </p>
@@ -300,7 +282,7 @@ export default function ProfilePage() {
           className="animate-stagger-1 bg-white border border-stone-200/90 rounded-3xl p-6 sm:p-8 shadow-xs space-y-6"
         >
           <div className="flex items-center gap-3 pb-4 border-b border-stone-100">
-            <div className="w-10 h-10 rounded-xl bg-[#5B271E]/10 border border-[#5B271E]/20 text-[#5B271E] grid place-items-center shadow-2xs">
+            <div className="w-10 h-10 rounded-xl bg-maroon/10 border border-maroon/20 text-maroon grid place-items-center shadow-2xs">
               <User className="w-5 h-5" />
             </div>
             <div>
@@ -316,7 +298,7 @@ export default function ProfilePage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 text-xs sm:text-sm">
             <div className="p-4 sm:p-5 rounded-2xl bg-stone-50/70 border border-stone-200/80 space-y-1">
               <span className="block text-stone-500 font-black tracking-wider text-xs flex items-center gap-1.5">
-                <Mail className="w-3.5 h-3.5 text-[#5B271E]" />
+                <Mail className="w-3.5 h-3.5 text-maroon" />
                 Email Address
               </span>
               <span className="font-extrabold text-stone-900 break-all normal-case tracking-wide">
@@ -326,7 +308,7 @@ export default function ProfilePage() {
 
             <div className="p-4 sm:p-5 rounded-2xl bg-stone-50/70 border border-stone-200/80 space-y-1">
               <span className="block text-stone-500 font-black tracking-wider text-xs flex items-center gap-1.5">
-                <Shield className="w-3.5 h-3.5 text-[#5B271E]" />
+                <Shield className="w-3.5 h-3.5 text-maroon" />
                 System Role
               </span>
               <span className="font-extrabold text-stone-900 tracking-wider capitalize">
@@ -336,7 +318,7 @@ export default function ProfilePage() {
 
             <div className="md:col-span-2 p-4 sm:p-5 rounded-2xl bg-stone-50/70 border border-stone-200/80 space-y-1.5">
               <span className="block text-stone-500 font-black tracking-wider text-xs flex items-center gap-1.5">
-                <Calendar className="w-3.5 h-3.5 text-[#5B271E]" />
+                <Calendar className="w-3.5 h-3.5 text-maroon" />
                 Privacy & RA 10173 Compliance
               </span>
               <span className="text-stone-700 font-medium tracking-wide normal-case block">
@@ -357,7 +339,7 @@ export default function ProfilePage() {
                 )}
                 <Link
                   href="/privacy"
-                  className="text-[#5B271E] font-bold uppercase underline hover:text-[#FFCC37] ml-1 transition-colors"
+                  className="text-maroon font-bold uppercase underline hover:text-gold ml-1 transition-colors"
                 >
                   Read Privacy Notice →
                 </Link>
@@ -401,7 +383,7 @@ export default function ProfilePage() {
         {profile.role === 'player' && (
           <div className="animate-stagger-2 bg-white border border-stone-200/90 rounded-3xl p-6 sm:p-8 shadow-xs space-y-6">
             <div className="flex items-center gap-3 pb-4 border-b border-stone-100">
-              <div className="w-10 h-10 rounded-xl bg-[#5B271E]/10 border border-[#5B271E]/20 text-[#5B271E] grid place-items-center shadow-2xs">
+              <div className="w-10 h-10 rounded-xl bg-maroon/10 border border-maroon/20 text-maroon grid place-items-center shadow-2xs">
                 <Gamepad2 className="w-5 h-5" />
               </div>
               <div>
@@ -424,16 +406,16 @@ export default function ProfilePage() {
                     <form
                       key={game.id}
                       onSubmit={handleSaveGameProfile}
-                      className="bg-stone-50/80 border border-[#FFCC37]/70 rounded-2xl p-5 sm:p-6 space-y-4 shadow-sm"
+                      className="bg-stone-50/80 border border-gold/70 rounded-2xl p-5 sm:p-6 space-y-4 shadow-sm"
                     >
                       <div className="flex items-center gap-3 pb-2 border-b border-stone-200">
                         {logo ? (
-                          <div className="w-10 h-10 rounded-xl bg-[#0e0c0b] border border-stone-800 flex items-center justify-center p-1.5 shadow-xs shrink-0">
+                          <div className="w-10 h-10 rounded-xl bg-ink border border-stone-800 flex items-center justify-center p-1.5 shadow-xs shrink-0">
                             <Image src={logo} alt={game.name} width={32} height={32} className="object-contain" />
                           </div>
                         ) : null}
                         <div>
-                          <h3 className="font-black text-[#5B271E] text-sm tracking-wider uppercase">
+                          <h3 className="font-black text-maroon text-sm tracking-wider uppercase">
                             Editing {game.name} Profile
                           </h3>
                           <p className="text-[11px] text-stone-500 font-medium uppercase tracking-wide">
@@ -513,7 +495,7 @@ export default function ProfilePage() {
                   >
                     <div className="flex items-center gap-4">
                       {logo ? (
-                        <div className="w-12 h-12 rounded-2xl bg-[#0e0c0b] border border-stone-800 flex items-center justify-center p-2 shadow-xs shrink-0">
+                        <div className="w-12 h-12 rounded-2xl bg-ink border border-stone-800 flex items-center justify-center p-2 shadow-xs shrink-0">
                           <Image src={logo} alt={game.name} width={38} height={38} className="object-contain" />
                         </div>
                       ) : (
@@ -547,7 +529,7 @@ export default function ProfilePage() {
                       <button
                         onClick={() => startEditing(game.id)}
                         disabled={saving}
-                        className="rounded-xl border border-stone-300 hover:border-[#FFCC37] bg-white text-[#5B271E] hover:text-[#FFCC37] px-4 py-2 transition-all cursor-pointer disabled:opacity-50 shadow-2xs"
+                        className="rounded-xl border border-stone-300 hover:border-gold bg-white text-maroon hover:text-gold px-4 py-2 transition-all cursor-pointer disabled:opacity-50 shadow-2xs"
                       >
                         {gp ? 'Edit Profile' : '+ Add Profile'}
                       </button>
@@ -678,7 +660,11 @@ function ChangePassword({ email, fullName }: { email: string; fullName: string }
       });
       if (signInError) throw new Error('Your current password is incorrect.');
 
-      const { error: updateError } = await supabase.auth.updateUser({ password: newPassword });
+      // weak_password: false lifts the "change your password" gate in proxy.ts
+      const { error: updateError } = await supabase.auth.updateUser({
+        password: newPassword,
+        data: { weak_password: false },
+      });
       if (updateError) throw updateError;
 
       setMessage('Password changed successfully.');
@@ -699,7 +685,7 @@ function ChangePassword({ email, fullName }: { email: string; fullName: string }
       className="bg-white border border-stone-200/90 rounded-3xl p-6 sm:p-8 shadow-xs space-y-6 uppercase"
     >
       <div className="flex items-center gap-3 pb-4 border-b border-stone-100">
-        <div className="w-10 h-10 rounded-xl bg-[#5B271E]/10 border border-[#5B271E]/20 text-[#5B271E] grid place-items-center shadow-2xs">
+        <div className="w-10 h-10 rounded-xl bg-maroon/10 border border-maroon/20 text-maroon grid place-items-center shadow-2xs">
           <Lock className="w-5 h-5" />
         </div>
         <div>
