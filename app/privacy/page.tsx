@@ -199,7 +199,7 @@ export default function PrivacyNoticePage() {
                 <strong className="text-stone-950 font-black">Pick&apos;em leaderboards (logged-in users):</strong> your first name and the first letter of your last name (e.g. &quot;Juan C.&quot;) with your number of correct picks, once you make a pick in that tournament. Nobody else sees your individual picks.
               </li>
               <li>
-                <strong className="text-stone-950 font-black">Logged-in users:</strong> teams and their members (name, IGN and in-game role), player game profiles (IGN, in-game role, rank), team registrations, announcements, and who checked in for a match and when. Team captains can search players by name or IGN to add them to a team.
+                <strong className="text-stone-950 font-black">Logged-in users:</strong> teams and their members (name, IGN and in-game role), player game profiles (IGN, in-game role, rank), team registrations, announcements, and who checked in for a match and when. Team captains can search players by name or IGN to add them to a team, and see the name, game profile, Verified badge and optional message of players who ask to join their team (organizers can see these requests too).
               </li>
               <li>
                 <strong className="text-stone-950 font-black">Tournament staff and administrators:</strong> all accounts, including email addresses, student details and viewing activity, to manage the system, verify students and prepare reports.

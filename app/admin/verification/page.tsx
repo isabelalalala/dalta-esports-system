@@ -12,7 +12,7 @@ import PageError from '@/components/PageError';
 import PageHeroBackground from '@/components/site/PageHeroBackground';
 
 const inputClass =
-  'w-full p-3 rounded-xl bg-white text-stone-950 border border-stone-300 placeholder:text-stone-400 uppercase tracking-wide focus:border-amber-600 focus:ring-2 focus:ring-amber-500/20 shadow-xs outline-none transition-all font-medium text-xs sm:text-sm';
+  'w-full p-3 rounded-xl bg-white text-stone-950 border border-stone-300 placeholder:text-stone-400 focus:border-amber-600 focus:ring-2 focus:ring-amber-500/20 shadow-xs outline-none transition-all font-medium text-xs sm:text-sm';
 
 const TABS: VerificationStatus[] = ['pending', 'rejected', 'verified'];
 
@@ -187,7 +187,7 @@ export default function VerificationPage() {
                   <div className="flex flex-wrap items-start justify-between gap-4 pb-3 border-b border-stone-100">
                     <div>
                       <h3 className="font-black text-stone-950 text-base tracking-wide">
-                        {p.full_name || <span className="italic text-stone-400">Anonymous Player</span>}
+                        {p.full_name || <span className="italic text-stone-500">Anonymous Player</span>}
                       </h3>
                       <p className="text-xs text-stone-500 font-medium normal-case tracking-wide mt-0.5">{p.email}</p>
                     </div>

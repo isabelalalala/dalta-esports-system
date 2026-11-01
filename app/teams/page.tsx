@@ -7,6 +7,8 @@ import Link from 'next/link';
 import { getErrorMessage } from '@/utils/errors';
 import type { Game, Team } from '@/utils/types';
 import TeamInvites from '@/components/TeamInvites';
+import TeamDirectory from '@/components/TeamDirectory';
+import AskToJoin from '@/components/AskToJoin';
 import PageLoading from '@/components/PageLoading';
 import { usePageTitle } from '@/utils/page-title';
 import PageHeroBackground from '@/components/site/PageHeroBackground';
@@ -15,10 +17,17 @@ import { Users, Plus, Shield, AlertCircle, Gamepad2 } from 'lucide-react';
 import { getGameLogo } from '@/utils/game-logos';
 
 const inputClass =
-  'w-full p-3.5 rounded-xl bg-white text-stone-950 border border-stone-300 placeholder:text-stone-400 uppercase tracking-wide focus:border-gold focus:ring-2 focus:ring-gold/25 shadow-xs outline-none transition-all font-medium text-xs sm:text-sm';
+  'w-full p-3.5 rounded-xl bg-white text-stone-950 border border-stone-300 placeholder:text-stone-400 focus:border-gold focus:ring-2 focus:ring-gold/25 shadow-xs outline-none transition-all font-medium text-xs sm:text-sm';
+
+// My open join requests, with the team's name (for the My teams tab)
+interface MyJoinRequest {
+  id: string;
+  team_id: string;
+  teams: { name: string; games: { name: string } | null } | null;
+}
 
 export default function TeamsPage() {
-  usePageTitle('My Teams');
+  usePageTitle('Teams');
   const supabase = createClient();
   const [teams, setTeams] = useState<Team[]>([]);
   const [games, setGames] = useState<Game[]>([]);
@@ -32,6 +41,10 @@ export default function TeamsPage() {
   const [description, setDescription] = useState('');
   const [saving, setSaving] = useState(false);
   const [reloadCount, setReloadCount] = useState(0);
+  const [role, setRole] = useState('');
+  const [myRequests, setMyRequests] = useState<MyJoinRequest[]>([]);
+  // null = not chosen yet: organizers start on All teams (they usually aren't on a team)
+  const [tab, setTab] = useState<'mine' | 'all' | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -41,17 +54,27 @@ export default function TeamsPage() {
         } = await supabase.auth.getSession();
         if (!session) return;
 
-        const [gamesRes, teamsRes, profilesRes] = await Promise.all([
+        const [gamesRes, teamsRes, profilesRes, roleRes, requestsRes] = await Promise.all([
           supabase.from('games').select('*').order('name'),
           supabase
             .from('team_members')
             .select('teams(*, games(*), team_members(count))')
             .eq('user_id', session.user.id),
           supabase.from('player_game_profiles').select('game_id').eq('user_id', session.user.id),
+          supabase.from('profiles').select('role').eq('id', session.user.id).single(),
+          supabase
+            .from('team_join_requests')
+            .select('id, team_id, teams(name, games(name))')
+            .eq('user_id', session.user.id)
+            .eq('status', 'pending'),
         ]);
         if (gamesRes.error) throw gamesRes.error;
         if (teamsRes.error) throw teamsRes.error;
         if (profilesRes.error) throw profilesRes.error;
+        if (roleRes.error) throw roleRes.error;
+        if (requestsRes.error) throw requestsRes.error;
+        setRole(roleRes.data.role);
+        setMyRequests((requestsRes.data || []) as unknown as MyJoinRequest[]);
         setProfileGameIds((profilesRes.data || []).map((p) => p.game_id));
         setGames(gamesRes.data || []);
         setTeams((teamsRes.data || []).map((row) => row.teams as unknown as Team));
@@ -102,6 +125,13 @@ export default function TeamsPage() {
     return <PageLoading label="Loading teams..." />;
   }
 
+  const isPlayer = role === 'player';
+  const activeTab = tab ?? (role === 'admin' || role === 'staff' ? 'all' : 'mine');
+  const tabClass = (t: 'mine' | 'all') =>
+    `px-4 sm:px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all cursor-pointer ${
+      activeTab === t ? 'bg-gold text-stone-950 shadow-xs' : 'text-stone-700 hover:bg-stone-100'
+    }`;
+
   return (
     <main
       id="main-content"
@@ -121,25 +151,31 @@ export default function TeamsPage() {
               ← Back to Dashboard
             </Link>
 
-            <button
-              onClick={() => setShowCreate(!showCreate)}
-              className="bg-gold text-stone-950 px-5 py-2.5 rounded-xl font-black border border-amber-400 shadow-xs hover:bg-golddark hover:-translate-y-0.5 transition-all uppercase tracking-widest text-xs inline-flex items-center gap-2 cursor-pointer"
-            >
-              <Plus className="w-4 h-4 stroke-[3]" />
-              {showCreate ? 'Close Form' : 'Create Team'}
-            </button>
+            {/* Only players create teams (the database refuses others anyway) */}
+            {isPlayer && (
+              <button
+                onClick={() => {
+                  setTab('mine');
+                  setShowCreate(!showCreate);
+                }}
+                className="bg-gold text-stone-950 px-5 py-2.5 rounded-xl font-black border border-amber-400 shadow-xs hover:bg-golddark hover:-translate-y-0.5 transition-all uppercase tracking-widest text-xs inline-flex items-center gap-2 cursor-pointer"
+              >
+                <Plus className="w-4 h-4 stroke-[3]" />
+                {showCreate ? 'Close Form' : 'Create Team'}
+              </button>
+            )}
           </div>
 
           <div className="relative z-10 max-w-4xl mx-auto space-y-3 pt-2">
             <h1
               className="animate-hero-title text-3xl sm:text-4xl lg:text-5xl font-black tracking-wider uppercase leading-tight text-white"
             >
-              My Teams
+              Teams
             </h1>
             <p
               className="animate-hero-tagline text-xs sm:text-sm font-semibold leading-relaxed text-white"
             >
-              Manage your competitive squads, rosters, and tournament lineups.
+              Manage your squads, or browse every team and ask to join one that is recruiting.
             </p>
           </div>
         </section>
@@ -155,8 +191,53 @@ export default function TeamsPage() {
           </div>
         )}
 
+        {/* Tabs: my teams / every team */}
+        <div role="tablist" aria-label="Teams" className="inline-flex flex-wrap gap-1 p-1 rounded-2xl border border-stone-200/90 bg-white shadow-2xs">
+          <button role="tab" aria-selected={activeTab === 'mine'} onClick={() => setTab('mine')} className={tabClass('mine')}>
+            My teams
+          </button>
+          <button role="tab" aria-selected={activeTab === 'all'} onClick={() => setTab('all')} className={tabClass('all')}>
+            All teams
+          </button>
+        </div>
+
+        {activeTab === 'all' ? (
+          <TeamDirectory
+            games={games}
+            isPlayer={isPlayer}
+            myTeamIds={teams.map((t) => t.id)}
+            myGameIds={teams.map((t) => t.game_id)}
+            profileGameIds={profileGameIds}
+            myRequests={Object.fromEntries(myRequests.map((r) => [r.team_id, r.id]))}
+            onChanged={() => setReloadCount((n) => n + 1)}
+          />
+        ) : (
+        <>
         {/* Open Invites Section */}
         <TeamInvites onAnswered={() => setReloadCount((n) => n + 1)} />
+
+        {/* My open join requests */}
+        {myRequests.length > 0 && (
+          <div className="rounded-3xl border border-stone-200/90 bg-white p-6 sm:p-8 shadow-xs space-y-4">
+            <h2 className="text-lg sm:text-xl font-black text-stone-950 tracking-wider">Join requests sent</h2>
+            <ul className="space-y-3">
+              {myRequests.map((r) => (
+                <li
+                  key={r.id}
+                  className="p-4 rounded-2xl border border-stone-200/80 bg-stone-50/60 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+                >
+                  <div className="min-w-0">
+                    <Link href={`/teams/${r.team_id}`} className="font-black text-stone-950 hover:text-maroon break-words">
+                      {r.teams?.name || 'Team'}
+                    </Link>
+                    <p className="text-xs text-stone-500 font-semibold">{r.teams?.games?.name}</p>
+                  </div>
+                  <AskToJoin teamId={r.team_id} requestId={r.id} onChanged={() => setReloadCount((n) => n + 1)} compact />
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
 
         {/* Create Team Form Card */}
         {showCreate && (
@@ -269,7 +350,9 @@ export default function TeamsPage() {
               You are not on any team yet.
             </p>
             <p className="text-xs text-stone-500 font-medium max-w-md">
-              Click &quot;+ Create Team&quot; above to start a roster, or ask a team captain to send you an invite.
+              {isPlayer
+                ? 'Create a team above, wait for a captain to invite you, or open All teams and ask to join a team that is recruiting.'
+                : "Organizers aren't on teams. Open All teams to see every team."}
             </p>
           </div>
         )}
@@ -319,8 +402,15 @@ export default function TeamsPage() {
                         <span className="text-[10px] font-black text-maroon tracking-widest uppercase bg-maroon/10 px-2.5 py-0.5 rounded-md">
                           {team.games?.name}
                         </span>
-                        <span className="text-[11px] font-bold text-stone-500 uppercase tracking-wider">
-                          {membersCount} / {maxPlayers} Players
+                        <span className="flex items-center gap-2">
+                          {team.recruiting && (
+                            <span className="text-[10px] font-black uppercase tracking-wider text-emerald-800 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-md">
+                              Recruiting
+                            </span>
+                          )}
+                          <span className="text-[11px] font-bold text-stone-500 uppercase tracking-wider">
+                            {membersCount} / {maxPlayers} Players
+                          </span>
                         </span>
                       </div>
                       <h2 className="text-lg sm:text-xl font-black text-stone-950 uppercase tracking-wide group-hover:text-maroon transition-colors break-words">
@@ -349,6 +439,8 @@ export default function TeamsPage() {
               );
             })}
           </div>
+        )}
+        </>
         )}
       </div>
     </main>

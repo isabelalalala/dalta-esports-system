@@ -10,7 +10,7 @@ import { refreshSite } from './actions';
 import ImageField from './ImageField';
 
 const inputClass =
-  'w-full p-3 rounded-xl bg-white text-stone-950 border border-stone-300 placeholder:text-stone-400 tracking-wide focus:border-amber-600 focus:ring-2 focus:ring-amber-500/20 shadow-xs outline-none transition-all font-medium text-xs sm:text-sm';
+  'w-full p-3 rounded-xl bg-white text-stone-950 border border-stone-300 placeholder:text-stone-400 focus:border-amber-600 focus:ring-2 focus:ring-amber-500/20 shadow-xs outline-none transition-all font-medium text-xs sm:text-sm';
 
 const BRAND_IMAGE_KEYS = [
   { key: 'logo_path', label: `Logo (default = ${DEFAULT_LOGO})`, folder: 'site', fallback: DEFAULT_LOGO },

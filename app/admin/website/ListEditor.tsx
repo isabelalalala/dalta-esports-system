@@ -46,7 +46,7 @@ interface Props {
 }
 
 const inputClass =
-  'w-full p-3 rounded-xl bg-white text-stone-950 border border-stone-300 placeholder:text-stone-400 tracking-wide focus:border-amber-600 focus:ring-2 focus:ring-amber-500/20 shadow-xs outline-none transition-all font-medium text-xs sm:text-sm';
+  'w-full p-3 rounded-xl bg-white text-stone-950 border border-stone-300 placeholder:text-stone-400 focus:border-amber-600 focus:ring-2 focus:ring-amber-500/20 shadow-xs outline-none transition-all font-medium text-xs sm:text-sm';
 
 const str = (v: unknown) => (v === null || v === undefined ? '' : String(v));
 
@@ -340,14 +340,14 @@ export default function ListEditor({
                       {thumb ? (
                         <Image src={thumb} alt="" fill sizes="96px" className="object-cover" />
                       ) : (
-                        <div className="w-full h-full grid place-items-center text-[10px] text-stone-400 font-bold">No img</div>
+                        <div className="w-full h-full grid place-items-center text-[10px] text-stone-500 font-bold">No img</div>
                       )}
                     </div>
                   )}
 
                   <div className="flex-1 min-w-0">
                     <p className="font-extrabold text-stone-950 text-sm tracking-wide truncate">
-                      {titleOf(row) || <span className="italic text-stone-400">Untitled</span>}
+                      {titleOf(row) || <span className="italic text-stone-500">Untitled</span>}
                     </p>
                     {subtitleOf && (
                       <p className="text-xs text-stone-500 font-medium tracking-wide truncate mt-0.5 normal-case">

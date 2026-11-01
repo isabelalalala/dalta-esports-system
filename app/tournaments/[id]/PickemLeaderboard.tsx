@@ -55,7 +55,7 @@ export default function PickemLeaderboard({ tournamentId, limit }: { tournamentI
             r.is_me ? 'bg-amber-500/10' : 'hover:bg-stone-50/70'
           } ${me === r && !top.includes(r) ? 'border-t-2 border-dashed border-stone-300' : ''}`}
         >
-          <span className={`w-8 shrink-0 text-right font-black tabular-nums text-xs sm:text-sm ${r.rank <= 3 ? 'text-amber-600' : 'text-stone-400'}`}>
+          <span className={`w-8 shrink-0 text-right font-black tabular-nums text-xs sm:text-sm ${r.rank <= 3 ? 'text-amber-600' : 'text-stone-500'}`}>
             {r.rank <= 3 ? <Medal className={`inline h-4 w-4 ${medalColors[r.rank - 1]}`} role="img" aria-label={`Rank ${r.rank}`} /> : `#${r.rank}`}
           </span>
           <span className="flex-1 min-w-0 truncate font-black text-xs sm:text-sm text-stone-900">
@@ -65,7 +65,7 @@ export default function PickemLeaderboard({ tournamentId, limit }: { tournamentI
           <span className="shrink-0 text-right text-xs sm:text-sm">
             <span className="font-black text-stone-950 tabular-nums">{r.correct}</span>
             <span className="text-stone-500 font-semibold"> correct</span>
-            <span className="block text-[11px] text-stone-400 font-bold tabular-nums">
+            <span className="block text-[11px] text-stone-500 font-bold tabular-nums">
               {r.decided > 0 ? `${Math.round((r.correct / r.decided) * 100)}% of ${r.decided}` : `${r.total} pending`}
             </span>
           </span>

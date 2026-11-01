@@ -100,7 +100,7 @@ export function PersonCard({
             <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-white border border-stone-200/90 shadow-2xs flex items-center justify-center text-maroon font-black text-xl sm:text-2xl tracking-wider mb-2">
               {initials || '?'}
             </div>
-            <span className="text-[10px] font-black uppercase tracking-widest text-stone-400">
+            <span className="text-[10px] font-black uppercase tracking-widest text-stone-500">
               DALTA Esports
             </span>
           </div>

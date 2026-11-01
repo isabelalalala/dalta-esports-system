@@ -43,6 +43,20 @@ export default function NotificationsPage() {
     load();
   }, [supabase, unreadOnly, reloadCount]);
 
+  // New notifications (or ones marked read in the bell) show up without reloading the page.
+  // RLS only sends this user's rows, so no filter is needed. Different channel name from the bell.
+  useEffect(() => {
+    const channel = supabase
+      .channel('notifications-page')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'notifications' }, () =>
+        setReloadCount((n) => n + 1)
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [supabase]);
+
   const handleLoadMore = async () => {
     setLoadingMore(true);
     try {
@@ -210,7 +224,7 @@ export default function NotificationsPage() {
                       {n.message}
                     </p>
 
-                    <p className="text-[11px] font-semibold text-stone-400 tracking-wider pt-1">
+                    <p className="text-[11px] font-semibold text-stone-500 tracking-wider pt-1">
                       {new Date(n.created_at).toLocaleString(undefined, {
                         dateStyle: 'medium',
                         timeStyle: 'short',
@@ -225,13 +239,13 @@ export default function NotificationsPage() {
                         onClick={(e) => handleMarkRead(e, n)}
                         title="Mark as read"
                         aria-label="Mark as read"
-                        className="p-2 rounded-xl text-stone-400 hover:text-maroon hover:bg-gold/20 transition-colors"
+                        className="p-2 rounded-xl text-stone-500 hover:text-maroon hover:bg-gold/20 transition-colors"
                       >
                         <Check className="w-4 h-4" />
                       </button>
                     )}
                     {n.link && (
-                      <ChevronRight className="w-4 h-4 text-stone-400 group-hover:text-stone-700" />
+                      <ChevronRight className="w-4 h-4 text-stone-500 group-hover:text-stone-700" />
                     )}
                   </div>
                 </div>

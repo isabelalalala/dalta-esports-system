@@ -100,7 +100,7 @@ Enforced by a CHECK constraint on `profiles.role` (migration `202610161200_role_
 - RLS policies check roles with `public.get_my_role()`.
 
 ## Current schema (public)
-All migrations are in `supabase/migrations/`, run in filename order (202610151100 … 202611011100). `202610151100_base_schema` creates the three pre-migration base tables (`profiles`, `tournaments`, `tournament_registrations`). It is `if not exists`, so it is a no-op on databases that already have them.
+All migrations are in `supabase/migrations/`, run in filename order (202610151100 … 202611011300). `202610151100_base_schema` creates the three pre-migration base tables (`profiles`, `tournaments`, `tournament_registrations`). It is `if not exists`, so it is a no-op on databases that already have them.
 `202610181000_feedback_protection` also needs its one-time Vault key setup (the `feedback_server_key` secret +
 `FEEDBACK_SERVER_KEY`); the steps are at the top of that file.
 Readers: "anyone" = also logged out; "logged-in" = any role; "admin/staff" = organizers only.
@@ -137,7 +137,9 @@ Readers: "anyone" = also logged out; "logged-in" = any role; "admin/staff" = org
 - `player_game_profiles`: id, user_id, game_id (→ games), ign, in_game_role, rank, created_at.
   UNIQUE (user_id, game_id). Logged-in read; players write their own. Can't be deleted (or moved to another game)
   while its owner is on a team for that game (202611011100); editing IGN/role/rank is fine.
-- `teams`: id, name, description, game_id (→ games), captain_id (→ profiles), created_at. UNIQUE (name, game_id).
+- `teams`: id, name, description, game_id (→ games), captain_id (→ profiles), recruiting (open to join requests,
+  202611011300; changed by the captain or through `set_team_recruiting()`, which admin/staff may also call),
+  created_at. UNIQUE (name, game_id).
   The captain needs a game profile for the team's game, on create and on captaincy transfer (202611011100).
   The captain can edit name and description; game and captain can't change. Teams in a bracket can't be deleted,
   and neither can teams with a pending/approved registration for a tournament that hasn't ended
@@ -152,6 +154,15 @@ Readers: "anyone" = also logged out; "logged-in" = any role; "admin/staff" = org
   `respond_to_team_invite(invite, accept)`, which adds them to `team_members` and cancels their other open invites
   for that game. Names for the UI come from `get_my_team_invites()` and `get_team_invites(team)`.
   Roster sizes are in `games` (MLBB/Valorant/LoL/CODM 5–6 incl. captain, Tekken 8 1–1 = no invites).
+- `team_join_requests` (202611011300): id, team_id, user_id, message (≤ 300), status
+  (`pending`/`accepted`/`declined`/`cancelled`), created_at, responded_at. One open request per player per team.
+  A player inserts their own (trigger checks: team recruiting, player role, game profile, not on a team for that
+  game, no open invite from that team, roster not full, not solo) and cancels by deleting it while pending.
+  Read: the player, the team's captain, admin/staff. No update policy: only `respond_to_join_request(request,
+  accept)` (captain) changes the status; accepting inserts into `team_members` (normal roster checks) and cancels
+  the player's other open requests and invites for that game. Names for the captain come from
+  `get_team_join_requests(team)`. The "All teams" directory reads `list_teams(search, game, recruiting_only,
+  limit, offset)` (captain name + roster count, logged-in only).
 - `tournament_registrations`: id, tournament_id, user_id (who registered), team_id (→ teams),
   team_name (only on old rows), status (`pending`/`approved`/`rejected`/`cancelled`, default pending), registered_at.
   UNIQUE (tournament_id, team_id). Only pending + approved count towards max_participants.
@@ -261,6 +272,7 @@ Readers: "anyone" = also logged out; "logged-in" = any role; "admin/staff" = org
   actor_name; never emails or student IDs), created_at. Only admins read; no insert/update/delete policies.
 - Written only by AFTER triggers through `log_activity()` (not callable from the app): tournaments, registrations,
   matches (results, `match.edited` field changes, and one `bracket.generated` entry when the final is inserted),
+  team join request answers (`team.join_request.accepted/declined`),
   match_result_submissions (`result.<status>` for every decision), profiles (role, student review,
   deletion), announcements, streams. Changes made by other triggers or FK cascades (`pg_trigger_depth() > 1`)
   aren't logged, except account deletion. When adding a new loggable action, add its label and sentence to
@@ -269,7 +281,7 @@ Readers: "anyone" = also logged out; "logged-in" = any role; "admin/staff" = org
 
 **Notifications**
 - `notifications`: id, user_id (→ profiles, deleted with the user), type (CHECK list; the latest full list is in
-  `202610171500_match_results.sql`), title, message, link (app path only), is_read, created_at. Users read their own and may update
+  `202611011300_team_join_requests.sql`), title, message, link (app path only), is_read, created_at. Users read their own and may update
   ONLY `is_read` (column grant); no insert/delete from the app. In the `supabase_realtime` publication.
 - Created only by AFTER triggers through `notify_users()` (not callable from the app; skips the person who caused
   it): registration approved/rejected → captain, registration removed (admin delete) → captain; tournament
@@ -279,7 +291,10 @@ Readers: "anyone" = also logged out; "logged-in" = any role; "admin/staff" = org
   invite accepted/declined, member left → the captain; removed from a team → the player; made captain → the new
   captain; student verified/rejected/revoked → the player; check-in open → both captains (pg_cron); forfeit →
   both teams; result submitted → other captain, confirmed/disputed → staff (+ submitter), approved/rejected →
-  teams/captains. Some are sent from the functions themselves (`transfer_team_captaincy`, `declare_forfeit`,
+  teams/captains; new registration (or re-sent after rejection) and a captain withdrawing → all admins/staff;
+  student details sent for review → all admins/staff; role changed → that person; Pick'em pick marked right/wrong →
+  the picker (`202611011200_more_notifications`); join request → captain, accepted/declined → the player
+  (`202611011300_team_join_requests`). Some are sent from the functions themselves (`transfer_team_captaincy`, `declare_forfeit`,
   `submit/respond/review_match_result`, `send_checkin_open_notifications`). (`team_added` is no longer sent.)
   Message texts are saved, so times are in PH time.
   New types need the CHECK list and `notificationIcons` (a Lucide icon per type) in `utils/notifications.ts`.
@@ -327,7 +342,8 @@ triggers with readable error messages.
 
 ## Pages and shared code
 - Auth: `/auth/*` (see above). Account: `/profile` (name, game profiles, password, delete account).
-- Players: `/teams`, `/teams/[id]`, `/registrations` (My Registrations), dashboard "My Matches", `/matches/[id]`.
+- Players: `/teams` (tabs My teams / All teams; organizers open on All teams), `/teams/[id]` (Recruiting + join
+  requests for the captain and organizers, "Ask to join" for other players), `/registrations` (My Registrations), dashboard "My Matches", `/matches/[id]`.
 - Tournaments: `/tournaments`, `/tournaments/create`, `/tournaments/[id]` (details, bracket, announcements,
   watch-live banner, Admin Panel), `/tournaments/[id]/edit`, `.../registrations`, `.../matches`, `.../streams`, `.../predictions` (pick'em leaderboard).
 - Organizers: `/matches` (Match Management overview), `/admin/users` (admin only), `/admin/feedback` (admin only),
@@ -364,7 +380,7 @@ triggers with readable error messages.
 - API: POST `/api/feedback` (send + classify) and POST `/api/feedback/classify` (admin retry of pending ones).
   `utils/gemini.ts` and `utils/feedback-analysis.ts` start with `import 'server-only'` (build fails if a client
   file imports them).
-- Shared: `components/` (AnnouncementCard, FacebookPlayer, StarRating, VerifiedBadge, PrivacyConsentCheckbox, TeamInvites, ReportChart (Chart.js), ReportFilters);
+- Shared: `components/` (TeamDirectory, AskToJoin, TeamJoinRequests, AnnouncementCard, FacebookPlayer, StarRating, VerifiedBadge, PrivacyConsentCheckbox, TeamInvites, ReportChart (Chart.js), ReportFilters);
   `utils/types.ts` (row types), `utils/reports.ts` (report types, chart colors, CSV export),
   `utils/verification.ts` (status labels, school suggestions), `utils/activity.ts` (activity log sentences),
   `utils/notifications.ts` (notification types, icons, read/unread), `utils/checkin.ts` (check-in window),
@@ -462,7 +478,7 @@ The final feature list for the documents is docs/new-features-summary.md.
   → `202610171000_student_verification`; `check_team_member` → `202610171000`; `check_team_member_leave` → `202611011000_roster_captain_guard`; `get_team_roster` → `202610171000`;
   `search_players` → `202610171300_team_invites`; `protect_team_fields` → `202610171300`; `protect_profile_role`,
   `handle_new_user` → `202610170900_privacy_consent`; `log_match` → `202610171400_match_checkin`;
-  `get_needs_attention` → `202610171500_match_results`; `notifications_type_check` → `202610171500`;
+  `get_needs_attention` → `202610171500_match_results`; `notifications_type_check` → `202611011300_team_join_requests`;
   `report_engagement` → `202610181100_predictions` (adds predictions, predictors, prediction_accuracy,
   audience_accounts, prediction_participation and predictions_by_tournament; older saved reports lack them);
   `protect_feedback` → `202610181000_feedback_protection`; `generate_bracket` → `202610181800_bracket_seed_pairing`.

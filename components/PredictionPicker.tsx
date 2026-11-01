@@ -73,7 +73,7 @@ export default function PredictionPicker({
       <div>
         {!compact && <p className="text-[11px] uppercase font-black text-stone-500 tracking-wider mb-1">Community Pick</p>}
         {split.total === 0 ? (
-          <p className={`text-stone-400 font-semibold ${compact ? 'text-[10px]' : 'text-xs'}`}>No picks yet</p>
+          <p className={`text-stone-500 font-semibold ${compact ? 'text-[10px]' : 'text-xs'}`}>No picks yet</p>
         ) : (
           <>
             <progress
@@ -84,7 +84,7 @@ export default function PredictionPicker({
             />
             <p className={`flex justify-between gap-2 text-stone-600 font-bold ${compact ? 'text-[10px]' : 'text-xs mt-1'}`}>
               <span className="truncate">{split.a}%{compact ? '' : ` ${nameA}`}</span>
-              {!compact && <span className="text-stone-400 shrink-0 font-medium">{split.total} {split.total === 1 ? 'pick' : 'picks'}</span>}
+              {!compact && <span className="text-stone-500 shrink-0 font-medium">{split.total} {split.total === 1 ? 'pick' : 'picks'}</span>}
               <span className="truncate text-right">{split.b}%{compact ? '' : ` ${nameB}`}</span>
             </p>
           </>
@@ -107,7 +107,7 @@ export default function PredictionPicker({
         <p className={`text-stone-600 font-semibold ${compact ? 'text-[10px]' : 'text-xs'}`}>
           Your pick: <span className="text-maroon font-black">{teamNames[mine.predicted_winner_team_id] ?? 'a team'}</span>
           {verdict && <> · {verdict}</>}
-          {canPick && !compact && <span className="text-stone-400 font-medium"> (tap it again to remove it)</span>}
+          {canPick && !compact && <span className="text-stone-500 font-medium"> (tap it again to remove it)</span>}
         </p>
       )}
 

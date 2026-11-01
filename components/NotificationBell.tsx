@@ -134,7 +134,7 @@ export default function NotificationBell({ userId }: { userId: string }) {
                           {!n.is_read && <span className="w-2 h-2 rounded-full bg-amber-600 shrink-0" role="img" aria-label="unread" />}
                         </span>
                         <span className="block text-xs text-stone-600 line-clamp-2 mt-0.5 normal-case">{n.message}</span>
-                        <span className="block text-[10px] text-stone-400 mt-1">{timeAgo(n.created_at)}</span>
+                        <span className="block text-[10px] text-stone-500 mt-1">{timeAgo(n.created_at)}</span>
                       </span>
                     </button>
                   </li>

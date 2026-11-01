@@ -14,7 +14,7 @@ import PageHeroBackground from '@/components/site/PageHeroBackground';
 import { CheckCircle2, MessageSquare, Send } from 'lucide-react';
 
 const inputClass =
-  'w-full p-3 rounded-xl bg-white text-stone-950 border border-stone-300 placeholder:text-stone-400 tracking-wide focus:border-amber-600 focus:ring-2 focus:ring-amber-500/20 shadow-xs outline-none transition-all font-medium text-xs sm:text-sm uppercase';
+  'w-full p-3 rounded-xl bg-white text-stone-950 border border-stone-300 placeholder:text-stone-400 focus:border-amber-600 focus:ring-2 focus:ring-amber-500/20 shadow-xs outline-none transition-all font-medium text-xs sm:text-sm';
 
 interface MatchOption {
   id: string;
@@ -327,7 +327,7 @@ function FeedbackPageContent() {
                     className={`${inputClass} font-normal normal-case`}
                     required
                   />
-                  <span className="block text-right text-[11px] text-stone-400 font-medium mt-1">
+                  <span className="block text-right text-[11px] text-stone-500 font-medium mt-1">
                     {comment.length} / 1000 characters
                   </span>
                 </label>

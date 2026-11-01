@@ -97,9 +97,9 @@ function MatchBox({ match, teamNames, timeZone }: { match: Match; teamNames: Rec
               won
                 ? 'text-maroon font-black bg-amber-500/5'
                 : lost
-                ? 'text-stone-400 font-semibold'
+                ? 'text-stone-500 font-semibold'
                 : 'text-stone-900 font-bold'
-            } ${teamId === null ? 'italic text-stone-400' : ''}`}
+            } ${teamId === null ? 'italic text-stone-500' : ''}`}
           >
             <span className="truncate">{name}</span>
             <span className="tabular-nums font-black">{won && match.is_forfeit ? 'FF' : score ?? ''}</span>

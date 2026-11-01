@@ -20,7 +20,7 @@ export default function ErrorPage({ error, retry }: { error: Error & { digest?: 
           This page couldn&apos;t be shown. Check your internet connection and try again. If it keeps happening,
           tell the organizers what you were doing.
         </p>
-        {error.digest && <p className="text-xs text-stone-400 font-bold uppercase tracking-wider">Error code: {error.digest}</p>}
+        {error.digest && <p className="text-xs text-stone-500 font-bold uppercase tracking-wider">Error code: {error.digest}</p>}
         <div className="flex flex-wrap justify-center gap-3 pt-2">
           <button onClick={() => retry()} className="rounded-xl border border-amber-400 bg-gold text-stone-950 px-5 py-2.5 font-black text-xs uppercase tracking-widest shadow-xs hover:bg-golddark hover:-translate-y-0.5 transition-all">
             Try again

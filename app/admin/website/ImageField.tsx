@@ -62,7 +62,7 @@ export default function ImageField({
           {displayUrl ? (
             <Image src={displayUrl} alt="" fill sizes="128px" className="object-cover" />
           ) : (
-            <span className="text-[11px] text-stone-400 font-semibold uppercase">No photo</span>
+            <span className="text-[11px] text-stone-500 font-semibold uppercase">No photo</span>
           )}
         </div>
         <label className="cursor-pointer rounded-xl bg-gold hover:bg-golddark border border-amber-400 text-stone-950 px-4 py-2 text-xs font-black uppercase tracking-wider shadow-xs hover:-translate-y-0.5 transition-all">
@@ -85,7 +85,7 @@ export default function ImageField({
           </button>
         )}
       </div>
-      <p className="text-stone-400 text-xs font-medium">PNG, JPG, WebP or GIF, max 5 MB.</p>
+      <p className="text-stone-500 text-xs font-medium">PNG, JPG, WebP or GIF, max 5 MB.</p>
       {error && <p className="text-xs font-bold text-red-600" role="alert">{error}</p>}
     </div>
   );

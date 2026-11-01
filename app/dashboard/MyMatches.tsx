@@ -132,8 +132,8 @@ export default function MyMatches({ userId }: { userId: string }) {
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="font-black text-stone-950 text-sm sm:text-base tracking-wide">
                       {myTeam ? teamNames[myTeam] : 'Your team'}{' '}
-                      <span className="text-stone-400 font-normal">vs</span>{' '}
-                      {opponent ? teamNames[opponent] ?? 'Unknown team' : <span className="italic text-stone-400">TBD</span>}
+                      <span className="text-stone-500 font-normal">vs</span>{' '}
+                      {opponent ? teamNames[opponent] ?? 'Unknown team' : <span className="italic text-stone-500">TBD</span>}
                     </span>
                     {m.status === 'live' && (
                       <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-700 text-[10px] font-black tracking-wider animate-pulse">

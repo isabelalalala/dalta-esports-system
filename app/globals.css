@@ -18,7 +18,7 @@
   /* Near-black behind game logos and photos */
   --color-ink: #0E0C0B;
   /* Darker gold that stays readable on white (header "ESPORTS") */
-  --color-golddeep: #C89300;
+  --color-golddeep: #8F6900;
   /* "Negative" sentiment, same as the chart colour in utils/reports.ts (color-blind checked) */
   --color-negative: #e66767;
   --color-sitebg: #ffffff;
@@ -38,6 +38,8 @@
 }
 
 :root {
+  /* Real header height, kept up to date by components/site/HeaderHeight.tsx (this is the desktop value) */
+  --site-header-h: 89px;
   --background: #ffffff;
   --foreground: #120d0b;
 }

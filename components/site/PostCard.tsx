@@ -17,7 +17,7 @@ export default function PostCard({ post, href }: { post: SitePost; href: string 
         {image ? (
           <Image src={image} alt="" fill sizes="(max-width: 768px) 100vw, 400px" className="object-cover group-hover:scale-105 transition-transform duration-300" />
         ) : (
-          <div className="absolute inset-0 grid place-items-center font-black text-xs text-stone-400 uppercase tracking-widest">DALTA ESPORTS</div>
+          <div className="absolute inset-0 grid place-items-center font-black text-xs text-stone-500 uppercase tracking-widest">DALTA ESPORTS</div>
         )}
       </div>
       <div className="p-5 space-y-2 flex-1">

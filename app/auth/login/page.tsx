@@ -128,7 +128,7 @@ function LoginContent() {
   return (
     <main id="main-content" className="fixed inset-0 z-50 w-full min-h-screen bg-white text-stone-950 flex flex-col lg:flex-row overflow-y-auto">
       {/* Left Side: Esports Photo Showcase */}
-      <div className="relative w-full lg:w-1/2 xl:w-[55%] min-h-[300px] sm:min-h-[380px] lg:min-h-screen bg-stone-950 overflow-hidden flex flex-col justify-between">
+      <div className="relative w-full lg:w-1/2 xl:w-[55%] min-h-[180px] sm:min-h-[300px] lg:min-h-screen bg-stone-950 overflow-hidden flex flex-col justify-between">
         <Image
           src="/Home Page Photo.png"
           alt="DALTA Esports tournament team"
@@ -161,9 +161,9 @@ function LoginContent() {
       </div>
 
       {/* Right Side: Clean White Login Form Pane */}
-      <div className="flex-1 w-full lg:w-1/2 xl:w-[45%] flex flex-col justify-between p-6 sm:p-10 lg:p-12 xl:p-16 bg-white min-h-screen">
+      <div className="flex-1 w-full lg:w-1/2 xl:w-[45%] flex flex-col justify-between p-6 sm:p-10 lg:p-12 xl:p-16 bg-white lg:min-h-screen">
         {/* Top Header Actions */}
-        <div className="flex items-center justify-between w-full pb-8">
+        <div className="flex flex-wrap items-center justify-between gap-3 w-full pb-4 sm:pb-8">
           <Link
             href="/"
             className="text-stone-500 hover:text-stone-950 text-xs font-black uppercase tracking-wider transition-colors flex items-center gap-1.5"

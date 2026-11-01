@@ -8,7 +8,7 @@ import { SCHOOL_SUGGESTIONS, verificationLabels, verificationStyles } from '@/ut
 import { BadgeCheck, GraduationCap, ShieldCheck } from 'lucide-react';
 
 const inputClass =
-  'w-full p-3.5 rounded-xl bg-white text-stone-950 border border-stone-300 placeholder:text-stone-400 uppercase tracking-wide focus:border-gold focus:ring-2 focus:ring-gold/25 shadow-xs outline-none transition-all font-medium text-xs sm:text-sm';
+  'w-full p-3.5 rounded-xl bg-white text-stone-950 border border-stone-300 placeholder:text-stone-400 focus:border-gold focus:ring-2 focus:ring-gold/25 shadow-xs outline-none transition-all font-medium text-xs sm:text-sm';
 
 interface Props {
   profile: Profile;

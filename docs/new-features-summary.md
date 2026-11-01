@@ -19,7 +19,7 @@ updated to match the final system.
 |---|---------|--------|----------------------|--------------|
 | 1 | Account security & Data Privacy Act consent | 1 Account Management | (new columns on `profiles`) | `202610170900_privacy_consent` |
 | 2 | Student verification | 1 Account Management (+ eligibility rule in 2) | (new columns on `profiles`, `tournaments`) | `202610171000_student_verification` |
-| 3 | Team invites & roster management | 2 Registration & Tournament Mgmt | `team_invites` | `202610171300_team_invites` |
+| 3 | Team invites, team directory, join requests & roster management | 2 Registration & Tournament Mgmt | `team_invites`, `team_join_requests` (+ `teams.recruiting`) | `202610171300_team_invites`, `202611011300_team_join_requests` |
 | 4 | Match check-in & forfeits | 2 Registration & Tournament Mgmt | `match_checkins` | `202610171400_match_checkin` |
 | 5 | Captain result submission, disputes & staff review | 2 Registration & Tournament Mgmt | `match_result_submissions`, bucket `match-proofs` | `202610171500_match_results` |
 | 6 | In-app notifications | 3 Event Information & Announcements | `notifications` | `202610171200_notifications` (+ later ones add types) |
@@ -138,28 +138,39 @@ before the team can register, be approved or add members. Other users only see a
 - `tournaments` new column: `requires_verification`.
 - Function: `review_student_verification(user, approve, note)`.
 
-### Feature 3: Team invites & roster management
+### Feature 3: Team invites, team directory, join requests & roster management
 **Module:** 2 Registration and Tournament Management
 
 **What it does:** the captain searches players by IGN or name and invites them, and the player accepts or declines.
 Members can leave, and the captain can remove a member or hand over the captaincy. Rosters are locked while the team
 is registered for a tournament that hasn't ended. Roster sizes come from each game.
+Since `202611011300`: `/teams` has an **All teams** directory (search, game filter, captain, roster count) for every
+logged-in user, including organizers. A captain can switch on **Recruiting**; players then **ask to join** (with an
+optional message) and the captain accepts or declines. Accepting uses the same roster rules as invites.
 
 **Actors / use cases**
 - Team Captain: *Search players*, *Invite player*, *Cancel invite*, *Remove member*, *Transfer captaincy*.
-- Player: *Accept / decline team invite*, *Leave team*.
+- Player: *Accept / decline team invite*, *Leave team*, *Browse teams*, *Request to join a team*, *Cancel join request*.
+- Team Captain: *Open / close recruiting*, *Accept / decline join request*.
+- Admin/Staff: *Browse teams*, *View join requests*, *Close recruiting*.
 
 **Data flows**
 - Captain → 2.0: Player search → D1/D2: Fetch player profiles (IGN, role, verified badge).
 - Captain → 2.0: Team invite → D2: Save invite → D7: Invite notification → Player.
 - Player → 2.0: Invite answer → D2: Update team members → D7: Answer notification → Captain.
 - Captain/Player → 2.0: Leave / remove / transfer → D2: Update roster → D7: Notification.
+- User → 2.0: Team search → D2: Team list (name, game, captain, roster count).
+- Player → 2.0: Join request → D2: Save request → D7: Request notification → Captain.
+- Captain → 2.0: Request answer → D2: Update team members → D7: Answer notification → Player; D8: Activity entry.
 
 **Database**
 - New table: **`team_invites`** (`id`, `team_id`, `invited_user_id`, `invited_by`,
   `status` pending/accepted/declined/cancelled, `created_at`, `responded_at`).
 - Functions: `respond_to_team_invite()`, `transfer_team_captaincy()`, `get_my_team_invites()`,
   `get_team_invites()`, `search_players()`.
+- New table: **`team_join_requests`** (`id`, `team_id`, `user_id`, `message`, `status`
+  pending/accepted/declined/cancelled, `created_at`, `responded_at`); new column `teams.recruiting`.
+- Functions: `list_teams()`, `get_team_join_requests()`, `respond_to_join_request()`, `set_team_recruiting()`.
 
 ### Feature 4: Match check-in & forfeits
 **Module:** 2 Registration and Tournament Management (match operations). It supports Module 4's
@@ -218,7 +229,9 @@ but the notifications are created by several processes.
 **What it does:** a bell icon in the header shows the unread count, updated live, and `/notifications` lists them
 all. Notifications are sent for: registration approved/rejected; match time set or changed; match live; check-in
 open; forfeit; results submitted, confirmed, disputed, approved or rejected; new announcement; team invite and
-answer; member left or removed; new captain; student verified, rejected or revoked.
+answer; member left or removed; new captain; student verified, rejected or revoked; your role changed; your Pick'em
+pick was right or wrong. Organizers (admin/staff) are notified when a team registers or withdraws and when a student
+sends verification details, so they know what needs approval.
 
 **Actors / use cases**
 - All logged-in actors: *View notifications*, *Mark notification as read*.
@@ -226,6 +239,8 @@ answer; member left or removed; new captain; student verified, rejected or revok
 **Data flows**
 - 1.0 / 2.0 / 3.0 → D7: Save notification (created only by the database, never by the app directly).
 - D7 → User (Realtime): New notification. User → D7: Read status.
+- 2.0 → D7: Registration submitted / withdrawn → Admin/Staff. 1.0 → D7: Verification submitted → Admin/Staff;
+  Role changed → User. 8.0 → D7: Pick'em result → Audience/Player (`202611011200_more_notifications`).
 
 **Database**
 - New table: **`notifications`** (`user_id`, `type`, `title`, `message`, `link`, `is_read`, `created_at`).

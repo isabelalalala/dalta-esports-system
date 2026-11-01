@@ -77,9 +77,9 @@ export default function SiteNavLayout({ children }: { children: ReactNode }) {
   const toggleCollapse = () => writeCollapsed(!isCollapsed);
 
   return (
-    <div className="flex-1 w-full bg-white text-stone-950 flex flex-col lg:flex-row min-h-[calc(100vh-65px)]">
+    <div className="flex-1 w-full bg-white text-stone-950 flex flex-col lg:flex-row min-h-[calc(100vh-var(--site-header-h))]">
       {/* ----------------- MOBILE NAVIGATION BAR (< lg) ----------------- */}
-      <div className="lg:hidden w-full border-b border-stone-200/90 bg-white sticky top-14 z-30">
+      <div className="lg:hidden w-full border-b border-stone-200/90 bg-white sticky top-(--site-header-h) z-30">
         <div className="px-5 py-3 flex items-center justify-between">
           <span className="text-xs font-black tracking-widest text-stone-700 uppercase">
             Menu Navigation
@@ -106,7 +106,7 @@ export default function SiteNavLayout({ children }: { children: ReactNode }) {
       {/* ----------------- DESKTOP SIDEBAR WITH VERTICAL SEPARATOR LINE (lg+) ----------------- */}
       <aside
         aria-label="Desktop Side Navigation"
-        className={`hidden lg:flex flex-col shrink-0 border-r border-stone-200/90 bg-white sticky top-14 h-[calc(100vh-56px)] z-20 ${
+        className={`hidden lg:flex flex-col shrink-0 border-r border-stone-200/90 bg-white sticky top-(--site-header-h) h-[calc(100vh-var(--site-header-h))] z-20 ${
           mounted ? 'transition-[width] duration-300 ease-in-out' : ''
         } ${
           isCollapsed ? 'w-20' : 'w-64 xl:w-72'
@@ -115,7 +115,7 @@ export default function SiteNavLayout({ children }: { children: ReactNode }) {
         {/* Top Header Row with Menu Label & Collapse/Expand Button */}
         <div className={`flex items-center border-b border-stone-100 p-4 ${isCollapsed ? 'justify-center' : 'justify-between'}`}>
           {!isCollapsed && (
-            <span className="text-[11px] font-black uppercase tracking-widest text-stone-400">
+            <span className="text-[11px] font-black uppercase tracking-widest text-stone-500">
               Menu
             </span>
           )}

@@ -637,6 +637,32 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"team_join_requests": {
+                  Row: {
+                    "created_at": string,"id": string,"message": string | null,"responded_at": string | null,"status": string,"team_id": string,"user_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"id"?: string,"message"?: string | null,"responded_at"?: string | null,"status"?: string,"team_id": string,"user_id": string
+                  }
+                  Update: {
+                    "created_at"?: string,"id"?: string,"message"?: string | null,"responded_at"?: string | null,"status"?: string,"team_id"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "team_join_requests_team_id_fkey"
+      columns: ["team_id"]
+isOneToOne: false
+      referencedRelation: "teams"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "team_join_requests_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"team_members": {
                   Row: {
                     "id": string,"joined_at": string,"role": string,"team_id": string,"user_id": string
@@ -665,14 +691,14 @@ isOneToOne: false
                   ]
                 },"teams": {
                   Row: {
-                    "captain_id": string,"created_at": string,"description": string | null,"game_id": string,"id": string,"name": string
+                    "captain_id": string,"created_at": string,"description": string | null,"game_id": string,"id": string,"name": string,"recruiting": boolean
                   }
                   ComputedFields: never
                   Insert: {
-                    "captain_id": string,"created_at"?: string,"description"?: string | null,"game_id": string,"id"?: string,"name": string
+                    "captain_id": string,"created_at"?: string,"description"?: string | null,"game_id": string,"id"?: string,"name": string,"recruiting"?: boolean
                   }
                   Update: {
-                    "captain_id"?: string,"created_at"?: string,"description"?: string | null,"game_id"?: string,"id"?: string,"name"?: string
+                    "captain_id"?: string,"created_at"?: string,"description"?: string | null,"game_id"?: string,"id"?: string,"name"?: string,"recruiting"?: boolean
                   }
                   Relationships: [
                     {
@@ -840,6 +866,11 @@ isOneToOne: false
               "created_at": string,"full_name": string,"ign": string,"invite_id": string,"user_id": string
             }[]
                            },
+"get_team_join_requests":
+{ Args: { "p_team_id": string }; Returns: {
+              "created_at": string,"full_name": string,"ign": string,"in_game_role": string,"is_verified": boolean,"message": string,"rank": string,"request_id": string,"user_id": string
+            }[]
+                           },
 "get_team_roster":
 { Args: { "p_team_id": string }; Returns: {
               "full_name": string,"ign": string,"in_game_role": string,"is_verified": boolean,"joined_at": string,"role": string,"user_id": string
@@ -890,6 +921,12 @@ isOneToOne: false
 "respond_to_match_result":
 { Args: { "p_confirm": boolean,"p_reason"?: string,"p_submission_id": string }; Returns: undefined
                            },
+"set_team_recruiting":
+{ Args: { "p_recruiting": boolean,"p_team_id": string }; Returns: undefined
+                           },
+"respond_to_join_request":
+{ Args: { "p_accept": boolean,"p_request_id": string }; Returns: undefined
+                           },
 "respond_to_team_invite":
 { Args: { "p_accept": boolean,"p_invite_id": string }; Returns: undefined
                            },
@@ -901,6 +938,11 @@ isOneToOne: false
                            },
 "save_feedback_sentiment":
 { Args: { "p_feedback_id": string,"p_key": string,"p_score": number,"p_sentiment": string,"p_topics": (string)[] }; Returns: boolean
+                           },
+"list_teams":
+{ Args: { "p_game_id"?: string,"p_limit"?: number,"p_offset"?: number,"p_recruiting_only"?: boolean,"p_search"?: string }; Returns: {
+              "captain_id": string,"captain_name": string,"created_at": string,"description": string,"game_id": string,"game_name": string,"id": string,"max_players": number,"member_count": number,"name": string,"recruiting": boolean
+            }[]
                            },
 "search_players":
 { Args: { "p_game_id": string,"p_search": string }; Returns: {

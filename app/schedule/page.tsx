@@ -135,7 +135,7 @@ export default function SchedulePage() {
                 setLoading(true);
                 setFilter(e.target.value);
               }}
-              className="w-full md:w-80 p-3 rounded-xl bg-stone-50 border border-stone-300 text-stone-950 font-bold text-xs uppercase tracking-wider focus:bg-white focus:border-amber-600 focus:ring-2 focus:ring-amber-500/20 shadow-2xs outline-none transition-all cursor-pointer"
+              className="w-full md:w-80 p-3 rounded-xl bg-stone-50 border border-stone-300 text-stone-950 font-bold text-xs tracking-wider focus:bg-white focus:border-amber-600 focus:ring-2 focus:ring-amber-500/20 shadow-2xs outline-none transition-all cursor-pointer"
             >
               <option value="all">All Tournaments</option>
               {tournaments.map((t) => (
@@ -226,18 +226,19 @@ export default function SchedulePage() {
                       </Link>
                     </div>
 
-                    <div className="grid grid-cols-5 items-center gap-3 text-center">
-                      <div className="col-span-2 text-right">
+                    {/* name | score | name: the score keeps its width, long names are cut with "..." */}
+                    <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2 sm:gap-3 text-center">
+                      <div className="min-w-0 text-right">
                         <p className="font-black text-sm sm:text-base text-stone-950 truncate">
                           {name(m.team_a_id)}
                         </p>
                       </div>
-                      <div className="col-span-1 flex flex-col items-center justify-center">
-                        <span className="px-3 py-1 rounded-lg bg-stone-900 text-amber-400 font-black text-sm tabular-nums tracking-widest shadow-2xs">
+                      <div className="flex flex-col items-center justify-center">
+                        <span className="px-2.5 sm:px-3 py-1 rounded-lg bg-stone-900 text-amber-400 font-black text-sm tabular-nums tracking-widest shadow-2xs">
                           {m.score_a ?? 0} : {m.score_b ?? 0}
                         </span>
                       </div>
-                      <div className="col-span-2 text-left">
+                      <div className="min-w-0 text-left">
                         <p className="font-black text-sm sm:text-base text-stone-950 truncate">
                           {name(m.team_b_id)}
                         </p>

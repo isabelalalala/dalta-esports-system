@@ -66,6 +66,8 @@ export interface Team {
   game_id: string;
   captain_id: string;
   description: string | null;
+  // Open to join requests (202611011300)
+  recruiting: boolean;
   created_at: string;
   // Only present when selected with `games(...)`
   games?: Game;
@@ -129,6 +131,34 @@ export interface PendingTeamInvite {
   user_id: string;
   full_name: string | null;
   ign: string | null;
+  created_at: string;
+}
+
+// One row returned by list_teams(): the "All teams" directory
+export interface TeamListEntry {
+  id: string;
+  name: string;
+  description: string | null;
+  game_id: string;
+  game_name: string;
+  captain_id: string;
+  captain_name: string | null;
+  member_count: number;
+  max_players: number;
+  recruiting: boolean;
+  created_at: string;
+}
+
+// One row returned by get_team_join_requests(): an open request the captain can answer
+export interface TeamJoinRequest {
+  request_id: string;
+  user_id: string;
+  full_name: string | null;
+  ign: string | null;
+  in_game_role: string | null;
+  rank: string | null;
+  is_verified: boolean;
+  message: string | null;
   created_at: string;
 }
 

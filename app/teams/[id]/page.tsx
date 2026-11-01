@@ -7,6 +7,8 @@ import Link from 'next/link';
 import { getErrorMessage } from '@/utils/errors';
 import type { PendingTeamInvite, PlayerSearchResult, RosterMember, Team } from '@/utils/types';
 import VerifiedBadge from '@/components/VerifiedBadge';
+import AskToJoin from '@/components/AskToJoin';
+import TeamJoinRequests from '@/components/TeamJoinRequests';
 import PageLoading from '@/components/PageLoading';
 import PageError from '@/components/PageError';
 import { usePageTitle } from '@/utils/page-title';
@@ -26,14 +28,17 @@ import {
 } from 'lucide-react';
 
 const inputClass =
-  'w-full p-3.5 rounded-xl bg-white text-stone-950 border border-stone-300 placeholder:text-stone-400 uppercase tracking-wide focus:border-gold focus:ring-2 focus:ring-gold/25 shadow-xs outline-none transition-all font-medium text-xs sm:text-sm';
+  'w-full p-3.5 rounded-xl bg-white text-stone-950 border border-stone-300 placeholder:text-stone-400 focus:border-gold focus:ring-2 focus:ring-gold/25 shadow-xs outline-none transition-all font-medium text-xs sm:text-sm';
 
 export default function ManageTeamPage() {
-  usePageTitle('Manage Team');
+  usePageTitle('Team');
   const supabase = createClient();
   const [team, setTeam] = useState<Team | null>(null);
   const [roster, setRoster] = useState<RosterMember[]>([]);
   const [userId, setUserId] = useState('');
+  const [role, setRole] = useState('');
+  // My open join request for this team (players who aren't on it), or null
+  const [myRequestId, setMyRequestId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
@@ -77,6 +82,21 @@ export default function ManageTeamPage() {
         );
         if (rosterError) throw rosterError;
         setRoster((rosterData || []) as RosterMember[]);
+
+        const [roleRes, requestRes] = await Promise.all([
+          supabase.from('profiles').select('role').eq('id', session.user.id).single(),
+          supabase
+            .from('team_join_requests')
+            .select('id')
+            .eq('team_id', id)
+            .eq('user_id', session.user.id)
+            .eq('status', 'pending')
+            .maybeSingle(),
+        ]);
+        if (roleRes.error) throw roleRes.error;
+        if (requestRes.error) throw requestRes.error;
+        setRole(roleRes.data.role);
+        setMyRequestId(requestRes.data?.id ?? null);
 
         if (teamData.captain_id === session.user.id) {
           const { data: invitesData, error: invitesError } = await supabase.rpc(
@@ -282,7 +302,7 @@ export default function ManageTeamPage() {
       <PageError
         message={error || 'Team not found. It may have been deleted.'}
         backHref="/teams"
-        backLabel="Back to My Teams"
+        backLabel="Back to Teams"
       />
     );
   }
@@ -293,6 +313,10 @@ export default function ManageTeamPage() {
   const minPlayers = team.games?.min_players ?? 0;
   const isFull = roster.length >= maxPlayers;
   const isSolo = maxPlayers <= 1;
+  const isOrganizer = role === 'admin' || role === 'staff';
+  // Players not on this team may ask to join while it's recruiting (or cancel their request)
+  const showAskToJoin =
+    role === 'player' && !isMember && !isSolo && (myRequestId !== null || (team.recruiting && !isFull));
 
   return (
     <main
@@ -310,7 +334,7 @@ export default function ManageTeamPage() {
               href="/teams"
               className="inline-flex items-center gap-1.5 text-xs font-black text-gold hover:text-goldlight uppercase tracking-wider transition-colors"
             >
-              ← Back to My Teams
+              ← Back to Teams
             </Link>
 
             <div className="flex flex-wrap items-center gap-2">
@@ -323,6 +347,11 @@ export default function ManageTeamPage() {
               {isCaptain && (
                 <span className="inline-flex items-center gap-1 text-[10px] sm:text-xs font-black px-3 py-1 rounded-md border border-amber-400 bg-gold text-stone-950 uppercase tracking-widest shadow-2xs">
                   <Crown className="w-3 h-3 text-stone-950" /> Captain
+                </span>
+              )}
+              {team.recruiting && (
+                <span className="text-[10px] sm:text-xs font-black px-3 py-1 rounded-md border border-emerald-300/60 bg-emerald-500/20 text-emerald-100 uppercase tracking-widest shadow-2xs">
+                  Recruiting
                 </span>
               )}
             </div>
@@ -445,7 +474,7 @@ export default function ManageTeamPage() {
             <div className="space-y-3">
               <p className="text-stone-700 text-xs sm:text-sm font-medium leading-relaxed normal-case">
                 {team.description || (
-                  <span className="text-stone-400 italic">No description provided for this team.</span>
+                  <span className="text-stone-500 italic">No description provided for this team.</span>
                 )}
               </p>
             </div>
@@ -489,7 +518,7 @@ export default function ManageTeamPage() {
                 <div>
                   <div className="flex items-center gap-2">
                     <p className="font-black text-stone-950 text-base">
-                      {member.ign || <span className="text-stone-400 italic">No IGN</span>}
+                      {member.ign || <span className="text-stone-500 italic">No IGN</span>}
                     </p>
                     {member.role === 'captain' && (
                       <span className="inline-flex items-center gap-1 text-[10px] font-black px-2 py-0.5 rounded-md bg-maroon text-white uppercase tracking-wider">
@@ -532,6 +561,37 @@ export default function ManageTeamPage() {
             ))}
           </div>
         </div>
+
+        {/* Ask to join (players who aren't on this team) */}
+        {showAskToJoin && (
+          <div className="animate-stagger-3 rounded-3xl border border-stone-200/90 bg-white p-6 sm:p-8 shadow-xs space-y-4">
+            <div>
+              <h2 className="text-lg sm:text-xl font-black text-stone-950 tracking-wider">Want to join?</h2>
+              <p className="text-xs text-stone-500 font-medium mt-0.5">
+                The captain gets your request and can accept or decline it. You need a {team.games?.name} game
+                profile and can be on only one {team.games?.name} team.
+              </p>
+            </div>
+            <AskToJoin teamId={team.id} requestId={myRequestId} onChanged={() => setReloadCount((n) => n + 1)} />
+          </div>
+        )}
+
+        {/* Recruiting switch and join requests (captain answers; organizers can view and switch it off) */}
+        {(isCaptain || isOrganizer) && (
+          <div className="animate-stagger-3">
+            <TeamJoinRequests
+              key={reloadCount}
+              teamId={team.id}
+              gameName={team.games?.name || 'This game'}
+              recruiting={team.recruiting}
+              canAnswer={isCaptain}
+              canToggle={isCaptain || isOrganizer}
+              isSolo={isSolo}
+              isFull={isFull}
+              onChanged={() => setReloadCount((n) => n + 1)}
+            />
+          </div>
+        )}
 
         {/* 4. Invite Players Section (Captain only) */}
         {isCaptain && (
@@ -644,7 +704,7 @@ export default function ManageTeamPage() {
                     >
                       <div>
                         <p className="font-black text-stone-950 text-sm tracking-wide">
-                          {invite.ign || <span className="text-stone-400 italic">No IGN</span>}
+                          {invite.ign || <span className="text-stone-500 italic">No IGN</span>}
                         </p>
                         {invite.full_name && (
                           <p className="text-[11px] text-stone-500 font-semibold">{invite.full_name}</p>
@@ -666,7 +726,8 @@ export default function ManageTeamPage() {
           </div>
         )}
 
-        {/* 5. Danger Zone / Actions */}
+        {/* 5. Danger Zone / Actions (only for people on the team) */}
+        {(isCaptain || isMember) && (
         <div className="animate-stagger-3 rounded-3xl border border-stone-200/90 bg-white p-6 sm:p-8 shadow-xs flex flex-wrap items-center justify-between gap-4">
           <div>
             <h3 className="font-black text-stone-950 text-sm tracking-wider uppercase">
@@ -701,6 +762,7 @@ export default function ManageTeamPage() {
             )}
           </div>
         </div>
+        )}
       </div>
     </main>
   );

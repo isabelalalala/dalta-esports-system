@@ -13,7 +13,7 @@ Tokens live in `app/globals.css` `@theme`. Always use the token (`bg-gold`, `tex
 | `gold` | `#FFCC37` | Primary accent: solid buttons, badges and text **on dark** (heroes) |
 | `golddark` | `#E5B72E` | Hover on gold buttons |
 | `goldlight` | `#FFE066` | Hover on gold text inside dark heroes |
-| `golddeep` | `#C89300` | Gold text that must stay readable on white (header "ESPORTS") |
+| `golddeep` | `#8F6900` | Gold text that must stay readable on white (header "ESPORTS"; 5:1 contrast) |
 | `maroon` (= `brown`) | `#5B271E` | Accent text, links, icons and focus rings **on white** |
 | `maroondark` / `maroonlight` | `#431B14` / `#7A3529` | Darker/lighter maroon |
 | `ink` | `#0E0C0B` | Near-black panels behind game logos and photos |
@@ -22,7 +22,7 @@ Tokens live in `app/globals.css` `@theme`. Always use the token (`bg-gold`, `tex
 
 - Tailwind's `amber-600` … `amber-950` are remapped to maroon shades in `@theme`, so `text-amber-700` renders maroon.
 - Gold text on white is too faint (contrast 1.6:1): on white use `maroon` (or `golddeep` for a gold look).
-- Text: `text-stone-950` (main), `text-stone-600`/`text-stone-500` (muted). No light grays (`gray-200…400`) on white.
+- Text: `text-stone-950` (main), `text-stone-600`/`text-stone-500` (muted). No light grays (`stone-300/400`, `gray-200…400`) on white: they fail contrast. `text-stone-300/400` is fine only on dark heroes and logo panels.
 - Meaning colors stay Tailwind's own: red (errors, live), emerald (success), yellow (pending), blue (Verified badge). Light tints for boxes, e.g. `bg-red-50 text-red-700 border-red-200`.
 - Chart colors are hex in `utils/reports.ts` (Chart.js can't read Tailwind classes).
 
@@ -44,6 +44,7 @@ Tokens live in `app/globals.css` `@theme`. Always use the token (`bg-gold`, `tex
 - Cards: `bg-white border border-stone-200/90 rounded-2xl shadow-xs`, padding `p-5 sm:p-6` (forms `p-6 sm:p-8`, larger panels `rounded-3xl`).
 - Page hero: `relative rounded-3xl border border-stone-800/80 bg-stone-950 overflow-hidden` with `<PageHeroBackground>` (admin-editable banner) and white title text.
 - Buttons: gold solid (`bg-gold text-stone-950 rounded-xl font-black uppercase tracking-widest hover:bg-golddark`) or outline (`border border-maroon text-maroon rounded-xl`).
+- Small action buttons that can sit on a dark hero OR a white card (Share, Copy link, Add to calendar): `smallActionClass` / `smallActionPrimaryClass` in `utils/button-styles.ts`. They take the surrounding text color, so never give them a fixed dark or light text color.
 - Inputs: `rounded-xl bg-white border border-stone-300 focus:border-amber-600 focus:ring-2 focus:ring-amber-500/20`.
 - Logged-in and public pages share `SiteNavLayout` (collapsible side nav); it renders the page's `<main id="main-content">`, so pages inside it start with a `<div>`, not another `<main>`.
 - Live indicators: a dot (`rounded-full bg-current animate-pulse`) + text, never an emoji.

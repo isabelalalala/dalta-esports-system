@@ -17,6 +17,8 @@ export interface ActivityLog {
     tournament_id?: string | null;
     game?: string;
     team_name?: string;
+    // Team join requests: the player who asked
+    player_name?: string | null;
     old_status?: string | null;
     fields?: string[] | null;
     user_name?: string;
@@ -77,6 +79,13 @@ export const ACTION_GROUPS: { label: string; actions: { value: string; label: st
       { value: 'result.approved', label: 'Result approved' },
       { value: 'result.overridden', label: 'Result overridden' },
       { value: 'result.rejected', label: 'Result rejected' },
+    ],
+  },
+  {
+    label: 'Teams',
+    actions: [
+      { value: 'team.join_request.accepted', label: 'Join request accepted' },
+      { value: 'team.join_request.declined', label: 'Join request declined' },
     ],
   },
   {
@@ -239,6 +248,10 @@ export function describeActivity(log: ActivityLog): string {
       return `${actor} ${verbs[log.action]} ${match} in ${tournament}${note}`;
     }
 
+    case 'team.join_request.accepted':
+      return `${actor} accepted ${d.player_name || 'a player'} into ${d.team_name || 'a deleted team'}`;
+    case 'team.join_request.declined':
+      return `${actor} declined ${d.player_name || 'a player'}'s request to join ${d.team_name || 'a deleted team'}`;
     case 'user.role_changed':
       return `${actor} changed ${d.user_name}'s role from ${roleLabels[d.old_role ?? ''] ?? d.old_role} to ${roleLabels[d.new_role ?? ''] ?? d.new_role}`;
     case 'user.deleted':

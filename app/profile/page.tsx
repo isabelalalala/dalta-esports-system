@@ -31,7 +31,7 @@ import {
 import { getGameLogo } from '@/utils/game-logos';
 
 const inputClass =
-  'w-full p-3.5 rounded-xl bg-white text-stone-950 border border-stone-300 placeholder:text-stone-400 uppercase tracking-wide focus:border-gold focus:ring-2 focus:ring-gold/25 shadow-xs outline-none transition-all font-medium text-xs sm:text-sm';
+  'w-full p-3.5 rounded-xl bg-white text-stone-950 border border-stone-300 placeholder:text-stone-400 focus:border-gold focus:ring-2 focus:ring-gold/25 shadow-xs outline-none transition-all font-medium text-xs sm:text-sm';
 
 export default function ProfilePage() {
   usePageTitle('Profile');
@@ -522,7 +522,7 @@ export default function ProfilePage() {
                             )}
                           </p>
                         ) : (
-                          <p className="text-xs text-stone-400 font-medium tracking-wide mt-0.5">
+                          <p className="text-xs text-stone-500 font-medium tracking-wide mt-0.5">
                             Not set up yet
                           </p>
                         )}

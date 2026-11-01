@@ -68,7 +68,7 @@ async function MatchContent({ params }: { params: PageProps<'/t/[id]/match/[matc
   // A stream for this match, or else any live stream of the tournament
   const stream = data.live_streams.find((s) => s.match_id === match.id) ?? (match.status === 'live' ? data.live_streams[0] : undefined);
   const teamClass = (teamId: string | null) =>
-    done ? (match.winner_team_id === teamId ? 'text-amber-700 font-black' : 'text-stone-400') : 'text-stone-950 font-black';
+    done ? (match.winner_team_id === teamId ? 'text-amber-700 font-black' : 'text-stone-500') : 'text-stone-950 font-black';
 
   return (
     <div className="space-y-8">
@@ -131,7 +131,7 @@ async function MatchContent({ params }: { params: PageProps<'/t/[id]/match/[matc
               .filter((t) => t.teamId)
               .map((t) => (
                 <div key={t.teamId} className="flex flex-wrap items-center gap-3">
-                  <span className="font-semibold text-white min-w-32">{t.label}</span>
+                  <span className="font-semibold text-stone-950 min-w-32 break-words">{t.label}</span>
                   <CalendarLinks kind="team" id={t.teamId!} label="All matches" />
                 </div>
               ))}

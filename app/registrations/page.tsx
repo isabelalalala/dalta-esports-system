@@ -220,12 +220,12 @@ export default function MyRegistrationsPage() {
                       <span className="text-maroon font-black">{reg.tournaments?.game}</span>
                       <span>•</span>
                       <div className="flex items-center gap-1">
-                        <Calendar className="w-3.5 h-3.5 text-stone-400" />
+                        <Calendar className="w-3.5 h-3.5 text-stone-500" />
                         <span>Starts {formatDate(reg.tournaments?.start_date)}</span>
                       </div>
                     </div>
 
-                    <p className="text-[11px] text-stone-400 font-medium tracking-wide">
+                    <p className="text-[11px] text-stone-500 font-medium tracking-wide">
                       Registered on {new Date(reg.registered_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
                     </p>
                   </div>

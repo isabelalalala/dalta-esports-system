@@ -72,7 +72,7 @@ async function TournamentContent({ params }: { params: PageProps<'/t/[id]'>['par
           <span className={m.status === 'completed' && m.winner_team_id === m.team_a_id ? 'text-maroon font-black' : 'text-stone-950 font-bold'}>{name(m.team_a_id)}</span>
           {m.status === 'completed'
             ? <span className="mx-2 tabular-nums text-stone-900 font-extrabold">{m.is_forfeit ? 'forfeit' : `${m.score_a ?? '-'} : ${m.score_b ?? '-'}`}</span>
-            : <span className="mx-2 text-stone-400 font-medium">vs</span>}
+            : <span className="mx-2 text-stone-500 font-medium">vs</span>}
           <span className={m.status === 'completed' && m.winner_team_id === m.team_b_id ? 'text-maroon font-black' : 'text-stone-950 font-bold'}>{name(m.team_b_id)}</span>
           {m.status === 'live' && <span className="ml-2 text-xs text-red-600 font-black"><span className="inline-block h-1.5 w-1.5 rounded-full bg-current animate-pulse" /> LIVE</span>}
         </span>
@@ -120,9 +120,9 @@ async function TournamentContent({ params }: { params: PageProps<'/t/[id]'>['par
             className="animate-hero-tagline text-xs sm:text-sm font-semibold uppercase tracking-wider flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 text-white"
           >
             <span className="text-gold font-black">{t.game}</span>
-            <span>•</span>
+            <span className="hidden sm:inline" aria-hidden>•</span>
             <span>{formatDate(t.start_date)} – {formatDate(t.end_date)}</span>
-            <span>•</span>
+            <span className="hidden sm:inline" aria-hidden>•</span>
             <span>{data.approved_count} / {t.max_participants || '∞'} Teams</span>
           </p>
         </div>
@@ -207,7 +207,7 @@ async function TournamentContent({ params }: { params: PageProps<'/t/[id]'>['par
               {t.description ? (
                 <Paragraphs text={t.description} />
               ) : (
-                <p className="text-stone-400 italic">No description provided for this tournament.</p>
+                <p className="text-stone-500 italic">No description provided for this tournament.</p>
               )}
             </div>
 
@@ -305,7 +305,7 @@ async function TournamentContent({ params }: { params: PageProps<'/t/[id]'>['par
           <div className="border-b border-stone-100 pb-3">
             <span className="text-[11px] font-black tracking-widest text-maroon uppercase">Schedule</span>
             <h2 className="text-xl sm:text-2xl font-black text-stone-950 uppercase tracking-wide">Upcoming Matches</h2>
-            <p className="text-[11px] text-stone-400 font-semibold mt-0.5">Times are Philippine Time (PHT).</p>
+            <p className="text-[11px] text-stone-500 font-semibold mt-0.5">Times are Philippine Time (PHT).</p>
           </div>
           <ul className="rounded-2xl border border-stone-200/90 bg-white shadow-2xs divide-y divide-stone-100 overflow-hidden">
             {upcoming.map(matchRow)}

@@ -25,7 +25,7 @@ import {
 import { getGameLogo } from '@/utils/game-logos';
 
 const inputClass =
-  'w-full p-3.5 rounded-xl bg-stone-50 border border-stone-300 text-stone-950 font-bold text-xs uppercase tracking-wide outline-none focus:border-amber-600 focus:bg-white focus:ring-2 focus:ring-amber-500/20 shadow-xs transition-all';
+  'w-full p-3.5 rounded-xl bg-stone-50 border border-stone-300 text-stone-950 font-bold text-xs outline-none focus:border-amber-600 focus:bg-white focus:ring-2 focus:ring-amber-500/20 shadow-xs transition-all';
 const labelClass = 'block text-stone-950 text-xs font-black tracking-wider uppercase mb-2';
 
 export default function EditTournamentPage() {
@@ -440,7 +440,7 @@ export default function EditTournamentPage() {
                 className={inputClass}
                 required
               />
-              <p className="mt-1 text-[10px] text-stone-400 font-semibold tracking-wider">
+              <p className="mt-1 text-[10px] text-stone-500 font-semibold tracking-wider">
                 Must be on or before the tournament start date.
               </p>
             </div>

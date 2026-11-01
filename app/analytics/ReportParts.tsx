@@ -9,7 +9,7 @@ export function StatTile({ label, value, note }: { label: string; value: ReactNo
     <div className="bg-white border border-stone-200/90 rounded-2xl p-4 sm:p-5 shadow-xs text-stone-950 transition-all hover:-translate-y-0.5 print:border-stone-300 print:shadow-none">
       <p className="text-[11px] uppercase font-black text-stone-500 tracking-wider mb-1">{label}</p>
       <p className="text-2xl sm:text-3xl font-black text-stone-950 tracking-tight">{value}</p>
-      {note && <p className="text-xs font-semibold text-stone-400 mt-1">{note}</p>}
+      {note && <p className="text-xs font-semibold text-stone-500 mt-1">{note}</p>}
     </div>
   );
 }

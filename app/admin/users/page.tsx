@@ -25,7 +25,7 @@ const roleLabels: Record<string, string> = {
 };
 
 const inputClass =
-  'w-full p-3 rounded-xl bg-white text-stone-950 border border-stone-300 placeholder:text-stone-400 uppercase tracking-wide focus:border-amber-600 focus:ring-2 focus:ring-amber-500/20 shadow-xs outline-none transition-all font-medium text-xs sm:text-sm';
+  'w-full p-3 rounded-xl bg-white text-stone-950 border border-stone-300 placeholder:text-stone-400 focus:border-amber-600 focus:ring-2 focus:ring-amber-500/20 shadow-xs outline-none transition-all font-medium text-xs sm:text-sm';
 
 export default function ManageUsersPage() {
   const supabase = createClient();
@@ -271,7 +271,7 @@ function UserRow({ user, isMe, onChanged }: { user: Profile; isMe: boolean; onCh
           </form>
         ) : (
           <p className="font-extrabold text-stone-950 text-sm tracking-wide truncate">
-            {user.full_name || <span className="italic text-stone-400">No name</span>}
+            {user.full_name || <span className="italic text-stone-500">No name</span>}
             {isMe && <span className="ml-2 text-xs text-amber-600 font-black">(you)</span>}
           </p>
         )}
@@ -297,7 +297,7 @@ function UserRow({ user, isMe, onChanged }: { user: Profile; isMe: boolean; onCh
       <div className="md:col-span-2 text-stone-600 font-medium text-xs tracking-wider">
         <span className="md:hidden">Joined </span>
         {new Date(user.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
-        <span className="block text-[11px] text-stone-400 mt-0.5 normal-case font-normal">
+        <span className="block text-[11px] text-stone-500 mt-0.5 normal-case font-normal">
           {user.privacy_consent_at
             ? `Consent: ${new Date(user.privacy_consent_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}`
             : 'No privacy consent yet'}

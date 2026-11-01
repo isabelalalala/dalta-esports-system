@@ -1,10 +1,11 @@
-// In-app notifications (see migration 202610171200_notifications): row type, icons and the
+// In-app notifications (see migration 202610171200_notifications; the latest type list is in
+// 202611011300_team_join_requests): row type, icons and the
 // read/unread actions shared by the header bell and /notifications.
 import type { LucideIcon } from 'lucide-react';
 import {
-  AlarmClock, Ban, CalendarClock, CalendarDays, CircleCheck, CircleX, Crown,
-  DoorOpen, FileText, Flag, GraduationCap, Handshake, Mail, Megaphone, Radio, Scale,
-  ThumbsUp, Trash, Trophy, TriangleAlert, Undo2, UserMinus, Users,
+  AlarmClock, Ban, CalendarClock, CalendarDays, CircleCheck, CircleMinus, CircleX, ClipboardList, Crown,
+  DoorOpen, FileText, Flag, GraduationCap, Handshake, IdCard, Mail, Megaphone, Radio, Scale, Target,
+  ThumbsUp, Trash, Trophy, TriangleAlert, Undo2, UserCheck, UserCog, UserMinus, UserPlus, UserX, Users,
 } from 'lucide-react';
 import type { createClient } from '@/utils/supabase/client';
 
@@ -12,6 +13,7 @@ type SupabaseClient = ReturnType<typeof createClient>;
 
 export type NotificationType =
   | 'registration_approved' | 'registration_rejected' | 'registration_removed'
+  | 'registration_submitted' | 'registration_withdrawn'
   | 'match_scheduled' | 'match_rescheduled' | 'match_live'
   | 'checkin_open' | 'match_forfeit'
   | 'result_submitted' | 'result_confirmed' | 'result_disputed' | 'result_approved' | 'result_rejected'
@@ -19,7 +21,10 @@ export type NotificationType =
   | 'announcement'
   | 'team_invite' | 'invite_accepted' | 'invite_declined' | 'team_captain'
   | 'team_added' | 'member_left' | 'member_removed'
-  | 'student_verified' | 'student_rejected' | 'student_revoked';
+  | 'join_request' | 'join_request_accepted' | 'join_request_declined'
+  | 'student_verified' | 'student_rejected' | 'student_revoked'
+  | 'verification_submitted' | 'role_changed'
+  | 'prediction_result';
 
 export interface AppNotification {
   id: string;
@@ -37,6 +42,8 @@ export const notificationIcons: Record<NotificationType, LucideIcon> = {
   registration_approved: CircleCheck,
   registration_rejected: CircleX,
   registration_removed: Trash,
+  registration_submitted: ClipboardList,
+  registration_withdrawn: CircleMinus,
   match_scheduled: CalendarDays,
   match_rescheduled: CalendarClock,
   match_live: Radio,
@@ -56,9 +63,15 @@ export const notificationIcons: Record<NotificationType, LucideIcon> = {
   team_added: Users,
   member_left: DoorOpen,
   member_removed: UserMinus,
+  join_request: UserPlus,
+  join_request_accepted: UserCheck,
+  join_request_declined: UserX,
   student_verified: GraduationCap,
   student_rejected: TriangleAlert,
   student_revoked: TriangleAlert,
+  verification_submitted: IdCard,
+  role_changed: UserCog,
+  prediction_result: Target,
 };
 
 export async function fetchUnreadCount(supabase: SupabaseClient) {

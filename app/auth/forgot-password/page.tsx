@@ -70,7 +70,7 @@ export default function ForgotPasswordPage() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <p className="text-stone-600 font-medium text-xs sm:text-sm">Enter your email and we&apos;ll send you a link to choose a new password.</p>
             {error && <div role="alert" className="bg-red-50 border border-red-500/30 rounded-xl text-red-700 px-4 py-2.5 text-xs sm:text-sm font-bold tracking-wider">{error}</div>}
-            <EmailField value={email} onChange={setEmail} className="w-full p-3.5 rounded-xl bg-white text-stone-950 border border-stone-200 placeholder:text-stone-400 tracking-wide focus:border-amber-600 focus:ring-2 focus:ring-amber-500/20 shadow-xs outline-none transition-all" />
+            <EmailField value={email} onChange={setEmail} className="w-full p-3.5 rounded-xl bg-white text-stone-950 border border-stone-200 placeholder:text-stone-400 focus:border-amber-600 focus:ring-2 focus:ring-amber-500/20 shadow-xs outline-none transition-all" />
             <button
               type="submit"
               disabled={loading || cooldown.remaining > 0}

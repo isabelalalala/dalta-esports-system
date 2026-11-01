@@ -353,9 +353,9 @@ export default function TournamentDetailsPage() {
             className="animate-hero-tagline text-xs sm:text-sm font-semibold uppercase tracking-wider flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 text-white"
           >
             <span className="text-gold font-black">{tournament.game}</span>
-            <span>•</span>
+            <span className="hidden sm:inline" aria-hidden>•</span>
             <span>{formatDate(tournament.start_date)} – {formatDate(tournament.end_date)}</span>
-            <span>•</span>
+            <span className="hidden sm:inline" aria-hidden>•</span>
             <span>{registrations.length} / {tournament.max_participants || '∞'} Teams</span>
           </p>
         </div>
@@ -462,7 +462,7 @@ export default function TournamentDetailsPage() {
               {tournament.description ? (
                 <p>{tournament.description}</p>
               ) : (
-                <p className="text-stone-400 italic">No description provided for this tournament.</p>
+                <p className="text-stone-500 italic">No description provided for this tournament.</p>
               )}
             </div>
 
@@ -518,7 +518,7 @@ export default function TournamentDetailsPage() {
                             id="register-team"
                             value={selectedTeamId}
                             onChange={(e) => setSelectedTeamId(e.target.value)}
-                            className="w-full p-3.5 rounded-xl bg-white border border-stone-300 text-stone-950 font-bold text-xs uppercase tracking-wide outline-none focus:border-gold focus:ring-2 focus:ring-gold/25 shadow-xs transition-all"
+                            className="w-full p-3.5 rounded-xl bg-white border border-stone-300 text-stone-950 font-bold text-xs outline-none focus:border-gold focus:ring-2 focus:ring-gold/25 shadow-xs transition-all"
                             required
                           >
                             <option value="">-- Choose Roster --</option>
@@ -648,7 +648,7 @@ export default function TournamentDetailsPage() {
             {tournament.rules}
           </p>
         ) : (
-          <p className="text-stone-400 text-xs sm:text-sm font-semibold">
+          <p className="text-stone-500 text-xs sm:text-sm font-semibold">
             No official tournament rules have been published for this tournament yet.
           </p>
         )}

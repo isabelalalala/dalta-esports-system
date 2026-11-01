@@ -10,7 +10,7 @@ export default function SiteSearchBox({ defaultValue = '' }: { defaultValue?: st
       role="search"
       className="flex items-center w-full h-10 rounded-xl border border-stone-200 bg-stone-50/90 hover:border-stone-300 focus-within:bg-white focus-within:border-amber-600 focus-within:ring-2 focus-within:ring-amber-500/20 shadow-xs transition-all overflow-hidden group"
     >
-      <div className="pl-3.5 pr-1.5 flex items-center justify-center text-stone-400 group-focus-within:text-amber-600 transition-colors shrink-0">
+      <div className="pl-3.5 pr-1.5 flex items-center justify-center text-stone-500 group-focus-within:text-amber-600 transition-colors shrink-0">
         <Search className="w-4 h-4" aria-hidden="true" />
       </div>
       <input
@@ -19,7 +19,7 @@ export default function SiteSearchBox({ defaultValue = '' }: { defaultValue?: st
         defaultValue={defaultValue}
         placeholder="Search tournaments, events..."
         aria-label="Search"
-        className="flex-1 min-w-0 h-full bg-transparent px-2 text-xs sm:text-sm text-stone-950 placeholder:text-stone-400 uppercase tracking-wide outline-none font-medium"
+        className="flex-1 min-w-0 h-full bg-transparent px-2 text-xs sm:text-sm text-stone-950 placeholder:text-stone-400 outline-none font-medium"
       />
       <button
         type="submit"

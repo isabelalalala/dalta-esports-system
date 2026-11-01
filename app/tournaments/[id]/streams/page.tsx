@@ -27,7 +27,7 @@ import {
 } from 'lucide-react';
 
 const inputClass =
-  'w-full border border-stone-300 bg-stone-50 px-4 py-3.5 text-stone-950 font-bold text-xs uppercase rounded-xl outline-none focus:border-amber-600 focus:bg-white focus:ring-2 focus:ring-amber-500/20 transition-all placeholder:text-stone-400 shadow-xs';
+  'w-full border border-stone-300 bg-stone-50 px-4 py-3.5 text-stone-950 font-bold text-xs rounded-xl outline-none focus:border-amber-600 focus:bg-white focus:ring-2 focus:ring-amber-500/20 transition-all placeholder:text-stone-400 shadow-xs';
 const labelClass = 'block text-stone-950 text-xs font-black tracking-wider uppercase mb-2';
 
 export default function ManageStreamsPage() {
@@ -298,7 +298,7 @@ export default function ManageStreamsPage() {
                     {stream.title}
                   </h3>
 
-                  <p className="text-xs text-stone-400 font-mono truncate">
+                  <p className="text-xs text-stone-500 font-mono truncate">
                     {stream.facebook_url}
                   </p>
                 </div>

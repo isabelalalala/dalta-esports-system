@@ -5,27 +5,28 @@ import { getSiteContent } from '@/utils/site-data';
 import { DEFAULT_LOGO, logoUrl } from '@/utils/site';
 import SiteAuthButtons from './SiteAuthButtons';
 import SiteSearchBox from './SiteSearchBox';
+import HeaderHeight from './HeaderHeight';
 
 // The one header of the whole app (added in app/layout.tsx): logo, search, and
 // Log in / Sign up, or Dashboard + notifications + Log out when logged in.
 // Synchronous shell with suspended logo prevents blocking prerenders in RootLayout.
 export default function SiteHeader() {
   return (
-    <header className="w-full border-b border-stone-200/90 bg-white/95 backdrop-blur-md sticky top-0 z-40 print:hidden shadow-xs">
-      <div className="w-full px-6 sm:px-8 lg:px-12 py-3 flex flex-wrap sm:flex-nowrap items-center justify-between gap-4 sm:gap-6">
+    <header id="site-header" className="w-full border-b border-stone-200/90 bg-white/95 backdrop-blur-md sticky top-0 z-40 print:hidden shadow-xs">
+      <div className="w-full px-6 sm:px-8 lg:px-12 py-3 flex flex-wrap lg:flex-nowrap items-center justify-between gap-x-4 gap-y-3 lg:gap-6">
         {/* Brand Logo & Wordmark */}
         <Link href="/" className="flex items-center gap-3 shrink-0 group">
           <Suspense fallback={<LogoImage logo={DEFAULT_LOGO} />}>
             <HeaderLogo />
           </Suspense>
-          <span className="flex flex-col justify-center font-black text-xs sm:text-sm leading-tight tracking-wider uppercase transition-colors">
+          <span className="flex flex-col justify-center font-black text-sm sm:text-lg leading-tight tracking-wider uppercase transition-colors">
             <span className="text-maroon">DALTA</span>
-            <span className="font-extrabold text-[11px] sm:text-xs tracking-widest text-golddeep">ESPORTS</span>
+            <span className="font-extrabold text-xs sm:text-sm tracking-widest text-golddeep">ESPORTS</span>
           </span>
         </Link>
 
         {/* Search Bar - Center Axis */}
-        <div className="order-3 w-full sm:order-none sm:w-auto sm:flex-1 sm:max-w-xl">
+        <div className="order-3 w-full lg:order-none lg:w-auto lg:flex-1 lg:max-w-xl">
           <SiteSearchBox />
         </div>
 
@@ -34,6 +35,7 @@ export default function SiteHeader() {
           <SiteAuthButtons />
         </div>
       </div>
+      <HeaderHeight targetId="site-header" />
     </header>
   );
 }
@@ -49,9 +51,9 @@ function LogoImage({ logo }: { logo: string }) {
     <Image
       src={logo}
       alt="DALTA Esports logo"
-      width={40}
-      height={40}
-      className="rounded-xl border border-stone-200/90 bg-white shadow-xs group-hover:border-amber-500/50 transition-colors object-contain p-0.5"
+      width={64}
+      height={64}
+      className="h-12 w-12 sm:h-16 sm:w-16 rounded-xl border border-stone-200/90 bg-white shadow-xs group-hover:border-amber-500/50 transition-colors object-contain p-0.5"
     />
   );
 }

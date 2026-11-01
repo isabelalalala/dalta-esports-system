@@ -69,7 +69,7 @@ export function PasswordRules({
             {check.ok ? (
               <Check className={`h-3.5 w-3.5 mt-px shrink-0 ${dark ? 'text-emerald-400' : 'text-green-700'}`} aria-hidden />
             ) : (
-              <X className={`h-3.5 w-3.5 mt-px shrink-0 ${dark ? 'text-stone-500' : 'text-stone-400'}`} aria-hidden />
+              <X className="h-3.5 w-3.5 mt-px shrink-0 text-stone-500" aria-hidden />
             )}
             <span>
               {check.label}
@@ -121,7 +121,7 @@ export default function PasswordField({ value, onChange, className, placeholder,
           onClick={() => setVisible((v) => !v)}
           aria-label={visible ? 'Hide password' : 'Show password'}
           aria-pressed={visible}
-          className={`absolute inset-y-0 right-0 px-3 ${dark ? 'text-stone-400 hover:text-amber-400' : 'text-gray-400 hover:text-gold'}`}
+          className={`absolute inset-y-0 right-0 px-3 ${dark ? 'text-stone-400 hover:text-amber-400' : 'text-stone-500 hover:text-maroon'}`}
         >
           {visible ? <EyeOff className="h-5 w-5" aria-hidden /> : <Eye className="h-5 w-5" aria-hidden />}
         </button>

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { SITE_URL } from '@/utils/site-url';
+import { smallActionClass, smallActionPrimaryClass } from '@/utils/button-styles';
 
 interface Props {
   // A path on this site, e.g. /t/<id>
@@ -44,23 +45,21 @@ export default function ShareButton({ path, title, text }: Props) {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const buttonClass = 'px-3 py-1.5 border-2 border-gold text-stone-950 text-sm font-bold hover:bg-gold/10';
-
   return (
-    <div className="flex flex-wrap gap-2 print:hidden">
+    <div className="flex flex-wrap justify-center gap-2 print:hidden">
       {canShare && (
-        <button onClick={handleShare} className="px-3 py-1.5 border-2 border-gold bg-gold text-stone-950 text-sm font-bold hover:bg-golddark">
+        <button onClick={handleShare} className={smallActionPrimaryClass}>
           Share
         </button>
       )}
-      <button onClick={handleCopy} className={buttonClass} aria-live="polite">
+      <button onClick={handleCopy} className={smallActionClass} aria-live="polite">
         {copied ? 'Copied!' : 'Copy link'}
       </button>
       <a
         href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`}
         target="_blank"
         rel="noreferrer"
-        className={buttonClass}
+        className={smallActionClass}
       >
         Share on Facebook
       </a>

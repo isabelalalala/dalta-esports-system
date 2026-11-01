@@ -15,7 +15,7 @@ import PageHeroBackground from '@/components/site/PageHeroBackground';
 import { AlertCircle, ChevronRight, Swords } from 'lucide-react';
 
 const inputClass =
-  'w-full border border-stone-300 bg-stone-50 px-3 py-2 text-stone-950 font-bold text-xs uppercase rounded-xl outline-none focus:border-amber-600 focus:bg-white focus:ring-2 focus:ring-amber-500/20 disabled:opacity-50 transition-all';
+  'w-full border border-stone-300 bg-stone-50 px-3 py-2 text-stone-950 font-bold text-xs rounded-xl outline-none focus:border-amber-600 focus:bg-white focus:ring-2 focus:ring-amber-500/20 disabled:opacity-50 transition-all';
 
 export default function MatchManagementPage() {
   usePageTitle('Tournament matches');

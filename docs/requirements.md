@@ -167,7 +167,8 @@ Details per feature: `docs/new-features-summary.md`.
   (RA 10173) at registration and again when the Privacy Notice changes; student verification (players submit their
   student ID, school and course/year; admin/staff verify or reject).
 - **2.0 Schedule Tournament Match:** team invites (captain invites, player accepts/declines, leave, remove,
-  transfer captaincy, roster lock); "verified students only" tournaments; match check-in with reminders (pg_cron);
+  transfer captaincy, roster lock); team directory and join requests (captain opens recruiting, player asks to
+  join, captain accepts/declines); "verified students only" tournaments; match check-in with reminders (pg_cron);
   forfeits; captain result submission with a screenshot, confirm/dispute by the other captain, and staff review
   (approve / override / reject).
 - **3.0 Distribute Event Announcement:** in-app notifications (bell, live updates) for announcements, match times,
@@ -196,7 +197,8 @@ Details per feature: `docs/new-features-summary.md`.
 ### New use cases on existing actors
 - **All actors:** reset password, confirm email, give privacy consent, view notifications, view Privacy Notice.
 - **Player:** submit student details. **Team Captain:** invite player, remove member, transfer captaincy, check in
-  for a match, submit result with a screenshot, confirm/dispute a result. **Player:** accept/decline invite, leave team.
+  for a match, submit result with a screenshot, confirm/dispute a result, open/close recruiting, accept/decline join
+  request. **Player:** accept/decline invite, leave team, browse teams, request to join a team.
 - **Audience/Player:** submit feedback about a match, pick match winner, view leaderboard.
 - **Staff:** review student verification, monitor check-ins ("Needs attention"), declare forfeit, review match
   result, export data.
