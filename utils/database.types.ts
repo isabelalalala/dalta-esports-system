@@ -882,6 +882,11 @@ isOneToOne: false
 "is_match_captain":
 { Args: { "p_match_id": string }; Returns: boolean
                            },
+"list_teams":
+{ Args: { "p_game_id"?: string,"p_limit"?: number,"p_offset"?: number,"p_recruiting_only"?: boolean,"p_search"?: string }; Returns: {
+              "captain_id": string,"captain_name": string,"created_at": string,"description": string,"game_id": string,"game_name": string,"id": string,"max_players": number,"member_count": number,"name": string,"recruiting": boolean
+            }[]
+                           },
 "log_activity":
 { Args: { "p_action": string,"p_details"?: Json,"p_entity_id": string,"p_entity_type": string }; Returns: undefined
                            },
@@ -921,9 +926,6 @@ isOneToOne: false
 "respond_to_match_result":
 { Args: { "p_confirm": boolean,"p_reason"?: string,"p_submission_id": string }; Returns: undefined
                            },
-"set_team_recruiting":
-{ Args: { "p_recruiting": boolean,"p_team_id": string }; Returns: undefined
-                           },
 "respond_to_join_request":
 { Args: { "p_accept": boolean,"p_request_id": string }; Returns: undefined
                            },
@@ -939,11 +941,6 @@ isOneToOne: false
 "save_feedback_sentiment":
 { Args: { "p_feedback_id": string,"p_key": string,"p_score": number,"p_sentiment": string,"p_topics": (string)[] }; Returns: boolean
                            },
-"list_teams":
-{ Args: { "p_game_id"?: string,"p_limit"?: number,"p_offset"?: number,"p_recruiting_only"?: boolean,"p_search"?: string }; Returns: {
-              "captain_id": string,"captain_name": string,"created_at": string,"description": string,"game_id": string,"game_name": string,"id": string,"max_players": number,"member_count": number,"name": string,"recruiting": boolean
-            }[]
-                           },
 "search_players":
 { Args: { "p_game_id": string,"p_search": string }; Returns: {
               "full_name": string,"ign": string,"in_game_role": string,"invited": boolean,"is_verified": boolean,"rank": string,"user_id": string
@@ -951,6 +948,9 @@ isOneToOne: false
                            },
 "send_checkin_open_notifications":
 { Args: Record<PropertyKey, never>; Returns: number
+                           },
+"set_team_recruiting":
+{ Args: { "p_recruiting": boolean,"p_team_id": string }; Returns: undefined
                            },
 "staff_ids":
 { Args: Record<PropertyKey, never>; Returns: (string)[]

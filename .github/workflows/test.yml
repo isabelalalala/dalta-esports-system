@@ -35,7 +35,10 @@ jobs:
         with:
           # keep in sync with the supabase devDependency so gen types output matches
           version: 2.121.0
-      - run: supabase start
+      # Only what the database tests and type generation need. Skipping the email tester (mailpit),
+      # Studio and the other extras makes startup faster and avoids "port already in use" failures
+      # (the email tester's port 54324 was taken on the CI machine).
+      - run: supabase start -x mailpit,studio,imgproxy,edge-runtime,logflare,vector,supavisor
       - run: supabase test db
       # Regenerate the checked-in types; fails if a migration drifted
       - run: supabase gen types typescript --local > utils/database.types.ts
