@@ -47,6 +47,9 @@ Full title: "DALTA Esports: Tournament Management System with AI-Powered Feedbac
 ## Auth pages and Supabase settings
 - `/auth/login`, `/auth/register`, `/auth/forgot-password`, `/auth/reset-password`.
 - `/auth/callback` (route handler) turns email links into a session, then redirects to `?next=` (app paths only).
+- After anything that changes what `proxy.ts` would decide (log in, log out, privacy consent, terms, weak-password
+  change), navigate with `reloadTo(path)` from `utils/auth.ts` (a full page load), never `router.push`. The client
+  router keeps prefetched pages, so `/dashboard` prefetched while logged out replays "redirect to login".
 - Admin "Add account" on `/admin/users` signs people up with `utils/supabase/signup-client.ts`. This is a separate
   client that doesn't save a session, so the admin stays logged in. It's the only place not using the clients above.
 - Supabase dashboard → Authentication → URL Configuration: Site URL = the app URL; Redirect URLs include

@@ -3,13 +3,12 @@
 import { useRef, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
 import { getErrorMessage } from '@/utils/errors';
 import { PRIVACY_NOTICE_VERSION } from '@/utils/privacy';
 import { TOS_VERSION } from '@/utils/terms';
 import {
-  confirmEmailRedirect, EMAIL_COOLDOWN_SECONDS, emailRateLimitMessage, emailRetryDelay, getEmailError, isEmailRateLimited,
+  confirmEmailRedirect, EMAIL_COOLDOWN_SECONDS, emailRateLimitMessage, emailRetryDelay, getEmailError, isEmailRateLimited, reloadTo,
 } from '@/utils/auth';
 import { useCooldown } from '@/utils/use-cooldown';
 import { getPasswordError } from '@/utils/password';
@@ -25,7 +24,6 @@ const inputClass =
 export default function Register() {
   usePageTitle('Register');
   const supabase = createClient();
-  const router = useRouter();
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -99,7 +97,7 @@ export default function Register() {
       if (error) throw error;
 
       if (data.session) {
-        router.push('/dashboard');
+        reloadTo('/dashboard');
         return;
       }
       setSentTo(email.trim());

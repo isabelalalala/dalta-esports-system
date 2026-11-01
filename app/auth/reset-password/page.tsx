@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
+import { reloadTo } from '@/utils/auth';
 import { getErrorMessage } from '@/utils/errors';
 import { usePageTitle } from '@/utils/page-title';
 import { getPasswordError } from '@/utils/password';
@@ -13,7 +13,6 @@ import PasswordField from '@/components/PasswordField';
 export default function ResetPasswordPage() {
   usePageTitle('Reset password');
   const supabase = createClient();
-  const router = useRouter();
   const [hasSession, setHasSession] = useState<boolean | null>(null);
   // The account's email, so the new password can't contain it
   const [email, setEmail] = useState('');
@@ -51,7 +50,7 @@ export default function ResetPasswordPage() {
       // The new password passed the rules above, so lift the weak-password gate (proxy.ts)
       const { error: updateError } = await supabase.auth.updateUser({ password, data: { weak_password: false } });
       if (updateError) throw updateError;
-      router.push('/dashboard');
+      reloadTo('/dashboard');
     } catch (err) {
       setError(getErrorMessage(err, 'Could not change the password'));
       setSaving(false);

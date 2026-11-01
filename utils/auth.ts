@@ -29,6 +29,15 @@ export function isEmailNotConfirmed(err: unknown) {
   return code === 'email_not_confirmed' || /email not confirmed/i.test(message ?? '')
 }
 
+// Full page load to `path`, for every place where the login state just changed (log in, log out,
+// privacy consent, terms, password change). proxy.ts decides where a user may go, and the client
+// router keeps pages it prefetched earlier: /dashboard prefetched while logged out is cached as
+// "redirect to /auth/login", so router.push('/dashboard') after logging in would land on the login
+// page again. A full load asks the server again with the new cookies and clears that cache.
+export function reloadTo(path: string) {
+  window.location.assign(path)
+}
+
 // --- Email sending limits ---------------------------------------------------
 // Supabase refuses to send an auth email (sign-up confirmation, resend, password reset) when
 // a limit is reached, with the code over_email_send_rate_limit (HTTP 429). Two limits:

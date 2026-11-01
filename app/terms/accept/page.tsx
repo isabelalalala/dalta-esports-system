@@ -2,8 +2,8 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
+import { reloadTo } from '@/utils/auth';
 import { getErrorMessage } from '@/utils/errors';
 import { TOS_VERSION } from '@/utils/terms';
 import TermsCheckbox from '@/components/TermsCheckbox';
@@ -13,7 +13,6 @@ import { usePageTitle } from '@/utils/page-title';
 // accounts made before the terms existed, accounts added by an admin, or after the terms changed.
 export default function AcceptTermsPage() {
   const supabase = createClient();
-  const router = useRouter();
   usePageTitle('Accept Terms of Service');
   const [consent, setConsent] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -28,7 +27,8 @@ export default function AcceptTermsPage() {
       // Saves the version and date on the user's own profile (see migration 202610181900)
       const { error: acceptError } = await supabase.rpc('accept_tos', { p_version: TOS_VERSION });
       if (acceptError) throw acceptError;
-      router.push('/dashboard');
+      // A full load: /dashboard may be cached as "redirect to the terms page" (see reloadTo)
+      reloadTo('/dashboard');
     } catch (err) {
       setError(getErrorMessage(err, 'Could not save your acceptance'));
       setSaving(false);
@@ -37,7 +37,7 @@ export default function AcceptTermsPage() {
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
-    router.push('/');
+    reloadTo('/');
   };
 
   return (

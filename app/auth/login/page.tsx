@@ -3,12 +3,12 @@
 import { Suspense, useEffect, useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 import { createClient } from '@/utils/supabase/client'
 import { getErrorMessage } from '@/utils/errors'
 import {
   confirmEmailRedirect, EMAIL_COOLDOWN_SECONDS, emailRateLimitMessage, emailRetryDelay, getEmailError,
-  isEmailNotConfirmed, isEmailRateLimited,
+  isEmailNotConfirmed, isEmailRateLimited, reloadTo,
 } from '@/utils/auth'
 import { useCooldown } from '@/utils/use-cooldown'
 import { getPasswordError } from '@/utils/password'
@@ -30,7 +30,6 @@ export default function Login() {
 function LoginContent() {
   usePageTitle('Log in')
   const supabase = createClient()
-  const router = useRouter()
   // ?confirmed=1: the user came from the "confirm your email" link
   const confirmed = useSearchParams().get('confirmed') === '1'
   const [email, setEmail] = useState('')
@@ -59,10 +58,10 @@ function LoginContent() {
     if (!confirmed) return
     const check = async () => {
       const { data: { session } } = await supabase.auth.getSession()
-      if (session) router.replace('/dashboard')
+      if (session) reloadTo('/dashboard')
     }
     check()
-  }, [confirmed, router, supabase])
+  }, [confirmed, supabase])
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -88,10 +87,11 @@ function LoginContent() {
       const fullName = data.user?.user_metadata?.full_name ?? ''
       if (data.weakPassword || getPasswordError(password, { email, fullName })) {
         await supabase.auth.updateUser({ data: { weak_password: true } })
-        router.push('/profile?weak=1')
+        reloadTo('/profile?weak=1')
         return
       }
-      router.push('/dashboard')
+      // A full load: /dashboard may be cached as "redirect to login" from before (see reloadTo)
+      reloadTo('/dashboard')
     } catch (err) {
       if (isEmailNotConfirmed(err)) {
         setNotConfirmed(true)

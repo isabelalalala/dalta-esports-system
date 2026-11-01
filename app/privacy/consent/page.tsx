@@ -2,8 +2,8 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
+import { reloadTo } from '@/utils/auth';
 import { getErrorMessage } from '@/utils/errors';
 import { PRIVACY_NOTICE_VERSION } from '@/utils/privacy';
 import PrivacyConsentCheckbox from '@/components/PrivacyConsentCheckbox';
@@ -13,7 +13,6 @@ import { usePageTitle } from '@/utils/page-title';
 // accounts made before the notice existed, accounts added by an admin, or after the notice changed.
 export default function PrivacyConsentPage() {
   const supabase = createClient();
-  const router = useRouter();
   usePageTitle('Privacy consent');
   const [consent, setConsent] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -28,7 +27,8 @@ export default function PrivacyConsentPage() {
       // Saves the date and version on the user's own profile (see migration 202610170900)
       const { error: consentError } = await supabase.rpc('give_privacy_consent', { p_version: PRIVACY_NOTICE_VERSION });
       if (consentError) throw consentError;
-      router.push('/dashboard');
+      // A full load: /dashboard may be cached as "redirect to the consent page" (see reloadTo)
+      reloadTo('/dashboard');
     } catch (err) {
       setError(getErrorMessage(err, 'Could not save your consent'));
       setSaving(false);
@@ -37,7 +37,7 @@ export default function PrivacyConsentPage() {
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
-    router.push('/');
+    reloadTo('/');
   };
 
   return (

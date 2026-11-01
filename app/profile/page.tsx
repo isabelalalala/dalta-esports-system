@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { createClient } from '@/utils/supabase/client';
+import { reloadTo } from '@/utils/auth';
 import { getErrorMessage } from '@/utils/errors';
 import type { Game, PlayerGameProfile, Profile } from '@/utils/types';
 import VerifiedBadge from '@/components/VerifiedBadge';
@@ -189,7 +190,7 @@ export default function ProfilePage() {
       if (deleteError) throw deleteError;
 
       await supabase.auth.signOut({ scope: 'local' });
-      router.push('/');
+      reloadTo('/');
     } catch (err) {
       setError(getErrorMessage(err, 'Failed to delete account'));
       setSaving(false);
@@ -667,6 +668,12 @@ function ChangePassword({ email, fullName }: { email: string; fullName: string }
       });
       if (updateError) throw updateError;
 
+      // Sent here by the weak-password gate: continue with a full load, because other pages
+      // were cached as "redirect to /profile?weak=1" while the gate was on (see reloadTo)
+      if (weak) {
+        reloadTo('/dashboard');
+        return;
+      }
       setMessage('Password changed successfully.');
       setCurrentPassword('');
       setNewPassword('');

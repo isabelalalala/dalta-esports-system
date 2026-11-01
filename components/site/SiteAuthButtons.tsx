@@ -2,14 +2,13 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
+import { reloadTo } from '@/utils/auth';
 import NotificationBell from '@/components/NotificationBell';
 
 // Right side of the header: "Log in / Sign up" for visitors; Dashboard, the notification
 // bell and Log out when logged in. Client-side, so the pages themselves can stay cached.
 export default function SiteAuthButtons() {
-  const router = useRouter();
   const [userId, setUserId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -22,7 +21,8 @@ export default function SiteAuthButtons() {
 
   const handleLogout = async () => {
     await createClient().auth.signOut();
-    router.push('/');
+    // A full load, so no page cached while logged in can be shown afterwards (see reloadTo)
+    reloadTo('/');
   };
 
   if (userId) {
