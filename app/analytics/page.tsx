@@ -126,7 +126,7 @@ export default function AnalyticsPage() {
   return (
     <div className="w-full space-y-8">
       {/* 1. Main Hero Container with Official Banner */}
-      <section className="relative w-full rounded-3xl border border-stone-800/80 bg-stone-950 overflow-hidden shadow-md p-8 sm:p-14 lg:p-16 text-center text-white flex flex-col items-center justify-center space-y-4">
+      <section className="relative w-full rounded-3xl border border-stone-800/80 bg-stone-950 overflow-hidden shadow-md p-8 sm:p-14 @5xl:p-16 text-center text-white flex flex-col items-center justify-center space-y-4">
         <PageHeroBackground specificKey="hero_banner_path" alt="DALTA Esports Analytics Banner" />
 
         <div className="relative z-10 w-full flex flex-wrap items-center justify-between gap-4">
@@ -146,7 +146,7 @@ export default function AnalyticsPage() {
 
         <div className="relative z-10 max-w-4xl mx-auto space-y-3 pt-2">
           <h1
-            className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-wider uppercase leading-tight text-white"
+            className="text-display font-black tracking-wider uppercase leading-tight text-white"
           >
             Analytics &amp; Reports
           </h1>

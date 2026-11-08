@@ -24,7 +24,7 @@ import {
 import GameLogo from '@/components/GameLogo';
 
 const inputClass =
-  'w-full p-3.5 rounded-xl bg-stone-50 border border-stone-300 text-stone-950 font-bold text-xs outline-none focus:border-amber-600 focus:bg-white focus:ring-2 focus:ring-amber-500/20 shadow-xs transition-all';
+  'w-full p-3.5 rounded-xl bg-stone-50 border border-stone-300 text-stone-950 font-bold text-xs outline-none focus:border-amber-600 focus:bg-surface focus:ring-2 focus:ring-amber-500/20 shadow-xs transition-all';
 const labelClass = 'block text-stone-950 text-xs font-black tracking-wider uppercase mb-2';
 
 export default function EditTournamentPage() {
@@ -161,7 +161,7 @@ export default function EditTournamentPage() {
   return (
     <div className="w-full space-y-8 text-stone-950">
       {/* 1. Main Hero Container */}
-      <section className="relative w-full rounded-3xl border border-stone-800/80 bg-stone-950 overflow-hidden shadow-md p-8 sm:p-12 lg:p-14 text-center text-white flex flex-col items-center justify-center space-y-4">
+      <section className="relative w-full rounded-3xl border border-stone-800/80 bg-stone-950 overflow-hidden shadow-md p-8 sm:p-12 @5xl:p-14 text-center text-white flex flex-col items-center justify-center space-y-4">
         <PageHeroBackground specificKey="tournaments_hero_bg_path" alt="DALTA Esports Banner" />
 
         <div className="relative z-10 w-full flex flex-wrap items-center justify-between gap-4">
@@ -178,7 +178,7 @@ export default function EditTournamentPage() {
 
         <div className="relative z-10 max-w-4xl mx-auto space-y-3 pt-2">
           <h1
-            className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-wider uppercase leading-tight text-white"
+            className="text-display font-black tracking-wider uppercase leading-tight text-white"
           >
             Edit Tournament
           </h1>
@@ -199,9 +199,9 @@ export default function EditTournamentPage() {
       )}
 
       {/* 3. Structured 2-Column Editorial Form */}
-      <form onSubmit={handleUpdate} className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 items-start">
+      <form onSubmit={handleUpdate} className="grid grid-cols-1 @5xl:grid-cols-12 gap-6 sm:gap-8 items-start">
         {/* Left Column (5 Cols): Live Game Showcase & Governance */}
-        <div className="lg:col-span-5 space-y-6">
+        <div className="@5xl:col-span-5 space-y-6">
           {/* Card 1: Game Division Visual Showcase */}
           {/* Every game shows its logo or initials (GameLogo); the empty card is only for "no game chosen" */}
           {selectedGame ? (
@@ -306,9 +306,9 @@ export default function EditTournamentPage() {
         </div>
 
         {/* Right Column (7 Cols): Configuration Form */}
-        <div className="lg:col-span-7 space-y-6">
+        <div className="@5xl:col-span-7 space-y-6">
           {/* Card 5: Core Identity */}
-          <div className="rounded-3xl border border-stone-200/90 bg-white p-6 sm:p-8 lg:p-10 shadow-xs space-y-5">
+          <div className="rounded-3xl border border-stone-200/90 bg-white p-6 sm:p-8 @5xl:p-10 shadow-xs space-y-5">
             <div className="border-b border-stone-100 pb-3">
               <span className="text-[11px] font-black tracking-widest text-maroon uppercase">Core Details</span>
               <h2 className="text-xl sm:text-2xl font-black text-stone-950 uppercase tracking-wide flex items-center gap-2">
@@ -475,7 +475,7 @@ export default function EditTournamentPage() {
           </div>
 
           {/* Card 8: Rules & Match Format */}
-          <div className="rounded-3xl border border-stone-200/90 bg-white p-6 sm:p-8 lg:p-10 shadow-xs space-y-5">
+          <div className="rounded-3xl border border-stone-200/90 bg-white p-6 sm:p-8 @5xl:p-10 shadow-xs space-y-5">
             <div className="border-b border-stone-100 pb-3">
               <span className="text-[11px] font-black tracking-widest text-maroon uppercase">Rules &amp; Regulations</span>
               <h2 className="text-xl sm:text-2xl font-black text-stone-950 uppercase tracking-wide flex items-center gap-2">

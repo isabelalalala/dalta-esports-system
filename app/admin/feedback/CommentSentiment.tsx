@@ -78,7 +78,7 @@ export default function CommentSentiment({ tournaments }: { tournaments: { id: s
         <p className="text-stone-600">No comments yet{tournamentId ? ' for this tournament' : ''}.</p>
       ) : (
         <>
-          <dl className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
+          <dl className="grid grid-cols-2 sm:grid-cols-4 @5xl:grid-cols-7 gap-3">
             {[
               ['Comments', report.total],
               ['Positive', report.by_sentiment.positive],
@@ -98,7 +98,7 @@ export default function CommentSentiment({ tournaments }: { tournaments: { id: s
             <p className="text-sm text-stone-600">{report.pending} comment(s) still waiting for analysis.</p>
           )}
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 @5xl:grid-cols-2 gap-6">
             <div className="min-w-0 space-y-2">
               <h3 className="text-sm font-black">Sentiment over time</h3>
               <ReportChart

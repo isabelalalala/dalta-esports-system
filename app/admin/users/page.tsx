@@ -94,7 +94,7 @@ export default function ManageUsersPage() {
   return (
     <div className="w-full space-y-8">
       {/* 1. Main Hero Container with Official Banner */}
-      <section className="relative w-full rounded-3xl border border-stone-800/80 bg-stone-950 overflow-hidden shadow-md p-8 sm:p-14 lg:p-16 text-center text-white flex flex-col items-center justify-center space-y-4">
+      <section className="relative w-full rounded-3xl border border-stone-800/80 bg-stone-950 overflow-hidden shadow-md p-8 sm:p-14 @5xl:p-16 text-center text-white flex flex-col items-center justify-center space-y-4">
         <PageHeroBackground specificKey="hero_banner_path" alt="DALTA Esports Users Banner" />
 
         <div className="relative z-10 w-full flex items-center justify-between">
@@ -108,7 +108,7 @@ export default function ManageUsersPage() {
 
         <div className="relative z-10 max-w-4xl mx-auto space-y-3 pt-2">
           <h1
-            className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-wider uppercase leading-tight text-white"
+            className="text-display font-black tracking-wider uppercase leading-tight text-white"
           >
             Manage Users
           </h1>
@@ -162,7 +162,7 @@ export default function ManageUsersPage() {
 
         <div className="bg-white border border-stone-200/90 rounded-2xl shadow-xs overflow-hidden">
           {/* Header */}
-          <div className="hidden md:grid grid-cols-12 gap-4 bg-stone-100 text-stone-900 font-black text-xs uppercase tracking-wider px-6 py-3.5 border-b border-stone-200">
+          <div className="hidden @3xl:grid grid-cols-12 gap-4 bg-stone-100 text-stone-900 font-black text-xs uppercase tracking-wider px-6 py-3.5 border-b border-stone-200">
             <div className="col-span-4">Name / Email</div>
             <div className="col-span-3">Role</div>
             <div className="col-span-2">Joined</div>
@@ -268,9 +268,9 @@ function UserRow({ user, isMe, onChanged }: { user: Profile; isMe: boolean; onCh
   };
 
   return (
-    <div className="px-6 py-4 grid grid-cols-1 md:grid-cols-12 gap-3 md:gap-4 md:items-center hover:bg-stone-50/60 transition-colors">
+    <div className="px-6 py-4 grid grid-cols-1 @3xl:grid-cols-12 gap-3 @3xl:gap-4 @3xl:items-center hover:bg-stone-50/60 transition-colors">
       {/* Name and email */}
-      <div className="md:col-span-4 min-w-0">
+      <div className="@3xl:col-span-4 min-w-0">
         {editingName ? (
           <form onSubmit={handleSaveName} className="flex gap-2">
             <input
@@ -310,7 +310,7 @@ function UserRow({ user, isMe, onChanged }: { user: Profile; isMe: boolean; onCh
       </div>
 
       {/* Role */}
-      <div className="md:col-span-3">
+      <div className="@3xl:col-span-3">
         <select
           value={user.role}
           onChange={(e) => handleRoleChange(e.target.value)}
@@ -325,8 +325,8 @@ function UserRow({ user, isMe, onChanged }: { user: Profile; isMe: boolean; onCh
       </div>
 
       {/* Join date */}
-      <div className="md:col-span-2 text-stone-600 font-medium text-xs tracking-wider">
-        <span className="md:hidden">Joined </span>
+      <div className="@3xl:col-span-2 text-stone-600 font-medium text-xs tracking-wider">
+        <span className="@3xl:hidden">Joined </span>
         {new Date(user.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
         <span className="block text-[11px] text-stone-500 mt-0.5 normal-case font-normal">
           {user.privacy_consent_at
@@ -336,7 +336,7 @@ function UserRow({ user, isMe, onChanged }: { user: Profile; isMe: boolean; onCh
       </div>
 
       {/* Actions */}
-      <div className="md:col-span-3 flex md:justify-end gap-3 text-xs font-black tracking-wider">
+      <div className="@3xl:col-span-3 flex @3xl:justify-end gap-3 text-xs font-black tracking-wider">
         {!editingName && (
           <button
             onClick={() => setEditingName(true)}
@@ -366,7 +366,7 @@ function UserRow({ user, isMe, onChanged }: { user: Profile; isMe: boolean; onCh
         )}
       </div>
 
-      {error && <p role="alert" className="md:col-span-12 text-xs font-bold text-red-600">{error}</p>}
+      {error && <p role="alert" className="@3xl:col-span-12 text-xs font-bold text-red-600">{error}</p>}
 
       {removingPicture && (
         <ConfirmDialog
@@ -512,7 +512,7 @@ function AddAccountForm({ onCreated }: { onCreated: () => void }) {
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
+      <div className="grid grid-cols-1 @3xl:grid-cols-2 gap-4 items-start">
         <div className="space-y-1">
           <label className="block text-xs font-black text-stone-700 tracking-wider">Email Address</label>
           <EmailField value={email} onChange={setEmail} className={inputClass} />

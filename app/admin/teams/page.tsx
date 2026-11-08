@@ -118,7 +118,7 @@ export default function AdminTeamsPage() {
           </Link>
         </div>
         <div className="relative z-10 max-w-4xl mx-auto space-y-3 pt-2">
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-wider uppercase leading-tight text-white">
+          <h1 className="text-display font-black tracking-wider uppercase leading-tight text-white">
             Team Management
           </h1>
           <p className="text-base sm:text-lg font-medium leading-relaxed text-white">

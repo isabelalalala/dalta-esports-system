@@ -13,7 +13,7 @@ import HeaderHeight from './HeaderHeight';
 export default function SiteHeader() {
   return (
     <header id="site-header" className="w-full border-b border-stone-200/90 bg-white/95 backdrop-blur-md sticky top-0 z-40 print:hidden shadow-xs">
-      <div className="w-full px-6 sm:px-8 lg:px-12 py-3 flex flex-wrap lg:flex-nowrap items-center justify-between gap-x-4 gap-y-3 lg:gap-6">
+      <div className="w-full px-6 sm:px-8 lg:px-8 xl:px-12 py-3 flex flex-wrap lg:flex-nowrap items-center justify-between gap-x-4 gap-y-3 lg:gap-4 xl:gap-6">
         {/* Brand Logo & Wordmark */}
         <Link href="/" className="flex items-center gap-3 shrink-0 group">
           <Suspense fallback={<LogoImage logo={DEFAULT_LOGO} />}>
@@ -26,7 +26,7 @@ export default function SiteHeader() {
         </Link>
 
         {/* Search Bar - Center Axis */}
-        <div className="order-3 w-full lg:order-none lg:w-auto lg:flex-1 lg:max-w-xl">
+        <div className="order-3 w-full lg:order-none lg:w-auto lg:flex-1 lg:min-w-0 lg:max-w-xl">
           <SiteSearchBox />
         </div>
 

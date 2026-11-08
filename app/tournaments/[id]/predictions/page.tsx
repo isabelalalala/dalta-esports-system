@@ -43,7 +43,7 @@ export default function PredictionsLeaderboardPage() {
   return (
     <div className="w-full space-y-8 text-stone-950">
       {/* 1. Main Hero Container */}
-      <section className="relative w-full rounded-3xl border border-stone-800/80 bg-stone-950 overflow-hidden shadow-md p-8 sm:p-12 lg:p-14 text-center text-white flex flex-col items-center justify-center space-y-4">
+      <section className="relative w-full rounded-3xl border border-stone-800/80 bg-stone-950 overflow-hidden shadow-md p-8 sm:p-12 @5xl:p-14 text-center text-white flex flex-col items-center justify-center space-y-4">
         <PageHeroBackground specificKey="tournaments_hero_bg_path" alt="DALTA Esports Banner" />
 
         <div className="relative z-10 w-full flex flex-wrap items-center justify-between gap-4">
@@ -60,7 +60,7 @@ export default function PredictionsLeaderboardPage() {
 
         <div className="relative z-10 max-w-4xl mx-auto space-y-3 pt-2">
           <h1
-            className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-wider uppercase leading-tight text-white"
+            className="text-display font-black tracking-wider uppercase leading-tight text-white"
           >
             Pick&apos;em Leaderboard
           </h1>
@@ -74,7 +74,7 @@ export default function PredictionsLeaderboardPage() {
 
       {/* 2. Leaderboard Container */}
       <div className="max-w-4xl mx-auto w-full space-y-6">
-        <div className="rounded-3xl border border-stone-200/90 bg-white p-6 sm:p-8 lg:p-10 shadow-xs space-y-6">
+        <div className="rounded-3xl border border-stone-200/90 bg-white p-6 sm:p-8 @5xl:p-10 shadow-xs space-y-6">
           <div className="border-b border-stone-100 pb-4">
             <span className="text-[11px] font-black tracking-widest text-maroon uppercase">Standings</span>
             <h2 className="text-xl sm:text-2xl font-black text-stone-950 uppercase tracking-wide">

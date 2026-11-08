@@ -8,7 +8,7 @@ export default function SiteSearchBox({ defaultValue = '' }: { defaultValue?: st
     <form
       action="/search"
       role="search"
-      className="flex items-center w-full h-10 rounded-xl border border-stone-200 bg-stone-50/90 hover:border-stone-300 focus-within:bg-white focus-within:border-amber-600 focus-within:ring-2 focus-within:ring-amber-500/20 shadow-xs transition-all overflow-hidden group"
+      className="flex items-center w-full h-10 rounded-xl border border-stone-200 bg-stone-50/90 hover:border-stone-300 focus-within:bg-surface focus-within:border-amber-600 focus-within:ring-2 focus-within:ring-amber-500/20 shadow-xs transition-all overflow-hidden group"
     >
       <div className="pl-3.5 pr-1.5 flex items-center justify-center text-stone-500 group-focus-within:text-amber-600 transition-colors shrink-0">
         <Search className="w-4 h-4" aria-hidden="true" />

@@ -88,7 +88,7 @@ export default function PartnershipSection() {
           {trackItems.map((partner, idx) => (
             <div
               key={`track1-${partner.name}-${idx}`}
-              className="group/card relative w-28 h-28 sm:w-36 sm:h-36 md:w-40 md:h-40 shrink-0 rounded-2xl overflow-hidden border border-stone-200/90 bg-white shadow-xs transition-all duration-300 hover:scale-105 hover:border-gold/70 hover:shadow-md cursor-pointer"
+              className="group/card relative w-28 h-28 sm:w-36 sm:h-36 @3xl:w-40 @3xl:h-40 shrink-0 rounded-2xl overflow-hidden border border-stone-200/90 bg-white shadow-xs transition-all duration-300 hover:scale-105 hover:border-gold/70 hover:shadow-md cursor-pointer"
               title={partner.name}
             >
               <Image
@@ -119,7 +119,7 @@ export default function PartnershipSection() {
           {trackItems.map((partner, idx) => (
             <div
               key={`track2-${partner.name}-${idx}`}
-              className="group/card relative w-28 h-28 sm:w-36 sm:h-36 md:w-40 md:h-40 shrink-0 rounded-2xl overflow-hidden border border-stone-200/90 bg-white shadow-xs transition-all duration-300 hover:scale-105 hover:border-gold/70 hover:shadow-md cursor-pointer"
+              className="group/card relative w-28 h-28 sm:w-36 sm:h-36 @3xl:w-40 @3xl:h-40 shrink-0 rounded-2xl overflow-hidden border border-stone-200/90 bg-white shadow-xs transition-all duration-300 hover:scale-105 hover:border-gold/70 hover:shadow-md cursor-pointer"
               title={partner.name}
             >
               <Image

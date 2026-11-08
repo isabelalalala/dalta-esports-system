@@ -95,7 +95,7 @@ export default function SchedulePage() {
   return (
     <div className="w-full space-y-8 text-stone-950">
       {/* 1. Main Hero Container with Official Banner */}
-      <section className="relative w-full rounded-3xl border border-stone-800/80 bg-stone-950 overflow-hidden shadow-md p-8 sm:p-14 lg:p-16 text-center text-white flex flex-col items-center justify-center space-y-4">
+      <section className="relative w-full rounded-3xl border border-stone-800/80 bg-stone-950 overflow-hidden shadow-md p-8 sm:p-14 @5xl:p-16 text-center text-white flex flex-col items-center justify-center space-y-4">
         <PageHeroBackground specificKey="hero_banner_path" alt="DALTA Esports Match Schedule Banner" />
 
         <div className="relative z-10 w-full flex items-center justify-between">
@@ -109,7 +109,7 @@ export default function SchedulePage() {
 
         <div className="relative z-10 max-w-4xl mx-auto space-y-3 pt-2">
           <h1
-            className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-wider uppercase leading-tight text-white"
+            className="text-page-hero font-black tracking-wider uppercase leading-tight text-white"
           >
             Schedule &amp; Results
           </h1>
@@ -129,9 +129,9 @@ export default function SchedulePage() {
           </div>
         )}
 
-        <div className="bg-white border border-stone-200/90 rounded-2xl p-4 sm:p-6 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="bg-white border border-stone-200/90 rounded-2xl p-4 sm:p-6 shadow-xs flex flex-wrap items-center justify-between gap-4">
           {/* Tournament selector */}
-          <div className="flex items-center gap-3 w-full md:w-auto">
+          <div className="flex items-center gap-3 w-full @3xl:w-auto min-w-0">
             <Filter className="w-4 h-4 text-maroon shrink-0" />
             <label htmlFor="tournament-filter" className="sr-only">Filter by Tournament</label>
             <select
@@ -141,7 +141,7 @@ export default function SchedulePage() {
                 setLoading(true);
                 setFilter(e.target.value);
               }}
-              className="w-full md:w-80 p-3 rounded-xl bg-stone-50 border border-stone-300 text-stone-950 font-bold text-xs tracking-wider focus:bg-white focus:border-amber-600 focus:ring-2 focus:ring-amber-500/20 shadow-2xs outline-none transition-all cursor-pointer"
+              className="w-full @3xl:w-80 max-w-full p-3 rounded-xl bg-stone-50 border border-stone-300 text-stone-950 font-bold text-xs tracking-wider focus:bg-surface focus:border-amber-600 focus:ring-2 focus:ring-amber-500/20 shadow-2xs outline-none transition-all cursor-pointer"
             >
               <option value="all">All Tournaments</option>
               {tournaments.map((t) => (
@@ -213,7 +213,7 @@ export default function SchedulePage() {
                 </div>
               ) : null
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 @3xl:grid-cols-2 gap-4">
                 {live.map((m) => (
                   <div
                     key={m.id}

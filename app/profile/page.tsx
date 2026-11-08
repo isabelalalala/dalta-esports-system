@@ -224,7 +224,7 @@ export default function ProfilePage() {
     <div className="w-full text-stone-950">
       <div className="w-full max-w-6xl mx-auto space-y-8">
         {/* 1. Main Hero Container (Matching Dashboard & Tournaments Layout) */}
-        <section className="animate-hero-entrance relative w-full rounded-3xl border border-stone-800/80 bg-stone-950 overflow-hidden shadow-md p-8 sm:p-12 lg:p-14 text-center text-white flex flex-col items-center justify-center space-y-5">
+        <section className="animate-hero-entrance relative w-full rounded-3xl border border-stone-800/80 bg-stone-950 overflow-hidden shadow-md p-8 sm:p-12 @5xl:p-14 text-center text-white flex flex-col items-center justify-center space-y-5">
           <PageHeroBackground specificKey="dashboard_hero_bg_path" alt="DALTA Esports Profile Banner" />
 
           {/* Action Bar inside Hero: Back Link & Badges */}
@@ -248,7 +248,7 @@ export default function ProfilePage() {
           <div className="relative z-10 max-w-4xl mx-auto space-y-3 pt-2 flex flex-col items-center">
             <Avatar url={profile.avatar_url} name={profile.full_name || profile.email} size="xl" className="border-2 border-gold/60 shadow-xl shadow-black/50" />
             <h1
-              className="animate-hero-title text-3xl sm:text-4xl lg:text-5xl font-black tracking-wider uppercase leading-tight text-white"
+              className="animate-hero-title text-display font-black tracking-wider uppercase leading-tight text-white"
             >
               {profile.full_name || 'My Profile'}
             </h1>
@@ -313,7 +313,7 @@ export default function ProfilePage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 text-xs sm:text-sm">
+          <div className="grid grid-cols-1 @3xl:grid-cols-2 gap-4 sm:gap-6 text-xs sm:text-sm">
             <div className="p-4 sm:p-5 rounded-2xl bg-stone-50/70 border border-stone-200/80 space-y-1">
               <span className="uppercase block text-stone-500 font-black tracking-wider text-xs flex items-center gap-1.5">
                 <Mail className="w-3.5 h-3.5 text-maroon" />
@@ -334,7 +334,7 @@ export default function ProfilePage() {
               </span>
             </div>
 
-            <div className="md:col-span-2 p-4 sm:p-5 rounded-2xl bg-stone-50/70 border border-stone-200/80 space-y-1.5">
+            <div className="@3xl:col-span-2 p-4 sm:p-5 rounded-2xl bg-stone-50/70 border border-stone-200/80 space-y-1.5">
               <span className="uppercase block text-stone-500 font-black tracking-wider text-xs flex items-center gap-1.5">
                 <Calendar className="w-3.5 h-3.5 text-maroon" />
                 Privacy & RA 10173 Compliance
@@ -454,7 +454,7 @@ export default function ProfilePage() {
                         />
                       </div>
 
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 @3xl:grid-cols-2 gap-4">
                         <div className="space-y-1.5">
                           <label className="block text-xs font-black text-stone-700 tracking-wider">
                             In-Game Role
@@ -755,7 +755,7 @@ function ChangePassword({ email, fullName }: { email: string; fullName: string }
         />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 items-start">
+      <div className="grid grid-cols-1 @3xl:grid-cols-2 gap-4 sm:gap-6 items-start">
         <div className="space-y-1.5">
           <label className="block text-xs font-black text-stone-700 tracking-wider">
             New Password

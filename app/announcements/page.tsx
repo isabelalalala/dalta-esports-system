@@ -103,7 +103,7 @@ export default function AnnouncementsPage() {
   return (
     <div className="w-full space-y-8">
       {/* 1. Main Hero Container with Official Banner */}
-      <section className="relative w-full rounded-3xl border border-stone-800/80 bg-stone-950 overflow-hidden shadow-md p-8 sm:p-14 lg:p-16 text-center text-white flex flex-col items-center justify-center space-y-4">
+      <section className="relative w-full rounded-3xl border border-stone-800/80 bg-stone-950 overflow-hidden shadow-md p-8 sm:p-14 @5xl:p-16 text-center text-white flex flex-col items-center justify-center space-y-4">
         <PageHeroBackground specificKey="hero_banner_path" alt="DALTA Esports Announcements Banner" />
 
         <div className="relative z-10 w-full flex flex-wrap items-center justify-between gap-4">
@@ -125,7 +125,7 @@ export default function AnnouncementsPage() {
 
         <div className="relative z-10 max-w-4xl mx-auto space-y-3 pt-2">
           <h1
-            className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-wider uppercase leading-tight text-white"
+            className="text-page-hero font-black tracking-wider uppercase leading-tight text-white"
           >
             Announcements
           </h1>

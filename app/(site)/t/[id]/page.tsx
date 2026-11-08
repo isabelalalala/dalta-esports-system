@@ -87,7 +87,7 @@ async function TournamentContent({ params }: { params: PageProps<'/t/[id]'>['par
       <LiveRefresher tournamentId={t.id} />
 
       {/* 1. Main Hero Container */}
-      <section className="animate-hero-entrance relative w-full rounded-3xl border border-stone-800/80 bg-stone-950 overflow-hidden shadow-md p-8 sm:p-12 lg:p-14 text-center text-white flex flex-col items-center justify-center space-y-4">
+      <section className="animate-hero-entrance relative w-full rounded-3xl border border-stone-800/80 bg-stone-950 overflow-hidden shadow-md p-8 sm:p-12 @5xl:p-14 text-center text-white flex flex-col items-center justify-center space-y-4">
         <PageHeroBackground specificKey="tournaments_hero_bg_path" alt="DALTA Esports Tournament Banner" />
 
         <div className="relative z-10 w-full flex flex-wrap items-center justify-between gap-4">
@@ -111,7 +111,7 @@ async function TournamentContent({ params }: { params: PageProps<'/t/[id]'>['par
 
         <div className="relative z-10 max-w-4xl mx-auto space-y-3 pt-2">
           <h1
-            className="animate-hero-title text-3xl sm:text-4xl lg:text-5xl font-black tracking-wider uppercase leading-tight text-white"
+            className="animate-hero-title text-display font-black tracking-wider uppercase leading-tight text-white"
           >
             {t.name}
           </h1>
@@ -153,7 +153,7 @@ async function TournamentContent({ params }: { params: PageProps<'/t/[id]'>['par
           </div>
           {data.live_streams.map((s) => (
             // Video and live chat side by side on large screens, chat below on phones
-            <div key={s.id} className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_22rem] gap-4 items-start">
+            <div key={s.id} className="grid grid-cols-1 @5xl:grid-cols-[minmax(0,1fr)_22rem] gap-4 items-start">
               <div className="min-w-0 rounded-3xl border border-stone-200 overflow-hidden bg-white p-2 sm:p-3 shadow-md">
                 <FacebookPlayer url={s.facebook_url} title={s.title} />
               </div>
@@ -164,10 +164,10 @@ async function TournamentContent({ params }: { params: PageProps<'/t/[id]'>['par
       )}
 
       {/* 3. Media & Information Editorial Row */}
-      <div className="animate-stagger-1 grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 items-start">
+      <div className="animate-stagger-1 grid grid-cols-1 @5xl:grid-cols-12 gap-6 sm:gap-8 items-start">
         {/* Left column: game logo (or its initials). Always rendered, so every game gets the same
             5/7 layout; min-w-0 lets grid columns shrink instead of squeezing their text. */}
-        <div className="lg:col-span-5 w-full min-w-0">
+        <div className="@5xl:col-span-5 w-full min-w-0">
           <div className="relative aspect-[4/3] max-h-[380px] w-full rounded-3xl border border-stone-800/80 bg-ink overflow-hidden shadow-md flex items-center justify-center p-6 sm:p-8">
             <div className="absolute inset-0 pointer-events-none bg-logo-stage" />
             <div className="absolute top-4 right-4 z-20 pointer-events-none">
@@ -193,8 +193,8 @@ async function TournamentContent({ params }: { params: PageProps<'/t/[id]'>['par
         </div>
 
         {/* min-w: if this column is ever squeezed again, it overflows instead of wrapping letter by letter */}
-        <div className="lg:col-span-7 w-full min-w-[min(100%,18rem)] space-y-6">
-          <div className="rounded-3xl border border-stone-200/90 bg-white p-6 sm:p-8 lg:p-10 shadow-xs space-y-5">
+        <div className="@5xl:col-span-7 w-full min-w-[min(100%,18rem)] space-y-6">
+          <div className="rounded-3xl border border-stone-200/90 bg-white p-6 sm:p-8 @5xl:p-10 shadow-xs space-y-5">
             <div className="border-b border-stone-100 pb-4 space-y-1">
               <span className="text-[11px] font-black tracking-widest text-maroon uppercase">
                 Competition Details
@@ -231,7 +231,7 @@ async function TournamentContent({ params }: { params: PageProps<'/t/[id]'>['par
 
       {/* 4. Rules Section (if present) */}
       {t.rules && (
-        <section className="rounded-3xl border border-stone-200/90 bg-white p-6 sm:p-8 lg:p-10 shadow-xs space-y-4">
+        <section className="rounded-3xl border border-stone-200/90 bg-white p-6 sm:p-8 @5xl:p-10 shadow-xs space-y-4">
           <div className="border-b border-stone-100 pb-3">
             <span className="text-[11px] font-black tracking-widest text-maroon uppercase">Governance</span>
             <h2 className="text-xl sm:text-2xl font-black text-stone-950 uppercase tracking-wide">Rules &amp; Regulations</h2>
@@ -243,7 +243,7 @@ async function TournamentContent({ params }: { params: PageProps<'/t/[id]'>['par
       )}
 
       {/* 5. Approved Teams */}
-      <section className="rounded-3xl border border-stone-200/90 bg-white p-6 sm:p-8 lg:p-10 shadow-xs space-y-4">
+      <section className="rounded-3xl border border-stone-200/90 bg-white p-6 sm:p-8 @5xl:p-10 shadow-xs space-y-4">
         <div className="border-b border-stone-100 pb-3">
           <span className="text-[11px] font-black tracking-widest text-maroon uppercase">Roster</span>
           <h2 className="text-xl sm:text-2xl font-black text-stone-950 uppercase tracking-wide">
@@ -267,7 +267,7 @@ async function TournamentContent({ params }: { params: PageProps<'/t/[id]'>['par
       </section>
 
       {/* 6. Bracket */}
-      <section className="rounded-3xl border border-stone-200/90 bg-white p-6 sm:p-8 lg:p-10 shadow-xs space-y-5">
+      <section className="rounded-3xl border border-stone-200/90 bg-white p-6 sm:p-8 @5xl:p-10 shadow-xs space-y-5">
         <div className="border-b border-stone-100 pb-3 flex flex-wrap items-center justify-between gap-3">
           <div>
             <span className="text-[11px] font-black tracking-widest text-maroon uppercase">Playoffs</span>
@@ -302,7 +302,7 @@ async function TournamentContent({ params }: { params: PageProps<'/t/[id]'>['par
 
       {/* 7. Schedule & Results */}
       {upcoming.length > 0 && (
-        <section className="rounded-3xl border border-stone-200/90 bg-white p-6 sm:p-8 lg:p-10 shadow-xs space-y-4">
+        <section className="rounded-3xl border border-stone-200/90 bg-white p-6 sm:p-8 @5xl:p-10 shadow-xs space-y-4">
           <div className="border-b border-stone-100 pb-3">
             <span className="text-[11px] font-black tracking-widest text-maroon uppercase">Schedule</span>
             <h2 className="text-xl sm:text-2xl font-black text-stone-950 uppercase tracking-wide">Upcoming Matches</h2>
@@ -315,7 +315,7 @@ async function TournamentContent({ params }: { params: PageProps<'/t/[id]'>['par
       )}
 
       {results.length > 0 && (
-        <section className="rounded-3xl border border-stone-200/90 bg-white p-6 sm:p-8 lg:p-10 shadow-xs space-y-4">
+        <section className="rounded-3xl border border-stone-200/90 bg-white p-6 sm:p-8 @5xl:p-10 shadow-xs space-y-4">
           <div className="border-b border-stone-100 pb-3">
             <span className="text-[11px] font-black tracking-widest text-maroon uppercase">Archive</span>
             <h2 className="text-xl sm:text-2xl font-black text-stone-950 uppercase tracking-wide">Match Results</h2>

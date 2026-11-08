@@ -19,7 +19,7 @@ export default function SummarySection({ insights, saved }: { insights: ReportIn
         {insights.note && <p className="text-xs text-stone-500 font-medium normal-case mt-1 print:hidden">Note: {insights.note}</p>}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 @5xl:grid-cols-2 gap-6">
         <div className="min-w-0">
           <h3 className="flex items-center gap-2 text-sm font-black uppercase tracking-wider text-stone-950">
             <ListChecks className="h-4 w-4 text-maroon" aria-hidden="true" /> Key findings

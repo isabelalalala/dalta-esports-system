@@ -59,13 +59,31 @@ function subscribeCollapsed(notify: () => void) {
 
 const subscribeNothing = () => () => {};
 
+// Laptop widths (1024-1279 CSS px, e.g. a 1920 screen at 150% Windows scaling or a 1366 one at
+// 125%): an open sidebar would leave the page under ~1000px, so the menu stays an icon rail there
+// and "expand" opens it on top of the page instead of squeezing the page. The saved
+// collapse choice applies from 1280px up.
+// Same breakpoints as Tailwind's lg/xl (width >= 64rem / 80rem), written as a range so the two
+// never disagree on fractional widths (Windows scaling gives widths like 1279.5px).
+const NARROW_QUERY = '(64rem <= width < 80rem)';
+
+function subscribeNarrow(notify: () => void) {
+  const mq = window.matchMedia(NARROW_QUERY);
+  mq.addEventListener('change', notify);
+  return () => mq.removeEventListener('change', notify);
+}
+const readNarrow = () => window.matchMedia(NARROW_QUERY).matches;
+
 // The app's one navigation, for public and logged-in pages (docs/brand.md):
 // - large screens: collapsible sidebar with the role's menu (utils/navigation.ts)
 // - phones, logged in: bottom tab bar (4 items + More); phones, logged out: Menu bar under the header
 // - inner pages: breadcrumbs + back button above the page
 // It renders the page's <main id="main-content">, so pages inside it start with a <div>.
 export default function SiteNavLayout({ children }: { children: ReactNode }) {
-  const isCollapsed = useSyncExternalStore(subscribeCollapsed, readCollapsed, () => false);
+  const savedCollapsed = useSyncExternalStore(subscribeCollapsed, readCollapsed, () => false);
+  const narrow = useSyncExternalStore(subscribeNarrow, readNarrow, () => false);
+  // Laptop widths: the full menu floats over the page while this is true
+  const [overlayOpen, setOverlayOpen] = useState(false);
   // false on the server and the first render, true after: no width animation on page load
   const mounted = useSyncExternalStore(subscribeNothing, () => true, () => false);
   const viewer = useViewer();
@@ -74,52 +92,86 @@ export default function SiteNavLayout({ children }: { children: ReactNode }) {
   const ready = viewer.status === 'ready';
   const pathname = usePathname();
 
+  // Close the floating menu after navigating or when the window gets wide/narrow
+  const [lastPath, setLastPath] = useState(pathname);
+  if (pathname !== lastPath) {
+    setLastPath(pathname);
+    setOverlayOpen(false);
+  }
+  if (overlayOpen && !narrow) setOverlayOpen(false);
+
+  useEffect(() => {
+    if (!overlayOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setOverlayOpen(false);
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [overlayOpen]);
+
+  const isCollapsed = narrow ? !overlayOpen : savedCollapsed;
+  const floating = narrow && overlayOpen;
+  const toggleMenu = () => (narrow ? setOverlayOpen((o) => !o) : writeCollapsed(!savedCollapsed));
+
   return (
     <div className="flex-1 w-full bg-white text-stone-950 flex flex-col lg:flex-row min-h-[calc(100vh-var(--site-header-h))]">
       {/* Phones, logged out: Menu bar with the full list */}
       {ready && !loggedIn && <MobileMenuBar groups={nav.groups} />}
 
-      {/* Large screens: sidebar */}
+      {/* Large screens: sidebar. The outer width is pure CSS (rail below 1280px unless the saved
+          choice is "open") so the first paint already has the right width. */}
+      {floating && (
+        <div className="hidden lg:block fixed inset-0 z-10 bg-stone-950/30" onClick={() => setOverlayOpen(false)} aria-hidden="true" />
+      )}
       <aside
         aria-label="Main navigation"
-        className={`hidden lg:flex flex-col shrink-0 border-r border-stone-200/90 bg-white sticky top-(--site-header-h) h-[calc(100vh-var(--site-header-h))] z-20 ${
+        className={`hidden lg:block shrink-0 sticky top-(--site-header-h) h-[calc(100vh-var(--site-header-h))] z-20 ${
           mounted ? 'transition-[width] duration-300 ease-in-out' : ''
-        } ${isCollapsed ? 'w-20' : 'w-64 xl:w-72'}`}
+        } ${savedCollapsed ? 'w-20' : 'w-20 xl:w-72'}`}
       >
-        <div className={`flex items-center border-b border-stone-100 p-4 ${isCollapsed ? 'justify-center' : 'justify-between'}`}>
-          {!isCollapsed && (
-            <span className="text-[11px] font-black uppercase tracking-widest text-stone-600">Menu</span>
-          )}
-          <Tooltip text={isCollapsed ? 'Show the menu labels' : 'Make the menu narrow'} side="right">
-            <button
-              type="button"
-              onClick={() => writeCollapsed(!isCollapsed)}
-              aria-label={isCollapsed ? 'Expand navigation menu' : 'Collapse navigation menu'}
-              aria-expanded={!isCollapsed}
-              className="p-2 rounded-xl text-stone-600 hover:text-maroon hover:bg-stone-100 transition-colors cursor-pointer"
-            >
-              {isCollapsed ? <PanelLeftOpen className="h-5 w-5 text-maroon" /> : <PanelLeftClose className="h-5 w-5" />}
-            </button>
-          </Tooltip>
-        </div>
+        <div
+          className={`flex flex-col h-full border-r border-stone-200/90 bg-white overflow-x-hidden ${
+            floating ? 'absolute inset-y-0 left-0 w-72 shadow-xl' : 'w-full'
+          }`}
+        >
+          <div className={`flex items-center border-b border-stone-100 p-4 ${isCollapsed ? 'justify-center' : 'justify-between'}`}>
+            {!isCollapsed && (
+              <span className="text-[11px] font-black uppercase tracking-widest text-stone-600">Menu</span>
+            )}
+            <Tooltip text={isCollapsed ? 'Show the menu labels' : 'Make the menu narrow'} side="right">
+              <button
+                type="button"
+                onClick={toggleMenu}
+                aria-label={isCollapsed ? 'Expand navigation menu' : 'Collapse navigation menu'}
+                aria-expanded={!isCollapsed}
+                className="p-2 rounded-xl text-stone-600 hover:text-maroon hover:bg-stone-100 transition-colors cursor-pointer"
+              >
+                {isCollapsed ? <PanelLeftOpen className="h-5 w-5 text-maroon" /> : <PanelLeftClose className="h-5 w-5" />}
+              </button>
+            </Tooltip>
+          </div>
 
-        <nav className="flex-1 p-3 space-y-4 overflow-y-auto">
-          {ready ? (
-            <Suspense fallback={<NavSkeleton collapsed={isCollapsed} />}>
-              <SidebarGroups groups={nav.groups} collapsed={isCollapsed} />
-            </Suspense>
-          ) : (
-            <NavSkeleton collapsed={isCollapsed} />
-          )}
-        </nav>
+          {/* Only vertical scrolling: hints float outside (Tooltip portal), labels get an ellipsis */}
+          <nav className="flex-1 min-w-0 p-3 space-y-4 overflow-y-auto overflow-x-hidden">
+            {ready ? (
+              <Suspense fallback={<NavSkeleton collapsed={isCollapsed} />}>
+                <SidebarGroups groups={nav.groups} collapsed={isCollapsed} />
+              </Suspense>
+            ) : (
+              <NavSkeleton collapsed={isCollapsed} />
+            )}
+          </nav>
+        </div>
       </aside>
 
       {/* Page. Keyed by path: each new page fades in (off with reduced motion). Bottom padding
-          keeps content clear of the phone tab bar. */}
+          keeps content clear of the phone tab bar. It is a CSS container: pages use container
+          breakpoints (@3xl/@5xl/@7xl = 48/64/80rem of CONTENT width, not window width), so they
+          switch to their narrower layout when the sidebar takes space. */}
       <main
         id="main-content"
         key={pathname}
-        className={`animate-page-enter flex-1 min-w-0 w-full px-4 sm:px-8 lg:px-12 xl:px-16 py-6 sm:py-10 ${
+        className={`@container animate-page-enter flex-1 min-w-0 w-full px-4 sm:px-8 lg:px-12 xl:px-16 py-6 sm:py-10 ${
           loggedIn ? 'pb-28 lg:pb-10' : ''
         }`}
       >
@@ -155,7 +207,7 @@ function SidebarGroups({ groups, collapsed }: { groups: NavGroup[]; collapsed: b
       {groups.map((group, gi) => (
         <div key={gi} className="space-y-1">
           {group.label && !collapsed && (
-            <p className="px-4 pt-1 pb-1 text-[11px] font-black uppercase tracking-widest text-stone-600">{group.label}</p>
+            <p className="px-4 pt-1 pb-1 truncate text-[11px] font-black uppercase tracking-widest text-stone-600">{group.label}</p>
           )}
           {group.label && collapsed && <hr className="mx-3 border-stone-200" />}
           {group.items.map((item) => {
@@ -165,22 +217,25 @@ function SidebarGroups({ groups, collapsed }: { groups: NavGroup[]; collapsed: b
               ? 'bg-maroon/10 text-maroon border-maroon/25 shadow-2xs'
               : 'text-stone-700 border-transparent hover:text-maroon hover:bg-gold/15';
             return (
+              // The bubble floats to the right, outside the sidebar; it repeats the label because a
+              // long label may be cut off with an ellipsis (or hidden on the icon rail)
               <Tooltip
                 key={item.href}
-                text={collapsed ? `${item.label}: ${item.hint}` : item.hint}
+                heading={item.label}
+                text={item.hint}
                 side="right"
-                className={collapsed ? 'flex justify-center w-full' : 'flex w-full'}
+                className={collapsed ? 'flex justify-center w-full' : 'flex w-full min-w-0'}
               >
                 <Link
                   href={item.href}
                   aria-label={collapsed ? item.label : undefined}
                   aria-current={isActive ? 'page' : undefined}
                   className={`group flex items-center rounded-xl border font-extrabold uppercase tracking-wider transition-all ${linkClass} ${
-                    collapsed ? 'justify-center w-11 h-11' : 'w-full gap-3.5 px-4 py-2.5 text-xs sm:text-sm'
+                    collapsed ? 'justify-center w-11 h-11' : 'w-full min-w-0 gap-3.5 px-4 py-2.5 text-xs sm:text-sm'
                   }`}
                 >
                   <Icon className={`h-[18px] w-[18px] shrink-0 ${isActive ? 'text-maroon' : 'text-stone-500 group-hover:text-maroon'}`} />
-                  {!collapsed && <span className="truncate group-hover:translate-x-0.5 transition-transform">{item.label}</span>}
+                  {!collapsed && <span className="min-w-0 truncate">{item.label}</span>}
                 </Link>
               </Tooltip>
             );

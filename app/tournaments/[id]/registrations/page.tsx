@@ -134,7 +134,7 @@ export default function RegistrationsPage() {
   return (
     <div className="w-full space-y-8 text-stone-950">
       {/* 1. Main Hero Container */}
-      <section className="animate-hero-entrance relative w-full rounded-3xl border border-stone-800/80 bg-stone-950 overflow-hidden shadow-md p-8 sm:p-12 lg:p-14 text-center text-white flex flex-col items-center justify-center space-y-4">
+      <section className="animate-hero-entrance relative w-full rounded-3xl border border-stone-800/80 bg-stone-950 overflow-hidden shadow-md p-8 sm:p-12 @5xl:p-14 text-center text-white flex flex-col items-center justify-center space-y-4">
         <PageHeroBackground specificKey="tournaments_hero_bg_path" alt="DALTA Esports Banner" />
 
         <div className="relative z-10 w-full flex flex-wrap items-center justify-between gap-4">
@@ -151,7 +151,7 @@ export default function RegistrationsPage() {
 
         <div className="relative z-10 max-w-4xl mx-auto space-y-3 pt-2">
           <h1
-            className="animate-hero-title text-3xl sm:text-4xl lg:text-5xl font-black tracking-wider uppercase leading-tight text-white"
+            className="animate-hero-title text-display font-black tracking-wider uppercase leading-tight text-white"
           >
             {tournament?.name}
           </h1>
@@ -189,7 +189,7 @@ export default function RegistrationsPage() {
       ) : (
         <div className="rounded-3xl border border-stone-200/90 bg-white overflow-hidden shadow-xs">
           {/* Header */}
-          <div className="bg-stone-50 border-b border-stone-200/90 text-stone-600 text-xs font-black uppercase tracking-wider px-6 py-4 hidden md:grid grid-cols-12 gap-4">
+          <div className="bg-stone-50 border-b border-stone-200/90 text-stone-600 text-xs font-black uppercase tracking-wider px-6 py-4 hidden @3xl:grid grid-cols-12 gap-4">
             <div className="col-span-3">Team</div>
             <div className="col-span-3">Captain</div>
             <div className="col-span-2">Status</div>
@@ -204,8 +204,8 @@ export default function RegistrationsPage() {
               const busy = busyId === reg.id;
 
               return (
-                <div key={reg.id} className="px-6 py-4 grid grid-cols-1 md:grid-cols-12 gap-4 items-center hover:bg-stone-50/70 transition-colors">
-                  <div className="md:col-span-3 font-black text-stone-950 text-xs sm:text-sm tracking-wide">
+                <div key={reg.id} className="px-6 py-4 grid grid-cols-1 @3xl:grid-cols-12 gap-4 items-center hover:bg-stone-50/70 transition-colors">
+                  <div className="@3xl:col-span-3 font-black text-stone-950 text-xs sm:text-sm tracking-wide">
                     {reg.teams?.name || reg.team_name || 'Unnamed Team'}
                     {reg.teams && (
                       <span className="block text-stone-500 text-[11px] font-semibold tracking-wider mt-0.5">
@@ -214,18 +214,18 @@ export default function RegistrationsPage() {
                       </span>
                     )}
                   </div>
-                  <div className="md:col-span-3 text-stone-600 text-xs font-bold break-all md:break-normal">
+                  <div className="@3xl:col-span-3 text-stone-600 text-xs font-bold break-all @3xl:break-normal">
                     {captain ? captain.full_name || captain.email : '—'}
                   </div>
-                  <div className="md:col-span-2">
+                  <div className="@3xl:col-span-2">
                     <span className={`inline-block px-3 py-1 rounded-md border text-[10px] font-black uppercase shadow-2xs ${statusStyles[reg.status]}`}>
                       {reg.status}
                     </span>
                   </div>
-                  <div className="md:col-span-2 text-stone-500 text-xs font-semibold">
+                  <div className="@3xl:col-span-2 text-stone-500 text-xs font-semibold">
                     {new Date(reg.registered_at).toLocaleDateString()}
                   </div>
-                  <div className="md:col-span-2 flex md:justify-end gap-2 flex-wrap">
+                  <div className="@3xl:col-span-2 flex @3xl:justify-end gap-2 flex-wrap">
                     {reg.status !== 'approved' && (
                       <button
                         onClick={() => handleSetStatus(reg.id, 'approved')}

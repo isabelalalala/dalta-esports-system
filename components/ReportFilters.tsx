@@ -75,7 +75,7 @@ export default function ReportFilters({ value, onChange, options, showSource = f
 
   return (
     <div className="bg-white border border-stone-200/90 rounded-2xl p-6 shadow-xs space-y-4 print:hidden text-stone-950">
-      <div className={`grid grid-cols-1 sm:grid-cols-2 gap-4 ${showSource ? 'lg:grid-cols-5' : 'lg:grid-cols-4'}`}>
+      <div className={`grid grid-cols-1 sm:grid-cols-2 gap-4 ${showSource ? '@5xl:grid-cols-5' : '@5xl:grid-cols-4'}`}>
         <label className="flex flex-col gap-1.5 text-xs font-black text-stone-800 tracking-wider uppercase">
           <span>Game Title</span>
           <select value={value.gameId} onChange={(e) => setGame(e.target.value)} className={inputClass}>

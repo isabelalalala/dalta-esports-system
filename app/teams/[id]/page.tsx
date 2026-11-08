@@ -367,7 +367,7 @@ export default function ManageTeamPage() {
     <div className="w-full text-stone-950">
       <div className="w-full max-w-5xl mx-auto space-y-8">
         {/* 1. Main Hero Container */}
-        <section className="animate-hero-entrance relative w-full rounded-3xl border border-stone-800/80 bg-stone-950 overflow-hidden shadow-md p-8 sm:p-12 lg:p-14 text-center text-white flex flex-col items-center justify-center space-y-4">
+        <section className="animate-hero-entrance relative w-full rounded-3xl border border-stone-800/80 bg-stone-950 overflow-hidden shadow-md p-8 sm:p-12 @5xl:p-14 text-center text-white flex flex-col items-center justify-center space-y-4">
           <PageHeroBackground specificKey="divisions_hero_bg_path" alt="DALTA Esports Team Banner" />
 
           {/* Action Bar inside Hero: Back link & Status Badges */}
@@ -401,7 +401,7 @@ export default function ManageTeamPage() {
 
           <div className="relative z-10 max-w-4xl mx-auto space-y-3 pt-2">
             <h1
-              className="animate-hero-title text-3xl sm:text-4xl lg:text-5xl font-black tracking-wider uppercase leading-tight text-white"
+              className="animate-hero-title text-display font-black tracking-wider uppercase leading-tight text-white"
             >
               {team.name}
             </h1>

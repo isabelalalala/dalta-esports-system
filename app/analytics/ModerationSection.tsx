@@ -31,7 +31,7 @@ export default function ModerationSection({ report, insights = {} }: { report: M
         </p>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+      <div className="grid grid-cols-2 @3xl:grid-cols-3 @5xl:grid-cols-6 gap-3">
         <StatTile label="Warnings" value={t.warnings} note={`${t.active_warnings} still active`} />
         <StatTile label="From the AI" value={t.ai_warnings} note={`${t.moderator_warnings} from moderators`} />
         <StatTile label="Hidden comments" value={t.comments_hidden} note={`${t.comments_restored} restored`} />
@@ -40,7 +40,7 @@ export default function ModerationSection({ report, insights = {} }: { report: M
         <StatTile label="Bans" value={t.accounts_banned} note={`${t.banned_now} banned now`} />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 @5xl:grid-cols-2 gap-4">
         <ReportCard title="Moderation outcomes" note={`${t.comments} comments and ${t.feedback} feedback entries in the date range.`} insight={insights.moderation_outcomes}>
           {!anyOutcome ? <NoData text="Nothing was flagged, hidden or removed for these filters." /> : (
             <ReportChart type="bar" title="Moderation outcomes" horizontal

@@ -165,7 +165,7 @@ export default function SiteTextEditor() {
             Upload custom background photos that automatically rotate on the Home Page hero container (5-second intervals). If empty, curated default stage imagery is displayed.
           </p>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 pt-2">
+        <div className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,18rem),1fr))] gap-6 pt-2">
           {SLIDE_IMAGE_KEYS.map(({ key, label, folder }) => (
             <ImageField
               key={key}
@@ -206,7 +206,7 @@ export default function SiteTextEditor() {
           <h4 className="text-xs font-black text-stone-700 tracking-widest uppercase">
             Optional Section Hero Overrides
           </h4>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,18rem),1fr))] gap-6">
             {PAGE_SPECIFIC_HERO_KEYS.map(({ key, label, folder }) => (
               <ImageField
                 key={key}

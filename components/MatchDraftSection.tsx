@@ -131,7 +131,7 @@ export default function MatchDraftSection({ matchId, teamAName, teamBName, canEd
           <datalist id="lol-champions">
             {LOL_CHAMPIONS.map((c) => <option key={c} value={c} />)}
           </datalist>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 @3xl:grid-cols-2 gap-4">
             {([['A', teamAName], ['B', teamBName]] as const).map(([side, teamName]) => (
               <fieldset key={side} className="rounded-xl border border-stone-200 p-3 space-y-3 min-w-0">
                 <legend className="px-1 text-sm font-black text-stone-950 break-words">{teamName}</legend>

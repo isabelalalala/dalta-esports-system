@@ -200,7 +200,7 @@ function FeedbackPageContent() {
   return (
     <div className="w-full space-y-8 text-stone-950">
       {/* 1. Main Hero Container with Official Banner */}
-      <section className="relative w-full rounded-3xl border border-stone-800/80 bg-stone-950 overflow-hidden shadow-md p-8 sm:p-14 lg:p-16 text-center text-white flex flex-col items-center justify-center space-y-4">
+      <section className="relative w-full rounded-3xl border border-stone-800/80 bg-stone-950 overflow-hidden shadow-md p-8 sm:p-14 @5xl:p-16 text-center text-white flex flex-col items-center justify-center space-y-4">
         <PageHeroBackground specificKey="hero_banner_path" alt="DALTA Esports Feedback Banner" />
 
         <div className="relative z-10 w-full flex items-center justify-between">
@@ -214,7 +214,7 @@ function FeedbackPageContent() {
 
         <div className="relative z-10 max-w-4xl mx-auto space-y-3 pt-2">
           <h1
-            className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-wider uppercase leading-tight text-white"
+            className="text-page-hero font-black tracking-wider uppercase leading-tight text-white"
           >
             Feedback &amp; Ratings
           </h1>
@@ -227,9 +227,9 @@ function FeedbackPageContent() {
       </section>
 
       {/* 2. Feedback Form & My History Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+      <div className="grid grid-cols-1 @5xl:grid-cols-12 gap-8 items-start">
         {/* Left Form: Submit Feedback */}
-        <section className="lg:col-span-7 bg-white border border-stone-200/90 rounded-2xl p-6 sm:p-8 shadow-xs space-y-6">
+        <section className="@5xl:col-span-7 bg-white border border-stone-200/90 rounded-2xl p-6 sm:p-8 shadow-xs space-y-6">
           <div>
             <h2 className="text-base sm:text-lg font-black text-maroon tracking-wider uppercase">
               Submit Your Review
@@ -346,7 +346,7 @@ function FeedbackPageContent() {
         </section>
 
         {/* Right Section: My Submitted Feedback */}
-        <section className="lg:col-span-5 bg-white border border-stone-200/90 rounded-2xl p-6 sm:p-8 shadow-xs space-y-5">
+        <section className="@5xl:col-span-5 bg-white border border-stone-200/90 rounded-2xl p-6 sm:p-8 shadow-xs space-y-5">
           <div className="flex items-center justify-between gap-2 border-b border-stone-100 pb-3">
             <h2 className="text-base sm:text-lg font-black text-stone-950 tracking-wider uppercase flex items-center gap-2">
               <MessageSquare className="w-4 h-4 text-maroon" />

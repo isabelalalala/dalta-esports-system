@@ -28,7 +28,7 @@ async function Division({ params }: { params: PageProps<'/divisions/[game]'>['pa
   return (
     <div className="w-full space-y-8 text-stone-950">
       {/* 1. Main Hero Container with dynamic background */}
-      <section className="animate-hero-entrance relative w-full rounded-3xl border border-stone-800/80 bg-stone-950 overflow-hidden shadow-md p-8 sm:p-12 lg:p-14 text-center text-white flex flex-col items-center justify-center space-y-4">
+      <section className="animate-hero-entrance relative w-full rounded-3xl border border-stone-800/80 bg-stone-950 overflow-hidden shadow-md p-8 sm:p-12 @5xl:p-14 text-center text-white flex flex-col items-center justify-center space-y-4">
         <PageHeroBackground specificKey="divisions_hero_bg_path" alt="DALTA Esports Divisions Banner" />
 
         {/* Action Bar inside Hero: Back link & Team count badge */}
@@ -46,7 +46,7 @@ async function Division({ params }: { params: PageProps<'/divisions/[game]'>['pa
 
         <div className="relative z-10 max-w-4xl mx-auto space-y-3 pt-2">
           <h1
-            className="animate-hero-title text-3xl sm:text-4xl lg:text-5xl font-black tracking-wider uppercase leading-tight text-white"
+            className="animate-hero-title text-display font-black tracking-wider uppercase leading-tight text-white"
           >
             {division.games?.name ?? game}
           </h1>

@@ -36,7 +36,7 @@ export default async function AboutPage() {
   return (
     <div className="w-full space-y-8">
       {/* 1. Large Main Container with Dynamic Background Image from Site Text */}
-      <section className="relative w-full rounded-3xl border border-stone-800/80 bg-stone-950 overflow-hidden shadow-md p-8 sm:p-14 lg:p-16 text-center text-white flex flex-col items-center justify-center space-y-4 animate-hero-entrance">
+      <section className="relative w-full rounded-3xl border border-stone-800/80 bg-stone-950 overflow-hidden shadow-md p-8 sm:p-14 @5xl:p-16 text-center text-white flex flex-col items-center justify-center space-y-4 animate-hero-entrance">
         <PageHeroBackground
           src={content.about_image_path ? (siteImageUrl(content.about_image_path) ?? undefined) : undefined}
           specificKey="about_image_path"
@@ -45,7 +45,7 @@ export default async function AboutPage() {
 
         <div className="relative z-10 max-w-4xl mx-auto space-y-3">
           <h1
-            className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-wider uppercase leading-tight animate-hero-title text-white"
+            className="text-page-hero font-black tracking-wider uppercase leading-tight animate-hero-title text-white"
           >
             About Us
           </h1>
@@ -73,7 +73,7 @@ export default async function AboutPage() {
       </section>
 
       {/* 3. Two Containers Side-by-Side: Mission & Vision */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8 animate-stagger-2">
+      <div className="grid grid-cols-1 @3xl:grid-cols-2 gap-6 @5xl:gap-8 animate-stagger-2">
         {/* Mission Container */}
         <section className="w-full rounded-2xl border border-stone-200/90 bg-white p-6 sm:p-8 shadow-xs hover:border-amber-500/30 hover:shadow-md transition-all space-y-3 flex flex-col justify-between">
           <div className="space-y-3">
@@ -100,11 +100,11 @@ export default async function AboutPage() {
       </div>
 
       {/* 4. Final Container: Game With Purpose */}
-      <section className="w-full rounded-3xl border border-stone-200/90 bg-gradient-to-br from-amber-50/70 via-white to-stone-50 p-8 sm:p-12 lg:p-14 text-center space-y-4 shadow-xs animate-stagger-3">
+      <section className="w-full rounded-3xl border border-stone-200/90 bg-gradient-to-br from-amber-50/70 via-white to-stone-50 p-8 sm:p-12 @5xl:p-14 text-center space-y-4 shadow-xs animate-stagger-3">
         <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-800 text-xs font-black uppercase tracking-widest shadow-2xs">
           Official Organization Motto
         </div>
-        <h2 className="text-2xl sm:text-4xl lg:text-5xl font-black text-stone-950 tracking-wider uppercase leading-tight">
+        <h2 className="text-2xl sm:text-4xl @5xl:text-5xl font-black text-stone-950 tracking-wider uppercase leading-tight">
           {beliefLead} <span className="text-amber-600">{beliefLast}</span>
         </h2>
         <p className="text-xs sm:text-sm text-stone-700 max-w-3xl mx-auto font-medium leading-relaxed whitespace-pre-wrap">

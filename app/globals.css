@@ -35,6 +35,16 @@
   --color-amber-800: #4B2019;
   --color-amber-900: #3B1913;
   --color-amber-950: #2B120E;
+
+  /* Fluid heading sizes. cqi = 1% of the nearest container's width (the page's <main>, see
+     SiteNavLayout), so titles shrink when the sidebar takes space, not only when the window does.
+     Outside a container cqi falls back to the window width. */
+  --text-hero: clamp(3rem, 8cqi + 0.5rem, 9.5rem); /* home carousel title */
+  --text-hero--line-height: 1.02;
+  --text-page-hero: clamp(2.25rem, 3.5cqi + 1rem, 3.75rem); /* page hero titles */
+  --text-page-hero--line-height: 1.15;
+  --text-display: clamp(1.875rem, 2.5cqi + 1rem, 3rem); /* smaller hero / page titles */
+  --text-display--line-height: 1.2;
 }
 
 :root {
@@ -47,6 +57,9 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  /* Card/field surface: white in light mode, dark grey in dark mode (use focus:bg-surface, not
+     focus:bg-white, which stays pure white in dark mode) */
+  --color-surface: var(--surface);
 }
 
 /* Dark spotlight behind game logos and team photos (bottom-right glow fading to ink) */
@@ -113,7 +126,7 @@ input::placeholder, textarea::placeholder {
 
 /* Accessible focus outline */
 :focus-visible {
-  outline: 2px solid #5B271E;
+  outline: 2px solid var(--color-maroon);
   outline-offset: 2px;
 }
 
@@ -442,6 +455,25 @@ input::placeholder, textarea::placeholder {
     background-color: var(--surface);
   }
 
+  /* Native dropdowns: the open list takes its colors from the <select> and its <option>s, so give
+     the options the dark surface explicitly (otherwise Windows Chrome/Edge can draw a white list). */
+  :root[data-theme="dark"] option,
+  :root[data-theme="dark"] optgroup {
+    background-color: var(--surface);
+    color: var(--foreground);
+  }
+  :root[data-theme="dark"] option:checked {
+    background-color: var(--color-stone-200);
+    color: var(--color-stone-950);
+  }
+  :root[data-theme="dark"] option:hover,
+  :root[data-theme="dark"] option:focus {
+    background-color: var(--color-stone-100);
+  }
+  :root[data-theme="dark"] option:disabled {
+    color: var(--color-stone-500);
+  }
+
   /* Solid colored surfaces keep their light-mode colors (see 3. above) */
   :root[data-theme="dark"] :is(
     :has(> [data-hero-bg]),
@@ -541,9 +573,18 @@ input::placeholder, textarea::placeholder {
   animation: pageEnter 0.28s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
+/* Tooltip bubble (components/Tooltip.tsx) */
+@keyframes tooltipIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.animate-tooltip-in {
+  animation: tooltipIn 0.15s ease-out both;
+}
+
 @media (prefers-reduced-motion: reduce) {
   /* Pulsing LIVE dots, spinners that are decoration, page fades and theme fades: off */
-  .animate-pulse, .animate-ping, .animate-page-enter {
+  .animate-pulse, .animate-ping, .animate-page-enter, .animate-tooltip-in {
     animation: none !important;
   }
   .theme-transition, .theme-transition * {

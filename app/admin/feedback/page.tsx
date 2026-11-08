@@ -146,7 +146,7 @@ export default function FeedbackAnalysisPage() {
   return (
     <div className="w-full space-y-8">
       {/* 1. Main Hero Container with Official Banner */}
-      <section className="relative w-full rounded-3xl border border-stone-800/80 bg-stone-950 overflow-hidden shadow-md p-8 sm:p-14 lg:p-16 text-center text-white flex flex-col items-center justify-center space-y-4">
+      <section className="relative w-full rounded-3xl border border-stone-800/80 bg-stone-950 overflow-hidden shadow-md p-8 sm:p-14 @5xl:p-16 text-center text-white flex flex-col items-center justify-center space-y-4">
         <PageHeroBackground specificKey="hero_banner_path" alt="DALTA Esports Feedback Banner" />
 
         <div className="relative z-10 w-full flex flex-wrap items-center justify-between gap-4">
@@ -167,7 +167,7 @@ export default function FeedbackAnalysisPage() {
 
         <div className="relative z-10 max-w-4xl mx-auto space-y-3 pt-2">
           <h1
-            className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-wider uppercase leading-tight text-white"
+            className="text-display font-black tracking-wider uppercase leading-tight text-white"
           >
             Feedback Analysis
           </h1>
@@ -231,7 +231,7 @@ export default function FeedbackAnalysisPage() {
         </div>
 
         {/* Metrics Overview Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+        <div className="grid grid-cols-2 @3xl:grid-cols-5 gap-4">
           <div className="bg-white border border-stone-200/90 rounded-2xl p-5 shadow-xs space-y-1 text-stone-950">
             <span className="block text-xs uppercase font-black text-stone-500 tracking-wider">Total Feedback</span>
             <span className="text-2xl sm:text-3xl font-black text-stone-950">{inTournament.length}</span>

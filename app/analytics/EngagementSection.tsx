@@ -37,7 +37,7 @@ export default function EngagementSection({ report, liveCounts, comments, insigh
         A view = one logged-in account opening a stream on one day. Organizer and staff views are excluded.
       </p>
 
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+      <div className="grid grid-cols-2 @3xl:grid-cols-3 @5xl:grid-cols-6 gap-3">
         {liveCounts && <StatTile label="Watching now" value={watchingNow} note={`${t.live_streams} live streams`} />}
         <StatTile label="Streams" value={t.streams} note={liveCounts ? undefined : `${t.live_streams} live`} />
         <StatTile label="Views" value={t.views} />
@@ -46,7 +46,7 @@ export default function EngagementSection({ report, liveCounts, comments, insigh
         <StatTile label="Avg rating" value={formatRating(t.avg_rating)} />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 @5xl:grid-cols-2 gap-4">
         <ReportCard title="Engagement per stream" note={comments ? 'Top 10 streams: views, unique viewers and comments.' : 'Top 10 streams.'} insight={insights.views_per_stream}>
           {topStreams.length === 0 ? <NoData /> : (
             <ReportChart type="bar" title="Engagement per stream" horizontal heightClass="h-80"
@@ -107,7 +107,7 @@ export default function EngagementSection({ report, liveCounts, comments, insigh
           <p className="text-xs text-stone-500 font-medium normal-case print:text-stone-600">
             Participation = player and spectator accounts that made at least one pick. Accuracy = share of correct picks on finished matches.
           </p>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 @3xl:grid-cols-4 gap-3">
             <StatTile label="Predictions" value={t.predictions ?? 0} />
             <StatTile label="Predictors" value={t.predictors ?? 0} note={`of ${t.audience_accounts ?? 0} audience accounts`} />
             <StatTile label="Participation" value={formatPercent(t.prediction_participation)} />

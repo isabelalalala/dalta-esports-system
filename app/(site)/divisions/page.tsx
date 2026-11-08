@@ -23,12 +23,12 @@ export default async function DivisionsPage() {
   return (
     <div className="w-full space-y-8">
       {/* Main Hero Container with dynamic background */}
-      <section className="animate-hero-entrance relative w-full rounded-3xl border border-stone-800/80 bg-stone-950 overflow-hidden shadow-md p-8 sm:p-14 lg:p-16 text-center text-white flex flex-col items-center justify-center space-y-4">
+      <section className="animate-hero-entrance relative w-full rounded-3xl border border-stone-800/80 bg-stone-950 overflow-hidden shadow-md p-8 sm:p-14 @5xl:p-16 text-center text-white flex flex-col items-center justify-center space-y-4">
         <PageHeroBackground src={heroBg} alt="DALTA Esports Divisions Banner" />
 
         <div className="relative z-10 max-w-4xl mx-auto space-y-3">
           <h1
-            className="animate-hero-title text-4xl sm:text-5xl lg:text-6xl font-black tracking-wider uppercase leading-tight text-white"
+            className="animate-hero-title text-page-hero font-black tracking-wider uppercase leading-tight text-white"
           >
             Game Divisions
           </h1>
@@ -43,7 +43,7 @@ export default async function DivisionsPage() {
       {divisions.length === 0 ? (
         <EmptyNote>No divisions yet.</EmptyNote>
       ) : (
-        <div className="animate-stagger-1 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6 sm:gap-8">
+        <div className="animate-stagger-1 grid grid-cols-[repeat(auto-fill,minmax(min(100%,24rem),1fr))] gap-6 sm:gap-8">
           {divisions.map((d) => {
             const logo = getGameLogo(d.games?.name, d.game_id);
             const customImage = siteImageUrl(d.image_path);

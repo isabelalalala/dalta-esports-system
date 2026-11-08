@@ -51,12 +51,12 @@ export default async function CommunityPage() {
   return (
     <div className="w-full space-y-12 sm:space-y-16">
       {/* 1. Main Hero Container with Background & In-Container Jump Navigation */}
-      <section className="animate-hero-entrance relative w-full rounded-3xl border border-stone-800/80 bg-stone-950 overflow-hidden shadow-md p-8 sm:p-14 lg:p-16 text-center text-white flex flex-col items-center justify-center space-y-6">
+      <section className="animate-hero-entrance relative w-full rounded-3xl border border-stone-800/80 bg-stone-950 overflow-hidden shadow-md p-8 sm:p-14 @5xl:p-16 text-center text-white flex flex-col items-center justify-center space-y-6">
         <PageHeroBackground src={heroBg} alt="The DALTA Community Banner" />
 
         <div className="relative z-10 max-w-4xl mx-auto space-y-3">
           <h1
-            className="animate-hero-title text-4xl sm:text-5xl lg:text-6xl font-black tracking-wider uppercase leading-tight text-white"
+            className="animate-hero-title text-page-hero font-black tracking-wider uppercase leading-tight text-white"
           >
             The DALTA Community
           </h1>
@@ -105,7 +105,7 @@ export default async function CommunityPage() {
                   </h3>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 @3xl:grid-cols-3 @5xl:grid-cols-4 gap-6">
                   {members.map((m, i) => (
                     <PersonCard
                       key={i}
@@ -165,7 +165,7 @@ function OfficerSection({
       {people.length === 0 ? (
         <EmptyNote>Coming soon.</EmptyNote>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 @3xl:grid-cols-3 @5xl:grid-cols-4 gap-6">
           {people.map((o) => (
             <PersonCard
               key={o.id}

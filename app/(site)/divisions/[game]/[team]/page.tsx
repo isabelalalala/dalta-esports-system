@@ -31,7 +31,7 @@ async function OfficialTeam({ params }: { params: PageProps<'/divisions/[game]/[
   return (
     <div className="w-full space-y-8 text-stone-950">
       {/* 1. Main Hero Container (Matching Tournaments, Campaigns, and Events) */}
-      <section className="animate-hero-entrance relative w-full rounded-3xl border border-stone-800/80 bg-stone-950 overflow-hidden shadow-md p-8 sm:p-12 lg:p-14 text-center text-white flex flex-col items-center justify-center space-y-4">
+      <section className="animate-hero-entrance relative w-full rounded-3xl border border-stone-800/80 bg-stone-950 overflow-hidden shadow-md p-8 sm:p-12 @5xl:p-14 text-center text-white flex flex-col items-center justify-center space-y-4">
         <PageHeroBackground specificKey="divisions_hero_bg_path" alt="DALTA Esports Official Team Banner" />
 
         {/* Action Bar inside Hero: Back link & Badges */}
@@ -59,7 +59,7 @@ async function OfficialTeam({ params }: { params: PageProps<'/divisions/[game]/[
         {/* Team Titles */}
         <div className="relative z-10 max-w-4xl mx-auto space-y-3 pt-2">
           <h1
-            className="animate-hero-title text-3xl sm:text-4xl lg:text-5xl font-black tracking-wider uppercase leading-tight text-white"
+            className="animate-hero-title text-display font-black tracking-wider uppercase leading-tight text-white"
           >
             {team.name}
           </h1>
@@ -76,10 +76,10 @@ async function OfficialTeam({ params }: { params: PageProps<'/divisions/[game]/[
       </section>
 
       {/* 2. Structured Content Showcase: Constrained Media Card + Team Overview */}
-      <div className={`animate-stagger-1 grid grid-cols-1 ${photo ? 'lg:grid-cols-12' : ''} gap-6 sm:gap-8 items-start`}>
+      <div className={`animate-stagger-1 grid grid-cols-1 ${photo ? '@5xl:grid-cols-12' : ''} gap-6 sm:gap-8 items-start`}>
         {/* Left Media Column: Constrained & Proportionate Photo */}
         {photo && (
-          <div className="lg:col-span-5 w-full">
+          <div className="@5xl:col-span-5 w-full">
             <div className="relative aspect-[4/3] max-h-[380px] sm:max-h-[420px] w-full rounded-3xl border border-stone-800/80 bg-ink overflow-hidden shadow-md flex items-center justify-center p-4 sm:p-6">
               {/* Radial ambient lighting */}
               <div
@@ -106,7 +106,7 @@ async function OfficialTeam({ params }: { params: PageProps<'/divisions/[game]/[
         )}
 
         {/* Right Information Column */}
-        <div className={`${photo ? 'lg:col-span-7' : 'w-full'} space-y-6`}>
+        <div className={`${photo ? '@5xl:col-span-7' : 'w-full'} space-y-6`}>
           {/* Team Overview Card */}
           <div className="rounded-3xl border border-stone-200/90 bg-white p-6 sm:p-8 shadow-xs space-y-5">
             <div className="flex items-center gap-3 pb-4 border-b border-stone-100">
@@ -186,7 +186,7 @@ async function OfficialTeam({ params }: { params: PageProps<'/divisions/[game]/[
         {players.length === 0 ? (
           <EmptyNote>No players listed in this team yet.</EmptyNote>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
+          <div className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,18rem),1fr))] gap-5 sm:gap-6">
             {players.map((p) => {
               const isCap = p.is_captain;
               return (

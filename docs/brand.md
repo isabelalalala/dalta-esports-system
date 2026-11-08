@@ -34,11 +34,12 @@ Since Phase 3 the app has a dark theme. It follows the device setting by default
 - **Solid colored surfaces keep their light look**: photo heroes (anything containing `PageHeroBackground`), `bg-gold` buttons, `bg-ink`/logo stages, video, and red/green/maroon/dark-stone surfaces. Inside them every variable is restored, so `bg-gold text-stone-950` stays dark-on-gold.
 - `text-white` is never remapped (white text on red, maroon or photos stays white).
 - Printing always uses the light theme.
+- Focus states: `focus:bg-surface`, not `focus:bg-white` (only the plain `bg-white` class is remapped). Native `<option>` lists get the dark surface from `globals.css`.
 - New UI: keep using the same tokens. A new solid background color needs to be added to the "keep their light-mode colors" list in `globals.css`. Don't use hex colors (they don't switch).
 
 ## Navigation
 
-One navigation for everyone, by role (`utils/navigation.ts`, rendered by `components/site/SiteNavLayout.tsx`): sidebar on large screens (collapsible), bottom tab bar on phones for logged-in users (4 items + More), a Menu bar for logged-out visitors. Inner pages get breadcrumbs and a back button; a page names its breadcrumb with `useBreadcrumbName()`. Icon buttons and nav items have hints (`components/Tooltip.tsx`, hover / focus / long press); section titles can add `components/SectionHint.tsx`. Animations respect `prefers-reduced-motion` (pulsing LIVE dots, page fade-in and theme fade are off then).
+One navigation for everyone, by role (`utils/navigation.ts`, rendered by `components/site/SiteNavLayout.tsx`): sidebar on large screens (collapsible), bottom tab bar on phones for logged-in users (4 items + More), a Menu bar for logged-out visitors. Inner pages get breadcrumbs and a back button; a page names its breadcrumb with `useBreadcrumbName()`. Icon buttons and nav items have hints (`components/Tooltip.tsx`, hover / focus / long press); section titles can add `components/SectionHint.tsx`. Between 1024 and 1279px the sidebar is an icon rail (expanding floats it over the page); page layouts react to the content width (container breakpoints `@3xl`/`@5xl`/`@7xl`), and big titles use the fluid sizes `text-hero`, `text-page-hero`, `text-display`. Animations respect `prefers-reduced-motion` (pulsing LIVE dots, page fade-in and theme fade are off then).
 
 ## Utilities (in `app/globals.css`)
 

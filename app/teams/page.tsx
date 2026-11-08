@@ -163,7 +163,7 @@ export default function TeamsPage() {
     <div className="w-full text-stone-950">
       <div className="w-full max-w-6xl mx-auto space-y-8">
         {/* 1. Main Hero Container */}
-        <section className="animate-hero-entrance relative w-full rounded-3xl border border-stone-800/80 bg-stone-950 overflow-hidden shadow-md p-8 sm:p-12 lg:p-14 text-center text-white flex flex-col items-center justify-center space-y-4">
+        <section className="animate-hero-entrance relative w-full rounded-3xl border border-stone-800/80 bg-stone-950 overflow-hidden shadow-md p-8 sm:p-12 @5xl:p-14 text-center text-white flex flex-col items-center justify-center space-y-4">
           <PageHeroBackground specificKey="divisions_hero_bg_path" alt="DALTA Esports Teams Banner" />
 
           {/* Action Bar inside Hero: Back link & Create Team CTA */}
@@ -192,7 +192,7 @@ export default function TeamsPage() {
 
           <div className="relative z-10 max-w-4xl mx-auto space-y-3 pt-2">
             <h1
-              className="animate-hero-title text-3xl sm:text-4xl lg:text-5xl font-black tracking-wider uppercase leading-tight text-white"
+              className="animate-hero-title text-display font-black tracking-wider uppercase leading-tight text-white"
             >
               Teams
             </h1>
@@ -297,7 +297,7 @@ export default function TeamsPage() {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+            <div className="grid grid-cols-1 @3xl:grid-cols-2 gap-4 sm:gap-6">
               <div className="space-y-1.5">
                 <label className="block text-xs font-black text-stone-700 tracking-wider">
                   Team Name *
@@ -422,7 +422,7 @@ export default function TeamsPage() {
 
         {/* 2. Teams Grid */}
         {teams.length > 0 && (
-          <div className="animate-stagger-1 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 w-full">
+          <div className="animate-stagger-1 grid grid-cols-1 @3xl:grid-cols-2 @5xl:grid-cols-3 gap-6 sm:gap-8 w-full">
             {teams.map((team) => {
               const membersCount = team.team_members?.[0]?.count || 0;
               const maxPlayers = team.games?.max_players || 5;

@@ -164,7 +164,7 @@ export default function Dashboard() {
   return (
     <div className="w-full max-w-7xl mx-auto space-y-8 sm:space-y-10">
       {/* 1. Main Welcome Hero Container with Official Banner */}
-      <section className="relative w-full rounded-3xl border border-stone-800/80 bg-stone-950 overflow-hidden shadow-md p-8 sm:p-12 lg:p-14 text-white flex flex-col md:flex-row md:items-center justify-between gap-6 animate-hero-entrance">
+      <section className="relative w-full rounded-3xl border border-stone-800/80 bg-stone-950 overflow-hidden shadow-md p-8 sm:p-12 @5xl:p-14 text-white flex flex-col @3xl:flex-row @3xl:items-center justify-between gap-6 animate-hero-entrance">
         <PageHeroBackground
           specificKey="dashboard_hero_bg_path"
           alt="DALTA Esports Portal Banner"
@@ -183,7 +183,7 @@ export default function Dashboard() {
           </div>
 
           <h1
-            className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-wider uppercase leading-tight animate-hero-title text-white"
+            className="text-display font-black tracking-wider uppercase leading-tight animate-hero-title text-white"
           >
             Welcome, <span className="text-gold">{profile?.full_name || user?.email}</span>
           </h1>
@@ -219,7 +219,7 @@ export default function Dashboard() {
           Quick Actions
         </h2>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+        <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,13rem),1fr))] gap-4 sm:gap-6">
           {topCards.map((card) => (
             <Link
               key={card.href}
@@ -244,7 +244,7 @@ export default function Dashboard() {
         </div>
 
         {moreCards.length > 0 && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          <div className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,18rem),1fr))] gap-3">
             {moreCards.map((card) => (
               <Tooltip key={card.href} text={card.text} className="flex w-full">
                 <Link

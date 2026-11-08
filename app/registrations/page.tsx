@@ -105,7 +105,7 @@ export default function MyRegistrationsPage() {
     <div className="w-full text-stone-950">
       <div className="w-full max-w-6xl mx-auto space-y-8">
         {/* 1. Main Hero Container */}
-        <section className="animate-hero-entrance relative w-full rounded-3xl border border-stone-800/80 bg-stone-950 overflow-hidden shadow-md p-8 sm:p-12 lg:p-14 text-center text-white flex flex-col items-center justify-center space-y-4">
+        <section className="animate-hero-entrance relative w-full rounded-3xl border border-stone-800/80 bg-stone-950 overflow-hidden shadow-md p-8 sm:p-12 @5xl:p-14 text-center text-white flex flex-col items-center justify-center space-y-4">
           <PageHeroBackground specificKey="tournaments_hero_bg_path" alt="DALTA Esports Registrations Banner" />
 
           {/* Action Bar inside Hero: Back link & Registration count */}
@@ -132,7 +132,7 @@ export default function MyRegistrationsPage() {
 
           <div className="relative z-10 max-w-4xl mx-auto space-y-3 pt-2">
             <h1
-              className="animate-hero-title text-3xl sm:text-4xl lg:text-5xl font-black tracking-wider uppercase leading-tight text-white"
+              className="animate-hero-title text-display font-black tracking-wider uppercase leading-tight text-white"
             >
               My Registrations
             </h1>
@@ -186,7 +186,7 @@ export default function MyRegistrationsPage() {
               return (
                 <div
                   key={reg.id}
-                  className="rounded-3xl border border-stone-200/90 bg-white p-6 sm:p-8 shadow-xs hover:shadow-md hover:border-amber-400/50 transition-all flex flex-col md:flex-row md:items-center justify-between gap-6"
+                  className="rounded-3xl border border-stone-200/90 bg-white p-6 sm:p-8 shadow-xs hover:shadow-md hover:border-amber-400/50 transition-all flex flex-col @3xl:flex-row @3xl:items-center justify-between gap-6"
                 >
                   <div className="space-y-3 min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2.5">
@@ -229,7 +229,7 @@ export default function MyRegistrationsPage() {
                   </div>
 
                   {/* Actions */}
-                  <div className="flex items-center gap-3 shrink-0 pt-2 md:pt-0 border-t md:border-t-0 border-stone-100">
+                  <div className="flex items-center gap-3 shrink-0 pt-2 @3xl:pt-0 border-t @3xl:border-t-0 border-stone-100">
                     <Link
                       href={`/tournaments/${reg.tournament_id}`}
                       className="rounded-xl border border-stone-300 hover:border-amber-400 bg-white text-stone-800 font-bold px-4 py-2.5 text-xs uppercase tracking-wider shadow-2xs hover:-translate-y-0.5 transition-all text-center"

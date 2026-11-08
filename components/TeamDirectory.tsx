@@ -106,7 +106,7 @@ export default function TeamDirectory({
   return (
     <div className="space-y-5">
       {/* Filters */}
-      <div className="rounded-3xl border border-stone-200/90 bg-white p-4 sm:p-6 shadow-xs flex flex-col md:flex-row gap-3 md:items-center">
+      <div className="rounded-3xl border border-stone-200/90 bg-white p-4 sm:p-6 shadow-xs flex flex-col @3xl:flex-row gap-3 @3xl:items-center">
         <label className="relative flex-1">
           <span className="sr-only">Search teams</span>
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-500" aria-hidden />
@@ -122,7 +122,7 @@ export default function TeamDirectory({
           value={gameId}
           onChange={(e) => setGameId(e.target.value)}
           aria-label="Filter by game"
-          className="md:w-56 p-3 rounded-xl bg-white text-stone-950 border border-stone-300 focus:border-gold focus:ring-2 focus:ring-gold/25 shadow-xs outline-none font-medium text-sm"
+          className="@3xl:w-56 p-3 rounded-xl bg-white text-stone-950 border border-stone-300 focus:border-gold focus:ring-2 focus:ring-gold/25 shadow-xs outline-none font-medium text-sm"
         >
           <option value="">All games</option>
           {games.map((g) => (
@@ -151,7 +151,7 @@ export default function TeamDirectory({
           <p className="text-xs text-stone-500 font-medium">Try another name or game.</p>
         </div>
       ) : (
-        <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+        <ul className="grid grid-cols-1 @3xl:grid-cols-2 @5xl:grid-cols-3 gap-4 sm:gap-6">
           {teams.map((t) => {
             const state = joinState(t);
             return (

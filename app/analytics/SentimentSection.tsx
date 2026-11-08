@@ -47,7 +47,7 @@ export default function SentimentSection({ report, noun = 'feedback entries', so
         </div>
       )}
 
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+      <div className="grid grid-cols-2 @3xl:grid-cols-3 @5xl:grid-cols-6 gap-3">
         <StatTile label="Items" value={t.total} note={noun} />
         {hasRating && <StatTile label="Avg rating" value={formatRating(t.avg_rating)} note="feedback only" />}
         <StatTile label="Positive" value={t.positive} note={percent(t.positive)} />
@@ -56,7 +56,7 @@ export default function SentimentSection({ report, noun = 'feedback entries', so
         <StatTile label="Pending analysis" value={t.pending} />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 @5xl:grid-cols-2 gap-4">
         <ReportCard title="Sentiment distribution" note={`Analysed ${noun} only (parts of the whole).`} insight={insights.sentiment_distribution}>
           {classified === 0 ? <NoData /> : (
             <ReportChart type="doughnut" title="Sentiment distribution"

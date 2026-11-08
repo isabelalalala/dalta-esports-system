@@ -193,7 +193,7 @@ export default function WatchStreamPage() {
 
         {/* Video is the main element; the sidebar (score, and live comments in Phase 4) sits beside it
             on large screens and below it on phones. minmax(0,1fr) lets the video column shrink. */}
-        <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_22rem] gap-4 sm:gap-6 items-start">
+        <div className="grid grid-cols-1 @5xl:grid-cols-[minmax(0,1fr)_22rem] gap-4 sm:gap-6 items-start">
           <div className="min-w-0 space-y-3">
             {stream.status === 'scheduled' && (
               <p className="bg-white border border-stone-200/90 rounded-2xl shadow-xs px-4 py-3 text-stone-700">
@@ -205,7 +205,7 @@ export default function WatchStreamPage() {
             </div>
           </div>
 
-          <aside className="min-w-0 space-y-4 lg:sticky lg:top-[calc(var(--site-header-h)+1rem)]" aria-label="Live score">
+          <aside className="min-w-0 space-y-4 @5xl:sticky @5xl:top-[calc(var(--site-header-h)+1rem)]" aria-label="Live score">
             <section className="bg-white border border-stone-200/90 rounded-2xl shadow-xs p-4">
               <div className="flex flex-wrap justify-between items-center gap-2 mb-3">
                 <h2 className="text-base font-black">{matchId ? 'Match score' : 'Live matches'}</h2>
@@ -253,7 +253,7 @@ export default function WatchStreamPage() {
             </section>
 
             {/* Live chat (or comments on a replay), under the score */}
-            <StreamComments streamId={stream.id} replay={stream.status === 'ended'} heightClass="h-[28rem] lg:h-96" />
+            <StreamComments streamId={stream.id} replay={stream.status === 'ended'} heightClass="h-[28rem] @5xl:h-96" />
 
             <Link
               href={`/feedback?tournament=${stream.tournament_id}`}

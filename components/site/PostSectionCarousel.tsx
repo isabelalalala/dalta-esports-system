@@ -75,7 +75,7 @@ export default function PostSectionCarousel({
           )}
 
           {/* 4 Cards Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 sm:gap-6 w-full min-h-[280px]">
+          <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,13rem),1fr))] gap-5 sm:gap-6 w-full min-h-[280px]">
             {visiblePosts.map((post) => (
               <PostCard
                 key={post.id}

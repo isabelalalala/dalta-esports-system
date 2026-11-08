@@ -466,8 +466,11 @@ triggers with readable error messages.
   one highlighted item (`activeItem()`); breadcrumbs + Back on inner pages (`breadcrumbsFor()`, names via
   `useBreadcrumbName()` in `utils/breadcrumb-names.ts`); `<main>` is keyed by path for a fade-in.
   Who is viewing comes from `useViewer()` (`utils/use-viewer.ts`, one shared copy; call `refreshViewer()` after
-  changing your own name or picture). Hints: `components/Tooltip.tsx` (hover, focus, long press) and
-  `components/SectionHint.tsx`. First-login tour: `components/QuickTour.tsx` (steps in `utils/tour.ts`) on the
+  changing your own name or picture). Hints: `components/Tooltip.tsx` (hover/keyboard focus after 300 ms,
+  long press; the bubble is a `position: fixed` portal, so parent overflow can't clip it) and
+  `components/SectionHint.tsx`. Sidebar widths (Phase 6): icon rail between 1024 and 1279px (expand = the menu
+  floats over the page), saved open/collapsed choice from 1280px; no sideways scroll, long labels get an
+  ellipsis and the tooltip repeats the label. First-login tour: `components/QuickTour.tsx` (steps in `utils/tour.ts`) on the
   dashboard until `profiles.tour_dismissed_at` is set.
 - Theme: `utils/theme.ts` + `components/ThemeToggle.tsx` + the DARK THEME block in `app/globals.css`
   (see docs/brand.md "Dark mode"). Profile pictures: `components/Avatar.tsx`, `components/AvatarUploader.tsx`
@@ -516,6 +519,14 @@ triggers with readable error messages.
   that a row came back, then show a clear message.
 - Dates without a time (tournament dates) are stored as midnight UTC: use `toDateInput()` and `formatDate()`.
   Real moments (`created_at`, `scheduled_at`) are shown in the viewer's local time.
+- **Breakpoints inside pages are container breakpoints** (Phase 6): `<main>` in `SiteNavLayout` is an `@container`,
+  so page content uses `@3xl:` / `@5xl:` / `@7xl:` (48/64/80rem of CONTENT width) instead of `md:` / `lg:` / `xl:`.
+  `sm:` stays a screen breakpoint (phone padding/text). Only the header, footer, sidebar/bottom bar, the standalone
+  auth and legal pages (outside `SiteNavLayout`) and `PageLoading` use `md:`/`lg:`/`xl:`. Card lists use
+  `grid-cols-[repeat(auto-fill,minmax(min(100%,18rem),1fr))]`-style grids; filter bars `flex-wrap`. Hero titles
+  use the fluid sizes `text-hero` / `text-page-hero` / `text-display` (`clamp()` with `cqi`, in `@theme`).
+- Focused fields: `focus:bg-surface`, never `focus:bg-white` (it stays pure white in dark mode; `surface` is
+  white in light mode and dark grey in dark mode).
 - Mobile (375px): no page may scroll sideways. Page padding `px-4` (`sm:p-6/8`), cards `p-4 sm:p-6`, rows with
   buttons use `flex-col sm:flex-row` or `flex-wrap`, long names get `break-words` (emails `break-all`), wide content
   (bracket, tables) scrolls inside its own `overflow-x-auto` box.
@@ -525,7 +536,8 @@ triggers with readable error messages.
 - Mobile text: `app/globals.css` has an unlayered phone-only rule that makes small body paragraphs 16px / 1.5 line
   height / normal letter spacing and form fields 16px (no iOS zoom). Uppercase labels are left alone.
 - New UI uses Tailwind classes, not inline styles (exceptions: `utils/og-card.tsx`, because `next/og` can't
-  use Tailwind, and the crop window in `components/AvatarUploader.tsx`, whose positions are computed while dragging).
+  use Tailwind, and the crop window in `components/AvatarUploader.tsx`, whose positions are computed while dragging; the
+  Tooltip bubble's position is also set from JS).
 - One look for the whole app, public and logged in (the redesign): white page, Montserrat (uppercase only for titles, buttons and labels), rounded white
   cards (`bg-white border border-stone-200/90 rounded-2xl shadow-xs`), a dark photo hero at the top of each page
   (`PageHeroBackground`), and the logo's gold and maroon as accents. Full rules: `docs/brand.md`. Use the theme

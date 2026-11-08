@@ -67,7 +67,7 @@ export default function HeroSlideshow({ title, tagline, images = [], content }: 
   return (
     <section
       aria-label="DALTA Esports Hero"
-      className="relative w-full rounded-2xl overflow-hidden border border-stone-200/90 shadow-md bg-stone-950 min-h-[520px] sm:min-h-[600px] lg:min-h-[660px] flex items-center justify-center animate-hero-entrance"
+      className="relative w-full rounded-2xl overflow-hidden border border-stone-200/90 shadow-md bg-stone-950 min-h-[520px] sm:min-h-[600px] @5xl:min-h-[660px] flex items-center justify-center animate-hero-entrance"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
       onFocusCapture={() => setPaused(true)}
@@ -100,7 +100,7 @@ export default function HeroSlideshow({ title, tagline, images = [], content }: 
       {/* Foreground Hero Content */}
       <div className="relative z-10 w-full px-6 py-14 sm:px-12 sm:py-20 text-center space-y-6 sm:space-y-8 max-w-6xl mx-auto">
         {/* Hero Title */}
-        <h1 className="font-black text-5xl sm:text-7xl md:text-8xl lg:text-9xl xl:text-[9.5rem] tracking-tight sm:tracking-normal uppercase leading-[1.02] drop-shadow-xl animate-hero-title">
+        <h1 className="font-black text-hero tracking-tight sm:tracking-normal uppercase leading-[1.02] drop-shadow-xl animate-hero-title">
           {title.toUpperCase().includes('DALTA') ? (
             <>
               <span className="text-white drop-shadow-[0_4px_24px_rgba(0,0,0,0.85)]">DALTA</span>{' '}
@@ -112,7 +112,7 @@ export default function HeroSlideshow({ title, tagline, images = [], content }: 
         </h1>
 
         {/* Hero Tagline */}
-        <p className="text-stone-100 text-base sm:text-xl lg:text-2xl max-w-4xl mx-auto font-medium leading-relaxed drop-shadow-md animate-hero-tagline">
+        <p className="text-stone-100 text-base sm:text-xl @5xl:text-2xl max-w-4xl mx-auto font-medium leading-relaxed drop-shadow-md animate-hero-tagline">
           {tagline}
         </p>
 

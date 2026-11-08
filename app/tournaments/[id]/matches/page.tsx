@@ -17,7 +17,7 @@ import { AlertCircle, ChevronRight, Swords } from 'lucide-react';
 import { can } from '@/utils/permissions';
 
 const inputClass =
-  'w-full border border-stone-300 bg-stone-50 px-3 py-2 text-stone-950 font-bold text-xs rounded-xl outline-none focus:border-amber-600 focus:bg-white focus:ring-2 focus:ring-amber-500/20 disabled:opacity-50 transition-all';
+  'w-full border border-stone-300 bg-stone-50 px-3 py-2 text-stone-950 font-bold text-xs rounded-xl outline-none focus:border-amber-600 focus:bg-surface focus:ring-2 focus:ring-amber-500/20 disabled:opacity-50 transition-all';
 
 export default function MatchManagementPage() {
   usePageTitle('Tournament matches');
@@ -113,7 +113,7 @@ export default function MatchManagementPage() {
   return (
     <div className="w-full space-y-8 text-stone-950">
       {/* 1. Main Hero Container */}
-      <section className="relative w-full rounded-3xl border border-stone-800/80 bg-stone-950 overflow-hidden shadow-md p-8 sm:p-12 lg:p-14 text-center text-white flex flex-col items-center justify-center space-y-4">
+      <section className="relative w-full rounded-3xl border border-stone-800/80 bg-stone-950 overflow-hidden shadow-md p-8 sm:p-12 @5xl:p-14 text-center text-white flex flex-col items-center justify-center space-y-4">
         <PageHeroBackground specificKey="tournaments_hero_bg_path" alt="DALTA Esports Banner" />
 
         <div className="relative z-10 w-full flex flex-wrap items-center justify-between gap-4">
@@ -130,7 +130,7 @@ export default function MatchManagementPage() {
 
         <div className="relative z-10 max-w-4xl mx-auto space-y-3 pt-2">
           <h1
-            className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-wider uppercase leading-tight text-white"
+            className="text-display font-black tracking-wider uppercase leading-tight text-white"
           >
             {tournament.name} Matches
           </h1>
@@ -173,7 +173,7 @@ export default function MatchManagementPage() {
                   {roundLabel(round, roundCount)}
                 </h2>
               </div>
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 sm:gap-6">
+              <div className="grid grid-cols-1 @5xl:grid-cols-2 gap-5 sm:gap-6">
                 {matches
                   .filter((m) => m.round === round)
                   .map((match) => (

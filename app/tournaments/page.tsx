@@ -74,7 +74,7 @@ export default function TournamentsPage() {
   return (
     <div className="w-full space-y-8">
       {/* 1. Main Hero Container with dynamic background (Matching Events Layout) */}
-      <section className="animate-hero-entrance relative w-full rounded-3xl border border-stone-800/80 bg-stone-950 overflow-hidden shadow-md p-8 sm:p-14 lg:p-16 text-center text-white flex flex-col items-center justify-center space-y-4">
+      <section className="animate-hero-entrance relative w-full rounded-3xl border border-stone-800/80 bg-stone-950 overflow-hidden shadow-md p-8 sm:p-14 @5xl:p-16 text-center text-white flex flex-col items-center justify-center space-y-4">
         <PageHeroBackground specificKey="tournaments_hero_bg_path" alt="DALTA Esports Tournaments Banner" />
 
         {/* Action Bar inside Hero: Back link & optional Create Tournament button */}
@@ -98,7 +98,7 @@ export default function TournamentsPage() {
 
         <div className="relative z-10 max-w-4xl mx-auto space-y-3 pt-2">
           <h1
-            className="animate-hero-title text-4xl sm:text-5xl lg:text-6xl font-black tracking-wider uppercase leading-tight text-white"
+            className="animate-hero-title text-page-hero font-black tracking-wider uppercase leading-tight text-white"
           >
             Tournaments
           </h1>
@@ -137,7 +137,7 @@ export default function TournamentsPage() {
           )}
         </div>
       ) : (
-        <div className="animate-stagger-1 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6 sm:gap-8 w-full">
+        <div className="animate-stagger-1 grid grid-cols-[repeat(auto-fill,minmax(min(100%,24rem),1fr))] gap-6 sm:gap-8 w-full">
           {tournaments.map((tournament) => {
             const registeredCount = tournament.tournament_registrations?.[0]?.count || 0;
             const status = getTournamentStatus(tournament);

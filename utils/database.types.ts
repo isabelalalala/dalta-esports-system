@@ -781,14 +781,14 @@ isOneToOne: false
                   ]
                 },"team_removals": {
                   Row: {
-                    "id": string,"reason": string,"removed_at": string,"removed_by": string | null,"restored_at": string | null,"restored_by": string | null,"roster": Json,"team_id": string,"tournaments": Json,"walkovers": number
+                    "id": string,"reason": string,"removed_at": string,"removed_by": string | null,"restored_at": string | null,"restored_by": string | null,"roster": NonNullable<Json>,"team_id": string,"tournaments": NonNullable<Json>,"walkovers": number
                   }
                   ComputedFields: never
                   Insert: {
-                    "id"?: string,"reason": string,"removed_at"?: string,"removed_by"?: string | null,"restored_at"?: string | null,"restored_by"?: string | null,"roster"?: Json,"team_id": string,"tournaments"?: Json,"walkovers"?: number
+                    "id"?: string,"reason": string,"removed_at"?: string,"removed_by"?: string | null,"restored_at"?: string | null,"restored_by"?: string | null,"roster"?: NonNullable<Json>,"team_id": string,"tournaments"?: NonNullable<Json>,"walkovers"?: number
                   }
                   Update: {
-                    "id"?: string,"reason"?: string,"removed_at"?: string,"removed_by"?: string | null,"restored_at"?: string | null,"restored_by"?: string | null,"roster"?: Json,"team_id"?: string,"tournaments"?: Json,"walkovers"?: number
+                    "id"?: string,"reason"?: string,"removed_at"?: string,"removed_by"?: string | null,"restored_at"?: string | null,"restored_by"?: string | null,"roster"?: NonNullable<Json>,"team_id"?: string,"tournaments"?: NonNullable<Json>,"walkovers"?: number
                   }
                   Relationships: [
                     {

@@ -23,7 +23,7 @@ export default function ActivitySection({ report, insights = {} }: { report: Act
         Tournament Activity &amp; System Report
       </h2>
 
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+      <div className="grid grid-cols-2 @3xl:grid-cols-3 @5xl:grid-cols-5 gap-3">
         <StatTile label="New users" value={t.users} />
         <StatTile label="Tournaments" value={t.tournaments} />
         <StatTile label="Registrations" value={t.registrations} />
@@ -31,7 +31,7 @@ export default function ActivitySection({ report, insights = {} }: { report: Act
         <StatTile label="Matches played" value={t.matches_played} note={`of ${t.matches_total} (byes not counted)`} />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 @5xl:grid-cols-2 gap-4">
         <ReportCard
           title="Registrations over time"
           note={registrations.unit === 'week' ? 'Team registrations per week (weeks start on Monday).' : 'Team registrations per day (Philippine time).'}

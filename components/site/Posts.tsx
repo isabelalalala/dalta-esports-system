@@ -20,7 +20,7 @@ export async function PostList({ table, title, subtitle }: { table: PostTable; t
       {posts.length === 0 ? (
         <EmptyNote>Nothing here yet. Check back soon!</EmptyNote>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
+        <div className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,24rem),1fr))] gap-6">
           {posts.map((p) => <PostCard key={p.id} post={p} href={`/${table}/${p.id}`} />)}
         </div>
       )}
@@ -38,7 +38,7 @@ export async function PostDetail({ table, id, backLabel }: { table: PostTable; i
   return (
     <article className="space-y-8">
       {/* 1. Main Hero Container with Background Banner */}
-      <section className="animate-hero-entrance relative w-full rounded-3xl border border-stone-800/80 bg-stone-950 overflow-hidden shadow-md p-8 sm:p-12 lg:p-14 text-center text-white flex flex-col items-center justify-center space-y-4">
+      <section className="animate-hero-entrance relative w-full rounded-3xl border border-stone-800/80 bg-stone-950 overflow-hidden shadow-md p-8 sm:p-12 @5xl:p-14 text-center text-white flex flex-col items-center justify-center space-y-4">
         <PageHeroBackground
           specificKey={table === 'campaigns' ? 'campaigns_hero_bg_path' : 'events_hero_bg_path'}
           alt="DALTA Esports Banner"
@@ -62,7 +62,7 @@ export async function PostDetail({ table, id, backLabel }: { table: PostTable; i
 
         <div className="relative z-10 max-w-4xl mx-auto space-y-3 pt-2">
           <h1
-            className="animate-hero-title text-3xl sm:text-4xl lg:text-5xl font-black tracking-wider uppercase leading-tight text-white"
+            className="animate-hero-title text-display font-black tracking-wider uppercase leading-tight text-white"
           >
             {post.title}
           </h1>
@@ -70,10 +70,10 @@ export async function PostDetail({ table, id, backLabel }: { table: PostTable; i
       </section>
 
       {/* 2. Structured Content Showcase: Constrained Media Card + Information Box */}
-      <div className={`animate-stagger-1 grid grid-cols-1 ${image ? 'lg:grid-cols-12' : ''} gap-8 items-start`}>
+      <div className={`animate-stagger-1 grid grid-cols-1 ${image ? '@5xl:grid-cols-12' : ''} gap-8 items-start`}>
         {/* Left Media Card: Sized Proportionately without Screen Dominance */}
         {image && (
-          <div className="lg:col-span-5 w-full">
+          <div className="@5xl:col-span-5 w-full">
             <div className="relative w-full aspect-[4/3] max-h-[380px] sm:max-h-[420px] rounded-3xl border border-stone-200/90 bg-ink overflow-hidden shadow-xs grid place-items-center">
               {/* Subtle ambient lighting behind graphic */}
               <div
@@ -96,8 +96,8 @@ export async function PostDetail({ table, id, backLabel }: { table: PostTable; i
         )}
 
         {/* Right Details Card: Description, Context & Actions */}
-        <div className={image ? 'lg:col-span-7 w-full' : 'w-full max-w-4xl mx-auto'}>
-          <div className="rounded-3xl border border-stone-200/90 bg-white p-6 sm:p-8 lg:p-10 shadow-xs space-y-6">
+        <div className={image ? '@5xl:col-span-7 w-full' : 'w-full max-w-4xl mx-auto'}>
+          <div className="rounded-3xl border border-stone-200/90 bg-white p-6 sm:p-8 @5xl:p-10 shadow-xs space-y-6">
             <div className="border-b border-stone-100 pb-4 space-y-1">
               <span className="text-[11px] font-black tracking-widest text-maroon uppercase">
                 {categoryLabel}

@@ -98,7 +98,7 @@ export default function StudentDetails({ profile, onSaved }: Props) {
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
+      <div className="grid grid-cols-1 @3xl:grid-cols-3 gap-4 sm:gap-6">
         <div className="space-y-1.5">
           <label htmlFor="student-id" className="block text-xs font-black text-stone-700 tracking-wider">
             Student ID
