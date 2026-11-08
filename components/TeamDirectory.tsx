@@ -23,19 +23,21 @@ interface Props {
   // My open join requests: team id -> request id
   myRequests: Record<string, string>;
   onChanged: () => void;
+  // Start with "Recruiting only" on (the nav's Recruiting link: /teams?tab=all&recruiting=1)
+  initialRecruitingOnly?: boolean;
 }
 
 // "All teams": every team, searchable, from list_teams() (captain name and roster count
 // come from the database because profiles are private).
 export default function TeamDirectory({
-  games, isPlayer, myTeamIds, myGameIds, profileGameIds, myRequests, onChanged,
+  games, isPlayer, myTeamIds, myGameIds, profileGameIds, myRequests, onChanged, initialRecruitingOnly = false,
 }: Props) {
   const supabase = createClient();
   const [search, setSearch] = useState('');
   // The search sent to the database, a moment after typing stops
   const [query, setQuery] = useState('');
   const [gameId, setGameId] = useState('');
-  const [recruitingOnly, setRecruitingOnly] = useState(false);
+  const [recruitingOnly, setRecruitingOnly] = useState(initialRecruitingOnly);
   const [teams, setTeams] = useState<TeamListEntry[]>([]);
   const [hasMore, setHasMore] = useState(false);
   const [loading, setLoading] = useState(true);

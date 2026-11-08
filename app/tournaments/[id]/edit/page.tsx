@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Image from 'next/image';
 import { useRouter, useParams } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
 import Link from 'next/link';
@@ -22,7 +21,7 @@ import {
   Users,
 } from 'lucide-react';
 
-import { getGameLogo } from '@/utils/game-logos';
+import GameLogo from '@/components/GameLogo';
 
 const inputClass =
   'w-full p-3.5 rounded-xl bg-stone-50 border border-stone-300 text-stone-950 font-bold text-xs outline-none focus:border-amber-600 focus:bg-white focus:ring-2 focus:ring-amber-500/20 shadow-xs transition-all';
@@ -91,7 +90,6 @@ export default function EditTournamentPage() {
 
   const selectedGame = games.find((g) => g.id === gameId);
   const participantsChanged = gameId !== loaded.gameId || maxParticipants !== loaded.maxParticipants;
-  const gameLogo = selectedGame ? getGameLogo(selectedGame.name) : null;
 
   const handleGameChange = (newGameId: string) => {
     setGameId(newGameId);
@@ -205,7 +203,8 @@ export default function EditTournamentPage() {
         {/* Left Column (5 Cols): Live Game Showcase & Governance */}
         <div className="lg:col-span-5 space-y-6">
           {/* Card 1: Game Division Visual Showcase */}
-          {gameLogo ? (
+          {/* Every game shows its logo or initials (GameLogo); the empty card is only for "no game chosen" */}
+          {selectedGame ? (
             <div className="relative aspect-[4/3] max-h-[340px] w-full rounded-3xl border border-stone-800/80 bg-ink overflow-hidden shadow-md flex items-center justify-center p-6 sm:p-8">
               <div
                 className="absolute inset-0 pointer-events-none bg-logo-stage"
@@ -215,19 +214,18 @@ export default function EditTournamentPage() {
                   {cancelled ? 'Cancelled' : 'Active'}
                 </span>
               </div>
-              <div className="relative z-0 w-36 h-36 sm:w-40 sm:h-40 flex items-center justify-center">
-                <Image
-                  src={gameLogo}
-                  alt={selectedGame?.name || 'Game Logo'}
-                  fill
-                  sizes="200px"
-                  className="object-contain drop-shadow-[0_8px_24px_rgba(0,0,0,0.7)]"
-                  priority
-                />
-              </div>
+              <GameLogo
+                name={selectedGame.name}
+                gameId={selectedGame.id}
+                className="z-0 w-48 h-36 sm:w-52 sm:h-40"
+                imageClassName="drop-shadow-[0_8px_24px_rgba(0,0,0,0.7)]"
+                fallbackClassName="text-5xl"
+                sizes="210px"
+                priority
+              />
               <div className="absolute bottom-4 left-6 right-6 text-center z-10">
                 <span className="text-xs font-black tracking-widest text-stone-400 uppercase">
-                  {selectedGame?.name} Division
+                  {selectedGame.name} Division
                 </span>
               </div>
             </div>
@@ -235,7 +233,7 @@ export default function EditTournamentPage() {
             <div className="rounded-3xl border border-stone-200/90 bg-stone-50/70 p-8 text-center space-y-2">
               <Trophy className="w-8 h-8 text-maroon mx-auto" />
               <p className="text-xs font-black text-stone-900">
-                {selectedGame ? selectedGame.name : 'Select a game discipline'}
+                Select a game discipline
               </p>
             </div>
           )}

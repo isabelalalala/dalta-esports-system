@@ -195,15 +195,20 @@ Details per feature: `docs/new-features-summary.md`.
     split. System: mark predictions when a result is final.
 
 ### New use cases on existing actors
-- **All actors:** reset password, confirm email, give privacy consent, view notifications, view Privacy Notice.
+- **All actors:** reset password, confirm email, give privacy consent, view notifications, view Privacy Notice,
+  navigate by role, switch light/dark theme, take the quick tour, upload/change/remove own profile picture,
+  comment on streams, view own warnings.
 - **Player:** submit student details. **Team Captain:** invite player, remove member, transfer captaincy, check in
   for a match, submit result with a screenshot, confirm/dispute a result, open/close recruiting, accept/decline join
-  request. **Player:** accept/decline invite, leave team, browse teams, request to join a team.
-- **Audience/Player:** submit feedback about a match, pick match winner, view leaderboard.
+  request, accept/decline all join requests. **Player:** accept/decline invite, leave team, browse teams, request to join a team.
+- **Audience/Player:** submit feedback about a match, pick match winner, view leaderboard, view LoL ban/pick summary.
 - **Staff:** review student verification, monitor check-ins ("Needs attention"), declare forfeit, review match
-  result, export data.
+  result, export data, remove a team (with a reason; its bracket matches become walkovers), enter LoL bans and
+  picks, resolve and preview a Facebook stream link, review hidden comments (restore / remove).
 - **Admin:** all staff use cases, plus manage the website, view the activity log, retry pending sentiment analysis,
-  export feedback and the user list.
+  export feedback and the user list, restore a removed team, remove a user's profile picture, review hidden
+  feedback, remove warnings, confirm/dismiss bans, ban/unban users, view comment sentiment.
+- **System (AI moderation, time/event actor):** analyse comments and feedback, issue warnings, flag accounts at 5 warnings.
 - **Visitor (new):** view website pages, search, view public tournament/match pages, view community split, add to
   calendar, share.
 

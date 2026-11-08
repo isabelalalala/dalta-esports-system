@@ -15,6 +15,7 @@ import PageLoading from '@/components/PageLoading';
 import PageError from '@/components/PageError';
 import { usePageTitle } from '@/utils/page-title';
 import PageHeroBackground from '@/components/site/PageHeroBackground';
+import { can } from '@/utils/permissions';
 
 type ReportListItem = Pick<SavedReport, 'id' | 'filters' | 'generated_at'> & {
   generator: { full_name: string | null; email: string } | null;
@@ -42,11 +43,11 @@ export default function AnalyticsPage() {
         if (roleError) throw roleError;
         setRole(myRole ?? '');
 
-        if (myRole === 'staff') {
+        if (!can(myRole, 'report.generate') && can(myRole, 'report.viewEngagement')) {
           router.replace('/analytics/engagement');
           return;
         }
-        if (myRole !== 'admin') return;
+        if (!can(myRole, 'report.generate')) return;
 
         const { data, error: listError } = await supabase
           .from('analytics_reports')
@@ -102,9 +103,9 @@ export default function AnalyticsPage() {
     }
   };
 
-  if (loading || role === 'staff') return <PageLoading />;
+  if (loading || (!can(role, 'report.generate') && can(role, 'report.viewEngagement'))) return <PageLoading />;
   if (!role && error) return <PageError message={error} />;
-  if (role !== 'admin') {
+  if (!can(role, 'report.generate')) {
     return (
       <div className="w-full bg-white text-stone-950 p-10 text-center space-y-4">
         <p className="font-extrabold text-stone-900">Only administrators can view analytics reports.</p>

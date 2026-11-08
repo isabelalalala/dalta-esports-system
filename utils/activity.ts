@@ -42,6 +42,14 @@ export interface ActivityLog {
     teams?: number;
     // Exports: how many rows the file had
     rows?: number;
+    // Moderation (202611081500)
+    warned?: boolean;
+    warning_type?: string;
+    // Team removal / restore (202611081000)
+    members?: number;
+    tournaments?: string[];
+    walkovers?: number;
+    skipped?: string[];
   };
   created_at: string;
 }
@@ -86,6 +94,8 @@ export const ACTION_GROUPS: { label: string; actions: { value: string; label: st
     actions: [
       { value: 'team.join_request.accepted', label: 'Join request accepted' },
       { value: 'team.join_request.declined', label: 'Join request declined' },
+      { value: 'team.removed', label: 'Team removed' },
+      { value: 'team.restored', label: 'Team restored' },
     ],
   },
   {
@@ -93,6 +103,22 @@ export const ACTION_GROUPS: { label: string; actions: { value: string; label: st
     actions: [
       { value: 'user.role_changed', label: 'Role changed' },
       { value: 'user.deleted', label: 'Account deleted' },
+      { value: 'user.avatar_removed', label: 'Profile picture removed' },
+    ],
+  },
+  {
+    label: 'Moderation',
+    actions: [
+      { value: 'comment.restored', label: 'Comment restored' },
+      { value: 'comment.removed', label: 'Comment removed' },
+      { value: 'feedback.restored', label: 'Feedback restored' },
+      { value: 'feedback.removed', label: 'Feedback removed' },
+      { value: 'warning.removed', label: 'Warning removed' },
+      { value: 'user.ban_flagged', label: 'Account flagged (5 warnings)' },
+      { value: 'user.ban_confirmed', label: 'Ban confirmed' },
+      { value: 'user.banned', label: 'Account banned' },
+      { value: 'user.ban_dismissed', label: 'Ban dismissed' },
+      { value: 'user.unbanned', label: 'Account unbanned' },
     ],
   },
   {
@@ -252,6 +278,37 @@ export function describeActivity(log: ActivityLog): string {
       return `${actor} accepted ${d.player_name || 'a player'} into ${d.team_name || 'a deleted team'}`;
     case 'team.join_request.declined':
       return `${actor} declined ${d.player_name || 'a player'}'s request to join ${d.team_name || 'a deleted team'}`;
+    case 'team.removed': {
+      const extra = [
+        d.tournaments?.length ? `withdrew it from ${d.tournaments.join(', ')}` : '',
+        d.walkovers ? `${d.walkovers} walkover${d.walkovers === 1 ? '' : 's'}` : '',
+      ].filter(Boolean).join('; ');
+      return `${actor} removed ${d.team_name || 'a team'}${d.game ? ` (${d.game})` : ''}${d.note ? `: "${d.note}"` : ''}${extra ? ` (${extra})` : ''}`;
+    }
+    case 'team.restored':
+      return `${actor} restored ${d.team_name || 'a team'}${d.game ? ` (${d.game})` : ''}${d.skipped?.length ? ` (not added back: ${d.skipped.join(', ')})` : ''}`;
+    case 'comment.restored':
+      return `${actor} restored ${d.user_name || 'a user'}'s comment${d.title ? ` on ${d.title}` : ''}${d.note ? `: "${d.note}"` : ''}`;
+    case 'comment.removed':
+      return `${actor} removed ${d.user_name || 'a user'}'s comment${d.title ? ` on ${d.title}` : ''}${d.warned ? ' and gave a warning' : ''}${d.note ? `: "${d.note}"` : ''}`;
+    case 'feedback.restored':
+      return `${actor} restored a hidden feedback${d.note ? `: "${d.note}"` : ''}`;
+    case 'feedback.removed':
+      return `${actor} confirmed the removal of a feedback${d.note ? `: "${d.note}"` : ''}`;
+    case 'warning.removed':
+      return `${actor} removed a ${d.warning_type === 'offensive' ? 'offensive-content' : 'profanity'} warning from ${d.user_name || 'a user'}${d.note ? `: "${d.note}"` : ''}`;
+    case 'user.ban_flagged':
+      return `${d.user_name || 'A user'} reached 5 warnings and was flagged for a ban`;
+    case 'user.ban_confirmed':
+      return `${actor} confirmed the ban of ${d.user_name || 'a user'}${d.note ? `: "${d.note}"` : ''}`;
+    case 'user.banned':
+      return `${actor} banned ${d.user_name || 'a user'}${d.note ? `: "${d.note}"` : ''}`;
+    case 'user.ban_dismissed':
+      return `${actor} dismissed the ban of ${d.user_name || 'a user'} and reset their warnings${d.note ? `: "${d.note}"` : ''}`;
+    case 'user.unbanned':
+      return `${actor} unbanned ${d.user_name || 'a user'}${d.note ? `: "${d.note}"` : ''}`;
+    case 'user.avatar_removed':
+      return `${actor} removed ${d.user_name || 'a user'}'s profile picture${d.note ? `: "${d.note}"` : ''}`;
     case 'user.role_changed':
       return `${actor} changed ${d.user_name}'s role from ${roleLabels[d.old_role ?? ''] ?? d.old_role} to ${roleLabels[d.new_role ?? ''] ?? d.new_role}`;
     case 'user.deleted':

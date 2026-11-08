@@ -10,6 +10,7 @@ import { usePageTitle } from '@/utils/page-title';
 import PageLoading from '@/components/PageLoading';
 import PageError from '@/components/PageError';
 import PageHeroBackground from '@/components/site/PageHeroBackground';
+import { can } from '@/utils/permissions';
 
 const inputClass =
   'w-full p-3 rounded-xl bg-white text-stone-950 border border-stone-300 placeholder:text-stone-400 focus:border-amber-600 focus:ring-2 focus:ring-amber-500/20 shadow-xs outline-none transition-all font-medium text-xs sm:text-sm';
@@ -39,7 +40,7 @@ export default function VerificationPage() {
         const { data: myRole, error: roleError } = await supabase.rpc('get_my_role');
         if (roleError) throw roleError;
         setRole(myRole ?? '');
-        if (myRole !== 'admin' && myRole !== 'staff') return;
+        if (!can(myRole, 'verification.review')) return;
 
         const { data, error: listError } = await supabase
           .from('profiles')
@@ -87,7 +88,7 @@ export default function VerificationPage() {
 
   if (loading) return <PageLoading />;
   if (!role && error) return <PageError message={error} />;
-  if (role !== 'admin' && role !== 'staff') {
+  if (!can(role, 'verification.review')) {
     return (
       <div className="w-full bg-white text-stone-950 p-10 text-center space-y-4">
         <p className="font-extrabold text-stone-900">Only tournament organizers can verify students.</p>

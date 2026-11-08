@@ -6,19 +6,20 @@ import writeXlsxFile from 'write-excel-file/node';
 import type { createClient } from '@/utils/supabase/server';
 import { csvFile } from '@/utils/csv';
 import { roundLabel } from '@/utils/tournaments';
+import type { Action } from '@/utils/permissions';
 
 type SupabaseClient = Awaited<ReturnType<typeof createClient>>;
 
 export const EXPORT_TYPES = ['registrations', 'rosters', 'matches', 'feedback', 'users'] as const;
 export type ExportType = (typeof EXPORT_TYPES)[number];
 
-// Who may download what (log_export() in the database checks the same)
-export const EXPORT_ROLES: Record<ExportType, string[]> = {
-  registrations: ['admin', 'staff'],
-  rosters: ['admin', 'staff'],
-  matches: ['admin', 'staff'],
-  feedback: ['admin'],   // feedback is admin-only (Module 6)
-  users: ['admin'],
+// Who may download what (utils/permissions.ts; log_export() in the database checks the same)
+export const EXPORT_PERMISSION: Record<ExportType, Action> = {
+  registrations: 'export.operations',  // admin, staff
+  rosters: 'export.operations',
+  matches: 'export.operations',
+  feedback: 'export.sensitive',        // admin only (Module 6)
+  users: 'export.sensitive',
 };
 
 export function isExportType(value: string): value is ExportType {
@@ -273,7 +274,8 @@ async function rostersExport(supabase: SupabaseClient, params: ExportParams): Pr
     teams = regs.flatMap((r) => (r.teams ? [r.teams] : []));
   } else {
     teams = await fetchAll<TeamRow>((from, to) => {
-      let query = supabase.from('teams').select('id, name, game_id, games(name)').order('name');
+      // Removed teams (202611081000) have no roster any more; their members were freed
+      let query = supabase.from('teams').select('id, name, game_id, games(name)').eq('is_removed', false).order('name');
       if (params.gameId) query = query.eq('game_id', params.gameId);
       return query.range(from, to);
     });

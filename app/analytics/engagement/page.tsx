@@ -15,6 +15,7 @@ import PageError from '@/components/PageError';
 import { usePageTitle } from '@/utils/page-title';
 import PageHeroBackground from '@/components/site/PageHeroBackground';
 import { Download, Printer, RotateCw } from 'lucide-react';
+import { can } from '@/utils/permissions';
 
 // "View engagement stats" (use case, Tournament Staff). Admins can open it too.
 export default function EngagementPage() {
@@ -42,7 +43,7 @@ export default function EngagementPage() {
         const { data: myRole, error: roleError } = await supabase.rpc('get_my_role');
         if (roleError) throw roleError;
         setRole(myRole ?? '');
-        if (myRole !== 'admin' && myRole !== 'staff') return;
+        if (!can(myRole, 'report.viewEngagement')) return;
         if (filterError) return;
 
         setError('');
@@ -91,7 +92,7 @@ export default function EngagementPage() {
   // Hiding the page is only for convenience; report_engagement() also refuses other roles.
   // The role couldn't be loaded: show why, not "only admins"
   if (!role && error) return <PageError message={error} />;
-  if (role !== 'admin' && role !== 'staff') {
+  if (!can(role, 'report.viewEngagement')) {
     return (
       <div className="w-full bg-white text-stone-950 p-10 text-center space-y-4">
         <p className="font-extrabold text-stone-900">Only organizers can view engagement stats.</p>
@@ -110,10 +111,10 @@ export default function EngagementPage() {
 
         <div className="relative z-10 w-full flex items-center justify-between">
           <Link
-            href={role === 'admin' ? '/analytics' : '/dashboard'}
+            href={can(role, 'report.generate') ? '/analytics' : '/dashboard'}
             className="inline-flex items-center gap-1.5 text-xs font-black text-amber-400 hover:text-amber-300 uppercase tracking-wider transition-colors"
           >
-            ← Back to {role === 'admin' ? 'Analytics' : 'Dashboard'}
+            ← Back to {can(role, 'report.generate') ? 'Analytics' : 'Dashboard'}
           </Link>
 
           <div className="flex items-center gap-2">

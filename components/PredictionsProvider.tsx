@@ -4,6 +4,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState, t
 import { createClient } from '@/utils/supabase/client';
 import { getErrorMessage } from '@/utils/errors';
 import { fetchSplits, type MyPrediction, type PickMatch, type Splits } from '@/utils/predictions';
+import { isOrganizer as isOrganizerRole } from '@/utils/permissions';
 
 interface PredictionsState {
   // false until the session and the picks are loaded (buttons are hidden until then)
@@ -71,7 +72,7 @@ export default function PredictionsProvider({ matches, children }: { matches: Pi
         if (roleRes.error) throw roleRes.error;
         if (picksRes.error) throw picksRes.error;
         if (teamsRes.error) throw teamsRes.error;
-        setIsOrganizer(roleRes.data === 'admin' || roleRes.data === 'staff');
+        setIsOrganizer(isOrganizerRole(roleRes.data));
         setMyPicks(Object.fromEntries((picksRes.data as MyPrediction[]).map((p) => [p.match_id, p])));
         setMyTeamIds((teamsRes.data || []).map((t) => t.team_id as string));
       } catch {

@@ -6,6 +6,7 @@ import { getPublicTournament, teamNameMap, type PublicTournament } from '@/utils
 import { formatDateTime, roundLabel } from '@/utils/tournaments';
 import { publicMatchPath, publicTournamentPath } from '@/utils/site-url';
 import FacebookPlayer from '@/components/FacebookPlayer';
+import StreamComments from '@/components/StreamComments';
 import ShareButton from '@/components/ShareButton';
 import CalendarLinks from '@/components/CalendarLinks';
 import LiveRefresher from '@/components/site/LiveRefresher';
@@ -13,6 +14,7 @@ import { SectionTitle } from '@/components/site/SiteParts';
 import { SectionLoading } from '@/components/PageLoading';
 import PredictionsProvider from '@/components/PredictionsProvider';
 import PredictionPicker from '@/components/PredictionPicker';
+import MatchDraftSection from '@/components/MatchDraftSection';
 import { Target } from 'lucide-react';
 
 const TZ = 'Asia/Manila';
@@ -113,12 +115,18 @@ async function MatchContent({ params }: { params: PageProps<'/t/[id]/match/[matc
         </section>
       )}
 
+      {/* League of Legends: bans and picks (read-only here; hidden until staff enter them) */}
+      {data.tournament.game_id === 'lol' && (
+        <MatchDraftSection matchId={match.id} teamAName={teamA} teamBName={teamB} canEdit={false} />
+      )}
+
       {stream && (
         <section className="space-y-3">
-          <SectionTitle><span className="inline-block h-3 w-3 rounded-full bg-red-500 animate-pulse mr-2" />Live now</SectionTitle>
-          <div className="rounded-2xl border border-stone-200 overflow-hidden bg-black">
+          <SectionTitle><span className="inline-block h-3 w-3 rounded-full bg-red-500 motion-safe:animate-pulse mr-2" />Live now</SectionTitle>
+          <div className="rounded-2xl border border-stone-200 overflow-hidden bg-white p-2 sm:p-3">
             <FacebookPlayer url={stream.facebook_url} title={stream.title} />
           </div>
+          <StreamComments streamId={stream.id} heightClass="h-80" />
         </section>
       )}
 

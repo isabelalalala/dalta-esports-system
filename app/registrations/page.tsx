@@ -101,10 +101,8 @@ export default function MyRegistrationsPage() {
   }
 
   return (
-    <main
-      id="main-content"
-      className="flex-1 w-full min-h-[calc(100vh-160px)] bg-white text-stone-950 px-4 sm:px-6 lg:px-8 xl:px-12 py-8 sm:py-10"
-    >
+    // The layout (SiteNavLayout) renders the main element and the page padding
+    <div className="w-full text-stone-950">
       <div className="w-full max-w-6xl mx-auto space-y-8">
         {/* 1. Main Hero Container */}
         <section className="animate-hero-entrance relative w-full rounded-3xl border border-stone-800/80 bg-stone-950 overflow-hidden shadow-md p-8 sm:p-12 lg:p-14 text-center text-white flex flex-col items-center justify-center space-y-4">
@@ -255,6 +253,6 @@ export default function MyRegistrationsPage() {
           </div>
         )}
       </div>
-    </main>
+    </div>
   );
 }

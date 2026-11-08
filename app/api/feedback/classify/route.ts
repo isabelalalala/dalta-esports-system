@@ -1,13 +1,12 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/utils/supabase/server';
-import { analyzeFeedback } from '@/utils/feedback-analysis';
+import { runModerationBatch } from '@/utils/moderation';
 import { MAX_FEEDBACK_ANALYSIS_ATTEMPTS } from '@/utils/feedback';
+import { can } from '@/utils/permissions';
 
 // Vercel may stop a function after 10 s on the free plan; one batch waits up to 15 s for Gemini
 export const maxDuration = 30;
 
-// How many comments go to Gemini in one request
-const BATCH_SIZE = 20;
 
 // "Retry pending analysis" on /admin/feedback (use case "Classify sentiment", Organizing Committee).
 // New feedback is classified when it's sent (/api/feedback); this retries the ones that stayed
@@ -24,25 +23,13 @@ export async function POST() {
   if (roleError) {
     return NextResponse.json({ error: 'Could not check your role. Please try again.' }, { status: 500 });
   }
-  if (role !== 'admin') {
+  if (!can(role, 'feedback.viewAll')) {
     return NextResponse.json({ error: 'Only admins can classify feedback.' }, { status: 403 });
   }
 
-  // Oldest pending feedback first (RLS: admins read all feedback).
-  // Rows that already failed MAX_FEEDBACK_ANALYSIS_ATTEMPTS times are left alone:
-  // retrying a permanently-unclassifiable comment just burns rate-limit slots.
-  const { data: pending, error: pendingError } = await supabase
-    .from('feedback')
-    .select('id, rating, comment')
-    .is('sentiment', null)
-    .lt('analysis_attempts', MAX_FEEDBACK_ANALYSIS_ATTEMPTS)
-    .order('created_at')
-    .limit(BATCH_SIZE);
-  if (pendingError) {
-    return NextResponse.json({ error: 'Could not load the pending feedback. Please try again.' }, { status: 500 });
-  }
-
-  const result = await analyzeFeedback(supabase, pending ?? []);
+  // Same pipeline as comments (utils/moderation.ts): the next batch of waiting items, oldest
+  // first, feedback and comments together.
+  const result = await runModerationBatch(supabase);
 
   const { count: remaining } = await supabase
     .from('feedback')
@@ -51,7 +38,7 @@ export async function POST() {
     .lt('analysis_attempts', MAX_FEEDBACK_ANALYSIS_ATTEMPTS);
 
   return NextResponse.json({
-    classified: result.classified,
+    classified: result.analyzed.size,
     remaining: remaining ?? 0,
     // Shown to the admin when nothing (or not everything) could be classified
     reason: result.pendingReason,

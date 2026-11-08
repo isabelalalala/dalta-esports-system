@@ -33,8 +33,9 @@ Full title: "DALTA Esports: Tournament Management System with AI-Powered Feedbac
 - `GEMINI_API_KEY`: server only, never `NEXT_PUBLIC_`. Free key from Google AI Studio.
 - `GEMINI_MODEL`: optional, default `gemini-3.5-flash-lite`.
 - `FEEDBACK_SERVER_KEY`: server only. Must equal the Vault secret `feedback_server_key` (see
-  `202610181000_feedback_protection.sql`); lets the server save sentiment and use the Gemini rate limit.
-  Without it, feedback is saved but stays "pending analysis".
+  `202610181000_feedback_protection.sql`); lets the server read waiting comments/feedback, save sentiment and
+  moderation results, and use the Gemini rate limit. Without it, comments and feedback are saved but stay
+  "pending analysis" (comments stay visible, unmoderated).
 - `NEXT_PUBLIC_SITE_URL`: the app's public address, e.g. `https://<app>.vercel.app` (no trailing slash). Used
   for link previews (metadataBase), shared links and calendar files. Falls back to Vercel's production domain
   (`NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL`), then http://localhost:3000 (`utils/site-url.ts`).
@@ -100,7 +101,7 @@ Enforced by a CHECK constraint on `profiles.role` (migration `202610161200_role_
 - RLS policies check roles with `public.get_my_role()`.
 
 ## Current schema (public)
-All migrations are in `supabase/migrations/`, run in filename order (202610151100 … 202611011300). `202610151100_base_schema` creates the three pre-migration base tables (`profiles`, `tournaments`, `tournament_registrations`). It is `if not exists`, so it is a no-op on databases that already have them.
+All migrations are in `supabase/migrations/`, run in filename order (202610151100 … 202611081500). `202610151100_base_schema` creates the three pre-migration base tables (`profiles`, `tournaments`, `tournament_registrations`). It is `if not exists`, so it is a no-op on databases that already have them.
 `202610181000_feedback_protection` also needs its one-time Vault key setup (the `feedback_server_key` secret +
 `FEEDBACK_SERVER_KEY`); the steps are at the top of that file.
 Readers: "anyone" = also logged out; "logged-in" = any role; "admin/staff" = organizers only.
@@ -109,6 +110,9 @@ Readers: "anyone" = also logged out; "logged-in" = any role; "admin/staff" = org
 - `profiles`: id (uuid, = auth.users.id, deleted with the auth user), email, role, full_name, created_at (join date),
   updated_at, privacy_consent_at, privacy_consent_version (null = not agreed yet; set at sign-up or only through
   `give_privacy_consent(version)`, never edited directly, not even by admins),
+  avatar_url (202611081400: public address in the `avatars` bucket; CHECK = the user's own folder; only the owner
+  changes it, admins only remove it via `admin_remove_avatar(user, reason)` (logged `user.avatar_removed`, notifies
+  `avatar_removed`); trigger `protect_avatar()`, flag `removing_avatar`), tour_dismissed_at (quick tour finished/skipped),
   tos_version, tos_accepted_at (Terms of Service acceptance — also records the 18+/guardian declaration;
   set at sign-up or only through `accept_tos(version)`).
   Student verification (players): student_id, school, course_year (the player edits them on `/profile`),
@@ -139,7 +143,20 @@ Readers: "anyone" = also logged out; "logged-in" = any role; "admin/staff" = org
   while its owner is on a team for that game (202611011100); editing IGN/role/rank is fine.
 - `teams`: id, name, description, game_id (→ games), captain_id (→ profiles), recruiting (open to join requests,
   202611011300; changed by the captain or through `set_team_recruiting()`, which admin/staff may also call),
-  created_at. UNIQUE (name, game_id).
+  created_at, is_removed / removed_by / removed_at (soft delete, 202611081000). UNIQUE (name, game_id).
+  Removal: `remove_team(team, reason)` (admin/staff) withdraws pending/approved registrations for tournaments that
+  haven't ended, cancels open invites/join requests, gives every unfinished match to the opponent as a walkover
+  (`apply_removed_team_walkover()`; an unknown opponent gets it as soon as they arrive, trigger
+  `matches_removed_team_walkover`), saves the roster in `team_removals` and deletes the `team_members` rows (members
+  are free to join other teams), notifies members (`team_removed`) and logs `team.removed`. `restore_team(team)`
+  (admin) brings back the captain + former members who are still free (`team_restored`, `team.restored`); it doesn't
+  undo withdrawals or walkovers. A removed team can't be edited, deleted, invited to, asked to join or registered
+  (`protect_team_removal()`, `refuse_removed_team()`); `list_teams()` leaves it out; brackets show "(removed)"
+  (`teamLabel()` in `utils/matches.ts`). The flag `app.removing_team` lets the two functions past the roster lock
+  and captain guard.
+- `team_removals` (202611081000): id, team_id, removed_by, removed_at, reason (5–500), roster (jsonb: user_id,
+  full_name, role), tournaments (jsonb names withdrawn), walkovers, restored_by, restored_at. Admin/staff read;
+  written only by `remove_team()`/`restore_team()`. Kept apart from `teams` because every logged-in user reads teams.
   The captain needs a game profile for the team's game, on create and on captaincy transfer (202611011100).
   The captain can edit name and description; game and captain can't change. Teams in a bracket can't be deleted,
   and neither can teams with a pending/approved registration for a tournament that hasn't ended
@@ -176,6 +193,12 @@ Readers: "anyone" = also logged out; "logged-in" = any role; "admin/staff" = org
   In the `supabase_realtime` publication (live scoreboards).
   is_forfeit (set only by `declare_forfeit(match, winner)`, admin/staff, after scheduled_at; any other result
   change clears it), checkin_notified_at.
+- `match_drafts` (202611081300, League of Legends only): id, match_id (cascade), game_number (1–7, UNIQUE with
+  match_id), team_a_bans, team_a_picks, team_b_bans, team_b_picks (text[], ≤ 5 each, names trimmed ≤ 30 chars,
+  no champion twice per game: trigger `check_match_draft()`), updated_by, created_at, updated_at. Anyone reads
+  (also logged out); admin/staff write. In Realtime. UI `components/MatchDraftSection.tsx` on `/matches/[id]`
+  (staff edit) and `/t/[id]/match/[matchId]` (read-only); champion suggestions in `utils/lol-champions.ts`
+  (autocomplete only, any name is accepted).
 - Check-in: `tournaments.checkin_window_minutes` (default 30, 0 = off). Opens that many minutes before
   scheduled_at, closes at scheduled_at (database clock). `match_checkins` (match_id, team_id, checked_in_by,
   checked_in_at; one per team; logged-in read; in Realtime) is written only by `check_in_match(match)` (captain of
@@ -224,6 +247,15 @@ Readers: "anyone" = also logged out; "logged-in" = any role; "admin/staff" = org
   (must be an https facebook.com video link (/watch, /videos/, /reel/, /<page>/live or story.php?), checked in
   the database because the embed only renders video posts), status (`scheduled`/`live`/`ended`), created_by,
   created_at, updated_at. Logged-in read; admin/staff write.
+  Since 202611081100: facebook_url holds the canonical address (`https://www.facebook.com/<page>/videos/<id>/` or
+  `https://www.facebook.com/watch/?v=<id>`) and facebook_video_id the id (null for older id-less forms).
+  `parseFacebookInput()` in `utils/streams.ts` handles every pasted form (/watch, /watch/live, /videos/, /reel/,
+  embed code); share links (/share/v/, /share/r/, fb.watch) go to POST `/api/streams/resolve-url` (admin/staff),
+  which follows the redirect (only to facebook.com/fb.watch: `utils/facebook-resolve.ts`, server only; login walls
+  are read through `?next=`) and asks Facebook's embed page whether the video plays (`embeddable: false` = Facebook
+  shows "Video unavailable / no permission": a warning in the form, not a block). `FacebookPlayer` always embeds the
+  canonical address and swaps in a "Watch on Facebook" card when the frame doesn't load within 15 s (a
+  cross-origin frame's "no permission" text can't be read, so the link under the player stays).
 - `stream_views`: id, stream_id, user_id, viewed_on (date), created_at. UNIQUE (stream_id, user_id, viewed_on):
   one row per person per stream per day, recorded when the watch page opens. Users insert their own;
   only admin/staff read. `viewed_on` is the Philippine date (`Asia/Manila`) since 202610162300; older rows are UTC.
@@ -246,16 +278,55 @@ Readers: "anyone" = also logged out; "logged-in" = any role; "admin/staff" = org
   target_removed (set when its tournament/match is deleted), analysis_attempts, analysis_error, analysis_attempted_at.
   One feedback per user per tournament, per match, and one general (unique index `feedback_one_per_target`,
   nulls not distinct, ignores target_removed rows).
-- Sending: POST `/api/feedback` saves as the user, then classifies right away through `utils/feedback-analysis.ts`
-  (server only): `claim_gemini_call()` rate limit (10/min, 500/day app-wide; 5 per user per 10 min, admins exempt
-  since 202610181400; table `gemini_calls`, rows kept 1 day) → Gemini (15 s timeout) → `save_feedback_sentiment()`;
-  on any failure `mark_feedback_pending()` records the reason ("pending analysis" = sentiment is null). These
-  three functions require FEEDBACK_SERVER_KEY (checked against Vault by `feedback_server_key_ok()`).
-  `/admin/feedback` no longer calls Gemini on open; "Retry pending analysis" (POST `/api/feedback/classify`,
-  admin) retries 20 at a time, skipping rows that already failed `MAX_FEEDBACK_ANALYSIS_ATTEMPTS` (5,
-  `utils/feedback.ts`): those show "Gave up" and stay pending.
+- Sending: POST `/api/feedback` saves as the user (refused for flagged/banned accounts: `can_post()` in the insert
+  policy), then analyses right away with the shared moderation pipeline (see "Comments and moderation").
+  ("pending analysis" = sentiment is null). Since 202611081500 feedback also has is_profane, is_offensive,
+  offense_type, moderation_status (`pending`/`approved`/`hidden`/`restored`/`removed`), moderation_reason,
+  reviewed_by/at; offensive feedback is hidden for review on `/admin/moderation`. "Retry pending analysis"
+  (POST `/api/feedback/classify` admin, or `/api/moderation/retry` admin/staff) runs the next batch of 20,
+  skipping rows that already failed `MAX_FEEDBACK_ANALYSIS_ATTEMPTS` (5, `utils/feedback.ts`): "Gave up".
+  `save_feedback_sentiment()` / `mark_feedback_pending()` still exist but the app no longer uses them.
 - Notes for reports: `topics` mix praise and complaints; "common concerns" = topics on negative feedback.
   Pending rows still have a rating.
+
+**Comments and moderation (Phase 4)**, `202611081500_comments_moderation`
+- `stream_comments`: id, stream_id (cascade), user_id (cascade), content (1–300, trimmed), created_at,
+  sentiment_label, sentiment_score, topics, is_profane, is_offensive, offense_type (`none`/`bullying`/
+  `harassment`/`hate_speech`/`threat`/`sexual`), moderation_status (`pending` shown, `approved` shown, `hidden`,
+  `restored` shown, `removed`), moderation_reason, analysis_attempts/error/attempted_at, analysed_at,
+  reviewed_by/at. Trigger `check_stream_comment()`: 1 per 3 s per user, users can't set moderation fields,
+  no edits (flag `moderating`). Insert: own + `can_post()`. Delete: author, only approved/restored.
+  Select: visible rows, own rows, admin/staff all. Everyone else (also logged out) reads through
+  `get_stream_comments(stream, limit, before)` (visible only + the caller's own hidden ones; names as
+  `short_name()` "Juan C." + avatar).
+- `stream_comment_activity` (stream_id, version, changed_at): bumped on every comment change; the ONLY comment
+  table in Realtime (anyone reads). Viewers reload through the function, so hidden comments disappear for
+  everyone (Realtime can't tell viewers about rows they may no longer read).
+- Pipeline (`utils/moderation.ts`, server only; same for comments and feedback): `claim_moderation_batch()`
+  (oldest 20 waiting, the new item first) → `claim_gemini_call()` (10/min, 500/day, 5 per user per 10 min; a
+  rate-limited batch doesn't count as an attempt) → `analyzeTexts()` in `utils/gemini.ts` (one call, strict JSON
+  checked by `parseAnalysis()` in `utils/moderation-rules.ts`, asked once more if unparsable; Taglish prompt) →
+  `save_moderation_result()` (profanity: visible + 1 warning; offensive: hidden + 1 warning; 5 active warnings →
+  `check_ban_threshold()` flags the account, notifies user + admins) or `mark_moderation_pending()`. All need
+  FEEDBACK_SERVER_KEY. POST `/api/comments` saves as the user and runs the batch in `after()` (posting is
+  instant); every new comment/feedback also retries older waiting items.
+- `user_warnings`: id, user_id, source (`comment`/`feedback`), source_id, type (`profanity`/`offensive`), reason,
+  created_at, issued_by (null = AI), removed_at/by, removal_reason (soft removal). User reads own, admin all;
+  written only by functions. `active_warning_count()`.
+- `profiles.ban_status` (`none`/`pending`/`banned`), ban_flagged_at, banned_at, banned_by, ban_reason: changed
+  only by the functions (trigger `protect_ban_fields()`, flag `moderating_user`). Pending/banned can't comment or
+  send feedback (`can_post()`); banned → `/banned` (proxy.ts) and, with the Supabase Auth hook
+  `custom_access_token_hook` switched on (dashboard → Authentication → Hooks), no login/refresh.
+  `components/FlaggedAccountNotice.tsx` shows flagged users a notice once per session.
+- Moderator functions (all logged): `moderate_comment(id, restore|remove, note, warn)` (admin/staff; restore
+  drops the AI's warning), `moderate_feedback()` (admin), `remove_warning(id, reason)`, `ban_user(user, reason)`
+  (not admins, not self), `dismiss_ban(user, note)` and `unban_user(user, note)` (both reset active warnings).
+  `/admin/moderation` (admin/staff; tabs for admins: hidden content, pending bans, flagged users).
+- `report_comment_sentiment(tournament, from, to)` (admin): totals, flagged, per stream/tournament/day, top
+  topics; shown on `/admin/feedback` (`app/admin/feedback/CommentSentiment.tsx`).
+- UI: `components/StreamComments.tsx` on `/live/[id]` (sidebar), `/t/[id]` and `/t/[id]/match/[matchId]`
+  (logged out: read + "Log in to comment"; moderators can remove from the panel). `/profile#warnings`
+  (`components/MyWarnings.tsx`).
 
 **Administrative reports (Module 6)**, DFD store D5 "Analytics & Engagement DB"
 - `analytics_reports`: id, filters (jsonb, readable names: tournament, game, from, to), data (jsonb:
@@ -281,7 +352,7 @@ Readers: "anyone" = also logged out; "logged-in" = any role; "admin/staff" = org
 
 **Notifications**
 - `notifications`: id, user_id (→ profiles, deleted with the user), type (CHECK list; the latest full list is in
-  `202611011300_team_join_requests.sql`), title, message, link (app path only), is_read, created_at. Users read their own and may update
+  `202611081500_comments_moderation.sql`), title, message, link (app path only), is_read, created_at. Users read their own and may update
   ONLY `is_read` (column grant); no insert/delete from the app. In the `supabase_realtime` publication.
 - Created only by AFTER triggers through `notify_users()` (not callable from the app; skips the person who caused
   it): registration approved/rejected → captain, registration removed (admin delete) → captain; tournament
@@ -327,6 +398,8 @@ Readers: "anyone" = also logged out; "logged-in" = any role; "admin/staff" = org
   match upload; the two teams and staff read through signed URLs. No update/delete from the app.
 - `site-images` (public): website images (logo, carousel, campaigns, events, divisions, officers, teams,
   players), `<folder>/<random>.<ext>`, PNG/JPEG/WebP/GIF, 5 MB. Anyone views; only admins write.
+- `avatars` (public, 202611081400): profile pictures, `<user id>/<random>.webp`, JPG/PNG/WebP, 2 MB. Users write
+  only in their own folder; admins may delete any file (after `admin_remove_avatar()`).
 - Bucket settings and policies are created in the migrations (storage.buckets / storage.objects).
 
 **Database functions**: `get_my_role()`, `current_user_role()` (older alias of get_my_role), `search_players(game_id, search)`,
@@ -341,12 +414,13 @@ Business rules (roster size, registration checks, match results) are enforced by
 triggers with readable error messages.
 
 ## Pages and shared code
-- Auth: `/auth/*` (see above). Account: `/profile` (name, game profiles, password, delete account).
+- Auth: `/auth/*` (see above). Account: `/profile` (picture, name, game profiles, password, delete account).
 - Players: `/teams` (tabs My teams / All teams; organizers open on All teams), `/teams/[id]` (Recruiting + join
   requests for the captain and organizers, "Ask to join" for other players), `/registrations` (My Registrations), dashboard "My Matches", `/matches/[id]`.
 - Tournaments: `/tournaments`, `/tournaments/create`, `/tournaments/[id]` (details, bracket, announcements,
   watch-live banner, Admin Panel), `/tournaments/[id]/edit`, `.../registrations`, `.../matches`, `.../streams`, `.../predictions` (pick'em leaderboard).
-- Organizers: `/matches` (Match Management overview), `/admin/users` (admin only), `/admin/feedback` (admin only),
+- Organizers: `/matches` (Match Management overview), `/admin/teams` (admin/staff: active teams with Remove, removed
+  teams with reason), `/admin/users` (admin only), `/admin/feedback` (admin only),
   `/admin/verification` (admin/staff: pending / rejected / verified students), `/admin/website` (admin only: public site editor), `/admin/activity` (admin only:
   activity log, 50 per page, filters by action, user and date).
 - Reports: `/analytics` (admin: filters, Generate report = calculate + save, saved reports list; staff are sent
@@ -368,8 +442,21 @@ triggers with readable error messages.
   `webcal://` subscribe links (`components/CalendarLinks.tsx`). Data from `get_public_calendar()`.
 - `components/ShareButton.tsx`: native share sheet when available, Copy link, Share on Facebook.
 - Every page (public and logged in) has the same header and footer, both in `app/layout.tsx`:
-  `components/site/SiteHeader.tsx` (logo, search, and `SiteAuthButtons`: Log in / Sign up, or Dashboard +
-  `NotificationBell` + Log out) and `components/Footer.tsx` (texts and social links from `site_content`).
+  `components/site/SiteHeader.tsx` (logo, search, and `SiteAuthButtons`: theme toggle + Log in / Sign up, or
+  theme toggle + Dashboard + `NotificationBell` + your avatar (→ /profile) + Log out) and `components/Footer.tsx`.
+- Navigation (Phase 3): `components/site/SiteNavLayout.tsx` wraps every section (public `(site)`, dashboard,
+  tournaments, teams, matches, live, schedule, profile, registrations, admin, analytics, ...). The menu per role is
+  `navFor(role, loggedIn)` in `utils/navigation.ts` (logged out = spectator menu; Moderation is added with Phase 4):
+  sidebar on large screens, bottom tab bar (4 items + More) on phones when logged in, Menu bar when logged out;
+  one highlighted item (`activeItem()`); breadcrumbs + Back on inner pages (`breadcrumbsFor()`, names via
+  `useBreadcrumbName()` in `utils/breadcrumb-names.ts`); `<main>` is keyed by path for a fade-in.
+  Who is viewing comes from `useViewer()` (`utils/use-viewer.ts`, one shared copy; call `refreshViewer()` after
+  changing your own name or picture). Hints: `components/Tooltip.tsx` (hover, focus, long press) and
+  `components/SectionHint.tsx`. First-login tour: `components/QuickTour.tsx` (steps in `utils/tour.ts`) on the
+  dashboard until `profiles.tour_dismissed_at` is set.
+- Theme: `utils/theme.ts` + `components/ThemeToggle.tsx` + the DARK THEME block in `app/globals.css`
+  (see docs/brand.md "Dark mode"). Profile pictures: `components/Avatar.tsx`, `components/AvatarUploader.tsx`
+  (square crop on a canvas, 512px WebP, no library), helpers in `utils/avatars.ts`; storage bucket `avatars`.
 - Everyone logged in: `/notifications`, `/privacy/consent`, `/announcements`, `/schedule`, `/live`, `/live/[id]`, `/feedback`.
 - Exports: GET `/api/exports/[type]?format=xlsx|csv&tournament=&game=` (`utils/exports.ts`, server only).
   Types: registrations, rosters, matches (admin/staff), feedback (admin, anonymous), users (admin). Reads with the
@@ -377,15 +464,18 @@ triggers with readable error messages.
   `export.<type>`) BEFORE sending; no log, no file. Excel via `write-excel-file` (text cells are always strings,
   so nothing becomes a formula); CSV via `utils/csv.ts`. Times in Philippine time (UTC+8, no DST).
   Buttons: `components/ExportButtons.tsx`.
-- API: POST `/api/feedback` (send + classify) and POST `/api/feedback/classify` (admin retry of pending ones).
-  `utils/gemini.ts` and `utils/feedback-analysis.ts` start with `import 'server-only'` (build fails if a client
-  file imports them).
-- Shared: `components/` (TeamDirectory, AskToJoin, TeamJoinRequests, AnnouncementCard, FacebookPlayer, StarRating, VerifiedBadge, PrivacyConsentCheckbox, TeamInvites, ReportChart (Chart.js), ReportFilters);
+- API: POST `/api/feedback` (send + analyse), POST `/api/comments` (post; analysis after the response),
+  POST `/api/feedback/classify` (admin) and `/api/moderation/retry` (admin/staff) retry the next waiting batch,
+  POST `/api/streams/resolve-url`. `utils/gemini.ts`, `utils/moderation.ts` and `utils/facebook-resolve.ts`
+  start with `import 'server-only'` (build fails if a client file imports them).
+- Shared: `components/` (TeamDirectory, AskToJoin, TeamJoinRequests, AnnouncementCard, FacebookPlayer, StarRating, VerifiedBadge, PrivacyConsentCheckbox, TeamInvites, ReportChart (Chart.js), ReportFilters, ConfirmDialog (native `<dialog>` confirm modal), RemoveTeamDialog, RemovedTeamPanel, GameLogo, MatchDraftSection);
+  `utils/permissions.ts` (`can()`, role → permissions map),
   `utils/types.ts` (row types), `utils/reports.ts` (report types, chart colors, CSV export),
   `utils/verification.ts` (status labels, school suggestions), `utils/activity.ts` (activity log sentences),
   `utils/notifications.ts` (notification types, icons, read/unread), `utils/checkin.ts` (check-in window),
   `utils/tournaments.ts` (dates, status, round labels), `utils/matches.ts` (team names, round counts),
-  `utils/streams.ts` (Facebook link check and embed URL), `utils/errors.ts` (`getErrorMessage`), `utils/game-logos.ts` (`getGameLogo()`, logos in `public/`).
+  `utils/streams.ts` (Facebook link check and embed URL), `utils/errors.ts` (`getErrorMessage`), `utils/game-logos.ts` (`getGameLogo()`, `gameInitials()`, logos in `public/` incl. `LOL LOGO.png`; render with `GameLogo`),
+  `utils/use-realtime-refresh.ts` (live reloads), `utils/lol-champions.ts` (LoL draft limits + suggestions).
 - `proxy.ts` lists every page that requires login; add new protected pages there.
 - States: `components/PageLoading.tsx` (`PageLoading` full page, `SectionLoading` inline), `components/PageError.tsx`
   (page couldn't load), `app/not-found.tsx`, `app/error.tsx`, `app/global-error.tsx` (Next 16: props `error, retry`).
@@ -393,6 +483,10 @@ triggers with readable error messages.
   messages. Show the error instead of "No X yet" when a list failed to load.
 
 ## Conventions that apply to every module
+- **Role checks go through `can(role, action)`** (`utils/permissions.ts`; `isOrganizer()` for "admin or staff").
+  A control the role can't use is not rendered at all. Every action must also be enforced in RLS / a function /
+  the API: the table of where each rule lives is `docs/permissions.md` (keep it in sync). Relationship checks
+  (captain of this team) stay local. Destructive actions use `components/ConfirmDialog.tsx` and are logged.
 - Pages that use `useParams()` or `useSearchParams()` need a `layout.tsx` with `<Suspense>` (Cache Components is on).
   See `app/tournaments/[id]/layout.tsx`.
 - Page files may only export the page; shared constants go in `utils/` or `components/`.
@@ -403,8 +497,13 @@ triggers with readable error messages.
 - Mobile (375px): no page may scroll sideways. Page padding `px-4` (`sm:p-6/8`), cards `p-4 sm:p-6`, rows with
   buttons use `flex-col sm:flex-row` or `flex-wrap`, long names get `break-words` (emails `break-all`), wide content
   (bracket, tables) scrolls inside its own `overflow-x-auto` box.
-- New UI uses Tailwind classes, not inline styles (only exception: `utils/og-card.tsx`, because `next/og` can't
-  use Tailwind).
+- Game logos: always `components/GameLogo.tsx` (logo, or the game's initials when there is none or the image fails);
+  never `getGameLogo()` + a conditional layout. A layout column that depends on a logo existing broke the LoL page.
+  Grid columns get `min-w-0` (or a min width) so their content can't be squeezed letter by letter.
+- Mobile text: `app/globals.css` has an unlayered phone-only rule that makes small body paragraphs 16px / 1.5 line
+  height / normal letter spacing and form fields 16px (no iOS zoom). Uppercase labels are left alone.
+- New UI uses Tailwind classes, not inline styles (exceptions: `utils/og-card.tsx`, because `next/og` can't
+  use Tailwind, and the crop window in `components/AvatarUploader.tsx`, whose positions are computed while dragging).
 - One look for the whole app, public and logged in (the redesign): white page, Montserrat (uppercase only for titles, buttons and labels), rounded white
   cards (`bg-white border border-stone-200/90 rounded-2xl shadow-xs`), a dark photo hero at the top of each page
   (`PageHeroBackground`), and the logo's gold and maroon as accents. Full rules: `docs/brand.md`. Use the theme
@@ -472,23 +571,29 @@ The final feature list for the documents is docs/new-features-summary.md.
   function sets a transaction flag with `set_config('app.<flag>', 'on', true)` and a BEFORE trigger refuses the
   change without it (`auth.uid() is null` = SQL Editor is always allowed). Flags in use: `giving_privacy_consent`,
   `reviewing_student`, `answering_invite`, `transferring_captain`, `declaring_forfeit`,
-  `marking_predictions`.
+  `marking_predictions`, `removing_team`, `removing_avatar`, `moderating` (comments), `moderating_user` (bans).
+- **Live updates** use `useRealtimeRefresh(key, sources, onChange)` (`utils/use-realtime-refresh.ts`): it
+  subscribes to the listed tables, coalesces bursts into one reload and unsubscribes on unmount. A new table must
+  be added to the `supabase_realtime` publication in a migration (current list: matches, match_checkins,
+  match_result_submissions, notifications, teams, team_members, team_invites, team_join_requests, match_drafts).
+  Supabase can't filter DELETE events, so filtered sources also get that table's deletes unfiltered.
 - **Redefining an existing function or trigger function**: always start from its LATEST version (create or
   replace keeps only what you write). Latest versions: `check_tournament_registration`, `check_registration_update`
-  → `202610171000_student_verification`; `check_team_member` → `202610171000`; `check_team_member_leave` → `202611011000_roster_captain_guard`; `get_team_roster` → `202610171000`;
-  `search_players` → `202610171300_team_invites`; `protect_team_fields` → `202610171300`; `protect_profile_role`,
+  → `202610171000_student_verification`; `check_team_member` → `202610171000`; `check_team_member_leave`, `notify_team_member_left`, `list_teams` → `202611081000_team_removal`; `get_team_roster`,
+  `search_players`, `get_team_join_requests` → `202611081400_avatars_and_tour` (they return avatar_url); `protect_team_fields` → `202610171300`; `protect_profile_role`,
   `handle_new_user` → `202610170900_privacy_consent`; `log_match` → `202610171400_match_checkin`;
-  `get_needs_attention` → `202610171500_match_results`; `notifications_type_check` → `202611011300_team_join_requests`;
+  `get_needs_attention` → `202610171500_match_results`; `notifications_type_check` → `202611081500_comments_moderation`;
   `report_engagement` → `202610181100_predictions` (adds predictions, predictors, prediction_accuracy,
   audience_accounts, prediction_participation and predictions_by_tournament; older saved reports lack them);
-  `protect_feedback` → `202610181000_feedback_protection`; `generate_bracket` → `202610181800_bracket_seed_pairing`.
+  `protect_feedback` → `202610181000_feedback_protection`; feedback insert policy → `202611081500_comments_moderation`; `generate_bracket` → `202610181800_bracket_seed_pairing`.
 - **Testing**: `npm test` runs Vitest on `utils/*.test.ts`. `npm run db:test` runs the pgTAP files in
   `supabase/tests/` against the local stack (`supabase start` first: needs Docker; `supabase/config.toml`
   exists for the local stack only, production migrations stay manual). `npm run db:types` regenerates
   `utils/database.types.ts` from the local schema; CI diffs it to catch drift.
 - **Scheduled jobs (pg_cron, enabled)**: `dalta-checkin-open-notifications` every 5 minutes. Manual cleanups run in
   the SQL Editor: `purge_old_activity_logs()` (1 year), `purge_old_notifications()` (read, 90 days).
-- **Privacy Notice**: current version `2026-11-01` (`utils/privacy.ts`; Brevo emails, Vercel hosting). A new kind of personal data, or a new
+- **Privacy Notice**: current version `2026-11-08.2` (`utils/privacy.ts`; profile pictures, then comments, AI moderation,
+  warnings and bans). Terms of Service: `2026-11-08` (Code of Conduct moderation rules). A new kind of personal data, or a new
   group who can see it, means updating `/privacy` and the version (everyone agrees again); small clarifications
   don't change the version.
 - **Logged-out data** comes only from published website rows and the `get_public_tournament()` /

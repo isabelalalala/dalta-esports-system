@@ -125,14 +125,14 @@ isOneToOne: false
                   ]
                 },"feedback": {
                   Row: {
-                    "analysis_attempted_at": string | null,"analysis_attempts": number,"analysis_error": string | null,"classified_at": string | null,"comment": string,"created_at": string,"id": string,"match_id": string | null,"rating": number,"sentiment": string | null,"sentiment_score": number | null,"target_removed": boolean,"topics": (string)[],"tournament_id": string | null,"user_id": string | null
+                    "analysis_attempted_at": string | null,"analysis_attempts": number,"analysis_error": string | null,"classified_at": string | null,"comment": string,"created_at": string,"id": string,"is_offensive": boolean,"is_profane": boolean,"match_id": string | null,"moderation_reason": string | null,"moderation_status": string,"offense_type": string,"rating": number,"reviewed_at": string | null,"reviewed_by": string | null,"sentiment": string | null,"sentiment_score": number | null,"target_removed": boolean,"topics": (string)[],"tournament_id": string | null,"user_id": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "analysis_attempted_at"?: string | null,"analysis_attempts"?: number,"analysis_error"?: string | null,"classified_at"?: string | null,"comment": string,"created_at"?: string,"id"?: string,"match_id"?: string | null,"rating": number,"sentiment"?: string | null,"sentiment_score"?: number | null,"target_removed"?: boolean,"topics"?: (string)[],"tournament_id"?: string | null,"user_id"?: string | null
+                    "analysis_attempted_at"?: string | null,"analysis_attempts"?: number,"analysis_error"?: string | null,"classified_at"?: string | null,"comment": string,"created_at"?: string,"id"?: string,"is_offensive"?: boolean,"is_profane"?: boolean,"match_id"?: string | null,"moderation_reason"?: string | null,"moderation_status"?: string,"offense_type"?: string,"rating": number,"reviewed_at"?: string | null,"reviewed_by"?: string | null,"sentiment"?: string | null,"sentiment_score"?: number | null,"target_removed"?: boolean,"topics"?: (string)[],"tournament_id"?: string | null,"user_id"?: string | null
                   }
                   Update: {
-                    "analysis_attempted_at"?: string | null,"analysis_attempts"?: number,"analysis_error"?: string | null,"classified_at"?: string | null,"comment"?: string,"created_at"?: string,"id"?: string,"match_id"?: string | null,"rating"?: number,"sentiment"?: string | null,"sentiment_score"?: number | null,"target_removed"?: boolean,"topics"?: (string)[],"tournament_id"?: string | null,"user_id"?: string | null
+                    "analysis_attempted_at"?: string | null,"analysis_attempts"?: number,"analysis_error"?: string | null,"classified_at"?: string | null,"comment"?: string,"created_at"?: string,"id"?: string,"is_offensive"?: boolean,"is_profane"?: boolean,"match_id"?: string | null,"moderation_reason"?: string | null,"moderation_status"?: string,"offense_type"?: string,"rating"?: number,"reviewed_at"?: string | null,"reviewed_by"?: string | null,"sentiment"?: string | null,"sentiment_score"?: number | null,"target_removed"?: boolean,"topics"?: (string)[],"tournament_id"?: string | null,"user_id"?: string | null
                   }
                   Relationships: [
                     {
@@ -252,6 +252,32 @@ isOneToOne: false
       columns: ["team_id"]
 isOneToOne: false
       referencedRelation: "teams"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"match_drafts": {
+                  Row: {
+                    "created_at": string,"game_number": number,"id": string,"match_id": string,"team_a_bans": (string)[],"team_a_picks": (string)[],"team_b_bans": (string)[],"team_b_picks": (string)[],"updated_at": string,"updated_by": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"game_number"?: number,"id"?: string,"match_id": string,"team_a_bans"?: (string)[],"team_a_picks"?: (string)[],"team_b_bans"?: (string)[],"team_b_picks"?: (string)[],"updated_at"?: string,"updated_by"?: string | null
+                  }
+                  Update: {
+                    "created_at"?: string,"game_number"?: number,"id"?: string,"match_id"?: string,"team_a_bans"?: (string)[],"team_a_picks"?: (string)[],"team_b_bans"?: (string)[],"team_b_picks"?: (string)[],"updated_at"?: string,"updated_by"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "match_drafts_match_id_fkey"
+      columns: ["match_id"]
+isOneToOne: false
+      referencedRelation: "matches"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "match_drafts_updated_by_fkey"
+      columns: ["updated_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
       referencedColumns: ["id"]
     }
                   ]
@@ -483,14 +509,14 @@ isOneToOne: false
                   ]
                 },"profiles": {
                   Row: {
-                    "course_year": string | null,"created_at": string,"email": string,"full_name": string | null,"id": string,"is_verified": boolean | null,"privacy_consent_at": string | null,"privacy_consent_version": string | null,"reviewed_at": string | null,"reviewed_by": string | null,"role": string,"school": string | null,"student_id": string | null,"submitted_at": string | null,"tos_accepted_at": string | null,"tos_version": string | null,"updated_at": string,"verification_note": string | null,"verification_status": string
+                    "avatar_url": string | null,"ban_flagged_at": string | null,"ban_reason": string | null,"ban_status": string,"banned_at": string | null,"banned_by": string | null,"course_year": string | null,"created_at": string,"email": string,"full_name": string | null,"id": string,"is_verified": boolean | null,"privacy_consent_at": string | null,"privacy_consent_version": string | null,"reviewed_at": string | null,"reviewed_by": string | null,"role": string,"school": string | null,"student_id": string | null,"submitted_at": string | null,"tos_accepted_at": string | null,"tos_version": string | null,"tour_dismissed_at": string | null,"updated_at": string,"verification_note": string | null,"verification_status": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "course_year"?: string | null,"created_at"?: string,"email": string,"full_name"?: string | null,"id": string,"is_verified"?: never,"privacy_consent_at"?: string | null,"privacy_consent_version"?: string | null,"reviewed_at"?: string | null,"reviewed_by"?: string | null,"role"?: string,"school"?: string | null,"student_id"?: string | null,"submitted_at"?: string | null,"tos_accepted_at"?: string | null,"tos_version"?: string | null,"updated_at"?: string,"verification_note"?: string | null,"verification_status"?: string
+                    "avatar_url"?: string | null,"ban_flagged_at"?: string | null,"ban_reason"?: string | null,"ban_status"?: string,"banned_at"?: string | null,"banned_by"?: string | null,"course_year"?: string | null,"created_at"?: string,"email": string,"full_name"?: string | null,"id": string,"is_verified"?: never,"privacy_consent_at"?: string | null,"privacy_consent_version"?: string | null,"reviewed_at"?: string | null,"reviewed_by"?: string | null,"role"?: string,"school"?: string | null,"student_id"?: string | null,"submitted_at"?: string | null,"tos_accepted_at"?: string | null,"tos_version"?: string | null,"tour_dismissed_at"?: string | null,"updated_at"?: string,"verification_note"?: string | null,"verification_status"?: string
                   }
                   Update: {
-                    "course_year"?: string | null,"created_at"?: string,"email"?: string,"full_name"?: string | null,"id"?: string,"is_verified"?: never,"privacy_consent_at"?: string | null,"privacy_consent_version"?: string | null,"reviewed_at"?: string | null,"reviewed_by"?: string | null,"role"?: string,"school"?: string | null,"student_id"?: string | null,"submitted_at"?: string | null,"tos_accepted_at"?: string | null,"tos_version"?: string | null,"updated_at"?: string,"verification_note"?: string | null,"verification_status"?: string
+                    "avatar_url"?: string | null,"ban_flagged_at"?: string | null,"ban_reason"?: string | null,"ban_status"?: string,"banned_at"?: string | null,"banned_by"?: string | null,"course_year"?: string | null,"created_at"?: string,"email"?: string,"full_name"?: string | null,"id"?: string,"is_verified"?: never,"privacy_consent_at"?: string | null,"privacy_consent_version"?: string | null,"reviewed_at"?: string | null,"reviewed_by"?: string | null,"role"?: string,"school"?: string | null,"student_id"?: string | null,"submitted_at"?: string | null,"tos_accepted_at"?: string | null,"tos_version"?: string | null,"tour_dismissed_at"?: string | null,"updated_at"?: string,"verification_note"?: string | null,"verification_status"?: string
                   }
                   Relationships: [
                     {
@@ -516,6 +542,58 @@ isOneToOne: false
                     {
       foreignKeyName: "site_content_updated_by_fkey"
       columns: ["updated_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"stream_comment_activity": {
+                  Row: {
+                    "changed_at": string,"stream_id": string,"version": number
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "changed_at"?: string,"stream_id": string,"version"?: number
+                  }
+                  Update: {
+                    "changed_at"?: string,"stream_id"?: string,"version"?: number
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "stream_comment_activity_stream_id_fkey"
+      columns: ["stream_id"]
+isOneToOne: true
+      referencedRelation: "streams"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"stream_comments": {
+                  Row: {
+                    "analysed_at": string | null,"analysis_attempted_at": string | null,"analysis_attempts": number,"analysis_error": string | null,"content": string,"created_at": string,"id": string,"is_offensive": boolean,"is_profane": boolean,"moderation_reason": string | null,"moderation_status": string,"offense_type": string,"reviewed_at": string | null,"reviewed_by": string | null,"sentiment_label": string | null,"sentiment_score": number | null,"stream_id": string,"topics": (string)[],"user_id": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "analysed_at"?: string | null,"analysis_attempted_at"?: string | null,"analysis_attempts"?: number,"analysis_error"?: string | null,"content": string,"created_at"?: string,"id"?: string,"is_offensive"?: boolean,"is_profane"?: boolean,"moderation_reason"?: string | null,"moderation_status"?: string,"offense_type"?: string,"reviewed_at"?: string | null,"reviewed_by"?: string | null,"sentiment_label"?: string | null,"sentiment_score"?: number | null,"stream_id": string,"topics"?: (string)[],"user_id"?: string | null
+                  }
+                  Update: {
+                    "analysed_at"?: string | null,"analysis_attempted_at"?: string | null,"analysis_attempts"?: number,"analysis_error"?: string | null,"content"?: string,"created_at"?: string,"id"?: string,"is_offensive"?: boolean,"is_profane"?: boolean,"moderation_reason"?: string | null,"moderation_status"?: string,"offense_type"?: string,"reviewed_at"?: string | null,"reviewed_by"?: string | null,"sentiment_label"?: string | null,"sentiment_score"?: number | null,"stream_id"?: string,"topics"?: (string)[],"user_id"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "stream_comments_reviewed_by_fkey"
+      columns: ["reviewed_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "stream_comments_stream_id_fkey"
+      columns: ["stream_id"]
+isOneToOne: false
+      referencedRelation: "streams"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "stream_comments_user_id_fkey"
+      columns: ["user_id"]
 isOneToOne: false
       referencedRelation: "profiles"
       referencedColumns: ["id"]
@@ -575,14 +653,14 @@ isOneToOne: false
                   ]
                 },"streams": {
                   Row: {
-                    "created_at": string,"created_by": string | null,"facebook_url": string,"id": string,"match_id": string | null,"status": string,"title": string,"tournament_id": string,"updated_at": string
+                    "created_at": string,"created_by": string | null,"facebook_url": string,"facebook_video_id": string | null,"id": string,"match_id": string | null,"status": string,"title": string,"tournament_id": string,"updated_at": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "created_at"?: string,"created_by"?: string | null,"facebook_url": string,"id"?: string,"match_id"?: string | null,"status"?: string,"title": string,"tournament_id": string,"updated_at"?: string
+                    "created_at"?: string,"created_by"?: string | null,"facebook_url": string,"facebook_video_id"?: string | null,"id"?: string,"match_id"?: string | null,"status"?: string,"title": string,"tournament_id": string,"updated_at"?: string
                   }
                   Update: {
-                    "created_at"?: string,"created_by"?: string | null,"facebook_url"?: string,"id"?: string,"match_id"?: string | null,"status"?: string,"title"?: string,"tournament_id"?: string,"updated_at"?: string
+                    "created_at"?: string,"created_by"?: string | null,"facebook_url"?: string,"facebook_video_id"?: string | null,"id"?: string,"match_id"?: string | null,"status"?: string,"title"?: string,"tournament_id"?: string,"updated_at"?: string
                   }
                   Relationships: [
                     {
@@ -689,16 +767,48 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
-                },"teams": {
+                },"team_removals": {
                   Row: {
-                    "captain_id": string,"created_at": string,"description": string | null,"game_id": string,"id": string,"name": string,"recruiting": boolean
+                    "id": string,"reason": string,"removed_at": string,"removed_by": string | null,"restored_at": string | null,"restored_by": string | null,"roster": Json,"team_id": string,"tournaments": Json,"walkovers": number
                   }
                   ComputedFields: never
                   Insert: {
-                    "captain_id": string,"created_at"?: string,"description"?: string | null,"game_id": string,"id"?: string,"name": string,"recruiting"?: boolean
+                    "id"?: string,"reason": string,"removed_at"?: string,"removed_by"?: string | null,"restored_at"?: string | null,"restored_by"?: string | null,"roster"?: Json,"team_id": string,"tournaments"?: Json,"walkovers"?: number
                   }
                   Update: {
-                    "captain_id"?: string,"created_at"?: string,"description"?: string | null,"game_id"?: string,"id"?: string,"name"?: string,"recruiting"?: boolean
+                    "id"?: string,"reason"?: string,"removed_at"?: string,"removed_by"?: string | null,"restored_at"?: string | null,"restored_by"?: string | null,"roster"?: Json,"team_id"?: string,"tournaments"?: Json,"walkovers"?: number
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "team_removals_removed_by_fkey"
+      columns: ["removed_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "team_removals_restored_by_fkey"
+      columns: ["restored_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "team_removals_team_id_fkey"
+      columns: ["team_id"]
+isOneToOne: false
+      referencedRelation: "teams"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"teams": {
+                  Row: {
+                    "captain_id": string,"created_at": string,"description": string | null,"game_id": string,"id": string,"is_removed": boolean,"name": string,"recruiting": boolean,"removed_at": string | null,"removed_by": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "captain_id": string,"created_at"?: string,"description"?: string | null,"game_id": string,"id"?: string,"is_removed"?: boolean,"name": string,"recruiting"?: boolean,"removed_at"?: string | null,"removed_by"?: string | null
+                  }
+                  Update: {
+                    "captain_id"?: string,"created_at"?: string,"description"?: string | null,"game_id"?: string,"id"?: string,"is_removed"?: boolean,"name"?: string,"recruiting"?: boolean,"removed_at"?: string | null,"removed_by"?: string | null
                   }
                   Relationships: [
                     {
@@ -712,6 +822,12 @@ isOneToOne: false
       columns: ["game_id"]
 isOneToOne: false
       referencedRelation: "games"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "teams_removed_by_fkey"
+      columns: ["removed_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
       referencedColumns: ["id"]
     }
                   ]
@@ -773,6 +889,38 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"user_warnings": {
+                  Row: {
+                    "created_at": string,"id": string,"issued_by": string | null,"reason": string,"removal_reason": string | null,"removed_at": string | null,"removed_by": string | null,"source": string,"source_id": string | null,"type": string,"user_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"id"?: string,"issued_by"?: string | null,"reason"?: string,"removal_reason"?: string | null,"removed_at"?: string | null,"removed_by"?: string | null,"source": string,"source_id"?: string | null,"type": string,"user_id": string
+                  }
+                  Update: {
+                    "created_at"?: string,"id"?: string,"issued_by"?: string | null,"reason"?: string,"removal_reason"?: string | null,"removed_at"?: string | null,"removed_by"?: string | null,"source"?: string,"source_id"?: string | null,"type"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "user_warnings_issued_by_fkey"
+      columns: ["issued_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "user_warnings_removed_by_fkey"
+      columns: ["removed_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "user_warnings_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
                 }
           }
           Views: {
@@ -782,6 +930,9 @@ isOneToOne: false
             "accept_tos":
 { Args: { "p_version": string }; Returns: undefined
                            },
+"active_warning_count":
+{ Args: { "p_user_id": string }; Returns: number
+                           },
 "activity_log_actors":
 { Args: Record<PropertyKey, never>; Returns: {
               "actor_id": string,"actor_name": string
@@ -790,11 +941,29 @@ isOneToOne: false
 "admin_delete_user":
 { Args: { "target": string }; Returns: undefined
                            },
+"admin_ids":
+{ Args: Record<PropertyKey, never>; Returns: (string)[]
+                           },
+"admin_remove_avatar":
+{ Args: { "p_reason": string,"p_user_id": string }; Returns: undefined
+                           },
+"apply_removed_team_walkover":
+{ Args: { "p_match_id": string }; Returns: boolean
+                           },
+"ban_user":
+{ Args: { "p_reason": string,"p_user_id": string }; Returns: undefined
+                           },
+"can_post":
+{ Args: Record<PropertyKey, never>; Returns: boolean
+                           },
 "can_view_match_results":
 { Args: { "p_match_id": string }; Returns: boolean
                            },
 "changed_columns":
 { Args: { "p_new": Json,"p_old": Json }; Returns: (string)[]
+                           },
+"check_ban_threshold":
+{ Args: { "p_user_id": string }; Returns: undefined
                            },
 "check_in_match":
 { Args: { "p_match_id": string }; Returns: undefined
@@ -807,17 +976,31 @@ isOneToOne: false
 "claim_gemini_call":
 { Args: { "p_items"?: number,"p_key": string }; Returns: string
                            },
+"claim_moderation_batch":
+{ Args: { "p_first_id"?: string,"p_first_kind"?: string,"p_key": string,"p_limit"?: number }; Returns: {
+              "content": string,"id": string,"kind": string,"rating": number
+            }[]
+                           },
+"clean_champion_list":
+{ Args: { "p_names": (string)[] }; Returns: (string)[]
+                           },
 "cleanup_stream_presence":
 { Args: Record<PropertyKey, never>; Returns: undefined
                            },
 "current_user_role":
 { Args: Record<PropertyKey, never>; Returns: string
                            },
+"custom_access_token_hook":
+{ Args: { "event": Json }; Returns: Json
+                           },
 "declare_forfeit":
 { Args: { "p_match_id": string,"p_winner_team_id": string }; Returns: undefined
                            },
 "delete_own_account":
 { Args: Record<PropertyKey, never>; Returns: undefined
+                           },
+"dismiss_ban":
+{ Args: { "p_note": string,"p_user_id": string }; Returns: undefined
                            },
 "feedback_server_key_ok":
 { Args: { "p_key": string }; Returns: boolean
@@ -861,6 +1044,11 @@ isOneToOne: false
 "get_public_tournament":
 { Args: { "p_tournament_id": string }; Returns: Json
                            },
+"get_stream_comments":
+{ Args: { "p_before"?: string,"p_limit"?: number,"p_stream_id": string }; Returns: {
+              "author_avatar": string,"author_name": string,"content": string,"created_at": string,"id": string,"is_mine": boolean,"is_profane": boolean,"moderation_status": string
+            }[]
+                           },
 "get_team_invites":
 { Args: { "p_team_id": string }; Returns: {
               "created_at": string,"full_name": string,"ign": string,"invite_id": string,"user_id": string
@@ -868,12 +1056,12 @@ isOneToOne: false
                            },
 "get_team_join_requests":
 { Args: { "p_team_id": string }; Returns: {
-              "created_at": string,"full_name": string,"ign": string,"in_game_role": string,"is_verified": boolean,"message": string,"rank": string,"request_id": string,"user_id": string
+              "avatar_url": string,"created_at": string,"full_name": string,"ign": string,"in_game_role": string,"is_verified": boolean,"message": string,"rank": string,"request_id": string,"user_id": string
             }[]
                            },
 "get_team_roster":
 { Args: { "p_team_id": string }; Returns: {
-              "full_name": string,"ign": string,"in_game_role": string,"is_verified": boolean,"joined_at": string,"role": string,"user_id": string
+              "avatar_url": string,"full_name": string,"ign": string,"in_game_role": string,"is_verified": boolean,"joined_at": string,"role": string,"user_id": string
             }[]
                            },
 "give_privacy_consent":
@@ -896,14 +1084,26 @@ isOneToOne: false
 "log_name":
 { Args: { "p_user_id": string }; Returns: string
                            },
+"log_system_activity":
+{ Args: { "p_action": string,"p_details": Json,"p_entity_id": string,"p_entity_type": string }; Returns: undefined
+                           },
 "mark_feedback_pending":
 { Args: { "p_feedback_ids": (string)[],"p_key": string,"p_reason": string }; Returns: undefined
+                           },
+"mark_moderation_pending":
+{ Args: { "p_count_attempt"?: boolean,"p_ids": (string)[],"p_key": string,"p_kind": string,"p_reason": string }; Returns: undefined
                            },
 "match_proof_folder_match":
 { Args: { "p_folder": string }; Returns: string
                            },
 "match_result_label":
 { Args: { "p_match_id": string,"p_score_a": number,"p_score_b": number }; Returns: string
+                           },
+"moderate_comment":
+{ Args: { "p_action": string,"p_comment_id": string,"p_note": string,"p_warn"?: boolean }; Returns: undefined
+                           },
+"moderate_feedback":
+{ Args: { "p_action": string,"p_feedback_id": string,"p_note": string }; Returns: undefined
                            },
 "notify_users":
 { Args: { "p_link": string,"p_message": string,"p_title": string,"p_type": string,"p_user_ids": (string)[] }; Returns: undefined
@@ -914,8 +1114,17 @@ isOneToOne: false
 "purge_old_notifications":
 { Args: Record<PropertyKey, never>; Returns: number
                            },
+"remove_team":
+{ Args: { "p_reason": string,"p_team_id": string }; Returns: Json
+                           },
+"remove_warning":
+{ Args: { "p_reason": string,"p_warning_id": string }; Returns: undefined
+                           },
 "report_activity":
 { Args: { "p_from"?: string,"p_game_id"?: string,"p_to"?: string,"p_tournament_id"?: string }; Returns: Json
+                           },
+"report_comment_sentiment":
+{ Args: { "p_from"?: string,"p_to"?: string,"p_tournament_id"?: string }; Returns: Json
                            },
 "report_engagement":
 { Args: { "p_from"?: string,"p_game_id"?: string,"p_to"?: string,"p_tournament_id"?: string }; Returns: Json
@@ -932,6 +1141,9 @@ isOneToOne: false
 "respond_to_team_invite":
 { Args: { "p_accept": boolean,"p_invite_id": string }; Returns: undefined
                            },
+"restore_team":
+{ Args: { "p_team_id": string }; Returns: Json
+                           },
 "review_match_result":
 { Args: { "p_action": string,"p_note"?: string,"p_score_a"?: number,"p_score_b"?: number,"p_submission_id": string }; Returns: undefined
                            },
@@ -941,9 +1153,12 @@ isOneToOne: false
 "save_feedback_sentiment":
 { Args: { "p_feedback_id": string,"p_key": string,"p_score": number,"p_sentiment": string,"p_topics": (string)[] }; Returns: boolean
                            },
+"save_moderation_result":
+{ Args: { "p_id": string,"p_is_offensive": boolean,"p_is_profane": boolean,"p_key": string,"p_kind": string,"p_offense_type": string,"p_reason": string,"p_score": number,"p_sentiment": string,"p_topics": (string)[] }; Returns: boolean
+                           },
 "search_players":
 { Args: { "p_game_id": string,"p_search": string }; Returns: {
-              "full_name": string,"ign": string,"in_game_role": string,"invited": boolean,"is_verified": boolean,"rank": string,"user_id": string
+              "avatar_url": string,"full_name": string,"ign": string,"in_game_role": string,"invited": boolean,"is_verified": boolean,"rank": string,"user_id": string
             }[]
                            },
 "send_checkin_open_notifications":
@@ -951,6 +1166,9 @@ isOneToOne: false
                            },
 "set_team_recruiting":
 { Args: { "p_recruiting": boolean,"p_team_id": string }; Returns: undefined
+                           },
+"short_name":
+{ Args: { "p_full_name": string }; Returns: string
                            },
 "staff_ids":
 { Args: Record<PropertyKey, never>; Returns: (string)[]
@@ -963,6 +1181,9 @@ isOneToOne: false
                            },
 "transfer_team_captaincy":
 { Args: { "p_new_captain": string,"p_team_id": string }; Returns: undefined
+                           },
+"unban_user":
+{ Args: { "p_note": string,"p_user_id": string }; Returns: undefined
                            },
 "unverified_team_members":
 { Args: { "p_team_id": string }; Returns: string

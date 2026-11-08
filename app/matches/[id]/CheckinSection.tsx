@@ -1,5 +1,6 @@
 'use client';
 
+import SectionHint from '@/components/SectionHint';
 import { useState } from 'react';
 import { createClient } from '@/utils/supabase/client';
 import { getErrorMessage } from '@/utils/errors';
@@ -81,7 +82,7 @@ export default function CheckinSection({ match, windowMinutes, teamA, teamB, che
 
   return (
     <section className="bg-white border border-stone-200/90 rounded-2xl shadow-xs p-6 space-y-4">
-      <h2 className="text-xl font-bold">Check-in</h2>
+      <h2 className="text-xl font-bold flex items-center gap-1.5">Check-in <SectionHint text="Check-in — captains confirm their team is ready before the match. It opens shortly before the match time and closes when the match starts." /></h2>
 
       {state === 'off' && <p className="text-stone-500 text-sm">This tournament doesn&apos;t use check-in.</p>}
       {state === 'no_time' && <p className="text-stone-500 text-sm">Check-in opens once the match has a time.</p>}

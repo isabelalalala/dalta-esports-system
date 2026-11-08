@@ -1,11 +1,12 @@
 // In-app notifications (see migration 202610171200_notifications; the latest type list is in
-// 202611011300_team_join_requests): row type, icons and the
+// 202611081500_comments_moderation): row type, icons and the
 // read/unread actions shared by the header bell and /notifications.
 import type { LucideIcon } from 'lucide-react';
 import {
   AlarmClock, Ban, CalendarClock, CalendarDays, CircleCheck, CircleMinus, CircleX, ClipboardList, Crown,
   DoorOpen, FileText, Flag, GraduationCap, Handshake, IdCard, Mail, Megaphone, Radio, Scale, Target,
-  ThumbsUp, Trash, Trophy, TriangleAlert, Undo2, UserCheck, UserCog, UserMinus, UserPlus, UserX, Users,
+  ShieldAlert, ShieldCheck, ThumbsUp, Trash, Trophy, TriangleAlert, Undo2, UserCheck, UserCog, UserMinus, UserPlus,
+  UserX, Users,
 } from 'lucide-react';
 import type { createClient } from '@/utils/supabase/client';
 
@@ -24,7 +25,11 @@ export type NotificationType =
   | 'join_request' | 'join_request_accepted' | 'join_request_declined'
   | 'student_verified' | 'student_rejected' | 'student_revoked'
   | 'verification_submitted' | 'role_changed'
-  | 'prediction_result';
+  | 'prediction_result'
+  | 'team_removed' | 'team_restored'
+  | 'avatar_removed'
+  | 'warning_issued' | 'warning_removed' | 'content_restored'
+  | 'account_flagged' | 'ban_review' | 'ban_dismissed' | 'account_unbanned';
 
 export interface AppNotification {
   id: string;
@@ -72,6 +77,16 @@ export const notificationIcons: Record<NotificationType, LucideIcon> = {
   verification_submitted: IdCard,
   role_changed: UserCog,
   prediction_result: Target,
+  team_removed: Ban,
+  team_restored: Undo2,
+  avatar_removed: UserX,
+  warning_issued: TriangleAlert,
+  warning_removed: CircleCheck,
+  content_restored: Undo2,
+  account_flagged: ShieldAlert,
+  ban_review: Scale,
+  ban_dismissed: ShieldCheck,
+  account_unbanned: ShieldCheck,
 };
 
 export async function fetchUnreadCount(supabase: SupabaseClient) {

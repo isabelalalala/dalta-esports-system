@@ -6,6 +6,7 @@ import { EmptyNote } from '@/components/site/SiteParts';
 import PageHeroBackground from '@/components/site/PageHeroBackground';
 
 import { getGameLogo } from '@/utils/game-logos';
+import GameLogo from '@/components/GameLogo';
 
 // Game Divisions Page
 export const instant = false;
@@ -70,15 +71,13 @@ export default async function DivisionsPage() {
 
                   {logo ? (
                     <div className="relative z-0 w-full h-full p-8 flex items-center justify-center">
-                      <div className="relative w-full h-full max-w-[240px] max-h-[130px]">
-                        <Image
-                          src={logo}
-                          alt={d.games?.name ?? d.game_id}
-                          fill
-                          sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 400px"
-                          className="object-contain drop-shadow-[0_6px_24px_rgba(0,0,0,0.7)] group-hover:scale-108 transition-transform duration-300"
-                        />
-                      </div>
+                      <GameLogo
+                        name={d.games?.name}
+                        gameId={d.game_id}
+                        className="w-full h-full max-w-[240px] max-h-[130px]"
+                        imageClassName="drop-shadow-[0_6px_24px_rgba(0,0,0,0.7)] group-hover:scale-108 transition-transform duration-300"
+                        sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 400px"
+                      />
                     </div>
                   ) : customImage ? (
                     <Image

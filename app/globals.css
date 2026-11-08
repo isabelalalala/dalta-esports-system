@@ -65,8 +65,8 @@
 }
 
 body {
-  background: #ffffff;
-  color: #120d0b;
+  background: var(--color-sitebg);
+  color: var(--foreground);
   font-family: var(--font-montserrat-next), "Montserrat", sans-serif;
   letter-spacing: 0.01em;
   /* Long words without spaces (emails, links, IGNs) wrap instead of making phones scroll sideways */
@@ -92,7 +92,7 @@ body {
   h1, h2, h3, h4, h5, h6 {
     letter-spacing: 0.06em;
     font-weight: 800;
-    color: #120d0b;
+    color: var(--foreground);
   }
 }
 
@@ -104,11 +104,11 @@ body {
 
 /* High contrast inputs and text areas */
 input, select, textarea {
-  color: #120d0b;
+  color: var(--foreground);
 }
 
 input::placeholder, textarea::placeholder {
-  color: #78716c;
+  color: var(--color-stone-500);
 }
 
 /* Accessible focus outline */
@@ -136,7 +136,7 @@ input::placeholder, textarea::placeholder {
   height: 8px;
 }
 ::-webkit-scrollbar-track {
-  background: #ffffff;
+  background: var(--color-sitebg);
 }
 ::-webkit-scrollbar-thumb {
   background: #5c241c;
@@ -302,6 +302,253 @@ input::placeholder, textarea::placeholder {
   );
   animation: skeletonShimmer 1.8s infinite;
   content: '';
+}
+
+/* Mobile readability (phones, below Tailwind's `sm`).
+   Body text is at least 16px with a 1.5 line height and normal letter spacing. These rules are
+   deliberately NOT in a cascade layer: unlayered CSS wins over Tailwind's utilities layer, so the
+   many `text-xs` / `tracking-wider` paragraphs get readable without editing each one.
+   - Only body-text elements (p, li, dd, blockquote) with a small size class are changed;
+     `~=` matches whole class names, so `sm:text-sm` doesn't count.
+   - Uppercase labels and badges keep their small, spaced look (they aren't running text).
+   - Form fields are 16px: below that, iPhones zoom the page in on every tap. */
+@media (max-width: 639px) {
+  :is(p, li, dd, blockquote):is(
+    [class~="text-xs"], [class~="text-sm"],
+    [class~="text-[10px]"], [class~="text-[11px]"], [class~="text-[12px]"], [class~="text-[13px]"]
+  ):not(.uppercase) {
+    font-size: 1rem;
+    line-height: 1.5;
+    letter-spacing: 0.01em;
+  }
+
+  :is(p, li, dd, blockquote):is(
+    [class~="tracking-wide"], [class~="tracking-wider"], [class~="tracking-widest"]
+  ):not(.uppercase) {
+    letter-spacing: 0.01em;
+  }
+
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+  select,
+  textarea {
+    font-size: 16px;
+  }
+}
+
+/* ---------------------------------------------------------------------------------------------
+   DARK THEME (docs/brand.md "Dark mode")
+   <html data-theme="dark|light"> is set before the page paints by the script in app/layout.tsx
+   (saved choice, else the system setting) and changed by components/ThemeToggle.tsx.
+
+   How it works without touching the ~1,400 color classes in the pages: Tailwind v4 compiles every
+   color class to a CSS variable (bg-stone-50 -> var(--color-stone-50)), so dark mode redefines the
+   variables:
+   1. The stone scale is inverted (light surfaces become dark, dark text becomes light), maroon
+      becomes a light rose that stays readable on dark, and the meaning colors' light tints
+      (red-50 boxes) become dark tints with light text.
+   2. White surfaces (bg-white cards) switch to --surface. text-white is NOT changed, so white text
+      on red, maroon or photo backgrounds stays white.
+   3. Solid colored surfaces keep their light-mode look: photo heroes, gold buttons, logo stages,
+      video, and red/green/maroon buttons. Inside them every variable is set back to its light
+      value, so e.g. "bg-gold text-stone-950" stays dark text on gold.
+   Screen only: printed pages (reports) always use the light theme.
+   --------------------------------------------------------------------------------------------- */
+:root {
+  --surface: #ffffff;
+}
+
+@media screen {
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --foreground: oklch(96% 0.004 60);
+    --surface: oklch(19% 0.006 50);
+    --color-sitebg: oklch(15.5% 0.005 50);
+    --color-sitecard: oklch(19% 0.006 50);
+
+    --color-stone-50: oklch(22% 0.006 50);
+    --color-stone-100: oklch(25% 0.006 50);
+    --color-stone-200: oklch(32% 0.007 50);
+    --color-stone-300: oklch(40% 0.008 55);
+    --color-stone-400: oklch(58% 0.01 56);
+    --color-stone-500: oklch(71% 0.01 58);
+    --color-stone-600: oklch(78% 0.01 70);
+    --color-stone-700: oklch(85% 0.008 68);
+    --color-stone-800: oklch(90% 0.005 40);
+    --color-stone-900: oklch(94% 0.004 56);
+    --color-stone-950: oklch(97% 0.002 50);
+
+    /* Maroon accents (and the amber shades remapped to maroon in @theme) as light rose */
+    --color-maroon: #e9a595;
+    --color-brown: #e9a595;
+    --color-maroondark: #f3c3b7;
+    --color-maroonlight: #dc8c7a;
+    --color-amber-600: #e9a595;
+    --color-amber-700: #e9a595;
+    --color-amber-800: #f3c3b7;
+    --color-amber-900: #f8dcd4;
+    --color-amber-950: #fbe9e4;
+    --color-golddeep: #ffcc37;
+
+    /* Meaning colors: light tints -> dark tints, dark text shades -> light */
+    --color-red-50: oklch(26% 0.06 20);
+    --color-red-100: oklch(30% 0.08 20);
+    --color-red-200: oklch(38% 0.1 20);
+    --color-red-600: oklch(72% 0.17 25);
+    --color-red-700: oklch(79% 0.13 22);
+    --color-red-800: oklch(85% 0.1 22);
+    --color-red-900: oklch(89% 0.07 22);
+    --color-rose-50: oklch(26% 0.06 12);
+    --color-rose-100: oklch(30% 0.08 12);
+    --color-rose-200: oklch(38% 0.1 12);
+    --color-rose-600: oklch(73% 0.17 16);
+    --color-rose-700: oklch(79% 0.13 16);
+    --color-rose-800: oklch(85% 0.1 14);
+    --color-emerald-50: oklch(26% 0.04 165);
+    --color-emerald-100: oklch(30% 0.05 165);
+    --color-emerald-200: oklch(38% 0.07 165);
+    --color-emerald-600: oklch(74% 0.14 163);
+    --color-emerald-700: oklch(80% 0.12 165);
+    --color-emerald-800: oklch(86% 0.1 166);
+    --color-green-50: oklch(26% 0.04 155);
+    --color-green-700: oklch(80% 0.13 150);
+    --color-green-800: oklch(86% 0.1 151);
+    --color-yellow-50: oklch(27% 0.05 90);
+    --color-yellow-100: oklch(31% 0.06 90);
+    --color-yellow-200: oklch(38% 0.08 90);
+    --color-yellow-700: oklch(85% 0.13 95);
+    --color-yellow-800: oklch(88% 0.11 95);
+    --color-amber-50: oklch(27% 0.04 80);
+    --color-amber-100: oklch(31% 0.05 80);
+    --color-amber-200: oklch(38% 0.07 80);
+    --color-sky-50: oklch(26% 0.04 236);
+    --color-sky-100: oklch(30% 0.05 236);
+    --color-sky-700: oklch(80% 0.11 236);
+    --color-sky-800: oklch(86% 0.08 236);
+    --color-blue-50: oklch(26% 0.04 255);
+    --color-blue-700: oklch(80% 0.12 258);
+    --color-blue-800: oklch(86% 0.09 258);
+    --color-purple-50: oklch(26% 0.05 308);
+    --color-purple-700: oklch(80% 0.13 305);
+    --color-gray-400: oklch(60% 0.02 261);
+    --color-gray-500: oklch(71% 0.02 264);
+    --color-gray-600: oklch(78% 0.02 257);
+  }
+
+  /* White surfaces -> dark surface (text-white keeps using the real white) */
+  :root[data-theme="dark"] :is(
+    [class~="bg-white"], [class~="bg-white/95"], [class~="bg-white/90"], [class~="bg-white/80"], [class~="bg-white/70"]
+  ),
+  :root[data-theme="dark"] [class~="hover:bg-white"]:hover {
+    background-color: var(--surface);
+  }
+
+  /* Solid colored surfaces keep their light-mode colors (see 3. above) */
+  :root[data-theme="dark"] :is(
+    :has(> [data-hero-bg]),
+    [class~="bg-gold"], [class~="bg-golddark"], [class~="bg-maroon"], [class~="bg-brown"], [class~="bg-logoblack"],
+    [class~="bg-ink"], [class~="bg-black"], [class~="bg-logo-stage"], [class~="bg-logo-stage-strong"],
+    [class~="bg-stone-700"], [class~="bg-stone-800"], [class~="bg-stone-900"], [class~="bg-stone-950"],
+    [class*="from-stone-9"], [class*="via-stone-9"],
+    [class~="bg-red-500"], [class~="bg-red-600"], [class~="bg-red-700"], [class~="bg-red-800"],
+    [class~="bg-rose-500"], [class~="bg-rose-600"], [class~="bg-rose-700"],
+    [class~="bg-emerald-500"], [class~="bg-emerald-600"], [class~="bg-emerald-700"],
+    [class~="bg-green-500"], [class~="bg-green-600"], [class~="bg-sky-500"], [class~="bg-yellow-500"],
+    [class~="bg-amber-400"], [class~="bg-amber-500"], [class~="bg-amber-600"],
+    [class~="bg-blue-600"], [class~="bg-purple-600"]
+  ) {
+    color-scheme: light;
+    --foreground: #120d0b;
+    --surface: #ffffff;
+    --color-sitebg: #ffffff;
+    --color-sitecard: #ffffff;
+    --color-stone-50: oklch(98.5% 0.001 106.423);
+    --color-stone-100: oklch(97% 0.001 106.424);
+    --color-stone-200: oklch(92.3% 0.003 48.717);
+    --color-stone-300: oklch(86.9% 0.005 56.366);
+    --color-stone-400: oklch(70.9% 0.01 56.259);
+    --color-stone-500: oklch(55.3% 0.013 58.071);
+    --color-stone-600: oklch(44.4% 0.011 73.639);
+    --color-stone-700: oklch(37.4% 0.01 67.558);
+    --color-stone-800: oklch(26.8% 0.007 34.298);
+    --color-stone-900: oklch(21.6% 0.006 56.043);
+    --color-stone-950: oklch(14.7% 0.004 49.25);
+    --color-maroon: #5B271E;
+    --color-brown: #5B271E;
+    --color-maroondark: #431B14;
+    --color-maroonlight: #7A3529;
+    --color-amber-600: #5B271E;
+    --color-amber-700: #5B271E;
+    --color-amber-800: #4B2019;
+    --color-amber-900: #3B1913;
+    --color-amber-950: #2B120E;
+    --color-golddeep: #8F6900;
+    --color-red-50: oklch(97.1% 0.013 17.38);
+    --color-red-100: oklch(93.6% 0.032 17.717);
+    --color-red-200: oklch(88.5% 0.062 18.334);
+    --color-red-600: oklch(57.7% 0.245 27.325);
+    --color-red-700: oklch(50.5% 0.213 27.518);
+    --color-red-800: oklch(44.4% 0.177 26.899);
+    --color-red-900: oklch(39.6% 0.141 25.723);
+    --color-rose-50: oklch(96.9% 0.015 12.422);
+    --color-rose-100: oklch(94.1% 0.03 12.58);
+    --color-rose-200: oklch(89.2% 0.058 10.001);
+    --color-rose-600: oklch(58.6% 0.253 17.585);
+    --color-rose-700: oklch(51.4% 0.222 16.935);
+    --color-rose-800: oklch(45.5% 0.188 13.697);
+    --color-emerald-50: oklch(97.9% 0.021 166.113);
+    --color-emerald-100: oklch(95% 0.052 163.051);
+    --color-emerald-200: oklch(90.5% 0.093 164.15);
+    --color-emerald-600: oklch(59.6% 0.145 163.225);
+    --color-emerald-700: oklch(50.8% 0.118 165.612);
+    --color-emerald-800: oklch(43.2% 0.095 166.913);
+    --color-green-50: oklch(98.2% 0.018 155.826);
+    --color-green-700: oklch(52.7% 0.154 150.069);
+    --color-green-800: oklch(44.8% 0.119 151.328);
+    --color-yellow-50: oklch(98.7% 0.026 102.212);
+    --color-yellow-100: oklch(97.3% 0.071 103.193);
+    --color-yellow-200: oklch(94.5% 0.129 101.54);
+    --color-yellow-700: oklch(55.4% 0.135 66.442);
+    --color-yellow-800: oklch(47.6% 0.114 61.907);
+    --color-amber-50: oklch(98.7% 0.022 95.277);
+    --color-amber-100: oklch(96.2% 0.059 95.617);
+    --color-amber-200: oklch(92.4% 0.12 95.746);
+    --color-sky-50: oklch(97.7% 0.013 236.62);
+    --color-sky-100: oklch(95.1% 0.026 236.824);
+    --color-sky-700: oklch(50% 0.134 242.749);
+    --color-sky-800: oklch(44.3% 0.11 240.79);
+    --color-blue-50: oklch(97% 0.014 254.604);
+    --color-blue-700: oklch(48.8% 0.243 264.376);
+    --color-blue-800: oklch(42.4% 0.199 265.638);
+    --color-purple-50: oklch(97.7% 0.014 308.299);
+    --color-purple-700: oklch(49.6% 0.265 301.924);
+    --color-gray-400: oklch(70.7% 0.022 261.325);
+    --color-gray-500: oklch(55.1% 0.027 264.364);
+    --color-gray-600: oklch(44.6% 0.03 256.802);
+  }
+}
+
+/* Smooth color change when switching themes (not on page load: the class is added after) */
+.theme-transition, .theme-transition * {
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease !important;
+}
+
+/* Page content fades in on navigation (SiteNavLayout keys <main> by path) */
+@keyframes pageEnter {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+.animate-page-enter {
+  animation: pageEnter 0.28s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* Pulsing LIVE dots, spinners that are decoration, page fades and theme fades: off */
+  .animate-pulse, .animate-ping, .animate-page-enter {
+    animation: none !important;
+  }
+  .theme-transition, .theme-transition * {
+    transition: none !important;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

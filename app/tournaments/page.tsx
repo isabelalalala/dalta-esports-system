@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
 import Link from 'next/link';
@@ -13,7 +12,8 @@ import PageLoading from '@/components/PageLoading';
 import { usePageTitle } from '@/utils/page-title';
 import PageHeroBackground from '@/components/site/PageHeroBackground';
 
-import { getGameLogo } from '@/utils/game-logos';
+import GameLogo from '@/components/GameLogo';
+import { can } from '@/utils/permissions';
 
 export default function TournamentsPage() {
   usePageTitle('Tournaments');
@@ -86,7 +86,7 @@ export default function TournamentsPage() {
             ← Back to Dashboard
           </Link>
 
-          {(profile?.role === 'admin' || profile?.role === 'staff') && (
+          {can(profile?.role, 'tournament.create') && (
             <Link
               href="/tournaments/create"
               className="bg-gold text-stone-950 px-5 py-2.5 rounded-xl font-black border border-amber-400 shadow-xs hover:bg-golddark hover:-translate-y-0.5 transition-all uppercase tracking-widest text-xs"
@@ -126,7 +126,7 @@ export default function TournamentsPage() {
           <p className="font-black text-stone-900 text-base">
             No tournaments published yet.
           </p>
-          {(profile?.role === 'admin' || profile?.role === 'staff') ? (
+          {can(profile?.role, 'tournament.create') ? (
             <p className="text-xs text-stone-500 font-semibold">
               Click &quot;+ Create Tournament&quot; above to launch a new competition.
             </p>
@@ -141,7 +141,6 @@ export default function TournamentsPage() {
           {tournaments.map((tournament) => {
             const registeredCount = tournament.tournament_registrations?.[0]?.count || 0;
             const status = getTournamentStatus(tournament);
-            const logo = getGameLogo(tournament.game, tournament.game_id);
 
             return (
               <Link
@@ -151,23 +150,13 @@ export default function TournamentsPage() {
               >
                 {/* Visual Header Aspect-Video (Matching PostCard Layout in Events) */}
                 <div className="relative aspect-video bg-gradient-to-br from-stone-900 via-stone-950 to-amber-950/40 overflow-hidden flex items-center justify-center border-b border-stone-100">
-                  {logo ? (
-                    <div className="relative w-28 h-28 group-hover:scale-105 transition-transform duration-300">
-                      <Image
-                        src={logo}
-                        alt={tournament.game}
-                        fill
-                        sizes="120px"
-                        className="object-contain p-2"
-                      />
-                    </div>
-                  ) : (
-                    <div className="text-center p-4">
-                      <span className="font-black text-amber-500/90 text-lg uppercase tracking-widest">
-                        {tournament.game}
-                      </span>
-                    </div>
-                  )}
+                  <GameLogo
+                    name={tournament.game}
+                    gameId={tournament.game_id}
+                    className="w-36 h-28 group-hover:scale-105 transition-transform duration-300"
+                    imageClassName="p-2"
+                    sizes="150px"
+                  />
 
                   {/* Status Badge in Corner */}
                   <div className="absolute top-3.5 right-3.5 z-10">

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/utils/supabase/server';
-import { analyzeFeedback } from '@/utils/feedback-analysis';
+import { runModerationBatch, wasAnalyzed } from '@/utils/moderation';
 import { getErrorMessage } from '@/utils/errors';
 
 // Vercel may stop a function after 10 s on the free plan; sending waits up to 15 s for Gemini
@@ -26,6 +26,12 @@ export async function POST(request: Request) {
     body = await request.json();
   } catch {
     return NextResponse.json({ error: 'Invalid request.' }, { status: 400 });
+  }
+
+  // Flagged or banned accounts can't send feedback (RLS refuses it too; this gives a clear message)
+  const { data: allowed } = await supabase.rpc('can_post');
+  if (allowed === false) {
+    return NextResponse.json({ error: "Your account is flagged or banned, so you can't send feedback right now." }, { status: 403 });
   }
 
   const rating = Number(body.rating);
@@ -55,7 +61,8 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: getErrorMessage(insertError, 'Your feedback could not be saved.') }, { status: 400 });
   }
 
+  // Sentiment + moderation in the same batch as any older pending items (this one first).
   // The person gets the same confirmation either way; organizers see pending ones on /admin/feedback.
-  const analysis = await analyzeFeedback(supabase, [saved]);
-  return NextResponse.json({ id: saved.id, analyzed: analysis.classified > 0 });
+  const batch = await runModerationBatch(supabase, { kind: 'feedback', id: saved.id });
+  return NextResponse.json({ id: saved.id, analyzed: wasAnalyzed(batch, 'feedback', saved.id) });
 }

@@ -138,6 +138,9 @@ export default function PrivacyNoticePage() {
                 <strong className="text-stone-950 font-black">Account:</strong> your email address, full name, password, role (player or audience) and the date you joined. Your password is stored only in scrambled (hashed) form; nobody, including us, can read it.
               </li>
               <li>
+                <strong className="text-stone-950 font-black">Profile picture (optional):</strong> a picture you choose to upload. It is cropped to a square and stored as a small image. You can change or remove it any time on your profile. We also note whether you finished or skipped the quick tour, so it isn&apos;t shown again.
+              </li>
+              <li>
                 <strong className="text-stone-950 font-black">Player details:</strong> in-game name (IGN), in-game role and rank for each game you play.
               </li>
               <li>
@@ -151,6 +154,12 @@ export default function PrivacyNoticePage() {
               </li>
               <li>
                 <strong className="text-stone-950 font-black">Pick&apos;em predictions:</strong> which team you picked to win a match, and whether the pick was right.
+              </li>
+              <li>
+                <strong className="text-stone-950 font-black">Stream comments:</strong> the comments you post on live streams and replays, with the time, and what our automatic check found in them (sentiment, topics, profanity, offensive content and the reason).
+              </li>
+              <li>
+                <strong className="text-stone-950 font-black">Warnings and bans:</strong> warnings you receive for comments or feedback (type, reason, date, and whether a moderator removed one), and your account status (flagged or banned, with the date and the administrator&apos;s reason). Your feedback is checked for profanity and offensive content in the same way.
               </li>
               <li>
                 <strong className="text-stone-950 font-black">Viewing activity:</strong> which live streams you opened and on which day. While a stream page is open, we also see that you are watching it right now; that is not saved.
@@ -205,12 +214,19 @@ export default function PrivacyNoticePage() {
                 <strong className="text-stone-950 font-black">Tournament staff and administrators:</strong> all accounts, including email addresses, student details and viewing activity, to manage the system, verify students and prepare reports.
               </li>
               <li>
+                <strong className="text-stone-950 font-black">Profile picture:</strong> shown next to your name to logged-in users (header, team rosters, player search, join requests), and next to your visible stream comments, which anyone can read on public tournament pages. The picture file has a public web address, so anyone who has that address can open it; don&apos;t upload anything you wouldn&apos;t show publicly. Administrators can remove a picture that breaks the Code of Conduct; you are told why.
+              </li>
+              <li>
                 Other users never see your student ID, school or course/year; they only see a &quot;Verified&quot; badge next to your name on team rosters.
               </li>
               <li>
                 <strong className="text-stone-950 font-black">Administrators only:</strong> feedback comments and their sentiment. Staff only see the number of feedback and the average rating.
               </li>
               <li>Your own feedback is visible to you and to administrators, not to other users.</li>
+              <li>
+                <strong className="text-stone-950 font-black">Stream comments:</strong> anyone, even without an account, can read visible comments on public tournament and match pages, shown with your first name and the first letter of your last name (e.g. &quot;Juan C.&quot;) and your profile picture. A comment the automatic check hides is visible only to you and to tournament staff and administrators (who review it).
+              </li>
+              <li>Your warnings and account status are visible to you and to administrators.</li>
               <li>Result screenshots are visible only to the members of the two teams in that match and to tournament staff.</li>
               <li>
                 Organizers may download files to run tournaments: registrations (which include each member&apos;s student ID, school and course/year), team rosters, schedules and results. Administrators can also download the full account list (names, email addresses, student details, consent date) and all feedback including comment text. Every download is recorded in the activity log.
@@ -237,7 +253,7 @@ export default function PrivacyNoticePage() {
                 <strong className="text-stone-950 font-black">Vercel:</strong> hosts the website and keeps short-lived technical logs of requests (such as IP address and pages visited) to run and protect it.
               </li>
               <li>
-                <strong className="text-stone-950 font-black">Google Gemini:</strong> detects the sentiment and topics of feedback. Only the comment and rating are sent, without your name or email. Google may keep and review this content under its own terms, so please don&apos;t write personal information in feedback.
+                <strong className="text-stone-950 font-black">Google Gemini:</strong> detects the sentiment and topics of feedback and stream comments, and whether they contain profanity or offensive content. Only the text (and a feedback&apos;s rating) is sent, without your name or email. Google may keep and review this content under its own terms, so please don&apos;t write personal information in feedback.
               </li>
               <li>
                 <strong className="text-stone-950 font-black">Facebook:</strong> live streams play in Facebook&apos;s video player. When you watch, Facebook may collect data and set cookies under its own privacy policy.
@@ -256,7 +272,7 @@ export default function PrivacyNoticePage() {
             </p>
             <ul className="list-disc pl-6 space-y-3">
               <li>
-                <strong className="text-stone-950 font-black">Deleted:</strong> your account and profile (including your student details), player details, team memberships, teams you captain alone, registrations you made, your pick&apos;em picks and your viewing activity.
+                <strong className="text-stone-950 font-black">Deleted:</strong> your account and profile (including your student details), player details, team memberships, teams you captain alone, registrations you made, your pick&apos;em picks, your viewing activity, your stream comments, your warnings and your profile picture.
               </li>
               <li>
                 <strong className="text-stone-950 font-black">Kept without your name:</strong> your feedback (rating, comment and sentiment), so event statistics stay correct. It is no longer linked to you. Saved reports may contain totals and short examples of feedback comments.
@@ -268,6 +284,7 @@ export default function PrivacyNoticePage() {
             <p className="pt-2">
               <strong className="text-stone-950 font-black">Activity log:</strong> entries are kept for one year, even after an account is deleted, so organizers stay accountable for their actions. They contain names only. After one year they are deleted.
             </p>
+            <p>Stream comments are also deleted when the stream they belong to is deleted.</p>
             <p>Copies in our service providers&apos; backups are removed when those backups expire.</p>
           </section>
 

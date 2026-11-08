@@ -2,7 +2,7 @@
 
 The de-facto brand, codified from `app/globals.css` and the DALTA ESPORTS logo. Until an official guide exists, this page is the source of truth: new UI follows it; changes to it are design decisions, not drive-bys.
 
-The current look (since the "Updated UI/UX design" redesign): a white page, Montserrat with uppercase titles, buttons and labels, rounded white cards, dark photo heroes at the top of each page, and the logo's gold and maroon as accents.
+The current look (since the "Updated UI/UX design" redesign): a white page (or the dark theme, see Dark mode), Montserrat with uppercase titles, buttons and labels, rounded white cards, dark photo heroes at the top of each page, and the logo's gold and maroon as accents.
 
 ## Colors
 
@@ -25,6 +25,20 @@ Tokens live in `app/globals.css` `@theme`. Always use the token (`bg-gold`, `tex
 - Text: `text-stone-950` (main), `text-stone-600`/`text-stone-500` (muted). No light grays (`stone-300/400`, `gray-200…400`) on white: they fail contrast. `text-stone-300/400` is fine only on dark heroes and logo panels.
 - Meaning colors stay Tailwind's own: red (errors, live), emerald (success), yellow (pending), blue (Verified badge). Light tints for boxes, e.g. `bg-red-50 text-red-700 border-red-200`.
 - Chart colors are hex in `utils/reports.ts` (Chart.js can't read Tailwind classes).
+
+## Dark mode
+
+Since Phase 3 the app has a dark theme. It follows the device setting by default; the sun/moon button in the header (`components/ThemeToggle.tsx`) cycles device → light → dark and saves the choice on the device. `<html data-theme>` is set before the first paint (`utils/theme.ts`, script in `app/layout.tsx`).
+
+- **Nothing changes in the pages.** The dark block in `globals.css` redefines the color variables that Tailwind compiles every class to: the stone scale is inverted, white surfaces (`bg-white`) become `--surface`, maroon becomes a light rose (`#e9a595`), `golddeep` becomes gold, and the meaning colors' light tints become dark tints with light text.
+- **Solid colored surfaces keep their light look**: photo heroes (anything containing `PageHeroBackground`), `bg-gold` buttons, `bg-ink`/logo stages, video, and red/green/maroon/dark-stone surfaces. Inside them every variable is restored, so `bg-gold text-stone-950` stays dark-on-gold.
+- `text-white` is never remapped (white text on red, maroon or photos stays white).
+- Printing always uses the light theme.
+- New UI: keep using the same tokens. A new solid background color needs to be added to the "keep their light-mode colors" list in `globals.css`. Don't use hex colors (they don't switch).
+
+## Navigation
+
+One navigation for everyone, by role (`utils/navigation.ts`, rendered by `components/site/SiteNavLayout.tsx`): sidebar on large screens (collapsible), bottom tab bar on phones for logged-in users (4 items + More), a Menu bar for logged-out visitors. Inner pages get breadcrumbs and a back button; a page names its breadcrumb with `useBreadcrumbName()`. Icon buttons and nav items have hints (`components/Tooltip.tsx`, hover / focus / long press); section titles can add `components/SectionHint.tsx`. Animations respect `prefers-reduced-motion` (pulsing LIVE dots, page fade-in and theme fade are off then).
 
 ## Utilities (in `app/globals.css`)
 
@@ -52,7 +66,9 @@ Tokens live in `app/globals.css` `@theme`. Always use the token (`bg-gold`, `tex
 
 ## Logo
 
-`public/DALTA ESPORTS LOGO TRNPRNT.png` (transparent), unless an admin uploads one on `/admin/website` (served via `logoUrl()`). In the header it sits next to the stacked wordmark: "DALTA" in `text-maroon`, "ESPORTS" in `text-golddeep`. Game logos: `getGameLogo()` in `utils/game-logos.ts`, shown on `bg-ink`/`bg-logo-stage`.
+`public/DALTA ESPORTS LOGO TRNPRNT.png` (transparent), unless an admin uploads one on `/admin/website` (served via `logoUrl()`). In the header it sits next to the stacked wordmark: "DALTA" in `text-maroon`, "ESPORTS" in `text-golddeep`. Game logos: `components/GameLogo.tsx` (logo, or the game's initials when there is none), shown on `bg-ink`/`bg-logo-stage`.
+
+Profile pictures: `components/Avatar.tsx` (picture, or initials on a gold circle).
 
 ## Voice
 

@@ -20,6 +20,7 @@ import {
   Trophy,
   Users,
 } from 'lucide-react';
+import { can } from '@/utils/permissions';
 
 const inputClass =
   'w-full p-3.5 rounded-xl bg-stone-50 border border-stone-300 text-stone-950 font-bold text-xs outline-none focus:border-amber-600 focus:bg-white focus:ring-2 focus:ring-amber-500/20 shadow-xs transition-all';
@@ -127,7 +128,7 @@ export default function CreateTournamentPage() {
   };
 
   if (role === null) return <PageLoading />;
-  if (role !== 'admin' && role !== 'staff') {
+  if (!can(role, 'tournament.create')) {
     return <PageError message="Only organizers can create tournaments." backHref="/tournaments" backLabel="Back to Tournaments" />;
   }
 

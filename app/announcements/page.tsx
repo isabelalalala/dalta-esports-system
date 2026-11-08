@@ -10,6 +10,7 @@ import PageLoading from '@/components/PageLoading';
 import { usePageTitle } from '@/utils/page-title';
 import { Pin } from 'lucide-react';
 import PageHeroBackground from '@/components/site/PageHeroBackground';
+import { can } from '@/utils/permissions';
 
 const inputClass =
   'w-full p-3 rounded-xl bg-white text-stone-950 border border-stone-300 placeholder:text-stone-400 focus:border-amber-600 focus:ring-2 focus:ring-amber-500/20 shadow-xs outline-none transition-all font-medium text-xs sm:text-sm';
@@ -21,7 +22,7 @@ export default function AnnouncementsPage() {
   usePageTitle('Announcements');
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [tournaments, setTournaments] = useState<TournamentOption[]>([]);
-  const [isAdmin, setIsAdmin] = useState(false);
+  const [canPost, setCanPost] = useState(false);
   const [userId, setUserId] = useState('');
   const [filter, setFilter] = useState('all');
   const [showForm, setShowForm] = useState(false);
@@ -43,7 +44,7 @@ export default function AnnouncementsPage() {
           .eq('id', session.user.id)
           .single();
         if (profileError) throw profileError;
-        setIsAdmin(profileData?.role === 'admin');
+        setCanPost(can(profileData?.role, 'announcement.post'));
 
         const [tourRes, annRes] = await Promise.all([
           supabase
@@ -112,7 +113,7 @@ export default function AnnouncementsPage() {
           >
             ← Back to Dashboard
           </Link>
-          {isAdmin && !showForm && (
+          {canPost && !showForm && (
             <button
               onClick={() => { setShowForm(true); setEditingId(null); }}
               className="bg-gold text-stone-950 px-5 py-2.5 rounded-xl font-black border border-amber-400 shadow-xs hover:bg-golddark hover:-translate-y-0.5 transition-all uppercase tracking-widest text-xs cursor-pointer"
@@ -144,7 +145,7 @@ export default function AnnouncementsPage() {
           </div>
         )}
 
-        {isAdmin && showForm && (
+        {canPost && showForm && (
           <AnnouncementForm
             tournaments={tournaments}
             userId={userId}
@@ -187,7 +188,7 @@ export default function AnnouncementsPage() {
                   key={a.id}
                   announcement={a}
                   actions={
-                    isAdmin ? (
+                    canPost ? (
                       <div className="flex items-center gap-3 text-xs font-black tracking-wider">
                         <button
                           onClick={() => { setEditingId(a.id); setShowForm(false); }}

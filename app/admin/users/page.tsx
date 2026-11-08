@@ -12,8 +12,12 @@ import { confirmEmailRedirect, getEmailError } from '@/utils/auth';
 import type { Profile } from '@/utils/types';
 import { usePageTitle } from '@/utils/page-title';
 import ExportButtons from '@/components/ExportButtons';
+import Avatar from '@/components/Avatar';
+import ConfirmDialog from '@/components/ConfirmDialog';
+import { AVATARS_BUCKET, avatarPathFromUrl } from '@/utils/avatars';
 import PageHeroBackground from '@/components/site/PageHeroBackground';
 import PageLoading from '@/components/PageLoading';
+import { can } from '@/utils/permissions';
 
 const ROLES = ['admin', 'staff', 'player', 'spectator'] as const;
 
@@ -68,7 +72,7 @@ export default function ManageUsersPage() {
   if (loading) return <PageLoading />;
 
   // Hiding the page is only for convenience; the database refuses these changes from non-admins.
-  if (me?.role !== 'admin') {
+  if (!me || !can(me.role, 'user.manage')) {
     return (
       <div className="w-full bg-white text-stone-950 p-10 text-center space-y-4">
         <p className="font-extrabold text-stone-900">Only administrators can manage users.</p>
@@ -192,6 +196,30 @@ function UserRow({ user, isMe, onChanged }: { user: Profile; isMe: boolean; onCh
   const [fullName, setFullName] = useState(user.full_name || '');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+  // "Remove picture" (inappropriate profile picture): confirmation with a reason
+  const [removingPicture, setRemovingPicture] = useState(false);
+  const [pictureReason, setPictureReason] = useState('');
+
+  // Clears the picture through admin_remove_avatar() (logs it, notifies the user), then deletes the
+  // file (admins may delete any avatar file; a failure there only leaves an unused file)
+  const handleRemovePicture = async () => {
+    setBusy(true);
+    setError('');
+    try {
+      const { error: rpcError } = await supabase.rpc('admin_remove_avatar', {
+        p_user_id: user.id,
+        p_reason: pictureReason.trim(),
+      });
+      if (rpcError) throw rpcError;
+      const path = avatarPathFromUrl(user.avatar_url);
+      if (path) await supabase.storage.from(AVATARS_BUCKET).remove([path]);
+      setRemovingPicture(false);
+      onChanged();
+    } catch (err) {
+      setError(getErrorMessage(err, 'Failed to remove the picture'));
+      setBusy(false);
+    }
+  };
 
   const updateProfile = async (changes: Partial<Pick<Profile, 'role' | 'full_name'>>) => {
     setBusy(true);
@@ -270,10 +298,13 @@ function UserRow({ user, isMe, onChanged }: { user: Profile; isMe: boolean; onCh
             </button>
           </form>
         ) : (
-          <p className="font-extrabold text-stone-950 text-sm tracking-wide truncate">
-            {user.full_name || <span className="italic text-stone-500">No name</span>}
-            {isMe && <span className="ml-2 text-xs text-amber-600 font-black">(you)</span>}
-          </p>
+          <div className="flex items-center gap-2 min-w-0">
+            <Avatar url={user.avatar_url} name={user.full_name || user.email} size="sm" />
+            <p className="font-extrabold text-stone-950 text-sm tracking-wide truncate">
+              {user.full_name || <span className="italic text-stone-500">No name</span>}
+              {isMe && <span className="ml-2 text-xs text-amber-600 font-black">(you)</span>}
+            </p>
+          </div>
         )}
         <p className="text-stone-500 font-medium text-xs tracking-wide truncate normal-case mt-0.5">{user.email}</p>
       </div>
@@ -315,6 +346,15 @@ function UserRow({ user, isMe, onChanged }: { user: Profile; isMe: boolean; onCh
             Edit name
           </button>
         )}
+        {!isMe && user.avatar_url && (
+          <button
+            onClick={() => { setPictureReason(''); setRemovingPicture(true); }}
+            disabled={busy}
+            className="text-red-600 hover:text-red-700 underline disabled:opacity-50 cursor-pointer"
+          >
+            Remove picture
+          </button>
+        )}
         {!isMe && (
           <button
             onClick={handleDelete}
@@ -327,6 +367,36 @@ function UserRow({ user, isMe, onChanged }: { user: Profile; isMe: boolean; onCh
       </div>
 
       {error && <p role="alert" className="md:col-span-12 text-xs font-bold text-red-600">{error}</p>}
+
+      {removingPicture && (
+        <ConfirmDialog
+          title="Remove this profile picture?"
+          confirmLabel="Remove picture"
+          tone="danger"
+          busy={busy}
+          confirmDisabled={pictureReason.trim().length < 3}
+          error={error}
+          onConfirm={handleRemovePicture}
+          onClose={() => setRemovingPicture(false)}
+        >
+          <div className="flex items-center gap-3">
+            <Avatar url={user.avatar_url} name={user.full_name || user.email} size="lg" />
+            <p className="break-words">{user.full_name || user.email}</p>
+          </div>
+          <p>The picture is deleted and the user is notified with your reason. It is recorded in the activity log.</p>
+          <label className="block">
+            <span className="text-xs font-black uppercase tracking-wider text-stone-700">Reason (required)</span>
+            <textarea
+              value={pictureReason}
+              onChange={(e) => setPictureReason(e.target.value)}
+              maxLength={300}
+              rows={2}
+              placeholder="e.g. Inappropriate image"
+              className={`${inputClass} w-full mt-1`}
+            />
+          </label>
+        </ConfirmDialog>
+      )}
     </div>
   );
 }

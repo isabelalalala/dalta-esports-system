@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
-import Image from 'next/image';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
+import { useBreadcrumbName } from '@/utils/breadcrumb-names';
+import { useRealtimeRefresh } from '@/utils/use-realtime-refresh';
 import Link from 'next/link';
 import { getErrorMessage } from '@/utils/errors';
 import { ACTIVE_REGISTRATION_STATUSES } from '@/utils/types';
@@ -39,7 +40,9 @@ import {
   Users,
 } from 'lucide-react';
 
-import { getGameLogo } from '@/utils/game-logos';
+import GameLogo from '@/components/GameLogo';
+import { can } from '@/utils/permissions';
+import { teamLabel } from '@/utils/matches';
 
 export default function TournamentDetailsPage() {
   usePageTitle('Tournament');
@@ -67,6 +70,12 @@ export default function TournamentDetailsPage() {
   const router = useRouter();
   const params = useParams();
   const id = params?.id as string;
+  // Breadcrumb: "Home > Tournaments > <name>"
+  useBreadcrumbName(tournament?.name);
+
+  // Live bracket: scores, winners advancing and new matches show up without a refresh
+  const reload = useCallback(() => setReloadCount((n) => n + 1), []);
+  useRealtimeRefresh(id ? `tournament-${id}` : null, [{ table: 'matches', filter: `tournament_id=eq.${id}` }], reload);
 
   const handleOpenRegistration = () => {
     setShowForm(true);
@@ -159,7 +168,7 @@ export default function TournamentDetailsPage() {
           bracketTeamIds.size > 0
             ? supabase
                 .from('teams')
-                .select('id, name')
+                .select('id, name, is_removed')
                 .in('id', [...bracketTeamIds])
             : null,
           data.game_id
@@ -168,11 +177,12 @@ export default function TournamentDetailsPage() {
                 .select('*, games(*), team_members(count)')
                 .eq('captain_id', session.user.id)
                 .eq('game_id', data.game_id)
+                .eq('is_removed', false)
                 .order('created_at', { ascending: false })
             : null,
         ]);
         if (namesRes?.error) throw namesRes.error;
-        if (namesRes) setTeamNames(Object.fromEntries((namesRes.data || []).map((t) => [t.id, t.name])));
+        if (namesRes) setTeamNames(Object.fromEntries((namesRes.data || []).map((t) => [t.id, teamLabel(t)])));
         if (myTeamsRes?.error) throw myTeamsRes.error;
         if (myTeamsRes) setTeams(myTeamsRes.data || []);
       } catch (err) {
@@ -287,14 +297,15 @@ export default function TournamentDetailsPage() {
     );
   }
 
-  const isOrganizer = profile?.role === 'admin' || profile?.role === 'staff';
+  const role = profile?.role;
+  const isOrganizer = can(role, 'tournament.edit');
+  const canRegister = can(role, 'tournament.register');
   const status = getTournamentStatus(tournament);
   const approvedTeams = registrations.filter((r) => r.status === 'approved');
   const isFull = tournament.max_participants != null && registrations.length >= tournament.max_participants;
   const blockingMembers =
     tournament.requires_verification && selectedTeamId && unverified?.teamId === selectedTeamId ? unverified.members : [];
   const roundCount = matches.reduce((max, m) => Math.max(max, m.round), 0);
-  const logo = getGameLogo(tournament.game, tournament.game_id);
 
   let closedReason = '';
   if (status === 'cancelled') closedReason = 'This tournament has been cancelled.';
@@ -414,40 +425,36 @@ export default function TournamentDetailsPage() {
 
       {/* 4. Editorial Layout: Game Media Showcase & Overview */}
       <div className="animate-stagger-1 grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 items-start">
-        {/* Left Column: Constrained Game Media Card */}
-        {logo ? (
-          <div className="lg:col-span-5 w-full">
-            <div className="relative aspect-[4/3] max-h-[380px] w-full rounded-3xl border border-stone-800/80 bg-ink overflow-hidden shadow-md flex items-center justify-center p-6 sm:p-8">
-              {/* Radial gradient spotlight matching division cards */}
-              <div
-                className="absolute inset-0 pointer-events-none bg-logo-stage"
-              />
-              <div className="absolute top-4 right-4 z-20 pointer-events-none">
-                <span className="text-[10px] font-black tracking-widest px-3 py-1.5 rounded-md border border-gold/60 bg-ink/85 text-gold uppercase backdrop-blur-md shadow-md">
-                  {statusLabels[status]}
-                </span>
-              </div>
-              <div className="relative z-0 w-36 h-36 sm:w-44 sm:h-44 flex items-center justify-center">
-                <Image
-                  src={logo}
-                  alt={tournament.game}
-                  fill
-                  sizes="(max-width: 1024px) 200px, 220px"
-                  className="object-contain drop-shadow-[0_8px_24px_rgba(0,0,0,0.7)] hover:scale-105 transition-transform duration-300"
-                  priority
-                />
-              </div>
-              <div className="absolute bottom-4 left-6 right-6 text-center z-10">
-                <span className="text-xs font-black tracking-widest text-stone-400 uppercase">
-                  {tournament.game} Division
-                </span>
-              </div>
+        {/* Left column: game logo (or its initials). Always rendered, so every game gets the same
+            5/7 layout; min-w-0 lets grid columns shrink instead of squeezing their text. */}
+        <div className="lg:col-span-5 w-full min-w-0">
+          <div className="relative aspect-[4/3] max-h-[380px] w-full rounded-3xl border border-stone-800/80 bg-ink overflow-hidden shadow-md flex items-center justify-center p-6 sm:p-8">
+            <div className="absolute inset-0 pointer-events-none bg-logo-stage" />
+            <div className="absolute top-4 right-4 z-20 pointer-events-none">
+              <span className="text-[10px] font-black tracking-widest px-3 py-1.5 rounded-md border border-gold/60 bg-ink/85 text-gold uppercase backdrop-blur-md shadow-md">
+                {statusLabels[status]}
+              </span>
+            </div>
+            <GameLogo
+              name={tournament.game}
+              gameId={tournament.game_id}
+              className="z-0 w-48 h-36 sm:w-56 sm:h-44"
+              imageClassName="drop-shadow-[0_8px_24px_rgba(0,0,0,0.7)]"
+              fallbackClassName="text-5xl"
+              sizes="(max-width: 1024px) 200px, 240px"
+              priority
+            />
+            <div className="absolute bottom-4 left-6 right-6 text-center z-10">
+              <span className="text-xs font-black tracking-widest text-stone-400 uppercase">
+                {tournament.game} Division
+              </span>
             </div>
           </div>
-        ) : null}
+        </div>
 
         {/* Right Column: Overview & Information */}
-        <div className={logo ? 'lg:col-span-7 w-full space-y-6' : 'w-full space-y-6'}>
+        {/* min-w: if this column is ever squeezed again, it overflows instead of wrapping letter by letter */}
+        <div className="lg:col-span-7 w-full min-w-[min(100%,18rem)] space-y-6">
           <div className="rounded-3xl border border-stone-200/90 bg-white p-6 sm:p-8 lg:p-10 shadow-xs space-y-5">
             <div className="border-b border-stone-100 pb-4 space-y-1">
               <span className="text-[11px] font-black tracking-widest text-maroon uppercase">
@@ -466,8 +473,8 @@ export default function TournamentDetailsPage() {
               )}
             </div>
 
-            {/* Registration Container inside Overview (Directly in-place without scrolling) */}
-            {!isOrganizer && (
+            {/* Registration Container inside Overview: players only (RLS lets only captains register) */}
+            {canRegister && (
               <div id="register-container" ref={registrationRef} className="pt-4 border-t border-stone-100">
                 {closedReason ? (
                   <div className="rounded-2xl border border-stone-200 bg-stone-50/90 p-4 text-center text-xs font-black text-stone-600 tracking-wider">
@@ -661,7 +668,7 @@ export default function TournamentDetailsPage() {
             <span className="text-[11px] font-black tracking-widest text-maroon uppercase">Playoffs</span>
             <h2 className="text-xl sm:text-2xl font-black text-stone-950 uppercase tracking-wide">Tournament Bracket</h2>
           </div>
-          {matches.length > 0 && !isOrganizer && (
+          {matches.length > 0 && can(role, 'prediction.pick') && (
             <div className="flex items-center gap-1.5 text-xs text-stone-600 font-black tracking-wider">
               <Target className="h-4 w-4 text-maroon" />
               <span>Pick&apos;em enabled: pick the winner before match starts</span>
@@ -793,7 +800,7 @@ export default function TournamentDetailsPage() {
               <Trophy className="w-3.5 h-3.5" />
               <span>{generating ? 'Generating...' : matches.length > 0 ? 'Regenerate Bracket' : 'Generate Bracket'}</span>
             </button>
-            {profile?.role === 'admin' && (
+            {can(role, 'tournament.delete') && (
               <button
                 onClick={handleDelete}
                 disabled={deleting}

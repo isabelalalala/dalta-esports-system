@@ -31,6 +31,13 @@ updated to match the final system.
 | 12 | Excel / CSV exports | 6 Administrative Reports | - (logged in `activity_logs`) | `202610171700_export_log` |
 | 13 | Enhancements inside the original modules (saved reports, "watching now", engagement additions) | 4, 6 | - | `202610162300_admin_reports`, `202610181100_predictions` |
 | 14 | Terms of Service acceptance & legal pages (/terms, /conduct, /cookies, /security) | 1 Account Management | (new columns on `profiles`) | `202610181900_tos_consent` |
+| 15 | Role-based permissions & team removal (soft delete, walkovers, restore) | 1 Account Management, 2 Registration & Tournament Mgmt | `team_removals` (+ `teams.is_removed`, `removed_by`, `removed_at`) | `202611081000_team_removal` |
+| 16 | League of Legends ban/pick summary per match | 2 Registration & Tournament Mgmt (+ 4 Live Streaming viewers) | `match_drafts` | `202611081300_match_drafts` |
+| 17 | Facebook link resolver & stream checklist; live team updates | 4 Live Streaming, 2 Registration & Tournament Mgmt | (`streams.facebook_video_id`) | `202611081100_stream_video_id`, `202611081200_realtime_teams` |
+| 18 | Role-based navigation, dashboard, quick tour, dark mode | 1 Account Management (all actors) | (`profiles.tour_dismissed_at`) | `202611081400_avatars_and_tour` |
+| 19 | Profile pictures | 1 Account Management | bucket `avatars` (+ `profiles.avatar_url`) | `202611081400_avatars_and_tour` |
+| 20 | Live stream comments | 4 Live Streaming | `stream_comments`, `stream_comment_activity` | `202611081500_comments_moderation` |
+| 21 | AI moderation, warnings and bans (comments + feedback) | 5 Feedback & Sentiment Analysis, 1 Account Management | `user_warnings` (+ `profiles.ban_status`, moderation columns on `feedback`) | `202611081500_comments_moderation` |
 
 ---
 
@@ -386,6 +393,162 @@ the user list (admin only) as Excel or CSV. Every download is recorded in the ac
 
 **Database**
 - No new table (entries go to `activity_logs`). Function: `log_export()`.
+
+### Feature 15: Role-based permissions & team removal
+**Modules:** 1 Account Management (permissions), 2 Registration and Tournament Management (team removal)
+
+**What it does:** every role sees only the buttons it may use. One permission map (`utils/permissions.ts`,
+`can(role, action)`) decides what the screens show; the same rules are enforced in the database and API
+(table in `docs/permissions.md`). Logged-out visitors get the spectator view. Admins and staff can **remove a
+team** that breaks the rules: they see its members, registrations and bracket matches, and must give a reason.
+The team disappears from team lists, recruiting and registrations, its pending/approved registrations for
+tournaments that haven't ended are withdrawn, its unfinished bracket matches go to the opponent as a
+**walkover** (also later, as soon as an unknown opponent is decided), its members are freed and notified, and
+the removal is logged. The record stays for reports. Admins can **restore** a removed team (captain plus former
+members who are still free); withdrawals and walkovers are not undone.
+
+**Actors / use cases**
+- Admin, Staff: *Remove team* (includes *Give reason*; extends to *Award walkover*).
+- Admin: *Restore removed team*.
+- Player: *Receive team removal notification*.
+
+**Data flows**
+- Admin/Staff → 2.0: Team removal + reason → D2: Mark team removed, withdraw registrations, walkover results,
+  free members → D7: Removal notification → Players; Walkover notification → opponent; D8: Activity entry.
+- Admin → 2.0: Team restore → D2: Reactivate team, re-add members → D7: Restore notification → Players; D8: Activity entry.
+
+**Database**
+- New table: **`team_removals`** (`id`, `team_id`, `removed_by`, `removed_at`, `reason`, `roster` (jsonb),
+  `tournaments` (jsonb), `walkovers`, `restored_by`, `restored_at`); organizers only.
+- New columns: `teams.is_removed`, `teams.removed_by`, `teams.removed_at`.
+- Functions: `remove_team()`, `restore_team()`, `apply_removed_team_walkover()` (internal).
+
+### Feature 16: League of Legends ban/pick summary
+**Module:** 2 Registration and Tournament Management (shown to the audience on the match pages)
+
+**What it does:** for League of Legends matches, tournament staff enter each team's bans and picks per game of
+the series (up to 5 each). Everyone, also logged-out visitors on the public match page, sees the summary, and it
+updates live while staff type it in.
+
+**Actors / use cases**
+- Staff, Admin: *Enter ban/pick summary* (LoL only).
+- Audience, Player, Visitor: *View ban/pick summary*.
+
+**Data flows**
+- Staff → 2.0: Ban/pick entry → D2: Save draft → Audience/Players/Visitor: Ban/pick summary (live).
+
+**Database**
+- New table: **`match_drafts`** (`id`, `match_id`, `game_number`, `team_a_bans`, `team_a_picks`, `team_b_bans`,
+  `team_b_picks`, `updated_by`, `created_at`, `updated_at`); trigger `check_match_draft()`.
+
+### Feature 17: Facebook link resolver, stream checklist & live team updates
+**Modules:** 4 Live Streaming (links), 2 Registration and Tournament Management (live updates)
+
+**What it does:** staff can paste any Facebook link (share links `/share/v/`, `/share/r/`, `fb.watch`, `/watch`,
+`/videos/`, embed code). The system finds the real video, saves its canonical address and video id, warns when
+Facebook says the video can't be embedded, and shows a preview and a checklist (Page not profile, Public,
+embedding allowed, no restrictions) before saving. Viewers get a "Watch on Facebook" card when the player can't
+load. Team pages, join requests, invites, brackets, schedules and "My Matches" update without refreshing.
+
+**Actors / use cases**
+- Staff, Admin: *Configure stream* now includes *Resolve video link* and *Preview stream*.
+- Team Captain: *Accept all / decline all join requests*.
+
+**Data flows**
+- Staff → 4.0: Pasted link → Facebook (external): Redirect / embed check → 4.0: Canonical link + embed status → D3.
+- D2 → Players/Audience: Live roster, request, bracket and score updates (Realtime).
+
+**Database**
+- New column `streams.facebook_video_id`. `teams`, `team_members`, `team_invites`, `team_join_requests` and
+  `match_drafts` join the Realtime publication.
+
+### Feature 18: Role-based navigation, dashboard, quick tour & dark mode
+**Module:** 1 Account Management (applies to every actor)
+
+**What it does:** each role gets its own menu (Spectator/Visitor: Home, Events, Tournaments, Watch Live, Teams,
+Give Feedback; Player: plus My Profile, My Team, My Matches & Schedule, Recruiting; Staff: Dashboard, Match Control,
+Streams, Brackets, Teams; Admin: Dashboard, Tournaments, Teams, Users, Announcements, Feedback & Sentiment,
+Reports). Sidebar on computers, bottom tab bar on phones, breadcrumbs and a back button on inner pages, hover /
+long-press hints, a role dashboard with quick actions, a skippable 4-step tour on first login, and a dark theme
+that follows the device or the user's choice.
+
+**Actors / use cases**
+- All actors: *Navigate by role*, *Switch theme*. Logged-in actors: *Take the quick tour*.
+
+**Data flows**
+- Actor → 1.0: Tour finished/skipped → D1: tour_dismissed_at.
+
+**Database**
+- New column `profiles.tour_dismissed_at`.
+
+### Feature 19: Profile pictures
+**Module:** 1 Account Management
+
+**What it does:** every user can add a profile picture (JPG/PNG/WebP, cropped to a square in the browser, stored
+as a 512px image up to 2 MB). Pictures appear in the header, profile, team rosters, player search and join
+requests; users without one show their initials. Admins can remove an inappropriate picture with a reason (the
+user is notified and the action is logged).
+
+**Actors / use cases**
+- All logged-in actors: *Upload / change / remove own profile picture*.
+- Admin: *Remove a user's profile picture* (includes *Give reason*).
+
+**Data flows**
+- User → 1.0: Picture → D1/Storage: Save picture.
+- Admin → 1.0: Removal + reason → D1: Clear picture → D7: Notification → User; D8: Activity entry.
+
+**Database**
+- New column `profiles.avatar_url`; storage bucket `avatars`; function `admin_remove_avatar()`.
+- Privacy Notice version `2026-11-08` (profile pictures are new personal data visible to other users).
+
+### Feature 20: Live stream comments
+**Module:** 4 Live Streaming
+
+**What it does:** a comments panel beside every stream (live chat, and comments on replays). Logged-in users post
+(300 characters, one comment every 3 seconds); new comments appear for every viewer instantly. Logged-out visitors
+read the comments on the public tournament and match pages and see "Log in to comment". Commenters are shown
+as "first name + initial" with their picture.
+
+**Actors / use cases**
+- Audience, Player, Staff, Admin: *Post a comment*, *Read comments*. Visitor: *Read comments*.
+- Staff, Admin: *Remove a comment* (optionally with a warning).
+
+**Data flows**
+- User → 4.0: Comment → D3: Save comment → all viewers: Comment list (live).
+
+**Database**
+- New tables: **`stream_comments`**, **`stream_comment_activity`** (Realtime signal only).
+- Function: `get_stream_comments()`.
+
+### Feature 21: AI moderation, warnings and bans
+**Modules:** 5 Feedback & Sentiment Analysis (analysis), 1 Account Management (warnings, bans)
+
+**What it does:** the same Gemini analysis checks stream comments and feedback for sentiment, topics, profanity
+and offensive content (English, Filipino, Taglish). Profanity stays visible but gives a warning; bullying,
+harassment, hate speech, threats or sexual content are hidden at once, queued for moderators and give a warning.
+Normal gaming trash talk is not flagged. At 5 warnings the account is flagged: the user can browse but not post,
+and an admin confirms a ban (no more login) or dismisses it (warnings reset). Moderators restore wrongly hidden
+items (removing the AI's warning), admins remove warnings, ban and unban. Comment sentiment per stream,
+tournament and day, top topics and flagged counts are shown next to feedback sentiment.
+
+**Actors / use cases**
+- System (AI): *Analyse and moderate text*, *Issue warning*, *Flag account*.
+- Staff: *Review hidden comments* (restore / remove). Admin: also *Review hidden feedback*, *Remove warning*,
+  *Confirm / dismiss ban*, *Ban / unban user*, *View comment sentiment*.
+- Audience, Player: *View own warnings*, *Receive warning notification*.
+
+**Data flows**
+- 4.0/5.0 → Gemini (external): Text batch → 5.0: Sentiment + moderation flags → D3/D4: Save result →
+  D1: Warning, ban status → D7: Warning / flag notifications → User, Admins.
+- Staff/Admin → 5.0: Moderation decision → D3/D4/D1 → D7: Notification → User; D8: Activity entry.
+
+**Database**
+- New table: **`user_warnings`**. New columns: `profiles.ban_status`, `ban_flagged_at`, `banned_at`,
+  `banned_by`, `ban_reason`; moderation columns on `feedback`.
+- Functions: `claim_moderation_batch()`, `save_moderation_result()`, `mark_moderation_pending()`,
+  `moderate_comment()`, `moderate_feedback()`, `remove_warning()`, `ban_user()`, `dismiss_ban()`, `unban_user()`,
+  `report_comment_sentiment()`, `custom_access_token_hook()` (Supabase Auth hook).
+- Privacy Notice `2026-11-08.2`, Terms of Service `2026-11-08` (Code of Conduct moderation rules).
 
 ### Feature 13: Enhancements inside the original modules
 These additions stay inside existing modules but add flows you may want to draw.

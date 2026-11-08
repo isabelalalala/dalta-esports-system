@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { createClient } from '@/utils/supabase/client';
-import Image from 'next/image';
 import Link from 'next/link';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { getErrorMessage } from '@/utils/errors';
 import type { Game, Team } from '@/utils/types';
 import TeamInvites from '@/components/TeamInvites';
@@ -11,10 +11,12 @@ import TeamDirectory from '@/components/TeamDirectory';
 import AskToJoin from '@/components/AskToJoin';
 import PageLoading from '@/components/PageLoading';
 import { usePageTitle } from '@/utils/page-title';
+import { can } from '@/utils/permissions';
+import { useRealtimeRefresh } from '@/utils/use-realtime-refresh';
 import PageHeroBackground from '@/components/site/PageHeroBackground';
-import { Users, Plus, Shield, AlertCircle, Gamepad2 } from 'lucide-react';
+import { Users, Plus, Shield, AlertCircle } from 'lucide-react';
 
-import { getGameLogo } from '@/utils/game-logos';
+import GameLogo from '@/components/GameLogo';
 
 const inputClass =
   'w-full p-3.5 rounded-xl bg-white text-stone-950 border border-stone-300 placeholder:text-stone-400 focus:border-gold focus:ring-2 focus:ring-gold/25 shadow-xs outline-none transition-all font-medium text-xs sm:text-sm';
@@ -45,8 +47,23 @@ export default function TeamsPage() {
   const [reloadCount, setReloadCount] = useState(0);
   const [role, setRole] = useState('');
   const [myRequests, setMyRequests] = useState<MyJoinRequest[]>([]);
-  // null = not chosen yet: organizers start on All teams (they usually aren't on a team)
-  const [tab, setTab] = useState<'mine' | 'all' | null>(null);
+  // The tab lives in the URL (?tab=mine|all, ?recruiting=1), so the nav links open the right view
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const tabParam = searchParams.get('tab');
+  const tab = tabParam === 'mine' || tabParam === 'all' ? tabParam : null;
+  const recruitingParam = searchParams.get('recruiting') === '1';
+  const setTab = (t: 'mine' | 'all') => router.replace(`/teams?tab=${t}`, { scroll: false });
+  const [myId, setMyId] = useState('');
+
+  // Live updates for "My teams": any roster change (someone joins or leaves one of my teams; rosters
+  // are small, so any team_members change just reloads), my join requests and my invites.
+  const reload = useCallback(() => setReloadCount((n) => n + 1), []);
+  useRealtimeRefresh(myId ? `my-teams-${myId}` : null, [
+    { table: 'team_members' },
+    { table: 'team_join_requests', filter: `user_id=eq.${myId}` },
+    { table: 'team_invites', filter: `invited_user_id=eq.${myId}` },
+  ], reload, 800);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -55,6 +72,7 @@ export default function TeamsPage() {
           data: { session },
         } = await supabase.auth.getSession();
         if (!session) return;
+        setMyId(session.user.id);
 
         const [gamesRes, teamsRes, profilesRes, roleRes, requestsRes] = await Promise.all([
           supabase.from('games').select('*').order('name'),
@@ -132,18 +150,17 @@ export default function TeamsPage() {
     return <PageLoading label="Loading teams..." />;
   }
 
-  const isPlayer = role === 'player';
-  const activeTab = tab ?? (role === 'admin' || role === 'staff' ? 'all' : 'mine');
+  // Only players have teams of their own; everyone else just browses the directory
+  const isPlayer = can(role, 'team.create');
+  const activeTab = isPlayer ? (tab ?? 'mine') : 'all';
   const tabClass = (t: 'mine' | 'all') =>
     `px-4 sm:px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all cursor-pointer ${
       activeTab === t ? 'bg-gold text-stone-950 shadow-xs' : 'text-stone-700 hover:bg-stone-100'
     }`;
 
   return (
-    <main
-      id="main-content"
-      className="flex-1 w-full min-h-[calc(100vh-160px)] bg-white text-stone-950 px-4 sm:px-6 lg:px-8 xl:px-12 py-8 sm:py-10"
-    >
+    // The layout (SiteNavLayout) renders the main element and the page padding
+    <div className="w-full text-stone-950">
       <div className="w-full max-w-6xl mx-auto space-y-8">
         {/* 1. Main Hero Container */}
         <section className="animate-hero-entrance relative w-full rounded-3xl border border-stone-800/80 bg-stone-950 overflow-hidden shadow-md p-8 sm:p-12 lg:p-14 text-center text-white flex flex-col items-center justify-center space-y-4">
@@ -198,18 +215,32 @@ export default function TeamsPage() {
           </div>
         )}
 
-        {/* Tabs: my teams / every team */}
-        <div role="tablist" aria-label="Teams" className="inline-flex flex-wrap gap-1 p-1 rounded-2xl border border-stone-200/90 bg-white shadow-2xs">
-          <button role="tab" aria-selected={activeTab === 'mine'} onClick={() => setTab('mine')} className={tabClass('mine')}>
-            My teams
-          </button>
-          <button role="tab" aria-selected={activeTab === 'all'} onClick={() => setTab('all')} className={tabClass('all')}>
-            All teams
-          </button>
-        </div>
+        {/* Tabs: my teams / every team (players only: others have no teams of their own) */}
+        {isPlayer && (
+          <div role="tablist" aria-label="Teams" className="inline-flex flex-wrap gap-1 p-1 rounded-2xl border border-stone-200/90 bg-white shadow-2xs">
+            <button role="tab" aria-selected={activeTab === 'mine'} onClick={() => setTab('mine')} className={tabClass('mine')}>
+              My teams
+            </button>
+            <button role="tab" aria-selected={activeTab === 'all'} onClick={() => setTab('all')} className={tabClass('all')}>
+              All teams
+            </button>
+          </div>
+        )}
+
+        {/* Organizers manage teams (incl. removing them) on /admin/teams */}
+        {can(role, 'team.remove') && (
+          <Link
+            href="/admin/teams"
+            className="inline-flex items-center gap-2 text-xs font-black uppercase tracking-wider text-maroon hover:underline"
+          >
+            <Shield className="w-4 h-4" /> Manage teams
+          </Link>
+        )}
 
         {activeTab === 'all' ? (
           <TeamDirectory
+            key={recruitingParam ? 'recruiting' : 'all'}
+            initialRecruitingOnly={recruitingParam}
             games={games}
             isPlayer={isPlayer}
             myTeamIds={teams.map((t) => t.id)}
@@ -393,7 +424,6 @@ export default function TeamsPage() {
         {teams.length > 0 && (
           <div className="animate-stagger-1 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 w-full">
             {teams.map((team) => {
-              const logo = getGameLogo(team.games?.name || '', team.game_id);
               const membersCount = team.team_members?.[0]?.count || 0;
               const maxPlayers = team.games?.max_players || 5;
 
@@ -407,24 +437,13 @@ export default function TeamsPage() {
                     <div
                       className="absolute inset-0 pointer-events-none bg-logo-stage"
                     />
-                    {logo ? (
-                      <div className="relative z-10 w-24 h-24 group-hover:scale-105 transition-transform duration-300">
-                        <Image
-                          src={logo}
-                          alt={team.games?.name || 'Game Logo'}
-                          fill
-                          sizes="120px"
-                          className="object-contain drop-shadow-[0_4px_16px_rgba(0,0,0,0.6)]"
-                        />
-                      </div>
-                    ) : (
-                      <div className="relative z-10 flex flex-col items-center gap-1.5 text-stone-400">
-                        <Gamepad2 className="w-8 h-8" />
-                        <span className="text-xs font-black tracking-wider uppercase text-stone-300">
-                          {team.games?.name}
-                        </span>
-                      </div>
-                    )}
+                    <GameLogo
+                      name={team.games?.name}
+                      gameId={team.game_id}
+                      className="z-10 w-32 h-24 group-hover:scale-105 transition-transform duration-300"
+                      imageClassName="drop-shadow-[0_4px_16px_rgba(0,0,0,0.6)]"
+                      sizes="140px"
+                    />
                   </div>
 
                   {/* Team Card Details */}
@@ -475,6 +494,6 @@ export default function TeamsPage() {
         </>
         )}
       </div>
-    </main>
+    </div>
   );
 }

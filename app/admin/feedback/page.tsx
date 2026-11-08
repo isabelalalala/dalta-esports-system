@@ -9,10 +9,12 @@ import { isFeedbackRetryable } from '@/utils/feedback';
 import { usePageTitle } from '@/utils/page-title';
 import StarRating from '@/components/StarRating';
 import ExportButtons from '@/components/ExportButtons';
+import CommentSentiment from './CommentSentiment';
 import { Star } from 'lucide-react';
 import PageLoading from '@/components/PageLoading';
 import PageError from '@/components/PageError';
 import PageHeroBackground from '@/components/site/PageHeroBackground';
+import { can } from '@/utils/permissions';
 
 const inputClass =
   'w-full p-3 rounded-xl bg-white text-stone-950 border border-stone-300 placeholder:text-stone-400 focus:border-amber-600 focus:ring-2 focus:ring-amber-500/20 shadow-xs outline-none transition-all font-medium text-xs sm:text-sm';
@@ -57,7 +59,7 @@ export default function FeedbackAnalysisPage() {
           .single();
         if (profileError) throw profileError;
         setRole(profileData?.role ?? '');
-        if (profileData?.role !== 'admin') return;
+        if (!can(profileData?.role, 'feedback.viewAll')) return;
 
         const [tourRes, fbRes] = await Promise.all([
           supabase.from('tournaments').select('id, name').order('name'),
@@ -105,7 +107,7 @@ export default function FeedbackAnalysisPage() {
 
   if (loading) return <PageLoading />;
   if (!role && error) return <PageError message={error} />;
-  if (role !== 'admin') {
+  if (!can(role, 'feedback.viewAll')) {
     return (
       <div className="w-full bg-white text-stone-950 p-10 text-center space-y-4">
         <p className="font-extrabold text-stone-900">Only administrators can view the feedback analysis.</p>
@@ -176,6 +178,9 @@ export default function FeedbackAnalysisPage() {
           </p>
         </div>
       </section>
+
+      {/* Live stream comment sentiment, next to the feedback below (Phase 4) */}
+      <CommentSentiment tournaments={tournaments} />
 
       {/* 2. Controls & Sentiment Analytics */}
       <div className="space-y-6 text-stone-950">
@@ -294,6 +299,14 @@ export default function FeedbackAnalysisPage() {
                       <span className="px-3 py-0.5 rounded-full border border-amber-300 bg-amber-50 text-amber-800 text-[11px] font-black uppercase tracking-wider">
                         Pending Analysis
                       </span>
+                    )}
+                    {f.is_profane && (
+                      <span className="px-2 py-0.5 rounded-full bg-yellow-100 text-yellow-800 text-[11px] font-black uppercase">Profanity</span>
+                    )}
+                    {(f.moderation_status === 'hidden' || f.moderation_status === 'removed') && (
+                      <Link href="/admin/moderation" className="px-2 py-0.5 rounded-full bg-red-100 text-red-800 text-[11px] font-black uppercase hover:underline">
+                        {f.moderation_status === 'hidden' ? 'Hidden: review' : 'Removed'}
+                      </Link>
                     )}
                   </div>
                   <span className="text-xs text-stone-500 font-semibold tracking-wide">

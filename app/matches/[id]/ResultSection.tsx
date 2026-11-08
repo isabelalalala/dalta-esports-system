@@ -1,5 +1,6 @@
 'use client';
 
+import SectionHint from '@/components/SectionHint';
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { createClient } from '@/utils/supabase/client';
@@ -161,7 +162,7 @@ export default function ResultSection({ match, teamA, teamB, submissions, isStaf
 
   return (
     <section className="bg-white border border-stone-200/90 rounded-2xl shadow-xs p-6 space-y-4">
-      <h2 className="text-xl font-bold">Result</h2>
+      <h2 className="text-xl font-bold flex items-center gap-1.5">Result <SectionHint text="Result — one captain submits the score with a screenshot, the other confirms or disputes it, and staff approve the final result." /></h2>
 
       {error && <div role="alert" className="bg-red-500/10 border border-red-500 text-red-700 px-4 py-3">{error}</div>}
 

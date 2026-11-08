@@ -13,6 +13,7 @@ import PageError from '@/components/PageError';
 import { usePageTitle } from '@/utils/page-title';
 import PageHeroBackground from '@/components/site/PageHeroBackground';
 import { AlertCircle, Users } from 'lucide-react';
+import { can } from '@/utils/permissions';
 
 const statusStyles: Record<RegistrationStatus, string> = {
   pending: 'bg-amber-500/15 text-amber-800 border-amber-500/40',
@@ -41,7 +42,7 @@ export default function RegistrationsPage() {
         const { data: myRole, error: roleError } = await supabase.rpc('get_my_role');
         if (roleError) throw roleError;
         setRole(myRole ?? '');
-        if (myRole !== 'admin' && myRole !== 'staff') return;
+        if (!can(myRole, 'registration.review')) return;
 
         const { data: tournamentData, error: tournError } = await supabase
           .from('tournaments')
@@ -121,7 +122,7 @@ export default function RegistrationsPage() {
   if (loading) {
     return <PageLoading label="Loading registrations..." />;
   }
-  if (role && role !== 'admin' && role !== 'staff') {
+  if (role && !can(role, 'registration.review')) {
     return <PageError message="Only organizers can review registrations." backHref={`/tournaments/${id}`} backLabel="Back to the tournament" />;
   }
   if (!tournament) {

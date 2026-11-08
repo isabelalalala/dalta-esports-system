@@ -4,6 +4,7 @@ import Footer from "@/components/Footer";
 import SiteHeader from "@/components/site/SiteHeader";
 import { SITE_URL } from "@/utils/site-url";
 import { montserrat } from "@/utils/fonts";
+import { THEME_INIT_SCRIPT } from "@/utils/theme";
 
 export const metadata: Metadata = {
   // Facebook needs full URLs for link previews (NEXT_PUBLIC_SITE_URL)
@@ -20,10 +21,16 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
+    // suppressHydrationWarning: the theme script sets data-theme on <html> before React loads
     <html
       lang="en"
       className={`${montserrat.variable} h-full antialiased`}
+      suppressHydrationWarning
     >
+      <head>
+        {/* Runs before the page paints, so dark-mode users never see a white flash (utils/theme.ts) */}
+        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
+      </head>
       <body className="min-h-full w-full flex flex-col bg-white text-stone-950">
         <a
           href="#main-content"

@@ -2,6 +2,7 @@
 
 import { updateTag } from 'next/cache';
 import { createClient } from '@/utils/supabase/server';
+import { can } from '@/utils/permissions';
 
 // Called by /admin/website after every save: the public pages (cached with the 'site' tag,
 // see utils/site-data.ts) show the change on the next visit instead of up to a minute later.
@@ -9,7 +10,7 @@ import { createClient } from '@/utils/supabase/server';
 export async function refreshSite() {
   const supabase = await createClient();
   const { data: role } = await supabase.rpc('get_my_role');
-  if (role !== 'admin') return { ok: false };
+  if (!can(role, 'website.edit')) return { ok: false };
 
   updateTag('site');
   return { ok: true };

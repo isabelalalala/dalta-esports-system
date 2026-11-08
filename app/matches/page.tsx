@@ -11,6 +11,7 @@ import ExportButtons from '@/components/ExportButtons';
 import PageLoading from '@/components/PageLoading';
 import PageError from '@/components/PageError';
 import PageHeroBackground from '@/components/site/PageHeroBackground';
+import { can } from '@/utils/permissions';
 
 type TournamentWithMatches = Tournament & { matches: { count: number }[] };
 
@@ -54,7 +55,7 @@ export default function MatchesOverviewPage() {
 
   if (loading) return <PageLoading />;
   if (!profile && error) return <PageError message={error} />;
-  if (profile?.role !== 'admin' && profile?.role !== 'staff') {
+  if (!can(profile?.role, 'match.manage')) {
     return (
       <div className="w-full bg-white text-stone-950 p-10 text-center space-y-4">
         <p className="font-extrabold text-stone-900">Only tournament organizers can manage matches.</p>

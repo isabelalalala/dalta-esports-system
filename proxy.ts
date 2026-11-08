@@ -86,11 +86,21 @@ export async function proxy(request: NextRequest) {
   // before the app can collect more of their data. The consent/accept pages are
   // exempt to avoid a loop.
   if (user && isProtected && path !== '/privacy/consent' && path !== '/terms/accept') {
+    // select('*'): keeps working before the moderation migration adds ban_status (202611081500)
     const { data: profile } = await supabase
       .from('profiles')
-      .select('privacy_consent_version, tos_version')
+      .select('*')
       .eq('id', user.id)
       .maybeSingle();
+
+    // Banned accounts see only the ban notice (with the custom access token hook switched on they
+    // can't log in at all; this covers sessions that already existed)
+    if ((profile as { ban_status?: string } | null)?.ban_status === 'banned') {
+      const redirect = NextResponse.redirect(new URL('/banned', request.url));
+      response.cookies.getAll().forEach((cookie) => redirect.cookies.set(cookie));
+      return redirect;
+    }
+
     const needed =
       profile?.privacy_consent_version !== PRIVACY_NOTICE_VERSION
         ? '/privacy/consent'

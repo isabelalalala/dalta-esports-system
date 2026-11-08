@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import { useRealtimeRefresh } from '@/utils/use-realtime-refresh';
 import { createClient } from '@/utils/supabase/client';
 import { getErrorMessage } from '@/utils/errors';
 import type { MyTeamInvite } from '@/utils/types';
@@ -17,6 +18,17 @@ export default function TeamInvites({ onAnswered }: { onAnswered?: () => void })
   const [message, setMessage] = useState('');
   // Increase this to load the invites again
   const [reloadCount, setReloadCount] = useState(0);
+  const [myId, setMyId] = useState('');
+
+  // New or cancelled invites show up without a refresh
+  const reload = useCallback(() => setReloadCount((n) => n + 1), []);
+  useRealtimeRefresh(myId ? `invites-${myId}` : null, [
+    { table: 'team_invites', filter: `invited_user_id=eq.${myId}` },
+  ], reload);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => setMyId(data.session?.user.id ?? ''));
+  }, [supabase]);
 
   useEffect(() => {
     const load = async () => {

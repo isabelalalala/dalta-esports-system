@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useRef, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import Image from 'next/image';
 import Link from 'next/link';
 import { createClient } from '@/utils/supabase/client';
 import { reloadTo } from '@/utils/auth';
@@ -28,7 +27,12 @@ import {
   Calendar,
 } from 'lucide-react';
 
-import { getGameLogo } from '@/utils/game-logos';
+import GameLogo from '@/components/GameLogo';
+import Avatar from '@/components/Avatar';
+import AvatarUploader from '@/components/AvatarUploader';
+import MyWarnings from '@/components/MyWarnings';
+import { refreshViewer } from '@/utils/use-viewer';
+import { can } from '@/utils/permissions';
 
 const inputClass =
   'w-full p-3.5 rounded-xl bg-white text-stone-950 border border-stone-300 placeholder:text-stone-400 focus:border-gold focus:ring-2 focus:ring-gold/25 shadow-xs outline-none transition-all font-medium text-xs sm:text-sm';
@@ -113,6 +117,8 @@ export default function ProfilePage() {
         .eq('id', profile.id);
       if (updateError) throw updateError;
       setMessage('Name updated successfully.');
+      // The header shows the name's initials when there is no picture
+      refreshViewer().catch(() => undefined);
     } catch (err) {
       setError(getErrorMessage(err, 'Failed to save name'));
     } finally {
@@ -213,13 +219,9 @@ export default function ProfilePage() {
     );
   }
 
-  const initials = (profile.full_name || profile.email || 'U').slice(0, 2).toUpperCase();
-
   return (
-    <main
-      id="main-content"
-      className="flex-1 w-full min-h-[calc(100vh-160px)] bg-white text-stone-950 px-4 sm:px-6 lg:px-8 xl:px-12 py-8 sm:py-10"
-    >
+    // The layout (SiteNavLayout) renders the main element and the page padding
+    <div className="w-full text-stone-950">
       <div className="w-full max-w-6xl mx-auto space-y-8">
         {/* 1. Main Hero Container (Matching Dashboard & Tournaments Layout) */}
         <section className="animate-hero-entrance relative w-full rounded-3xl border border-stone-800/80 bg-stone-950 overflow-hidden shadow-md p-8 sm:p-12 lg:p-14 text-center text-white flex flex-col items-center justify-center space-y-5">
@@ -244,9 +246,7 @@ export default function ProfilePage() {
 
           {/* User Identity Display */}
           <div className="relative z-10 max-w-4xl mx-auto space-y-3 pt-2 flex flex-col items-center">
-            <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-3xl bg-gradient-to-br from-maroon/40 via-stone-900 to-black border-2 border-gold/60 text-gold font-black text-2xl sm:text-3xl grid place-items-center tracking-widest shadow-xl shadow-black/50">
-              {initials}
-            </div>
+            <Avatar url={profile.avatar_url} name={profile.full_name || profile.email} size="xl" className="border-2 border-gold/60 shadow-xl shadow-black/50" />
             <h1
               className="animate-hero-title text-3xl sm:text-4xl lg:text-5xl font-black tracking-wider uppercase leading-tight text-white"
             >
@@ -279,6 +279,20 @@ export default function ProfilePage() {
             <span>{message}</span>
           </div>
         )}
+
+        {/* Profile picture (all roles) */}
+        <section className="animate-stagger-1 bg-white border border-stone-200/90 rounded-3xl p-6 sm:p-8 shadow-xs space-y-4" aria-labelledby="picture-title">
+          <h2 id="picture-title" className="text-lg sm:text-xl font-black text-stone-950 tracking-wider">Profile picture</h2>
+          <AvatarUploader
+            userId={profile.id}
+            name={profile.full_name || profile.email}
+            url={profile.avatar_url ?? null}
+            onChange={(url) => setProfile((p) => (p ? { ...p, avatar_url: url } : p))}
+          />
+        </section>
+
+        {/* Moderation warnings (own count and history) */}
+        <MyWarnings userId={profile.id} />
 
         {/* 2. Account Information Card */}
         <form
@@ -377,14 +391,14 @@ export default function ProfilePage() {
         </form>
 
         {/* 3. Student Verification (Players only) */}
-        {profile.role === 'player' && (
+        {can(profile.role, 'verification.submit') && (
           <div className="animate-stagger-1">
             <StudentDetails profile={profile} onSaved={() => setReloadCount((n) => n + 1)} />
           </div>
         )}
 
         {/* 4. Game Profiles (Players only) */}
-        {profile.role === 'player' && (
+        {can(profile.role, 'team.join') && (
           <div className="animate-stagger-2 bg-white border border-stone-200/90 rounded-3xl p-6 sm:p-8 shadow-xs space-y-6">
             <div className="flex items-center gap-3 pb-4 border-b border-stone-100">
               <div className="w-10 h-10 rounded-xl bg-maroon/10 border border-maroon/20 text-maroon grid place-items-center shadow-2xs">
@@ -403,7 +417,6 @@ export default function ProfilePage() {
             <div className="space-y-4">
               {games.map((game) => {
                 const gp = gameProfiles.find((p) => p.game_id === game.id);
-                const logo = getGameLogo(game.name, game.id);
 
                 if (editingGameId === game.id) {
                   return (
@@ -413,11 +426,9 @@ export default function ProfilePage() {
                       className="bg-stone-50/80 border border-gold/70 rounded-2xl p-5 sm:p-6 space-y-4 shadow-sm"
                     >
                       <div className="flex items-center gap-3 pb-2 border-b border-stone-200">
-                        {logo ? (
-                          <div className="w-10 h-10 rounded-xl bg-ink border border-stone-800 flex items-center justify-center p-1.5 shadow-xs shrink-0">
-                            <Image src={logo} alt={game.name} width={32} height={32} className="object-contain" />
-                          </div>
-                        ) : null}
+                        <div className="w-10 h-10 rounded-xl bg-ink border border-stone-800 flex items-center justify-center p-1.5 shadow-xs shrink-0">
+                          <GameLogo name={game.name} gameId={game.id} className="w-8 h-8" fallbackClassName="text-[10px]" sizes="32px" />
+                        </div>
                         <div>
                           <h3 className="font-black text-maroon text-sm tracking-wider uppercase">
                             Editing {game.name} Profile
@@ -498,15 +509,9 @@ export default function ProfilePage() {
                     className="bg-stone-50/70 border border-stone-200/90 rounded-2xl p-5 flex flex-wrap justify-between items-center gap-4 hover:border-stone-300 hover:bg-stone-50 transition-all shadow-2xs"
                   >
                     <div className="flex items-center gap-4">
-                      {logo ? (
-                        <div className="w-12 h-12 rounded-2xl bg-ink border border-stone-800 flex items-center justify-center p-2 shadow-xs shrink-0">
-                          <Image src={logo} alt={game.name} width={38} height={38} className="object-contain" />
-                        </div>
-                      ) : (
-                        <div className="w-12 h-12 rounded-2xl bg-stone-200 border border-stone-300 grid place-items-center text-stone-700 font-black text-sm shrink-0">
-                          {game.name.slice(0, 2).toUpperCase()}
-                        </div>
-                      )}
+                      <div className="w-12 h-12 rounded-2xl bg-ink border border-stone-800 flex items-center justify-center p-2 shadow-xs shrink-0">
+                        <GameLogo name={game.name} gameId={game.id} className="w-9 h-9" fallbackClassName="text-xs" sizes="38px" />
+                      </div>
                       <div>
                         <h3 className="font-black text-stone-950 text-sm tracking-wider uppercase">
                           {game.name}
@@ -623,7 +628,7 @@ export default function ProfilePage() {
           )}
         </div>
       </div>
-    </main>
+    </div>
   );
 }
 

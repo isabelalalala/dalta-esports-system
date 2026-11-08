@@ -1,10 +1,11 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { Bell } from 'lucide-react';
 import { createClient } from '@/utils/supabase/client';
+import { refreshViewer } from '@/utils/use-viewer';
 import {
   fetchNotifications, fetchUnreadCount, markAllAsRead, markAsRead, notificationIcons, timeAgo,
   type AppNotification,
@@ -18,6 +19,8 @@ export default function NotificationBell({ userId }: { userId: string }) {
   const [unread, setUnread] = useState(0);
   const [items, setItems] = useState<AppNotification[]>([]);
   const [open, setOpen] = useState(false);
+  const wrapperRef = useRef<HTMLDivElement>(null);
+  const pathname = usePathname();
   // Increase this to load the count (and the list, when open) again
   const [reloadCount, setReloadCount] = useState(0);
 
@@ -29,7 +32,11 @@ export default function NotificationBell({ userId }: { userId: string }) {
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'notifications', filter: `user_id=eq.${userId}` },
-        () => setReloadCount((n) => n + 1)
+        () => {
+          setReloadCount((n) => n + 1);
+          // A warning, flag or restore changes the viewer's moderation status (comment box, notice)
+          refreshViewer().catch(() => undefined);
+        }
       )
       .subscribe();
 
@@ -51,15 +58,31 @@ export default function NotificationBell({ userId }: { userId: string }) {
     load();
   }, [supabase, open, reloadCount]);
 
-  // Escape closes the dropdown (the invisible overlay only covers pointer users)
+  // Close on Esc and on any press outside the bell and its panel. A document listener is used
+  // instead of a full-screen overlay: the header has backdrop-blur, which turns `position: fixed`
+  // children into header-sized boxes, so an overlay only covered the header strip.
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') setOpen(false);
     };
+    const onPointer = (e: PointerEvent) => {
+      if (wrapperRef.current && !wrapperRef.current.contains(e.target as Node)) setOpen(false);
+    };
     document.addEventListener('keydown', onKey);
-    return () => document.removeEventListener('keydown', onKey);
+    document.addEventListener('pointerdown', onPointer);
+    return () => {
+      document.removeEventListener('keydown', onKey);
+      document.removeEventListener('pointerdown', onPointer);
+    };
   }, [open]);
+
+  // Navigating to another page closes it too (also for links followed with the keyboard)
+  const [lastPath, setLastPath] = useState(pathname);
+  if (pathname !== lastPath) {
+    setLastPath(pathname);
+    setOpen(false);
+  }
 
   const handleClick = async (n: AppNotification) => {
     setOpen(false);
@@ -84,7 +107,7 @@ export default function NotificationBell({ userId }: { userId: string }) {
   };
 
   return (
-    <div className="relative">
+    <div ref={wrapperRef} className="relative">
       <button
         onClick={() => setOpen((o) => !o)}
         className="relative w-10 h-10 flex items-center justify-center rounded-xl border border-stone-200 bg-white hover:bg-stone-50 hover:border-stone-300 text-stone-700 hover:text-stone-950 shadow-xs transition-all"
@@ -101,9 +124,6 @@ export default function NotificationBell({ userId }: { userId: string }) {
 
       {open && (
         <>
-          {/* Clicking anywhere outside closes the list */}
-          <button className="fixed inset-0 z-40 cursor-default" onClick={() => setOpen(false)} aria-label="Close notifications" />
-
           {/* Phones: a full-width panel under the header (the bell isn't at the screen edge, so a
               dropdown anchored to it would stick out on the left). Larger screens: under the bell. */}
           <div className="fixed inset-x-4 top-20 z-50 sm:absolute sm:inset-x-auto sm:top-auto sm:right-0 sm:mt-2 sm:w-[22rem] bg-white rounded-2xl border border-stone-200 shadow-xl overflow-hidden">
@@ -146,7 +166,7 @@ export default function NotificationBell({ userId }: { userId: string }) {
             <Link
               href="/notifications"
               onClick={() => setOpen(false)}
-              className="block text-center text-sm text-gold py-3 border-t border-brown hover:bg-gold/5"
+              className="block text-center text-sm font-bold text-maroon py-3 border-t border-stone-200 hover:bg-stone-50"
             >
               See all →
             </Link>

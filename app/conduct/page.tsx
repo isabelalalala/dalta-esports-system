@@ -127,6 +127,7 @@ export default function ConductPage() {
               <li>Treat players, teams, organizers, casters, and spectators with dignity and respect — in the app, in-game, and at live campus events.</li>
               <li>Harassment, hate speech, discrimination, toxicity, threats, or personal attacks will not be tolerated under any circumstances.</li>
               <li>Player handles, team names, logos, or posted media must not be offensive, hateful, or impersonate others.</li>
+              <li>The same goes for live chat comments and feedback. Friendly trash talk about the game is fine; attacks on a person&apos;s looks, identity, family or safety are not.</li>
             </ul>
           </section>
 
@@ -148,6 +149,12 @@ export default function ConductPage() {
               4. Enforcement
             </h2>
             <ul className="list-disc pl-6 space-y-2.5">
+              <li>
+                <strong className="text-stone-950 font-black">Comments and feedback are checked automatically.</strong> Profanity stays visible but counts as 1 warning. Bullying, harassment, hate speech, threats or sexual content are hidden right away, sent to the moderators and count as 1 warning. Moderators can restore a comment the system hid by mistake (the warning is then removed) or remove one it missed.
+              </li>
+              <li>
+                <strong className="text-stone-950 font-black">5 warnings:</strong> your account is flagged and you can&apos;t comment or send feedback until an administrator reviews it. The administrator either bans the account (it can no longer log in) or clears your warnings. You are told about every warning and decision, with the reason.
+              </li>
               <li>Violating this code may incur formal warnings, match forfeits, tournament disqualification, revocation of student verification status, or account suspension/deletion.</li>
               <li>Severe, repeated, or malicious infractions may be formally escalated to the University Student Affairs Office (UPHSD Molino) or partner leagues.</li>
               <li>All verified members have a responsibility to keep collegiate gaming honorable. See something that breaks this code? Report it promptly to tournament staff.</li>

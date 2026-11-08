@@ -1,7 +1,8 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { createClient } from '@/utils/supabase/server';
 import { getErrorMessage } from '@/utils/errors';
-import { buildExport, EXPORT_ROLES, isExportType, toCsv, toXlsx } from '@/utils/exports';
+import { buildExport, EXPORT_PERMISSION, isExportType, toCsv, toXlsx } from '@/utils/exports';
+import { can } from '@/utils/permissions';
 
 // Big exports page through many 1000-row requests; give them more than Vercel's 10 s default
 export const maxDuration = 60;
@@ -24,7 +25,7 @@ export async function GET(request: NextRequest, ctx: RouteContext<'/api/exports/
     return NextResponse.json({ error: 'Please log in.' }, { status: 401 });
   }
   const { data: role } = await supabase.rpc('get_my_role');
-  if (!EXPORT_ROLES[type].includes(role ?? '')) {
+  if (!can(role, EXPORT_PERMISSION[type])) {
     return NextResponse.json({ error: 'You are not allowed to download this.' }, { status: 403 });
   }
 

@@ -1,5 +1,6 @@
 'use client';
 
+import SectionHint from '@/components/SectionHint';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { createClient } from '@/utils/supabase/client';
@@ -57,8 +58,8 @@ export default function NeedsAttention() {
             <TriangleAlert className="h-5 w-5" />
           </div>
           <div>
-            <h2 className="text-xl sm:text-2xl font-black text-stone-950 tracking-wider">
-              Needs Attention {items.length > 0 && <span className="ml-1.5 px-2.5 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-800 text-xs font-black">({items.length})</span>}
+            <h2 className="text-xl sm:text-2xl font-black text-stone-950 tracking-wider flex flex-wrap items-center gap-1.5">
+              Needs Attention <SectionHint text="Needs attention — matches waiting for an organizer: missing check-ins, disputed results and results to approve." /> {items.length > 0 && <span className="ml-1.5 px-2.5 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-800 text-xs font-black">({items.length})</span>}
             </h2>
             <p className="text-xs text-stone-500 font-medium tracking-wide mt-0.5">
               Urgent matches and disputes requiring staff intervention

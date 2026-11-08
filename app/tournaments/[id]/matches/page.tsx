@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
+import { useRealtimeRefresh } from '@/utils/use-realtime-refresh';
 import Link from 'next/link';
 import { getErrorMessage } from '@/utils/errors';
 import type { Match, MatchStatus, Profile, Tournament } from '@/utils/types';
@@ -13,6 +14,7 @@ import PageError from '@/components/PageError';
 import { usePageTitle } from '@/utils/page-title';
 import PageHeroBackground from '@/components/site/PageHeroBackground';
 import { AlertCircle, ChevronRight, Swords } from 'lucide-react';
+import { can } from '@/utils/permissions';
 
 const inputClass =
   'w-full border border-stone-300 bg-stone-50 px-3 py-2 text-stone-950 font-bold text-xs rounded-xl outline-none focus:border-amber-600 focus:bg-white focus:ring-2 focus:ring-amber-500/20 disabled:opacity-50 transition-all';
@@ -31,6 +33,10 @@ export default function MatchManagementPage() {
 
   const params = useParams();
   const id = params?.id as string;
+
+  // Results approved elsewhere (match page, captains) show up here without a refresh
+  const reload = useCallback(() => setReloadCount((n) => n + 1), []);
+  useRealtimeRefresh(id ? `manage-matches-${id}` : null, [{ table: 'matches', filter: `tournament_id=eq.${id}` }], reload);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -97,7 +103,7 @@ export default function MatchManagementPage() {
     return <PageError message={error || 'Tournament not found'} backHref="/tournaments" backLabel="Back to Tournaments" />;
   }
   // Players and spectators can't change matches (RLS blocks it anyway); don't show them the forms
-  if (profile?.role !== 'admin' && profile?.role !== 'staff') {
+  if (!can(profile?.role, 'match.manage')) {
     return <PageError message="Only organizers can manage matches." backHref={`/tournaments/${id}`} backLabel="Back to the tournament" />;
   }
 

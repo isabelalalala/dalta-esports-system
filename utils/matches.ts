@@ -12,9 +12,15 @@ export async function fetchTeamNames(supabase: SupabaseClient, matches: Match[])
   }
   if (ids.size === 0) return {};
 
-  const { data, error } = await supabase.from('teams').select('id, name').in('id', [...ids]);
+  const { data, error } = await supabase.from('teams').select('id, name, is_removed').in('id', [...ids]);
   if (error) throw error;
-  return Object.fromEntries((data || []).map((t) => [t.id as string, t.name as string])) as Record<string, string>;
+  return Object.fromEntries((data || []).map((t) => [t.id, teamLabel(t)])) as Record<string, string>;
+}
+
+// A team's name as shown in brackets and match lists: removed teams (202611081000) keep their
+// place in past matches, marked so nobody thinks they are still playing.
+export function teamLabel(team: { name: string; is_removed?: boolean | null }) {
+  return team.is_removed ? `${team.name} (removed)` : team.name;
 }
 
 // Tournament id -> number of rounds (the highest round is the final), for roundLabel()

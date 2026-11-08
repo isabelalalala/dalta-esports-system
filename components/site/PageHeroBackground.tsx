@@ -104,7 +104,8 @@ export default function PageHeroBackground({
   }, [src, specificKey]);
 
   return (
-    <div className="absolute inset-0 -z-0 pointer-events-none overflow-hidden" aria-hidden="true">
+    // data-hero-bg: in dark mode the section around a hero keeps its light-mode colors (globals.css)
+    <div data-hero-bg className="absolute inset-0 -z-0 pointer-events-none overflow-hidden" aria-hidden="true">
       <Image
         src={src || resolvedSrc}
         alt={alt}

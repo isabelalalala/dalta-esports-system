@@ -22,6 +22,10 @@ export interface Profile {
   submitted_at: string | null;
   reviewed_by: string | null;
   reviewed_at: string | null;
+  // Profile picture (public address in the avatars bucket, 202611081400); null = initials
+  avatar_url?: string | null;
+  // Set when the quick tour was finished or skipped
+  tour_dismissed_at?: string | null;
 }
 
 export type VerificationStatus = 'unsubmitted' | 'pending' | 'verified' | 'rejected';
@@ -69,6 +73,10 @@ export interface Team {
   // Open to join requests (202611011300)
   recruiting: boolean;
   created_at: string;
+  // Removed by an organizer (soft delete, 202611081000). The row stays for brackets and reports.
+  is_removed: boolean;
+  removed_by: string | null;
+  removed_at: string | null;
   // Only present when selected with `games(...)`
   games?: Game;
   // Only present when selected with `team_members(count)`
@@ -99,6 +107,7 @@ export interface RosterMember {
   role: 'captain' | 'player';
   joined_at: string;
   is_verified: boolean;
+  avatar_url?: string | null;
 }
 
 // One row returned by the search_players() database function
@@ -109,6 +118,7 @@ export interface PlayerSearchResult {
   in_game_role: string | null;
   rank: string | null;
   is_verified: boolean;
+  avatar_url?: string | null;
   // Already has an open invite from the captain's team
   invited: boolean;
 }
@@ -160,6 +170,7 @@ export interface TeamJoinRequest {
   is_verified: boolean;
   message: string | null;
   created_at: string;
+  avatar_url?: string | null;
 }
 
 export type RegistrationStatus = 'pending' | 'approved' | 'rejected' | 'cancelled';
@@ -278,7 +289,10 @@ export interface Stream {
   // Optional: the one match this stream shows
   match_id: string | null;
   title: string;
+  // Canonical video address (202611081100); older rows may still hold the pasted form
   facebook_url: string;
+  // Facebook video id, when the link has one
+  facebook_video_id: string | null;
   status: StreamStatus;
   created_by: string | null;
   created_at: string;
@@ -310,8 +324,28 @@ export interface Feedback {
   analysis_error: string | null;
   analysis_attempted_at: string | null;
   created_at: string;
+  // Moderation (202611081500): profanity flag, offensive (hidden) and the moderators' decision
+  is_profane?: boolean;
+  is_offensive?: boolean;
+  offense_type?: string;
+  moderation_status?: 'pending' | 'approved' | 'hidden' | 'restored' | 'removed';
+  moderation_reason?: string | null;
   // Only present when selected with `tournaments(...)`
   tournaments?: { id: string; name: string } | null;
   // Only present when selected with `matches(...)`
   matches?: { id: string; round: number; match_number: number } | null;
+}
+
+// One row of team_removals (organizers only): why a team was removed and who was on it
+export interface TeamRemoval {
+  id: string;
+  team_id: string;
+  removed_by: string | null;
+  removed_at: string;
+  reason: string;
+  roster: { user_id: string; full_name: string | null; role: 'captain' | 'player' }[];
+  tournaments: string[];
+  walkovers: number;
+  restored_by: string | null;
+  restored_at: string | null;
 }

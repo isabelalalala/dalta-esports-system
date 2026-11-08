@@ -8,7 +8,7 @@ import { getErrorMessage } from '@/utils/errors';
 import type { Match, Profile, Stream, StreamStatus, Tournament } from '@/utils/types';
 import { roundLabel } from '@/utils/tournaments';
 import { fetchTeamNames } from '@/utils/matches';
-import { streamStatusStyles, validateFacebookUrl } from '@/utils/streams';
+import { FACEBOOK_LINK_HELP, parseFacebookInput, streamStatusStyles } from '@/utils/streams';
 import FacebookPlayer from '@/components/FacebookPlayer';
 import PageLoading from '@/components/PageLoading';
 import PageError from '@/components/PageError';
@@ -25,6 +25,7 @@ import {
   Tv,
   Video,
 } from 'lucide-react';
+import { can } from '@/utils/permissions';
 
 const inputClass =
   'w-full border border-stone-300 bg-stone-50 px-4 py-3.5 text-stone-950 font-bold text-xs rounded-xl outline-none focus:border-amber-600 focus:bg-white focus:ring-2 focus:ring-amber-500/20 transition-all placeholder:text-stone-400 shadow-xs';
@@ -147,7 +148,7 @@ export default function ManageStreamsPage() {
     return <PageError message={error || 'Tournament not found. It may have been deleted.'} backHref="/tournaments" backLabel="Back to Tournaments" />;
   }
 
-  if (profile?.role !== 'admin' && profile?.role !== 'staff') {
+  if (!can(profile?.role, 'stream.configure')) {
     return (
       <div className="w-full p-12 text-center text-xs font-black tracking-wider text-stone-600">
         Only organizers can configure streams.{' '}
@@ -268,7 +269,7 @@ export default function ManageStreamsPage() {
               className="rounded-3xl border border-stone-200/90 bg-white overflow-hidden shadow-xs hover:border-amber-400/50 hover:shadow-md transition-all flex flex-col"
             >
               {/* Embedded Player in Card */}
-              <div className="relative aspect-video w-full bg-black overflow-hidden border-b border-stone-100">
+              <div className="w-full border-b border-stone-100 pb-2 px-3 pt-3">
                 <FacebookPlayer url={stream.facebook_url} title={stream.title} />
               </div>
 
@@ -351,6 +352,22 @@ export default function ManageStreamsPage() {
   );
 }
 
+// What staff must set on Facebook so the embedded player can show the stream
+const STREAM_CHECKLIST = [
+  'The stream comes from a Facebook Page, not a personal profile.',
+  'The video\'s privacy is set to Public.',
+  'Embedding is allowed (Live Producer → Settings → "Allow embedding").',
+  'No age or country restrictions on the Page or the video.',
+];
+
+type LinkCheck =
+  | { state: 'idle' }
+  | { state: 'checking' }
+  // embeddable: 'checking' while the server asks Facebook, false = Facebook says it can't be shown,
+  // null = couldn't tell (most working videos)
+  | { state: 'ok'; canonicalUrl: string; videoId: string | null; embeddable: false | null | 'checking' }
+  | { state: 'error'; message: string };
+
 function StreamForm({
   existing,
   tournamentId,
@@ -371,23 +388,68 @@ function StreamForm({
   const [url, setUrl] = useState(existing?.facebook_url ?? '');
   const [matchId, setMatchId] = useState(existing?.match_id ?? '');
   const [status, setStatus] = useState<StreamStatus>(existing?.status ?? 'scheduled');
+  const [check, setCheck] = useState<LinkCheck>({ state: 'idle' });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
-  const urlError = validateFacebookUrl(url);
+  // Check the link as staff type or paste. Links that already name the video are canonicalized in
+  // the browser right away; the server then follows share links (/share/v/, fb.watch) and asks
+  // Facebook's embed player whether the video can be shown (POST /api/streams/resolve-url).
+  useEffect(() => {
+    const value = url.trim();
+    const parsed = value ? parseFacebookInput(value) : null;
+    let cancelled = false;
+
+    // Every state change happens in a timer so typing doesn't re-render on each key
+    const timer = setTimeout(async () => {
+      if (!parsed) return setCheck({ state: 'idle' });
+      if (parsed.kind === 'invalid') return setCheck({ state: 'error', message: parsed.message });
+      if (parsed.kind === 'video') {
+        setCheck({ state: 'ok', canonicalUrl: parsed.canonicalUrl, videoId: parsed.videoId, embeddable: 'checking' });
+      } else {
+        setCheck({ state: 'checking' });
+      }
+      try {
+        const res = await fetch('/api/streams/resolve-url', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url: value }),
+        });
+        const data = await res.json();
+        if (cancelled) return;
+        if (!res.ok) setCheck({ state: 'error', message: data.error || FACEBOOK_LINK_HELP });
+        else setCheck({ state: 'ok', canonicalUrl: data.canonicalUrl, videoId: data.videoId ?? null, embeddable: data.embeddable ?? null });
+      } catch {
+        if (cancelled) return;
+        // The link itself was fine; only the embed check failed: keep it, without a verdict
+        if (parsed.kind === 'video') {
+          setCheck({ state: 'ok', canonicalUrl: parsed.canonicalUrl, videoId: parsed.videoId, embeddable: null });
+        } else {
+          setCheck({ state: 'error', message: FACEBOOK_LINK_HELP });
+        }
+      }
+    }, 600);
+
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [url]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (urlError) {
-      setError(urlError);
+    if (check.state !== 'ok') {
+      setError(check.state === 'error' ? check.message : 'Wait for the link check to finish.');
       return;
     }
     setSaving(true);
     setError('');
 
+    // Always save the canonical address (never the share link) plus the video id
     const fields = {
       title: title.trim(),
-      facebook_url: url.trim(),
+      facebook_url: check.canonicalUrl,
+      facebook_video_id: check.videoId,
       match_id: matchId || null,
       status,
     };
@@ -408,7 +470,7 @@ function StreamForm({
   return (
     <form
       onSubmit={handleSubmit}
-      className="rounded-3xl border border-amber-400/80 bg-white p-6 sm:p-8 lg:p-10 shadow-md space-y-6"
+      className="rounded-3xl border border-amber-400/80 bg-white p-4 sm:p-8 lg:p-10 shadow-md space-y-6"
     >
       <div className="border-b border-stone-100 pb-3">
         <span className="text-[11px] font-black tracking-widest text-maroon uppercase">Broadcast Studio</span>
@@ -418,53 +480,95 @@ function StreamForm({
       </div>
 
       {error && (
-        <div role="alert" className="rounded-2xl bg-red-500/10 border border-red-500/30 p-4 text-red-700 text-xs sm:text-sm font-bold tracking-wider flex items-center gap-3">
+        <div role="alert" className="rounded-2xl bg-red-500/10 border border-red-500/30 p-4 text-red-700 text-sm font-bold flex items-center gap-3">
           <AlertCircle className="w-5 h-5 shrink-0 text-red-600" />
           <span>{error}</span>
         </div>
       )}
 
+      {/* Stream checklist: the usual reasons a live stream shows "no permission" on our site */}
+      <details open={!existing} className="rounded-2xl border border-stone-200 bg-stone-50 p-4">
+        <summary className="cursor-pointer text-xs font-black tracking-wider text-stone-950">
+          Stream checklist (before you go live)
+        </summary>
+        <ul className="mt-3 space-y-2 text-sm leading-relaxed text-stone-800">
+          {STREAM_CHECKLIST.map((item) => (
+            <li key={item} className="flex gap-2">
+              <CircleCheck className="w-4 h-4 mt-0.5 shrink-0 text-maroon" aria-hidden="true" />
+              <span>{item}</span>
+            </li>
+          ))}
+        </ul>
+        <p className="mt-3 text-sm leading-relaxed text-stone-600">
+          Best link: open the video on its own page, then ⋯ → &quot;Copy link&quot;. Share links, fb.watch links and
+          embed code also work: we look up the video for you.
+        </p>
+      </details>
+
       <div>
-        <label className={labelClass}>
+        <label htmlFor="stream-title" className={labelClass}>
           Broadcast Title *
         </label>
         <input
+          id="stream-title"
           type="text"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           placeholder="e.g. Grand Finals: DALTA Valorant Cup"
-          aria-label="Stream title"
           className={inputClass}
           required
         />
       </div>
 
       <div>
-        <label className={labelClass}>
-          Facebook Live Video URL *
+        <label htmlFor="stream-url" className={labelClass}>
+          Facebook video link or embed code *
         </label>
+        {/* type="text", not "url": embed code isn't a URL */}
         <input
-          type="url"
+          id="stream-url"
+          type="text"
+          inputMode="url"
           value={url}
           onChange={(e) => setUrl(e.target.value)}
-          placeholder="https://www.facebook.com/yourpage/videos/123..."
-          aria-label="Facebook video URL"
+          placeholder="https://www.facebook.com/yourpage/videos/123... or a share link"
           className={inputClass}
           required
         />
-        {url && (
-          <p role={urlError ? 'alert' : 'status'} className={`mt-2 text-xs font-bold ${urlError ? 'text-red-600' : 'text-emerald-700'}`}>
-            {urlError || <span className="inline-flex items-center gap-1.5"><CircleCheck className="h-4 w-4" /> Valid Facebook link. Verified playable preview below.</span>}
-          </p>
-        )}
+        <div aria-live="polite" className="mt-2 text-sm font-bold">
+          {check.state === 'checking' && <p className="text-stone-600">Checking the link with Facebook...</p>}
+          {check.state === 'error' && <p className="text-red-700">{check.message}</p>}
+          {check.state === 'ok' && (
+            <div className="space-y-1">
+              <p className="inline-flex items-center gap-1.5 text-emerald-800">
+                <CircleCheck className="h-4 w-4 shrink-0" /> Video found{check.videoId ? ` (id ${check.videoId})` : ''}.
+                Check the preview below before saving.
+              </p>
+              {check.canonicalUrl !== url.trim() && (
+                <p className="font-medium text-stone-600 break-all">Will be saved as: {check.canonicalUrl}</p>
+              )}
+              {check.embeddable === 'checking' && (
+                <p className="font-medium text-stone-600">Asking Facebook whether the video can be embedded...</p>
+              )}
+              {check.embeddable === false && (
+                <p role="alert" className="rounded-xl border border-yellow-500/50 bg-yellow-50 p-3 font-semibold text-stone-950">
+                  Facebook says this video can&apos;t be shown here (&quot;Video unavailable / you don&apos;t have
+                  permission&quot;). Viewers will see that message instead of the stream. Go through the checklist above:
+                  usually the video isn&apos;t Public, is on a personal profile, or has embedding turned off. You can
+                  still save it and fix the settings on Facebook.
+                </p>
+              )}
+            </div>
+          )}
+        </div>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <label className={labelClass}>
+          <label htmlFor="stream-match" className={labelClass}>
             Linked Match (Bracket Fixture)
           </label>
-          <select value={matchId} onChange={(e) => setMatchId(e.target.value)} className={inputClass} aria-label="Linked match">
+          <select id="stream-match" value={matchId} onChange={(e) => setMatchId(e.target.value)} className={inputClass}>
             <option value="">Whole Tournament (No single match)</option>
             {Object.entries(matchLabels).map(([mid, label]) => (
               <option key={mid} value={mid}>{label}</option>
@@ -472,10 +576,10 @@ function StreamForm({
           </select>
         </div>
         <div>
-          <label className={labelClass}>
+          <label htmlFor="stream-status" className={labelClass}>
             Broadcast Status
           </label>
-          <select value={status} onChange={(e) => setStatus(e.target.value as StreamStatus)} className={inputClass} aria-label="Stream status">
+          <select id="stream-status" value={status} onChange={(e) => setStatus(e.target.value as StreamStatus)} className={inputClass}>
             <option value="scheduled">Scheduled</option>
             <option value="live">Live Now (On Air)</option>
             <option value="ended">Ended (VOD / Replay)</option>
@@ -483,28 +587,31 @@ function StreamForm({
         </div>
       </div>
 
-      {/* Real-time Video Embed Preview */}
-      {url && !urlError && (
+      {/* Preview of exactly what viewers will see (the canonical address) */}
+      {check.state === 'ok' && (
         <div className="space-y-2 pt-2">
-          <span className="text-[11px] font-black uppercase text-stone-500 tracking-wider">Live Embed Preview</span>
-          <div className="rounded-2xl border border-stone-200 overflow-hidden bg-black shadow-md aspect-video">
-            <FacebookPlayer url={url} title="Broadcast Preview" />
+          <span className="text-xs font-black uppercase text-stone-600 tracking-wider">Preview</span>
+          <div className="rounded-2xl border border-stone-200 overflow-hidden shadow-md p-2">
+            <FacebookPlayer url={check.canonicalUrl} title="Broadcast preview" />
           </div>
+          <p className="text-sm text-stone-600">
+            If the preview says the video is unavailable or you don&apos;t have permission, go through the checklist above.
+          </p>
         </div>
       )}
 
-      <div className="flex flex-wrap items-center gap-3 pt-3 border-t border-stone-100">
+      <div className="flex flex-col sm:flex-row gap-3 pt-3 border-t border-stone-100">
         <button
           type="submit"
-          disabled={saving}
-          className="px-6 py-3.5 rounded-xl bg-gold hover:bg-golddark text-stone-950 font-black text-xs uppercase tracking-widest border border-amber-400 shadow-xs hover:-translate-y-0.5 transition-all disabled:opacity-50"
+          disabled={saving || check.state !== 'ok'}
+          className="px-6 py-3.5 rounded-xl bg-gold hover:bg-golddark text-stone-950 font-black text-xs uppercase tracking-widest border border-amber-400 shadow-xs transition-all disabled:opacity-50"
         >
           {saving ? 'Saving Broadcast...' : 'Save Broadcast Stream'}
         </button>
         <button
           type="button"
           onClick={onCancel}
-          className="px-5 py-3.5 rounded-xl border border-stone-200 bg-white text-stone-600 hover:text-stone-950 font-bold text-xs uppercase tracking-wider transition-colors"
+          className="px-5 py-3.5 rounded-xl border border-stone-300 bg-white text-stone-700 hover:text-stone-950 font-bold text-xs uppercase tracking-wider transition-colors"
         >
           Cancel
         </button>

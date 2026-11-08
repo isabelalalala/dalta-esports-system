@@ -1,6 +1,5 @@
 import { Suspense } from 'react';
 import type { Metadata } from 'next';
-import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { getPublicTournament, teamNameMap } from '@/utils/public-tournament';
@@ -9,6 +8,7 @@ import { publicMatchPath, publicTournamentPath } from '@/utils/site-url';
 import type { Match } from '@/utils/types';
 import Bracket from '@/app/tournaments/[id]/Bracket';
 import FacebookPlayer from '@/components/FacebookPlayer';
+import StreamComments from '@/components/StreamComments';
 import ShareButton from '@/components/ShareButton';
 import CalendarLinks from '@/components/CalendarLinks';
 import LiveRefresher from '@/components/site/LiveRefresher';
@@ -19,7 +19,7 @@ import PredictionPicker from '@/components/PredictionPicker';
 import PageHeroBackground from '@/components/site/PageHeroBackground';
 import { BadgeCheck, ExternalLink, Target } from 'lucide-react';
 
-import { getGameLogo } from '@/utils/game-logos';
+import GameLogo from '@/components/GameLogo';
 
 const TZ = 'Asia/Manila';
 
@@ -63,7 +63,6 @@ async function TournamentContent({ params }: { params: PageProps<'/t/[id]'>['par
   const results = realMatches
     .filter((m) => m.status === 'completed')
     .sort((a, b) => b.round - a.round || a.match_number - b.match_number);
-  const logo = getGameLogo(t.game, t.game_id);
 
   const matchRow = (m: Match) => (
     <li key={m.id}>
@@ -153,8 +152,12 @@ async function TournamentContent({ params }: { params: PageProps<'/t/[id]'>['par
             </h2>
           </div>
           {data.live_streams.map((s) => (
-            <div key={s.id} className="rounded-3xl border border-stone-200 overflow-hidden bg-black shadow-md">
-              <FacebookPlayer url={s.facebook_url} title={s.title} />
+            // Video and live chat side by side on large screens, chat below on phones
+            <div key={s.id} className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_22rem] gap-4 items-start">
+              <div className="min-w-0 rounded-3xl border border-stone-200 overflow-hidden bg-white p-2 sm:p-3 shadow-md">
+                <FacebookPlayer url={s.facebook_url} title={s.title} />
+              </div>
+              <StreamComments streamId={s.id} heightClass="h-80" />
             </div>
           ))}
         </section>
@@ -162,37 +165,35 @@ async function TournamentContent({ params }: { params: PageProps<'/t/[id]'>['par
 
       {/* 3. Media & Information Editorial Row */}
       <div className="animate-stagger-1 grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 items-start">
-        {logo ? (
-          <div className="lg:col-span-5 w-full">
-            <div className="relative aspect-[4/3] max-h-[380px] w-full rounded-3xl border border-stone-800/80 bg-ink overflow-hidden shadow-md flex items-center justify-center p-6 sm:p-8">
-              <div
-                className="absolute inset-0 pointer-events-none bg-logo-stage"
-              />
-              <div className="absolute top-4 right-4 z-20 pointer-events-none">
-                <span className="text-[10px] font-black tracking-widest px-3 py-1.5 rounded-md border border-gold/60 bg-ink/85 text-gold uppercase backdrop-blur-md shadow-md">
-                  {statusLabels[status]}
-                </span>
-              </div>
-              <div className="relative z-0 w-36 h-36 sm:w-44 sm:h-44 flex items-center justify-center">
-                <Image
-                  src={logo}
-                  alt={t.game}
-                  fill
-                  sizes="(max-width: 1024px) 200px, 220px"
-                  className="object-contain drop-shadow-[0_8px_24px_rgba(0,0,0,0.7)]"
-                  priority
-                />
-              </div>
-              <div className="absolute bottom-4 left-6 right-6 text-center z-10">
-                <span className="text-xs font-black tracking-widest text-stone-400 uppercase">
-                  {t.game} Division
-                </span>
-              </div>
+        {/* Left column: game logo (or its initials). Always rendered, so every game gets the same
+            5/7 layout; min-w-0 lets grid columns shrink instead of squeezing their text. */}
+        <div className="lg:col-span-5 w-full min-w-0">
+          <div className="relative aspect-[4/3] max-h-[380px] w-full rounded-3xl border border-stone-800/80 bg-ink overflow-hidden shadow-md flex items-center justify-center p-6 sm:p-8">
+            <div className="absolute inset-0 pointer-events-none bg-logo-stage" />
+            <div className="absolute top-4 right-4 z-20 pointer-events-none">
+              <span className="text-[10px] font-black tracking-widest px-3 py-1.5 rounded-md border border-gold/60 bg-ink/85 text-gold uppercase backdrop-blur-md shadow-md">
+                {statusLabels[status]}
+              </span>
+            </div>
+            <GameLogo
+              name={t.game}
+              gameId={t.game_id}
+              className="z-0 w-48 h-36 sm:w-56 sm:h-44"
+              imageClassName="drop-shadow-[0_8px_24px_rgba(0,0,0,0.7)]"
+              fallbackClassName="text-5xl"
+              sizes="(max-width: 1024px) 200px, 240px"
+              priority
+            />
+            <div className="absolute bottom-4 left-6 right-6 text-center z-10">
+              <span className="text-xs font-black tracking-widest text-stone-400 uppercase">
+                {t.game} Division
+              </span>
             </div>
           </div>
-        ) : null}
+        </div>
 
-        <div className={logo ? 'lg:col-span-7 w-full space-y-6' : 'w-full space-y-6'}>
+        {/* min-w: if this column is ever squeezed again, it overflows instead of wrapping letter by letter */}
+        <div className="lg:col-span-7 w-full min-w-[min(100%,18rem)] space-y-6">
           <div className="rounded-3xl border border-stone-200/90 bg-white p-6 sm:p-8 lg:p-10 shadow-xs space-y-5">
             <div className="border-b border-stone-100 pb-4 space-y-1">
               <span className="text-[11px] font-black tracking-widest text-maroon uppercase">

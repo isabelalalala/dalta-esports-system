@@ -9,6 +9,8 @@ import MyMatches from './MyMatches';
 import LatestAnnouncements from './LatestAnnouncements';
 import TeamInvites from '@/components/TeamInvites';
 import NeedsAttention from './NeedsAttention';
+import QuickTour from '@/components/QuickTour';
+import Tooltip from '@/components/Tooltip';
 import type { User } from '@supabase/supabase-js';
 import type { Profile } from '@/utils/types';
 import { PRIVACY_NOTICE_VERSION } from '@/utils/privacy';
@@ -16,8 +18,9 @@ import PageLoading from '@/components/PageLoading';
 import PageError from '@/components/PageError';
 import { getErrorMessage } from '@/utils/errors';
 import { usePageTitle } from '@/utils/page-title';
+import { can, isOrganizer } from '@/utils/permissions';
 import {
-  Activity, Brain, CalendarDays, ChartColumn, ChevronLeft, ChevronRight, ClipboardList,
+  Activity, Brain, CalendarDays, ChartColumn, ClipboardList,
   Crown, Eye, Gamepad2, Globe, GraduationCap, Megaphone, MessageSquare, RadioTower,
   Shield, Target, Trophy, Tv, Users, type LucideIcon,
 } from 'lucide-react';
@@ -29,7 +32,8 @@ interface DashCard {
   icon: LucideIcon;
 }
 
-const PAGE_SIZE = 4;
+// The first cards of each role's list are its most common tasks
+const TOP_CARDS = 4;
 
 const roleLabels: Record<string, string> = {
   admin: 'Administrator',
@@ -45,10 +49,10 @@ const roleIcons: Record<string, LucideIcon> = {
   spectator: Eye,
 };
 
-// Shortcuts for each role. The pages check the role themselves (and RLS protects the data);
-// the cards are only a convenience.
+// Shortcuts for each role, picked by permission (utils/permissions.ts). The pages check the
+// role themselves (and RLS protects the data); the cards are only a convenience.
 function cardsFor(role: string | undefined): DashCard[] {
-  if (role === 'player') {
+  if (can(role, 'team.join')) {
     return [
       { href: '/tournaments', title: 'Available Tournaments', text: 'Browse and register for tournaments', icon: ClipboardList },
       { href: '/teams', title: 'My Teams', text: 'Manage your teams and players', icon: Users },
@@ -59,7 +63,7 @@ function cardsFor(role: string | undefined): DashCard[] {
       { href: '/announcements', title: 'Announcements', text: 'News and updates from the organizers', icon: Megaphone },
     ];
   }
-  if (role === 'spectator') {
+  if (!isOrganizer(role)) {
     return [
       { href: '/live', title: 'Live Tournaments', text: 'Watch ongoing tournaments and matches', icon: Tv },
       { href: '/schedule', title: 'Schedule & Results', text: 'Upcoming matches, results and brackets', icon: CalendarDays },
@@ -67,34 +71,37 @@ function cardsFor(role: string | undefined): DashCard[] {
       { href: '/feedback', title: 'Feedback', text: 'Share your feedback and ratings', icon: MessageSquare },
     ];
   }
-  if (role === 'admin' || role === 'staff') {
-    const isAdmin = role === 'admin';
-    const cards: (DashCard | false)[] = [
-      { href: '/tournaments', title: 'Manage Tournaments', text: 'Create and manage tournaments', icon: ClipboardList },
-      isAdmin && { href: '/admin/users', title: 'Manage Users', text: 'Change roles, edit names and delete accounts', icon: Users },
-      isAdmin && { href: '/admin/website', title: 'Website', text: 'Edit the public pages, photos, officers and teams', icon: Globe },
-      isAdmin && { href: '/admin/activity', title: 'Activity Log', text: 'Who did what, and when', icon: Activity },
-      { href: '/teams', title: 'Teams', text: 'Browse every team, roster and join request', icon: Shield },
-      { href: '/matches', title: 'Match Management', text: 'Schedule and manage matches', icon: Gamepad2 },
-      { href: '/admin/verification', title: 'Student Verification', text: "Verify players' student details", icon: GraduationCap },
-      { href: '/live', title: 'Live Streams', text: 'Watch streams; configure them from each tournament', icon: RadioTower },
-      isAdmin && { href: '/admin/feedback', title: 'Feedback Analysis', text: 'Sentiment of audience and player feedback', icon: Brain },
-      {
-        href: '/announcements',
-        title: 'Announcements',
-        text: isAdmin ? 'Post and manage announcements' : 'Read the latest announcements',
-        icon: Megaphone,
-      },
-      {
-        href: '/analytics',
-        title: 'Analytics',
-        text: isAdmin ? 'Generate activity, sentiment and engagement reports' : 'Viewership and audience engagement stats',
-        icon: ChartColumn,
-      },
-    ];
-    return cards.filter((c): c is DashCard => !!c);
+  // Admin and staff share most tools; the first four (the cards) are each role's most common tasks
+  const tournaments = { href: '/tournaments', title: 'Manage Tournaments', text: 'Create and manage tournaments', icon: ClipboardList };
+  const teams = { href: '/admin/teams', title: 'Teams', text: 'Every team, roster and join request; remove teams', icon: Shield };
+  const matches = { href: '/matches', title: 'Match Control', text: 'Schedule matches, check-ins, results and forfeits', icon: Gamepad2 };
+  const streams = { href: '/live', title: 'Live Streams', text: 'Watch streams; configure them from each tournament', icon: RadioTower };
+  const verification = { href: '/admin/verification', title: 'Student Verification', text: "Verify players' student details", icon: GraduationCap };
+  const announcements = {
+    href: '/announcements',
+    title: 'Announcements',
+    text: can(role, 'announcement.post') ? 'Post and manage announcements' : 'Read the latest announcements',
+    icon: Megaphone,
+  };
+  const analytics = {
+    href: '/analytics',
+    title: can(role, 'report.generate') ? 'Reports' : 'Engagement Stats',
+    text: can(role, 'report.generate') ? 'Generate activity, sentiment and engagement reports' : 'Viewership and audience engagement stats',
+    icon: ChartColumn,
+  };
+
+  if (!can(role, 'user.manage')) {
+    return [matches, streams, tournaments, teams, verification, announcements, analytics];
   }
-  return [];
+  return [
+    tournaments, teams,
+    { href: '/admin/users', title: 'Manage Users', text: 'Change roles, edit names and delete accounts', icon: Users },
+    analytics, announcements,
+    { href: '/admin/feedback', title: 'Feedback & Sentiment', text: 'Sentiment of audience and player feedback', icon: Brain },
+    matches, streams, verification,
+    { href: '/admin/website', title: 'Website', text: 'Edit the public pages, photos, officers and teams', icon: Globe },
+    { href: '/admin/activity', title: 'Activity Log', text: 'Who did what, and when', icon: Activity },
+  ];
 }
 
 export default function Dashboard() {
@@ -103,7 +110,6 @@ export default function Dashboard() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState('');
-  const [pageIndex, setPageIndex] = useState(0);
   const router = useRouter();
   usePageTitle('Dashboard');
 
@@ -149,13 +155,11 @@ export default function Dashboard() {
   if (loadError) return <PageError message={loadError} backHref="/" backLabel="Home" />;
 
   const role = profile?.role;
-  const isOrganizer = role === 'admin' || role === 'staff';
   const RoleIcon = roleIcons[role ?? ''];
 
   const allCards = cardsFor(role);
-  const totalPages = Math.ceil(allCards.length / PAGE_SIZE) || 1;
-  const safePageIndex = Math.min(pageIndex, totalPages - 1);
-  const visibleCards = allCards.slice(safePageIndex * PAGE_SIZE, (safePageIndex + 1) * PAGE_SIZE);
+  const topCards = allCards.slice(0, TOP_CARDS);
+  const moreCards = allCards.slice(TOP_CARDS);
 
   return (
     <div className="w-full max-w-7xl mx-auto space-y-8 sm:space-y-10">
@@ -202,100 +206,69 @@ export default function Dashboard() {
         </div>
       </section>
 
+      {/* First login: a short, skippable tour (never shown again once dismissed) */}
+      <QuickTour />
+
       {/* 2. Open Team Invites */}
-      {role === 'player' && <div className="animate-stagger-1"><TeamInvites /></div>}
+      {can(role, 'team.join') && <div className="animate-stagger-1"><TeamInvites /></div>}
 
-      {/* 3. Action Shortcuts Carousel (4 Services per view with Left & Right Arrow controls) */}
-      <section className="space-y-4 animate-stagger-1">
-          <div>
-            <h2 className="text-xl sm:text-2xl font-black text-stone-950 tracking-wider">
-              Quick Actions
-            </h2>
-          </div>
+      {/* 3. Quick actions: the role's 4 most common tasks as cards, then every other tool. All
+          visible at once (the old carousel hid most actions behind arrows). */}
+      <section className="space-y-4 animate-stagger-1" aria-labelledby="quick-actions-title">
+        <h2 id="quick-actions-title" className="text-xl sm:text-2xl font-black text-stone-950 tracking-wider">
+          Quick Actions
+        </h2>
 
-          <div className="relative w-full">
-            {/* Left Arrow Button */}
-            {totalPages > 1 && (
-              <button
-                type="button"
-                onClick={() => setPageIndex((prev) => Math.max(0, prev - 1))}
-                disabled={safePageIndex === 0}
-                aria-label="Previous services"
-                className="absolute -left-3 sm:-left-5 top-1/2 -translate-y-1/2 z-20 w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-white border border-stone-200/90 text-stone-900 shadow-md hover:shadow-lg hover:bg-stone-50 hover:border-amber-500/60 hover:scale-105 active:scale-95 transition-all flex items-center justify-center disabled:opacity-0 disabled:pointer-events-none cursor-pointer"
-              >
-                <ChevronLeft className="h-5 w-5 sm:h-6 sm:w-6" />
-              </button>
-            )}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+          {topCards.map((card) => (
+            <Link
+              key={card.href}
+              href={card.href}
+              className="group rounded-2xl border border-stone-200/90 bg-white p-5 sm:p-6 shadow-xs hover:shadow-lg hover:-translate-y-1 hover:border-amber-500/50 transition-all duration-300 flex flex-col justify-between"
+            >
+              <div>
+                <div className="w-12 h-12 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-700 flex items-center justify-center mb-4 group-hover:bg-gold group-hover:text-stone-950 group-hover:border-gold transition-colors">
+                  <card.icon className="h-6 w-6 shrink-0" />
+                </div>
+                <h3 className="font-black text-stone-950 text-base sm:text-lg tracking-wide uppercase group-hover:text-amber-700 transition-colors">
+                  {card.title}
+                </h3>
+                <p className="text-sm text-stone-600 leading-relaxed mt-2">{card.text}</p>
+              </div>
+              <div className="mt-5 pt-3 border-t border-stone-100 flex items-center justify-between text-xs font-black text-amber-700 uppercase tracking-wider">
+                <span>Open</span>
+                <span className="group-hover:translate-x-1 transition-transform motion-reduce:transform-none">→</span>
+              </div>
+            </Link>
+          ))}
+        </div>
 
-            {/* 4 Services Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 sm:gap-6 min-h-[240px]">
-              {visibleCards.map((card) => (
+        {moreCards.length > 0 && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {moreCards.map((card) => (
+              <Tooltip key={card.href} text={card.text} className="flex w-full">
                 <Link
-                  key={card.href}
                   href={card.href}
-                  className="group rounded-2xl border border-stone-200/90 bg-white p-6 shadow-xs hover:shadow-lg hover:-translate-y-1 hover:border-amber-500/50 transition-all duration-300 flex flex-col justify-between"
+                  className="group w-full flex items-center gap-3 rounded-xl border border-stone-200/90 bg-white px-4 py-3 shadow-2xs hover:border-amber-500/50 hover:bg-stone-50 transition-colors"
                 >
-                  <div>
-                    <div className="w-12 h-12 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-700 flex items-center justify-center mb-4 group-hover:bg-amber-500 group-hover:text-black group-hover:border-amber-500 transition-all duration-200">
-                      <card.icon className="h-6 w-6 shrink-0" />
-                    </div>
-                    <h3 className="font-black text-stone-950 text-base sm:text-lg tracking-wide uppercase group-hover:text-amber-700 transition-colors">
-                      {card.title}
-                    </h3>
-                    <p className="text-xs sm:text-sm text-stone-600 font-medium leading-relaxed mt-2">
-                      {card.text}
-                    </p>
-                  </div>
-                  <div className="mt-5 pt-3 border-t border-stone-100 flex items-center justify-between text-xs font-black text-amber-700 uppercase tracking-wider">
-                    <span>Explore</span>
-                    <span className="group-hover:translate-x-1 transition-transform">→</span>
-                  </div>
+                  <card.icon className="h-5 w-5 shrink-0 text-amber-700" aria-hidden="true" />
+                  <span className="font-black text-sm uppercase tracking-wide text-stone-950 group-hover:text-amber-700">{card.title}</span>
                 </Link>
-              ))}
-            </div>
-
-            {/* Right Arrow Button */}
-            {totalPages > 1 && (
-              <button
-                type="button"
-                onClick={() => setPageIndex((prev) => Math.min(totalPages - 1, prev + 1))}
-                disabled={safePageIndex >= totalPages - 1}
-                aria-label="Next services"
-                className="absolute -right-3 sm:-right-5 top-1/2 -translate-y-1/2 z-20 w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-white border border-stone-200/90 text-stone-900 shadow-md hover:shadow-lg hover:bg-stone-50 hover:border-amber-500/60 hover:scale-105 active:scale-95 transition-all flex items-center justify-center disabled:opacity-0 disabled:pointer-events-none cursor-pointer"
-              >
-                <ChevronRight className="h-5 w-5 sm:h-6 sm:w-6" />
-              </button>
-            )}
+              </Tooltip>
+            ))}
           </div>
-
-          {/* Pagination indicator dots */}
-          {totalPages > 1 && (
-            <div className="flex justify-center items-center gap-2 pt-1" aria-label="Quick action pagination">
-              {Array.from({ length: totalPages }).map((_, i) => (
-                <button
-                  key={i}
-                  type="button"
-                  onClick={() => setPageIndex(i)}
-                  aria-label={`Go to slide ${i + 1}`}
-                  aria-current={i === safePageIndex}
-                  className={`h-2 rounded-full transition-all duration-300 cursor-pointer ${
-                    i === safePageIndex ? 'w-8 bg-amber-500' : 'w-2 bg-stone-300 hover:bg-stone-400'
-                  }`}
-                />
-              ))}
-            </div>
-          )}
-        </section>
+        )}
+      </section>
 
         {/* 4. Player Upcoming Matches */}
-        {role === 'player' && user && (
+        {can(role, 'team.join') && user && (
           <div className="animate-stagger-2">
             <MyMatches userId={user.id} />
           </div>
         )}
 
         {/* 5. Organizer Needs Attention */}
-        {isOrganizer && (
+        {can(role, 'match.manage') && (
           <div className="animate-stagger-2">
             <NeedsAttention />
           </div>

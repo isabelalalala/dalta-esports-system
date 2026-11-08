@@ -9,6 +9,7 @@ import { usePageTitle } from '@/utils/page-title';
 import PageLoading from '@/components/PageLoading';
 import PageError from '@/components/PageError';
 import PageHeroBackground from '@/components/site/PageHeroBackground';
+import { can } from '@/utils/permissions';
 
 const PAGE_SIZE = 50;
 
@@ -72,7 +73,7 @@ export default function ActivityLogPage() {
         const { data: myRole, error: roleError } = await supabase.rpc('get_my_role');
         if (roleError) throw roleError;
         setRole(myRole ?? '');
-        if (myRole !== 'admin') return;
+        if (!can(myRole, 'activity.view')) return;
 
         if (filters.from && filters.to && filters.from > filters.to) {
           setError('The "from" date must be on or before the "to" date.');
@@ -108,7 +109,7 @@ export default function ActivityLogPage() {
 
   if (loading) return <PageLoading />;
   if (!role && error) return <PageError message={error} />;
-  if (role !== 'admin') {
+  if (!can(role, 'activity.view')) {
     return (
       <div className="w-full bg-white text-stone-950 p-10 text-center space-y-4">
         <p className="font-extrabold text-stone-900">Only administrators can view the activity log.</p>

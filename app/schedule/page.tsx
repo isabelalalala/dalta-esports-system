@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { createClient } from '@/utils/supabase/client';
+import { useRealtimeRefresh } from '@/utils/use-realtime-refresh';
 import { getErrorMessage } from '@/utils/errors';
 import type { Match, Tournament } from '@/utils/types';
 import { formatDateTime, roundLabel } from '@/utils/tournaments';
@@ -29,6 +30,11 @@ export default function SchedulePage() {
   const [roundCounts, setRoundCounts] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [reloadCount, setReloadCount] = useState(0);
+
+  // Live scores and schedule changes
+  const reload = useCallback(() => setReloadCount((n) => n + 1), []);
+  useRealtimeRefresh('schedule', [{ table: 'matches' }], reload, 1000);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -76,7 +82,7 @@ export default function SchedulePage() {
     };
 
     fetchData();
-  }, [supabase, filter]);
+  }, [supabase, filter, reloadCount]);
 
   const name = (teamId: string | null) => (teamId ? teamNames[teamId] ?? 'Unknown team' : 'TBD');
 

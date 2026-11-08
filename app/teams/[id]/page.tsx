@@ -1,14 +1,19 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
+import { useBreadcrumbName } from '@/utils/breadcrumb-names';
 import Link from 'next/link';
 import { getErrorMessage } from '@/utils/errors';
 import type { PendingTeamInvite, PlayerSearchResult, RosterMember, Team } from '@/utils/types';
 import VerifiedBadge from '@/components/VerifiedBadge';
+import Avatar from '@/components/Avatar';
+import SectionHint from '@/components/SectionHint';
 import AskToJoin from '@/components/AskToJoin';
 import TeamJoinRequests from '@/components/TeamJoinRequests';
+import RemoveTeamDialog from '@/components/RemoveTeamDialog';
+import RemovedTeamPanel from '@/components/RemovedTeamPanel';
 import PageLoading from '@/components/PageLoading';
 import PageError from '@/components/PageError';
 import { usePageTitle } from '@/utils/page-title';
@@ -26,6 +31,8 @@ import {
   Edit2,
   Clock,
 } from 'lucide-react';
+import { can } from '@/utils/permissions';
+import { useRealtimeRefresh } from '@/utils/use-realtime-refresh';
 
 const inputClass =
   'w-full p-3.5 rounded-xl bg-white text-stone-950 border border-stone-300 placeholder:text-stone-400 focus:border-gold focus:ring-2 focus:ring-gold/25 shadow-xs outline-none transition-all font-medium text-xs sm:text-sm';
@@ -43,6 +50,8 @@ export default function ManageTeamPage() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [reloadCount, setReloadCount] = useState(0);
+  // "Remove team" confirmation (admin/staff)
+  const [removing, setRemoving] = useState(false);
 
   // Edit team form (captain only)
   const [editing, setEditing] = useState(false);
@@ -58,6 +67,18 @@ export default function ManageTeamPage() {
   const router = useRouter();
   const params = useParams();
   const id = params?.id as string;
+  // Breadcrumb: "Home > Teams > <name>"
+  useBreadcrumbName(team?.name);
+
+  // Live updates: roster, join requests, invites and the team row (recruiting, removal) reload the
+  // page data without a manual refresh
+  const reload = useCallback(() => setReloadCount((n) => n + 1), []);
+  useRealtimeRefresh(id ? `team-${id}` : null, [
+    { table: 'teams', filter: `id=eq.${id}` },
+    { table: 'team_members', filter: `team_id=eq.${id}` },
+    { table: 'team_join_requests', filter: `team_id=eq.${id}` },
+    { table: 'team_invites', filter: `team_id=eq.${id}` },
+  ], reload);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -307,22 +328,43 @@ export default function ManageTeamPage() {
     );
   }
 
+  // Removed by an organizer: nothing on this team can be changed any more (the database refuses)
+  if (team.is_removed) {
+    return (
+      <div className="w-full text-stone-950">
+        <div className="w-full max-w-3xl mx-auto space-y-4">
+          {message && (
+            <p role="status" className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-3 text-sm font-bold text-emerald-800">
+              {message}
+            </p>
+          )}
+          <RemovedTeamPanel
+            team={team}
+            role={role}
+            onRestored={(summary) => {
+              setMessage(summary);
+              setReloadCount((n) => n + 1);
+            }}
+          />
+        </div>
+      </div>
+    );
+  }
+
   const isCaptain = team.captain_id === userId;
   const isMember = roster.some((m) => m.user_id === userId);
   const maxPlayers = team.games?.max_players ?? 0;
   const minPlayers = team.games?.min_players ?? 0;
   const isFull = roster.length >= maxPlayers;
   const isSolo = maxPlayers <= 1;
-  const isOrganizer = role === 'admin' || role === 'staff';
+  const isOrganizer = can(role, 'team.toggleRecruiting');
   // Players not on this team may ask to join while it's recruiting (or cancel their request)
   const showAskToJoin =
-    role === 'player' && !isMember && !isSolo && (myRequestId !== null || (team.recruiting && !isFull));
+    can(role, 'team.join') && !isMember && !isSolo && (myRequestId !== null || (team.recruiting && !isFull));
 
   return (
-    <main
-      id="main-content"
-      className="flex-1 w-full min-h-[calc(100vh-160px)] bg-white text-stone-950 px-4 sm:px-6 lg:px-8 xl:px-12 py-8 sm:py-10"
-    >
+    // The layout (SiteNavLayout) renders the main element and the page padding
+    <div className="w-full text-stone-950">
       <div className="w-full max-w-5xl mx-auto space-y-8">
         {/* 1. Main Hero Container */}
         <section className="animate-hero-entrance relative w-full rounded-3xl border border-stone-800/80 bg-stone-950 overflow-hidden shadow-md p-8 sm:p-12 lg:p-14 text-center text-white flex flex-col items-center justify-center space-y-4">
@@ -489,8 +531,8 @@ export default function ManageTeamPage() {
                 <Users className="w-5 h-5" />
               </div>
               <div>
-                <h2 className="text-lg sm:text-xl font-black text-stone-950 tracking-wider">
-                  Active Roster
+                <h2 className="text-lg sm:text-xl font-black text-stone-950 tracking-wider flex items-center gap-1.5">
+                  Active Roster <SectionHint text="Roster — the players on this team. While the team is registered for a tournament, the roster is locked." />
                 </h2>
                 <p className="text-xs text-stone-500 font-medium tracking-wide mt-0.5">
                   Players currently enrolled in this squad.
@@ -517,7 +559,8 @@ export default function ManageTeamPage() {
               >
                 <div>
                   <div className="flex items-center gap-2">
-                    <p className="font-black text-stone-950 text-base">
+                    <Avatar url={member.avatar_url} name={member.full_name || member.ign} size="md" />
+                    <p className="font-black text-stone-950 text-base break-words min-w-0">
                       {member.ign || <span className="text-stone-500 italic">No IGN</span>}
                     </p>
                     {member.role === 'captain' && (
@@ -580,7 +623,7 @@ export default function ManageTeamPage() {
         {(isCaptain || isOrganizer) && (
           <div className="animate-stagger-3">
             <TeamJoinRequests
-              key={reloadCount}
+              refreshKey={reloadCount}
               teamId={team.id}
               gameName={team.games?.name || 'This game'}
               recruiting={team.recruiting}
@@ -588,6 +631,7 @@ export default function ManageTeamPage() {
               canToggle={isCaptain || isOrganizer}
               isSolo={isSolo}
               isFull={isFull}
+              openSlots={Math.max(maxPlayers - roster.length, 0)}
               onChanged={() => setReloadCount((n) => n + 1)}
             />
           </div>
@@ -601,8 +645,8 @@ export default function ManageTeamPage() {
                 <UserPlus className="w-5 h-5" />
               </div>
               <div>
-                <h2 className="text-lg sm:text-xl font-black text-stone-950 tracking-wider">
-                  Invite Players
+                <h2 className="text-lg sm:text-xl font-black text-stone-950 tracking-wider flex items-center gap-1.5">
+                  Invite Players <SectionHint text="Invite players — search by IGN or name. Only players with a game profile for this game who aren't on another team show up." />
                 </h2>
                 <p className="text-xs text-stone-500 font-medium tracking-wide mt-0.5">
                   Search for eligible perpetualite players to join your roster.
@@ -654,7 +698,8 @@ export default function ManageTeamPage() {
                       >
                         <div>
                           <div className="flex items-center gap-2">
-                            <span className="font-black text-stone-950 text-sm tracking-wide">
+                            <Avatar url={player.avatar_url} name={player.full_name || player.ign} size="sm" />
+                            <span className="font-black text-stone-950 text-sm tracking-wide break-words min-w-0">
                               {player.ign}
                             </span>
                             <VerifiedBadge verified={player.is_verified} />
@@ -726,6 +771,37 @@ export default function ManageTeamPage() {
           </div>
         )}
 
+        {/* Organizer action: remove the team (soft delete, needs a reason; see RemoveTeamDialog) */}
+        {can(role, 'team.remove') && (
+          <div className="rounded-2xl border border-red-200 bg-white p-4 sm:p-6 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="min-w-0">
+              <h3 className="font-black text-stone-950 text-sm tracking-wider uppercase">Remove team</h3>
+              <p className="text-sm text-stone-600 mt-0.5">
+                Takes the team out of lists, recruiting and registrations. Its bracket matches go to the opponent
+                as walkovers. The record stays for reports{can(role, 'team.restore') ? ' and can be restored' : ''}.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setRemoving(true)}
+              className="shrink-0 rounded-xl border border-red-800 bg-red-700 hover:bg-red-800 text-white px-5 py-2.5 font-black text-xs uppercase tracking-wider inline-flex items-center justify-center gap-1.5 cursor-pointer"
+            >
+              <Trash2 className="w-4 h-4" /> Remove team
+            </button>
+          </div>
+        )}
+        {removing && (
+          <RemoveTeamDialog
+            team={{ id: team.id, name: team.name, gameName: team.games?.name }}
+            onClose={() => setRemoving(false)}
+            onRemoved={(summary) => {
+              setRemoving(false);
+              setMessage(summary);
+              setReloadCount((n) => n + 1);
+            }}
+          />
+        )}
+
         {/* 5. Danger Zone / Actions (only for people on the team) */}
         {(isCaptain || isMember) && (
         <div className="animate-stagger-3 rounded-3xl border border-stone-200/90 bg-white p-6 sm:p-8 shadow-xs flex flex-wrap items-center justify-between gap-4">
@@ -764,6 +840,6 @@ export default function ManageTeamPage() {
         </div>
         )}
       </div>
-    </main>
+    </div>
   );
 }

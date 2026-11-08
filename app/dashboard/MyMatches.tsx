@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { createClient } from '@/utils/supabase/client';
+import { useRealtimeRefresh } from '@/utils/use-realtime-refresh';
 import { getErrorMessage } from '@/utils/errors';
 import type { Match } from '@/utils/types';
 import { formatDateTime, roundLabel } from '@/utils/tournaments';
@@ -21,6 +22,12 @@ export default function MyMatches({ userId }: { userId: string }) {
   const [roundCounts, setRoundCounts] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [reloadCount, setReloadCount] = useState(0);
+
+  // Live: times, scores and new opponents appear without a refresh (matches can't be filtered by
+  // "team A or team B", so any match change reloads; changes are rare)
+  const reload = useCallback(() => setReloadCount((n) => n + 1), []);
+  useRealtimeRefresh(`my-matches-${userId}`, [{ table: 'matches' }, { table: 'team_members', filter: `user_id=eq.${userId}` }], reload, 1000);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -84,7 +91,7 @@ export default function MyMatches({ userId }: { userId: string }) {
     };
 
     fetchData();
-  }, [supabase, userId]);
+  }, [supabase, userId, reloadCount]);
 
   return (
     <section className="w-full rounded-3xl border border-stone-200/90 bg-white p-6 sm:p-8 shadow-xs space-y-6">

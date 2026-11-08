@@ -6,4 +6,5 @@
 // If the terms change in an important way, update this date — users are asked to accept
 // again the next time they open a protected page (proxy.ts).
 // 2026-10-18: first version.
-export const TOS_VERSION = '2026-10-18';
+// 2026-11-08: Code of Conduct: automatic comment/feedback moderation, warnings and bans.
+export const TOS_VERSION = '2026-11-08';

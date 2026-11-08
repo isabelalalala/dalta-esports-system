@@ -11,6 +11,7 @@ import PageError from '@/components/PageError';
 import { getErrorMessage } from '@/utils/errors';
 import { usePageTitle } from '@/utils/page-title';
 import PageHeroBackground from '@/components/site/PageHeroBackground';
+import { can } from '@/utils/permissions';
 
 const TABS = ['Site text', 'Carousel', 'Campaigns', 'Events', 'Divisions', 'Officers', 'Official teams'] as const;
 type Tab = (typeof TABS)[number];
@@ -42,7 +43,7 @@ export default function WebsiteAdminPage() {
         const { data: myRole, error: roleError } = await supabase.rpc('get_my_role');
         if (roleError) throw roleError;
         setRole(myRole ?? '');
-        if (myRole === 'admin') {
+        if (can(myRole, 'website.edit')) {
           const [gamesRes, toursRes] = await Promise.all([
             supabase.from('games').select('id, name').order('name'),
             supabase.from('tournaments').select('id, name').order('start_date', { ascending: false }),
@@ -63,7 +64,7 @@ export default function WebsiteAdminPage() {
 
   if (loading) return <PageLoading />;
   if (loadError) return <PageError message={loadError} />;
-  if (role !== 'admin') {
+  if (!can(role, 'website.edit')) {
     return (
       <div className="w-full bg-white text-stone-950 p-10 text-center space-y-4">
         <p className="font-extrabold text-stone-900">Only administrators can edit the website.</p>

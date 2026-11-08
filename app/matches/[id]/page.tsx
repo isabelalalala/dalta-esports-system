@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
+import { useBreadcrumbName } from '@/utils/breadcrumb-names';
 import { getErrorMessage } from '@/utils/errors';
 import type { Match, MatchCheckin, MatchResultSubmission, MatchTeam } from '@/utils/types';
 import { formatDateTime, roundLabel } from '@/utils/tournaments';
@@ -16,12 +17,16 @@ import PageLoading from '@/components/PageLoading';
 import PageError from '@/components/PageError';
 import PredictionsProvider from '@/components/PredictionsProvider';
 import PredictionPicker from '@/components/PredictionPicker';
+import MatchDraftSection from '@/components/MatchDraftSection';
+import SectionHint from '@/components/SectionHint';
 import { Target } from 'lucide-react';
+import { can } from '@/utils/permissions';
 
 interface MatchTournament {
   id: string;
   name: string;
   game: string;
+  game_id: string;
   checkin_window_minutes: number;
 }
 
@@ -65,7 +70,7 @@ export default function MatchPage() {
         setMatch(matchData as Match);
 
         const [tournamentRes, teamsRes, checkinsRes, roundsRes, resultsRes] = await Promise.all([
-          supabase.from('tournaments').select('id, name, game, checkin_window_minutes').eq('id', matchData.tournament_id).single(),
+          supabase.from('tournaments').select('id, name, game, game_id, checkin_window_minutes').eq('id', matchData.tournament_id).single(),
           supabase.from('teams').select('id, name, captain_id')
             .in('id', [matchData.team_a_id, matchData.team_b_id].filter((t): t is string => !!t)),
           supabase.from('match_checkins').select('*').eq('match_id', id),
@@ -120,6 +125,9 @@ export default function MatchPage() {
     };
   }, [supabase, id]);
 
+  // Breadcrumb: "Home > Matches > A vs B"
+  useBreadcrumbName(teams.length === 2 && match ? `${teams.find((t) => t.id === match.team_a_id)?.name ?? 'TBD'} vs ${teams.find((t) => t.id === match.team_b_id)?.name ?? 'TBD'}` : null);
+
   if (loading) return <PageLoading />;
   if (!match || !tournament) {
     return <PageError message={error || 'Match not found. It may have been deleted.'} backHref="/dashboard" backLabel="Back to Dashboard" />;
@@ -127,7 +135,7 @@ export default function MatchPage() {
 
   const teamA = teams.find((t) => t.id === match.team_a_id) ?? null;
   const teamB = teams.find((t) => t.id === match.team_b_id) ?? null;
-  const isStaff = role === 'admin' || role === 'staff';
+  const isStaff = can(role, 'match.manage');
   const myTeamId = [teamA, teamB].find((t) => t?.captain_id === userId)?.id ?? null;
   const winnerName = match.winner_team_id === teamA?.id ? teamA?.name : match.winner_team_id === teamB?.id ? teamB?.name : null;
 
@@ -185,11 +193,21 @@ export default function MatchPage() {
         {/* Pick'em: the community split, and pick buttons for the audience (not the two teams) */}
         {teamA && teamB && (
           <section className="bg-white border border-stone-200/90 rounded-2xl shadow-xs p-4 sm:p-6 space-y-3">
-            <h2 className="text-xl font-bold flex items-center gap-2"><Target className="h-5 w-5" /> Who will win?</h2>
+            <h2 className="text-xl font-bold flex items-center gap-2"><Target className="h-5 w-5" /> Who will win? <SectionHint text="Pick'em — pick the winner before the match starts and climb the tournament leaderboard. Players can't pick their own match." /></h2>
             <PredictionsProvider matches={[match]}>
               <PredictionPicker match={match} teamNames={{ [teamA.id]: teamA.name, [teamB.id]: teamB.name }} />
             </PredictionsProvider>
           </section>
+        )}
+
+        {/* League of Legends only: bans and picks per game (entered by staff) */}
+        {tournament.game_id === 'lol' && (
+          <MatchDraftSection
+            matchId={match.id}
+            teamAName={teamA?.name ?? 'Team A'}
+            teamBName={teamB?.name ?? 'Team B'}
+            canEdit={isStaff}
+          />
         )}
 
         <CheckinSection
