@@ -55,7 +55,7 @@ export default function RegistrationsPage() {
 
         const { data: regsData, error: regsError } = await supabase
           .from('tournament_registrations')
-          .select('*, teams(*, games(*), team_members(count), captain:profiles(full_name, email), members:team_members(profiles(is_verified)))')
+          .select('*, teams(*, games(*), team_members(count), captain:profiles!teams_captain_id_fkey(full_name, email), members:team_members(profiles(is_verified)))')
           .eq('tournament_id', id)
           .order('registered_at', { ascending: false });
 

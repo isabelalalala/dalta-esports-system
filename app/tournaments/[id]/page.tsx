@@ -122,7 +122,7 @@ export default function TournamentDetailsPage() {
             .single(),
           supabase
             .from('tournament_registrations')
-            .select('*, teams(*, captain:profiles(full_name, email))')
+            .select('*, teams(*, captain:profiles!teams_captain_id_fkey(full_name, email))')
             .eq('tournament_id', id)
             .in('status', ACTIVE_REGISTRATION_STATUSES)
             .order('registered_at'),

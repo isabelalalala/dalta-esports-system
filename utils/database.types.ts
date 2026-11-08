@@ -142,6 +142,12 @@ isOneToOne: false
       referencedRelation: "matches"
       referencedColumns: ["id"]
     },{
+      foreignKeyName: "feedback_reviewed_by_fkey"
+      columns: ["reviewed_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
       foreignKeyName: "feedback_tournament_id_fkey"
       columns: ["tournament_id"]
 isOneToOne: false
@@ -520,6 +526,12 @@ isOneToOne: false
                   }
                   Relationships: [
                     {
+      foreignKeyName: "profiles_banned_by_fkey"
+      columns: ["banned_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
       foreignKeyName: "profiles_reviewed_by_fkey"
       columns: ["reviewed_by"]
 isOneToOne: false

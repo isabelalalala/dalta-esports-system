@@ -81,7 +81,8 @@ export interface Team {
   games?: Game;
   // Only present when selected with `team_members(count)`
   team_members?: { count: number }[];
-  // Only present when selected with `captain:profiles(...)`; null for users who can't read profiles
+  // Only present when selected with `captain:profiles!teams_captain_id_fkey(...)` (the hint is required:
+  // teams also links to profiles through removed_by); null for users who can't read profiles
   captain?: { full_name: string | null; email: string } | null;
   // Only present when selected with `members:team_members(profiles(is_verified))`
   members?: { profiles: { is_verified: boolean } | null }[];

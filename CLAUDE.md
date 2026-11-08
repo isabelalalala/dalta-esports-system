@@ -101,7 +101,7 @@ Enforced by a CHECK constraint on `profiles.role` (migration `202610161200_role_
 - RLS policies check roles with `public.get_my_role()`.
 
 ## Current schema (public)
-All migrations are in `supabase/migrations/`, run in filename order (202610151100 … 202611081500). `202610151100_base_schema` creates the three pre-migration base tables (`profiles`, `tournaments`, `tournament_registrations`). It is `if not exists`, so it is a no-op on databases that already have them.
+All migrations are in `supabase/migrations/`, run in filename order (202610151100 … 202611081600). `202610151100_base_schema` creates the three pre-migration base tables (`profiles`, `tournaments`, `tournament_registrations`). It is `if not exists`, so it is a no-op on databases that already have them.
 `202610181000_feedback_protection` also needs its one-time Vault key setup (the `feedback_server_key` secret +
 `FEEDBACK_SERVER_KEY`); the steps are at the top of that file.
 Readers: "anyone" = also logged out; "logged-in" = any role; "admin/staff" = organizers only.
@@ -490,6 +490,11 @@ triggers with readable error messages.
 - Pages that use `useParams()` or `useSearchParams()` need a `layout.tsx` with `<Suspense>` (Cache Components is on).
   See `app/tournaments/[id]/layout.tsx`.
 - Page files may only export the page; shared constants go in `utils/` or `components/`.
+- PostgREST embeds need a relationship hint when two tables are linked more than once, e.g. teams → profiles
+  (captain_id and removed_by): `captain:profiles!teams_captain_id_fkey(...)`. Adding a second FK between two tables
+  breaks every un-hinted embed between them, so search for embeds when adding one.
+- In PL/pgSQL triggers shared by several tables, read a column that only some of them have (e.g. `new.status`) only
+  inside an `if tg_table_name = ...` branch: a combined `and` condition still resolves the column and fails.
 - When RLS blocks an update or delete, Supabase returns no error and no rows. Add `.select('id')` and check
   that a row came back, then show a clear message.
 - Dates without a time (tournament dates) are stored as midnight UTC: use `toDateInput()` and `formatDate()`.
@@ -585,7 +590,7 @@ The final feature list for the documents is docs/new-features-summary.md.
   `get_needs_attention` → `202610171500_match_results`; `notifications_type_check` → `202611081500_comments_moderation`;
   `report_engagement` → `202610181100_predictions` (adds predictions, predictors, prediction_accuracy,
   audience_accounts, prediction_participation and predictions_by_tournament; older saved reports lack them);
-  `protect_feedback` → `202610181000_feedback_protection`; feedback insert policy → `202611081500_comments_moderation`; `generate_bracket` → `202610181800_bracket_seed_pairing`.
+  `refuse_removed_team` → `202611081600_fix_refuse_removed_team`; `protect_feedback` → `202610181000_feedback_protection`; feedback insert policy → `202611081500_comments_moderation`; `generate_bracket` → `202610181800_bracket_seed_pairing`.
 - **Testing**: `npm test` runs Vitest on `utils/*.test.ts`. `npm run db:test` runs the pgTAP files in
   `supabase/tests/` against the local stack (`supabase start` first: needs Docker; `supabase/config.toml`
   exists for the local stack only, production migrations stay manual). `npm run db:types` regenerates
