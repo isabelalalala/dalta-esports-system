@@ -195,7 +195,7 @@ export default function ListEditor({
         .from(table).update({ is_published: next }).eq(idKey, row[idKey] as string).select(idKey);
       if (updateError) throw updateError;
       if (!data || data.length === 0) throw new Error('Nothing was saved. Are you still logged in as an admin?');
-    }, next ? 'Published.' : 'Hidden.', 'Failed to update visibility');
+    }, next ? 'Published.' : 'Unpublished: now a draft.', 'Failed to update visibility');
   };
 
   const move = (index: number, delta: -1 | 1) => {
@@ -236,14 +236,17 @@ export default function ListEditor({
     }
     if (f.type === 'checkbox') {
       return (
-        <label key={f.name} className="flex items-center gap-2.5 text-xs font-black text-stone-800 tracking-wider uppercase cursor-pointer">
+        <label key={f.name} className="flex items-start gap-2.5 text-xs font-black text-stone-800 tracking-wider uppercase cursor-pointer sm:col-span-2">
           <input
             type="checkbox"
             checked={!!value}
             onChange={(e) => set(e.target.checked)}
-            className="w-4 h-4 rounded text-amber-600 focus:ring-amber-500/20 border-stone-300"
+            className="mt-0.5 w-4 h-4 shrink-0 rounded text-amber-600 focus:ring-amber-500/20 border-stone-300"
           />
-          {f.label}
+          <span>
+            {f.label}
+            {f.help && <span className="block text-[11px] text-stone-500 font-medium normal-case tracking-normal mt-1">{f.help}</span>}
+          </span>
         </label>
       );
     }
@@ -361,10 +364,11 @@ export default function ListEditor({
                       className={`text-[11px] font-black uppercase px-3 py-1 rounded-full border ${
                         row.is_published
                           ? 'border-emerald-200 bg-emerald-50 text-emerald-800'
-                          : 'border-stone-200 bg-stone-100 text-stone-600'
+                          : 'border-yellow-200 bg-yellow-50 text-yellow-800'
                       }`}
                     >
-                      {row.is_published ? 'Published' : 'Hidden'}
+                      {/* Not published = a draft: only admins see it, never the public site */}
+                      {row.is_published ? 'Published' : 'Draft'}
                     </span>
                   )}
 

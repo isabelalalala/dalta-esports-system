@@ -170,10 +170,15 @@ export default function WebsiteAdminPage() {
               newRow={{ title: 'New event', is_published: false }}
               fields={[
                 ...postFields,
+                { name: 'venue', label: 'Venue (optional)', type: 'text', help: 'e.g. School Covered Court, UPHSD Molino' },
                 { name: 'tournament_id', label: 'Tournament (optional)', type: 'select', options: tournaments },
+                {
+                  name: 'is_featured', label: 'Feature on the homepage', type: 'checkbox',
+                  help: 'Pins this event to the big card on the homepage (replaces any other featured event). Without a pin, the next upcoming published event is featured.',
+                },
               ]}
               titleOf={(r) => str(r.title)}
-              subtitleOf={(r) => str(r.event_date)}
+              subtitleOf={(r) => [r.event_date ? str(r.event_date) : 'Date TBA', r.is_featured ? '★ Featured' : ''].filter(Boolean).join(' · ')}
               viewHref={(r) => `/events/${r.id}`}
             />
           )}

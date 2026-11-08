@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useRef } from 'react';
 import Image from 'next/image';
 import { Handshake } from 'lucide-react';
 
@@ -27,48 +28,46 @@ const PARTNERS: Partner[] = [
   },
 ];
 
+// Marquee speed in CSS pixels per second (a logo stays on screen for several seconds)
+const SPEED_PX_PER_S = 35;
+// Each track repeats the partners so it is wider than the box, even with few partners
+const REPEAT = 3;
+
+// Official partners as a slow right-to-left marquee (CSS in app/globals.css, "Partner marquee").
+// Two identical tracks move together, so when the first has moved its full width the second is
+// exactly where the first started: the loop restarts without a jump. The duration is measured
+// from the track width, so the speed stays the same whatever the number of logos. Hover or
+// keyboard focus pauses it; with reduced motion it is a still, centered row of the partners.
 export default function PartnershipSection() {
-  // Repeat the 3 partner items so each track is full and loops continuously
-  const trackItems = [
-    ...PARTNERS,
-    ...PARTNERS,
-    ...PARTNERS,
-  ];
+  const viewportRef = useRef<HTMLDivElement>(null);
+  const trackRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const viewport = viewportRef.current;
+    const track = trackRef.current;
+    if (!viewport || !track) return;
+    const update = () => {
+      const seconds = Math.max(10, track.scrollWidth / SPEED_PX_PER_S);
+      viewport.style.setProperty('--marquee-duration', `${seconds}s`);
+    };
+    update();
+    const observer = new ResizeObserver(update);
+    observer.observe(track);
+    return () => observer.disconnect();
+  }, []);
+
+  const items = Array.from({ length: REPEAT }, () => PARTNERS).flat();
 
   return (
     <section
       aria-label="Official Partnerships"
       className="relative w-full max-w-5xl mx-auto rounded-3xl border border-transparent bg-white overflow-hidden py-8 sm:py-10 text-center text-stone-950 space-y-5 sm:space-y-6"
     >
-      {/* Inline styles ensure the right-to-left marquee animation runs immediately without browser cache or reduced-motion blockers */}
-      <style>{`
-        @keyframes marqueeScrollRTL {
-          0% {
-            transform: translate3d(0, 0, 0);
-          }
-          100% {
-            transform: translate3d(-100%, 0, 0);
-          }
-        }
-        .marquee-track-rtl {
-          display: flex !important;
-          flex-shrink: 0 !important;
-          align-items: center !important;
-          animation: marqueeScrollRTL 20s linear infinite !important;
-          will-change: transform;
-        }
-        .marquee-container-rtl:hover .marquee-track-rtl {
-          animation-play-state: paused !important;
-        }
-      `}</style>
-
-      {/* Header: Handshake icon, PARTNERSHIP title in pure black, and brand maroon subtitle */}
+      {/* Header: Handshake icon, PARTNERSHIP title and brand maroon subtitle */}
       <div className="relative z-10 max-w-2xl mx-auto px-4 space-y-1.5 flex flex-col items-center justify-center">
         <div className="inline-flex items-center justify-center gap-2.5">
           <Handshake className="h-6 w-6 sm:h-7 sm:w-7 text-maroon shrink-0" />
-          <h2
-            className="text-2xl sm:text-3xl font-black tracking-widest uppercase leading-none text-black"
-          >
+          <h2 className="text-2xl sm:text-3xl font-black tracking-widest uppercase leading-none text-stone-950">
             PARTNERSHIP
           </h2>
         </div>
@@ -77,73 +76,57 @@ export default function PartnershipSection() {
         </p>
       </div>
 
-      {/* Sliding loop container with gradient fade edges */}
-      <div className="marquee-container-rtl relative w-full overflow-hidden flex py-2">
-        {/* Soft edge fades blending into white background */}
-        <div className="absolute inset-y-0 left-0 w-12 sm:w-24 bg-gradient-to-r from-white via-white/80 to-transparent z-10 pointer-events-none" />
-        <div className="absolute inset-y-0 right-0 w-12 sm:w-24 bg-gradient-to-l from-white via-white/80 to-transparent z-10 pointer-events-none" />
+      <div ref={viewportRef} className="partner-marquee relative w-full overflow-hidden flex py-2">
+        {/* Narrow edge fades (theme surface color, so they also work in dark mode): only the
+            last few pixels of a logo entering or leaving are faded */}
+        <div className="partner-marquee-fade absolute inset-y-0 left-0 w-6 sm:w-10 bg-gradient-to-r from-surface to-transparent z-10 pointer-events-none" />
+        <div className="partner-marquee-fade absolute inset-y-0 right-0 w-6 sm:w-10 bg-gradient-to-l from-surface to-transparent z-10 pointer-events-none" />
 
-        {/* Track 1: First set moving right to left */}
-        <div className="marquee-track-rtl gap-4 sm:gap-6 pr-4 sm:pr-6">
-          {trackItems.map((partner, idx) => (
-            <div
-              key={`track1-${partner.name}-${idx}`}
-              className="group/card relative w-28 h-28 sm:w-36 sm:h-36 @3xl:w-40 @3xl:h-40 shrink-0 rounded-2xl overflow-hidden border border-stone-200/90 bg-white shadow-xs transition-all duration-300 hover:scale-105 hover:border-gold/70 hover:shadow-md cursor-pointer"
-              title={partner.name}
-            >
-              <Image
-                src={partner.src}
-                alt={partner.name}
-                fill
-                sizes="(max-width: 640px) 112px, (max-width: 768px) 144px, 160px"
-                className="object-cover group-hover/card:scale-105 transition-transform duration-500"
-              />
+        {[0, 1].map((copy) => (
+          <div
+            key={copy}
+            ref={copy === 0 ? trackRef : undefined}
+            aria-hidden={copy === 1 || undefined}
+            className={`partner-marquee-track gap-4 sm:gap-6 pr-4 sm:pr-6 ${copy === 1 ? 'partner-marquee-copy' : ''}`}
+          >
+            {items.map((partner, idx) => {
+              // Only the first set of the first track is real content (focusable, read out);
+              // the rest are visual repeats, hidden with reduced motion
+              const original = copy === 0 && idx < PARTNERS.length;
+              return (
+                <div
+                  key={`${copy}-${idx}`}
+                  tabIndex={original ? 0 : -1}
+                  aria-hidden={!original || undefined}
+                  title={partner.name}
+                  className={`group/card relative w-28 h-28 sm:w-36 sm:h-36 @3xl:w-40 @3xl:h-40 shrink-0 rounded-2xl overflow-hidden border border-stone-200/90 bg-white shadow-xs transition-all duration-300 hover:scale-105 hover:border-gold/70 hover:shadow-md focus-visible:border-gold ${
+                    original ? '' : 'partner-marquee-copy'
+                  }`}
+                >
+                  <Image
+                    src={partner.src}
+                    alt={original ? partner.name : ''}
+                    fill
+                    sizes="(max-width: 640px) 112px, (max-width: 768px) 144px, 160px"
+                    className="object-cover group-hover/card:scale-105 transition-transform duration-500"
+                  />
 
-              {/* Hover overlay with partner details */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent opacity-0 group-hover/card:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-2.5 sm:p-3 text-left">
-                <span className="text-white text-[11px] sm:text-xs font-black tracking-wide line-clamp-1 drop-shadow-sm">
-                  {partner.name}
-                </span>
-                {partner.tagline && (
-                  <span className="text-stone-300 text-[9px] sm:text-[10px] font-semibold tracking-wider uppercase line-clamp-2 mt-0.5">
-                    {partner.tagline}
-                  </span>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Track 2: Duplicate set moving synchronously right to left for infinite seamless loop */}
-        <div className="marquee-track-rtl gap-4 sm:gap-6 pr-4 sm:pr-6" aria-hidden="true">
-          {trackItems.map((partner, idx) => (
-            <div
-              key={`track2-${partner.name}-${idx}`}
-              className="group/card relative w-28 h-28 sm:w-36 sm:h-36 @3xl:w-40 @3xl:h-40 shrink-0 rounded-2xl overflow-hidden border border-stone-200/90 bg-white shadow-xs transition-all duration-300 hover:scale-105 hover:border-gold/70 hover:shadow-md cursor-pointer"
-              title={partner.name}
-            >
-              <Image
-                src={partner.src}
-                alt={partner.name}
-                fill
-                sizes="(max-width: 640px) 112px, (max-width: 768px) 144px, 160px"
-                className="object-cover group-hover/card:scale-105 transition-transform duration-500"
-              />
-
-              {/* Hover overlay with partner details */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent opacity-0 group-hover/card:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-2.5 sm:p-3 text-left">
-                <span className="text-white text-[11px] sm:text-xs font-black tracking-wide line-clamp-1 drop-shadow-sm">
-                  {partner.name}
-                </span>
-                {partner.tagline && (
-                  <span className="text-stone-300 text-[9px] sm:text-[10px] font-semibold tracking-wider uppercase line-clamp-2 mt-0.5">
-                    {partner.tagline}
-                  </span>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
+                  {/* Partner details on hover / keyboard focus */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent opacity-0 group-hover/card:opacity-100 group-focus-visible/card:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-2.5 sm:p-3 text-left">
+                    <span className="text-white text-[11px] sm:text-xs font-black tracking-wide line-clamp-1 drop-shadow-sm">
+                      {partner.name}
+                    </span>
+                    {partner.tagline && (
+                      <span className="text-white/80 text-[9px] sm:text-[10px] font-semibold tracking-wider uppercase line-clamp-2 mt-0.5">
+                        {partner.tagline}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        ))}
       </div>
     </section>
   );

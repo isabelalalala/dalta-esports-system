@@ -67,7 +67,7 @@ export default function HeroSlideshow({ title, tagline, images = [], content }: 
   return (
     <section
       aria-label="DALTA Esports Hero"
-      className="relative w-full rounded-2xl overflow-hidden border border-stone-200/90 shadow-md bg-stone-950 min-h-[520px] sm:min-h-[600px] @5xl:min-h-[660px] flex items-center justify-center animate-hero-entrance"
+      className="@container relative w-full rounded-2xl overflow-hidden border border-stone-200/90 shadow-md bg-stone-950 min-h-[520px] sm:min-h-[600px] @5xl:min-h-[660px] flex items-center justify-center animate-hero-entrance"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
       onFocusCapture={() => setPaused(true)}
@@ -98,9 +98,12 @@ export default function HeroSlideshow({ title, tagline, images = [], content }: 
       <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/60 to-black/75 backdrop-blur-[1px]" />
 
       {/* Foreground Hero Content */}
-      <div className="relative z-10 w-full px-6 py-14 sm:px-12 sm:py-20 text-center space-y-6 sm:space-y-8 max-w-6xl mx-auto">
-        {/* Hero Title */}
-        <h1 className="font-black text-hero tracking-tight sm:tracking-normal uppercase leading-[1.02] drop-shadow-xl animate-hero-title">
+      <div className="relative z-10 w-full px-4 py-14 sm:px-12 sm:py-20 text-center space-y-6 sm:space-y-8 max-w-6xl mx-auto">
+        {/* Hero Title: one line. "DALTA ESPORTS" is ~9 font-sizes wide, so the size is the hero's
+            width (100cqi, the section is a container) minus the side padding, divided by 9 (by 9.3
+            from sm, where the letter spacing is wider), capped at 7rem. It may wrap only on
+            phones narrower than 340px. */}
+        <h1 className="font-black text-hero sm:text-[length:clamp(1.75rem,calc((100cqi_-_6rem)/9.3),7rem)] tracking-tight sm:tracking-normal uppercase leading-[1.02] drop-shadow-xl animate-hero-title min-[340px]:whitespace-nowrap">
           {title.toUpperCase().includes('DALTA') ? (
             <>
               <span className="text-white drop-shadow-[0_4px_24px_rgba(0,0,0,0.85)]">DALTA</span>{' '}

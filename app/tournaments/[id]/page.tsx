@@ -438,10 +438,11 @@ export default function TournamentDetailsPage() {
             <GameLogo
               name={tournament.game}
               gameId={tournament.game_id}
-              className="z-0 w-48 h-36 sm:w-56 sm:h-44"
+              balanced
+              className="absolute inset-0 z-0"
               imageClassName="drop-shadow-[0_8px_24px_rgba(0,0,0,0.7)]"
               fallbackClassName="text-5xl"
-              sizes="(max-width: 1024px) 200px, 240px"
+              sizes="(max-width: 1024px) 80vw, 360px"
               priority
             />
             <div className="absolute bottom-4 left-6 right-6 text-center z-10">

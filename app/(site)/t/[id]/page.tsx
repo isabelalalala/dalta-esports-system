@@ -3,7 +3,9 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { getPublicTournament, teamNameMap } from '@/utils/public-tournament';
-import { formatDate, formatDateTime, getTournamentStatus, isBye, roundLabel, statusLabels, statusStyles } from '@/utils/tournaments';
+import { formatDate, formatDateTime, getTournamentStatus, isBye, roundLabel, statusLabels, statusStyles, toDateInput } from '@/utils/tournaments';
+import { eventStartsAt } from '@/utils/site';
+import Countdown from '@/components/site/Countdown';
 import { publicMatchPath, publicTournamentPath } from '@/utils/site-url';
 import type { Match } from '@/utils/types';
 import Bracket from '@/app/tournaments/[id]/Bracket';
@@ -124,6 +126,17 @@ async function TournamentContent({ params }: { params: PageProps<'/t/[id]'>['par
             <span className="hidden sm:inline" aria-hidden>•</span>
             <span>{data.approved_count} / {t.max_participants || '∞'} Teams</span>
           </p>
+          {/* Registration is open through the deadline day; dates are Manila calendar days */}
+          {status === 'upcoming' && toDateInput(t.registration_deadline || t.start_date) && (
+            <Countdown
+              target={new Date(eventStartsAt(toDateInput(t.registration_deadline || t.start_date)).getTime() + 24 * 60 * 60 * 1000).toISOString()}
+              prefix="Registration closes in"
+              size="sm"
+            />
+          )}
+          {status === 'registration_closed' && toDateInput(t.start_date) && (
+            <Countdown target={eventStartsAt(toDateInput(t.start_date)).toISOString()} prefix="Starts in" size="sm" />
+          )}
         </div>
 
         <div className="relative z-10 flex flex-wrap items-center justify-center gap-3 pt-2">
@@ -178,10 +191,11 @@ async function TournamentContent({ params }: { params: PageProps<'/t/[id]'>['par
             <GameLogo
               name={t.game}
               gameId={t.game_id}
-              className="z-0 w-48 h-36 sm:w-56 sm:h-44"
+              balanced
+              className="absolute inset-0 z-0"
               imageClassName="drop-shadow-[0_8px_24px_rgba(0,0,0,0.7)]"
               fallbackClassName="text-5xl"
-              sizes="(max-width: 1024px) 200px, 240px"
+              sizes="(max-width: 1024px) 80vw, 360px"
               priority
             />
             <div className="absolute bottom-4 left-6 right-6 text-center z-10">

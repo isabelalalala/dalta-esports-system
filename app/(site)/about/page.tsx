@@ -1,5 +1,7 @@
 import { getSiteContent } from '@/utils/site-data';
 import { siteImageUrl } from '@/utils/site';
+import Reveal from '@/components/Reveal';
+import SiteStats from '@/components/site/SiteStats';
 import PageHeroBackground from '@/components/site/PageHeroBackground';
 
 // About Us Page: Redesigned with custom container hierarchy
@@ -61,7 +63,8 @@ export default async function AboutPage() {
       </section>
 
       {/* 2. Second Container: Our Story (Expanded full-width, aligned with main container) */}
-      <section className="w-full rounded-3xl border border-stone-200/90 bg-white p-8 sm:p-12 shadow-xs space-y-4 animate-stagger-1">
+      <Reveal>
+      <section className="w-full rounded-3xl border border-stone-200/90 bg-white p-8 sm:p-12 shadow-xs space-y-4">
         <div className="pb-3 border-b border-stone-100">
           <h2 className="text-xl sm:text-2xl font-black text-stone-950 tracking-wider uppercase">
             Our Story
@@ -71,11 +74,15 @@ export default async function AboutPage() {
           {content.our_story || defaultStory}
         </p>
       </section>
+      </Reveal>
+
+      <SiteStats />
 
       {/* 3. Two Containers Side-by-Side: Mission & Vision */}
-      <div className="grid grid-cols-1 @3xl:grid-cols-2 gap-6 @5xl:gap-8 animate-stagger-2">
+      <div className="grid grid-cols-1 @3xl:grid-cols-2 gap-6 @5xl:gap-8">
         {/* Mission Container */}
-        <section className="w-full rounded-2xl border border-stone-200/90 bg-white p-6 sm:p-8 shadow-xs hover:border-amber-500/30 hover:shadow-md transition-all space-y-3 flex flex-col justify-between">
+        <Reveal className="h-full">
+        <section className="w-full rounded-2xl border border-stone-200/90 bg-white p-6 sm:p-8 shadow-xs hover:border-amber-500/30 hover:shadow-md transition-all space-y-3 flex flex-col justify-between h-full">
           <div className="space-y-3">
             <h2 className="text-xl sm:text-2xl font-black text-stone-950 tracking-wider uppercase">
               Mission
@@ -85,9 +92,11 @@ export default async function AboutPage() {
             </p>
           </div>
         </section>
+        </Reveal>
 
         {/* Vision Container */}
-        <section className="w-full rounded-2xl border border-stone-200/90 bg-white p-6 sm:p-8 shadow-xs hover:border-amber-500/30 hover:shadow-md transition-all space-y-3 flex flex-col justify-between">
+        <Reveal delay={1} className="h-full">
+        <section className="w-full rounded-2xl border border-stone-200/90 bg-white p-6 sm:p-8 shadow-xs hover:border-amber-500/30 hover:shadow-md transition-all space-y-3 flex flex-col justify-between h-full">
           <div className="space-y-3">
             <h2 className="text-xl sm:text-2xl font-black text-stone-950 tracking-wider uppercase">
               Vision
@@ -97,10 +106,12 @@ export default async function AboutPage() {
             </p>
           </div>
         </section>
+        </Reveal>
       </div>
 
       {/* 4. Final Container: Game With Purpose */}
-      <section className="w-full rounded-3xl border border-stone-200/90 bg-gradient-to-br from-amber-50/70 via-white to-stone-50 p-8 sm:p-12 @5xl:p-14 text-center space-y-4 shadow-xs animate-stagger-3">
+      <Reveal>
+      <section className="w-full rounded-3xl border border-stone-200/90 bg-gradient-to-br from-amber-50/70 via-white to-stone-50 p-8 sm:p-12 @5xl:p-14 text-center space-y-4 shadow-xs">
         <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-800 text-xs font-black uppercase tracking-widest shadow-2xs">
           Official Organization Motto
         </div>
@@ -111,6 +122,7 @@ export default async function AboutPage() {
           {content.core_belief_text || defaultCoreBelief}
         </p>
       </section>
+      </Reveal>
     </div>
   );
 }

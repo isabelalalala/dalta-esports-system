@@ -105,14 +105,14 @@ isOneToOne: false
                   ]
                 },"events": {
                   Row: {
-                    "created_at": string,"description": string,"display_order": number,"event_date": string | null,"id": string,"image_path": string | null,"is_published": boolean,"link": string | null,"title": string,"tournament_id": string | null
+                    "created_at": string,"description": string,"display_order": number,"event_date": string | null,"id": string,"image_path": string | null,"is_featured": boolean,"is_published": boolean,"link": string | null,"title": string,"tournament_id": string | null,"venue": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "created_at"?: string,"description"?: string,"display_order"?: number,"event_date"?: string | null,"id"?: string,"image_path"?: string | null,"is_published"?: boolean,"link"?: string | null,"title": string,"tournament_id"?: string | null
+                    "created_at"?: string,"description"?: string,"display_order"?: number,"event_date"?: string | null,"id"?: string,"image_path"?: string | null,"is_featured"?: boolean,"is_published"?: boolean,"link"?: string | null,"title": string,"tournament_id"?: string | null,"venue"?: string | null
                   }
                   Update: {
-                    "created_at"?: string,"description"?: string,"display_order"?: number,"event_date"?: string | null,"id"?: string,"image_path"?: string | null,"is_published"?: boolean,"link"?: string | null,"title"?: string,"tournament_id"?: string | null
+                    "created_at"?: string,"description"?: string,"display_order"?: number,"event_date"?: string | null,"id"?: string,"image_path"?: string | null,"is_featured"?: boolean,"is_published"?: boolean,"link"?: string | null,"title"?: string,"tournament_id"?: string | null,"venue"?: string | null
                   }
                   Relationships: [
                     {
@@ -1020,6 +1020,9 @@ isOneToOne: false
 "generate_bracket":
 { Args: { "p_tournament_id": string }; Returns: number
                            },
+"get_live_now":
+{ Args: Record<PropertyKey, never>; Returns: Json
+                           },
 "get_live_viewer_counts":
 { Args: { "p_stream_ids": (string)[] }; Returns: {
               "stream_id": string,"viewers": number
@@ -1055,6 +1058,9 @@ isOneToOne: false
                            },
 "get_public_tournament":
 { Args: { "p_tournament_id": string }; Returns: Json
+                           },
+"get_site_stats":
+{ Args: Record<PropertyKey, never>; Returns: Json
                            },
 "get_stream_comments":
 { Args: { "p_before"?: string,"p_limit"?: number,"p_stream_id": string }; Returns: {

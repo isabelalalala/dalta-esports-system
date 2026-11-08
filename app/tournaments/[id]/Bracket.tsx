@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { Trophy } from 'lucide-react';
 import type { Match } from '@/utils/types';
 import { formatDateTime, isBye, roundLabel } from '@/utils/tournaments';
+import BracketSlot from './BracketSlot';
 
 // Public single-elimination bracket: one column per round.
 // On small screens the columns scroll sideways, so each match card keeps a readable width.
@@ -91,8 +92,13 @@ function MatchBox({ match, teamNames, timeZone }: { match: Match; teamNames: Rec
         const name = teamId ? teamNames[teamId] ?? 'Unknown team' : bye ? 'BYE' : 'TBD';
 
         return (
-          <div
+          // Client row: animates a team advancing into it, a new winner and score changes
+          <BracketSlot
             key={i}
+            teamId={teamId}
+            name={name}
+            won={won}
+            scoreText={won && match.is_forfeit ? 'FF' : score === null || score === undefined ? '' : String(score)}
             className={`flex justify-between items-center gap-2 px-3.5 py-2.5 ${i === 0 ? 'border-b border-stone-100' : ''} ${
               won
                 ? 'text-maroon font-black bg-amber-500/5'
@@ -100,10 +106,7 @@ function MatchBox({ match, teamNames, timeZone }: { match: Match; teamNames: Rec
                 ? 'text-stone-500 font-semibold'
                 : 'text-stone-900 font-bold'
             } ${teamId === null ? 'italic text-stone-500' : ''}`}
-          >
-            <span className="truncate">{name}</span>
-            <span className="tabular-nums font-black">{won && match.is_forfeit ? 'FF' : score ?? ''}</span>
-          </div>
+          />
         );
       })}
       <div className="px-3.5 py-1.5 bg-stone-50 border-t border-stone-100 text-[10px] sm:text-[11px] font-bold text-stone-500 flex justify-between gap-2 tracking-wider">

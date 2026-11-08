@@ -430,7 +430,7 @@ export default function TeamsPage() {
               return (
                 <div
                   key={team.id}
-                  className="group rounded-3xl border border-stone-200/90 bg-white shadow-xs hover:shadow-xl hover:-translate-y-1.5 hover:border-gold/80 transition-all duration-300 overflow-hidden flex flex-col"
+                  className="group card-interactive rounded-3xl border border-stone-200/90 bg-white shadow-xs overflow-hidden flex flex-col"
                 >
                   {/* Game Showcase Header */}
                   <div className="relative aspect-video bg-ink border-b border-stone-100 overflow-hidden flex items-center justify-center">
@@ -440,9 +440,10 @@ export default function TeamsPage() {
                     <GameLogo
                       name={team.games?.name}
                       gameId={team.game_id}
-                      className="z-10 w-32 h-24 group-hover:scale-105 transition-transform duration-300"
-                      imageClassName="drop-shadow-[0_4px_16px_rgba(0,0,0,0.6)]"
-                      sizes="140px"
+                      balanced
+                      className="absolute inset-0 z-10"
+                      imageClassName="drop-shadow-[0_4px_16px_rgba(0,0,0,0.6)] group-hover:scale-105 transition-transform duration-300"
+                      sizes="(max-width: 768px) 80vw, 280px"
                     />
                   </div>
 

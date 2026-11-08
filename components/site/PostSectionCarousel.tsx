@@ -1,10 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import Link from 'next/link';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import type { SitePost } from '@/utils/site';
 import PostCard from './PostCard';
+import Reveal from '@/components/Reveal';
 
 const PAGE_SIZE = 4;
 
@@ -14,6 +15,10 @@ interface PostSectionCarouselProps {
   emptyText: string;
   posts: SitePost[];
   baseHref: string;
+  // Events: show "Date TBA" on cards without a date
+  showDateTba?: boolean;
+  // Shown under the section title, above the cards (the homepage's featured event)
+  featured?: ReactNode;
 }
 
 export default function PostSectionCarousel({
@@ -22,6 +27,8 @@ export default function PostSectionCarousel({
   emptyText,
   posts,
   baseHref,
+  showDateTba = false,
+  featured,
 }: PostSectionCarouselProps) {
   const [pageIndex, setPageIndex] = useState(0);
 
@@ -49,8 +56,10 @@ export default function PostSectionCarousel({
         )}
       </div>
 
+      {featured}
+
       {/* Content Area */}
-      {posts.length === 0 ? (
+      {posts.length === 0 && featured ? null : posts.length === 0 ? (
         <div className="w-full rounded-2xl border border-stone-200/80 bg-stone-50/70 p-8 sm:p-12 text-center flex flex-col items-center justify-center gap-2 shadow-xs">
           <p className="text-stone-800 font-extrabold text-sm">
             {emptyText}
@@ -76,12 +85,10 @@ export default function PostSectionCarousel({
 
           {/* 4 Cards Grid */}
           <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,13rem),1fr))] gap-5 sm:gap-6 w-full min-h-[280px]">
-            {visiblePosts.map((post) => (
-              <PostCard
-                key={post.id}
-                post={post}
-                href={`${baseHref}/${post.id}`}
-              />
+            {visiblePosts.map((post, i) => (
+              <Reveal key={post.id} delay={(i % 4) as 0 | 1 | 2 | 3} className="h-full">
+                <PostCard post={post} href={`${baseHref}/${post.id}`} showDateTba={showDateTba} />
+              </Reveal>
             ))}
           </div>
 

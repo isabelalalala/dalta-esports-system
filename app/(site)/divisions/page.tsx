@@ -7,6 +7,7 @@ import PageHeroBackground from '@/components/site/PageHeroBackground';
 
 import { getGameLogo } from '@/utils/game-logos';
 import GameLogo from '@/components/GameLogo';
+import Reveal from '@/components/Reveal';
 
 // Game Divisions Page
 export const instant = false;
@@ -44,16 +45,16 @@ export default async function DivisionsPage() {
         <EmptyNote>No divisions yet.</EmptyNote>
       ) : (
         <div className="animate-stagger-1 grid grid-cols-[repeat(auto-fill,minmax(min(100%,24rem),1fr))] gap-6 sm:gap-8">
-          {divisions.map((d) => {
+          {divisions.map((d, i) => {
             const logo = getGameLogo(d.games?.name, d.game_id);
             const customImage = siteImageUrl(d.image_path);
             const teamCount = teams.filter((t) => t.game_id === d.game_id).length;
 
             return (
+              <Reveal key={d.game_id} delay={(i % 3) as 0 | 1 | 2} className="h-full">
               <Link
-                key={d.game_id}
                 href={`/divisions/${d.game_id}`}
-                className="group rounded-3xl border border-stone-200/90 bg-white shadow-xs hover:shadow-xl hover:-translate-y-1.5 hover:border-gold/70 transition-all duration-300 overflow-hidden flex flex-col"
+                className="group card-interactive h-full rounded-3xl border border-stone-200/90 bg-white shadow-xs overflow-hidden flex flex-col"
               >
                 {/* Showcase Image Container Matching Image 2 */}
                 <div className="relative aspect-video border-b border-stone-800/80 bg-ink overflow-hidden grid place-items-center">
@@ -70,13 +71,14 @@ export default async function DivisionsPage() {
                   </div>
 
                   {logo ? (
-                    <div className="relative z-0 w-full h-full p-8 flex items-center justify-center">
+                    <div className="absolute inset-0 z-0">
                       <GameLogo
                         name={d.games?.name}
                         gameId={d.game_id}
-                        className="w-full h-full max-w-[240px] max-h-[130px]"
+                        balanced
+                        className="absolute inset-0"
                         imageClassName="drop-shadow-[0_6px_24px_rgba(0,0,0,0.7)] group-hover:scale-108 transition-transform duration-300"
-                        sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 400px"
+                        sizes="(max-width: 768px) 80vw, 400px"
                       />
                     </div>
                   ) : customImage ? (
@@ -108,6 +110,7 @@ export default async function DivisionsPage() {
                   </p>
                 </div>
               </Link>
+              </Reveal>
             );
           })}
         </div>

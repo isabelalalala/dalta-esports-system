@@ -85,6 +85,33 @@ export interface SitePost {
   tournament_id?: string | null;
   display_order: number;
   is_published: boolean;
+  // Events only (202611091000_featured_events): pinned to the homepage card, and where it happens
+  is_featured?: boolean;
+  venue?: string | null;
+}
+
+// Today's date in the Philippines (UTC+8, no daylight saving) as YYYY-MM-DD, the format of
+// event_date. The server clock is UTC, so new Date().toISOString() would be a day behind until 8am.
+export function manilaToday(now: Date = new Date()): string {
+  return new Date(now.getTime() + 8 * 60 * 60 * 1000).toISOString().slice(0, 10);
+}
+
+// The moment an event day starts in the Philippines (midnight Manila time), for countdowns.
+// Events only have a date, no time.
+export function eventStartsAt(eventDate: string): Date {
+  return new Date(`${eventDate.slice(0, 10)}T00:00:00+08:00`);
+}
+
+// The event on the homepage's featured card: the one an admin pinned (is_featured), else the next
+// published event by date (today counts). Events without a date are only featured when pinned.
+export function pickFeaturedEvent(events: SitePost[], today: string = manilaToday()): SitePost | null {
+  const published = events.filter((e) => e.is_published);
+  const pinned = published.find((e) => e.is_featured);
+  if (pinned) return pinned;
+  const upcoming = published
+    .filter((e) => e.event_date && e.event_date.slice(0, 10) >= today)
+    .sort((a, b) => a.event_date!.localeCompare(b.event_date!));
+  return upcoming[0] ?? null;
 }
 
 export interface GameDivision {

@@ -7,7 +7,7 @@
 import { cacheLife, cacheTag } from 'next/cache';
 import { createPublicClient } from '@/utils/supabase/public';
 import {
-  DEFAULT_SITE_CONTENT, type GameDivision, type HeroImage, type Officer, type OfficialTeam,
+  DEFAULT_SITE_CONTENT, manilaToday, pickFeaturedEvent, type GameDivision, type HeroImage, type Officer, type OfficialTeam,
   type SiteContent, type SitePost,
 } from '@/utils/site';
 
@@ -50,6 +50,40 @@ export async function getPosts(table: 'campaigns' | 'events', limit?: number): P
   if (limit) query = query.limit(limit);
   const { data } = await query;
   return data ?? [];
+}
+
+// The homepage's featured event: the pinned one, else the next published event by date
+// (pickFeaturedEvent in utils/site.ts). Only published rows are readable here (public client).
+export async function getFeaturedEvent(): Promise<SitePost | null> {
+  'use cache';
+  cacheSite();
+  const today = manilaToday();
+  const events = () => createPublicClient().from('events').select('*')
+    .order('event_date', { ascending: true, nullsFirst: false }).limit(20);
+  let { data, error } = await events().or(`is_featured.eq.true,event_date.gte.${today}`);
+  if (error) {
+    // Before 202611091000_featured_events has run there is no is_featured column: use the date only
+    ({ data, error } = await events().gte('event_date', today));
+  }
+  if (error || !data) return null;
+  return pickFeaturedEvent(data, today);
+}
+
+// Totals for the counters on the homepage and About page (get_site_stats(), 202611091200).
+// null before the migration has run: the counters are then left out.
+export interface SiteStats {
+  players: number;
+  teams: number;
+  tournaments: number;
+  matches: number;
+}
+
+export async function getSiteStats(): Promise<SiteStats | null> {
+  'use cache';
+  cacheSite();
+  const { data, error } = await createPublicClient().rpc('get_site_stats');
+  if (error || !data) return null;
+  return data as unknown as SiteStats;
 }
 
 export async function getPost(table: 'campaigns' | 'events', id: string): Promise<SitePost | null> {

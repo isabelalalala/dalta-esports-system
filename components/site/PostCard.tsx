@@ -5,13 +5,14 @@ import { siteImageUrl, type SitePost } from '@/utils/site';
 
 // A campaign or event card (home page and the /campaigns and /events lists)
 // Redesigned: Solid white background, uppercase Montserrat, high contrast.
-export default function PostCard({ post, href }: { post: SitePost; href: string }) {
+// showDateTba (events): "Date TBA" instead of nothing when the event has no date yet.
+export default function PostCard({ post, href, showDateTba = false }: { post: SitePost; href: string; showDateTba?: boolean }) {
   const image = siteImageUrl(post.image_path);
 
   return (
     <Link
       href={href}
-      className="group flex flex-col rounded-2xl border border-stone-200/90 bg-white shadow-xs hover:shadow-lg hover:-translate-y-1 hover:border-gold/60 transition-all duration-200 overflow-hidden"
+      className="group card-interactive h-full flex flex-col rounded-2xl border border-stone-200/90 bg-white shadow-xs overflow-hidden"
     >
       <div className="relative aspect-video bg-stone-100 overflow-hidden border-b border-stone-100">
         {image ? (
@@ -21,7 +22,12 @@ export default function PostCard({ post, href }: { post: SitePost; href: string 
         )}
       </div>
       <div className="p-5 space-y-2 flex-1">
-        {post.event_date && <p className="text-xs text-maroon font-extrabold uppercase tracking-wider">{formatDate(post.event_date)}</p>}
+        {(post.event_date || showDateTba) && (
+          <p className="text-xs text-maroon font-extrabold uppercase tracking-wider">
+            {post.event_date ? formatDate(post.event_date) : 'Date TBA'}
+            {post.venue && <span className="text-stone-600"> · {post.venue}</span>}
+          </p>
+        )}
         <h3 className="font-black text-stone-950 text-base leading-snug uppercase tracking-wide group-hover:text-gold transition-colors">{post.title}</h3>
         {post.description && <p className="text-xs sm:text-sm text-stone-600 font-medium line-clamp-3">{post.description}</p>}
       </div>

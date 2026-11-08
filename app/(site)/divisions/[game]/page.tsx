@@ -92,7 +92,7 @@ async function Division({ params }: { params: PageProps<'/divisions/[game]'>['pa
                 <Link
                   key={team.id}
                   href={`/divisions/${game}/${team.id}`}
-                  className="group rounded-3xl border border-stone-200/90 bg-white shadow-xs hover:shadow-xl hover:-translate-y-1.5 hover:border-gold/80 transition-all duration-300 overflow-hidden flex flex-col"
+                  className="group card-interactive rounded-3xl border border-stone-200/90 bg-white shadow-xs overflow-hidden flex flex-col"
                 >
                   <div className="relative aspect-video border-b border-stone-100 bg-stone-100 overflow-hidden grid place-items-center">
                     {photo ? (

@@ -297,6 +297,12 @@ items.
 - New tables: **`site_content`** (key/value texts), **`hero_images`**, **`campaigns`**, **`events`**,
   **`game_divisions`**, **`officers`**, **`official_teams`**, **`official_team_players`** (each has
   `display_order` and `is_published`).
+- `events` later got `venue` and `is_featured` (`202611091000_featured_events`): admins pin one event to the
+  homepage's featured card (with a countdown); without a pin the next upcoming published event is featured.
+- `get_live_now()` (`202611091100_live_now`, readable logged out): the homepage "Live now" strip (live scores, or
+  the next match with a countdown). Team and tournament names only, like `get_public_tournament()`.
+- `get_site_stats()` (`202611091200_site_stats`, readable logged out): four totals (players, teams,
+  tournaments, matches played) for the animated counters on the homepage and About page. Counts only.
 - Storage: public bucket **`site-images`**.
 
 ### Feature 9: Feedback protection

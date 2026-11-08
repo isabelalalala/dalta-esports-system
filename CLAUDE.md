@@ -101,7 +101,7 @@ Enforced by a CHECK constraint on `profiles.role` (migration `202610161200_role_
 - RLS policies check roles with `public.get_my_role()`.
 
 ## Current schema (public)
-All migrations are in `supabase/migrations/`, run in filename order (202610151100 … 202611081700). `202610151100_base_schema` creates the three pre-migration base tables (`profiles`, `tournaments`, `tournament_registrations`). It is `if not exists`, so it is a no-op on databases that already have them.
+All migrations are in `supabase/migrations/`, run in filename order (202610151100 … 202611091200). `202610151100_base_schema` creates the three pre-migration base tables (`profiles`, `tournaments`, `tournament_registrations`). It is `if not exists`, so it is a no-op on databases that already have them.
 `202610181000_feedback_protection` also needs its one-time Vault key setup (the `feedback_server_key` secret +
 `FEEDBACK_SERVER_KEY`); the steps are at the top of that file.
 Readers: "anyone" = also logged out; "logged-in" = any role; "admin/staff" = organizers only.
@@ -389,7 +389,8 @@ Readers: "anyone" = also logged out; "logged-in" = any role; "admin/staff" = org
 **Public website (editable by admins)**
 - `site_content` (key, value, updated_by, updated_at): every text on the site; the editable keys, labels and
   fallbacks are `SITE_CONTENT_FIELDS` in `utils/site.ts` (+ `logo_path`, `about_image_path`). Anyone reads.
-- `hero_images` (carousel), `campaigns`, `events` (+ optional tournament_id), `game_divisions` (one per game),
+- `hero_images` (carousel), `campaigns`, `events` (+ optional tournament_id; since 202611091000 also `venue` and
+  `is_featured`: one pinned event at a time, trigger `events_single_featured()` un-pins the previous one), `game_divisions` (one per game),
   `officers` (category `core_officer`/`division_head`/`coach`/`committee`, optional game_id),
   `official_teams` + `official_team_players` (the org's showcase teams, NOT the players' app teams; one captain
   per team). All have display_order; is_published decides visibility (players follow their team).
@@ -405,6 +406,23 @@ Readers: "anyone" = also logged out; "logged-in" = any role; "admin/staff" = org
   Official teams (+ players). Lists use the generic `ListEditor` (add, edit, ▲▼ order, publish, delete, images);
   images go through `utils/site-images.ts` (`<folder>/<random>.<ext>`), and replaced/removed files are deleted.
 - Logo: `public/DALTA ESPORTS LOGO TRNPRNT.png` unless one is uploaded on `/admin/website`.
+- Homepage (Phase 7): featured event = the pinned one, else the next published event by date in Manila time
+  (`pickFeaturedEvent()` / `manilaToday()` in `utils/site.ts`, read by `getFeaturedEvent()`), shown as
+  `components/site/FeaturedEventCard.tsx` (countdown `EventCountdown.tsx`, to midnight Manila on the event date)
+  under the Events title, plus a ribbon above the hero; the carousel leaves it out. Event cards say "Date TBA"
+  without a date. Unpublished events are drafts ("Draft" badge on `/admin/website` only; never on the public site).
+  Partner marquee (`PartnershipSection.tsx` + "Partner marquee" CSS in `globals.css`): 35 px/s, duration measured
+  from the track width, pauses on hover/focus, static row with reduced motion.
+- Motion (Phase 8): `components/site/LiveNowStrip.tsx` on top of the homepage (live scores from `get_live_now()`,
+  Realtime on matches + 1-minute poll; score changes flash; else the next match with a countdown).
+  `components/site/Countdown.tsx` (shared minute clock, `countdownParts()` in `utils/countdown.ts`) is used by the
+  featured event, event pages and `/t/[id]` (registration closes / starts in). `components/Reveal.tsx` fades sections
+  and cards in on scroll (`.reveal` CSS, only with JS and motion allowed). Clickable cards use the `card-interactive`
+  utility (lift + gold border/glow on hover and keyboard focus; no lift with reduced motion).
+  `components/site/SiteStats.tsx` (homepage + About): players / teams / tournaments / matches played from
+  `get_site_stats()` (cached `getSiteStats()`), counting up with `CountUp.tsx`; zero tiles are left out.
+  Bracket rows are `app/tournaments/[id]/BracketSlot.tsx`: while the page is open, a team advancing slides in, a new
+  winner gets a gold sweep and a changed score flashes (nothing on first render).
 
 **Storage buckets**
 - `match-proofs` (private): result screenshots, `<match id>/<random>.<ext>`, PNG/JPEG/WebP, 5 MB. Captains of the
@@ -420,7 +438,9 @@ Readers: "anyone" = also logged out; "logged-in" = any role; "admin/staff" = org
 `admin_delete_user(target)`, `report_activity/report_sentiment/report_engagement(...)` (Module 6), `give_privacy_consent(version)`, `review_student_verification(...)`, `activity_log_actors()` (admin filter list),
 `purge_old_activity_logs()`, `purge_old_notifications()` (SQL Editor only), `respond_to_team_invite()`,
 `transfer_team_captaincy()`, `get_my_team_invites()`, `get_team_invites()`, `check_in_match()`, `declare_forfeit()`,
-`get_needs_attention()`, `log_export()`, `get_public_tournament()`, `get_public_calendar()`, `send_checkin_open_notifications()` (pg_cron only), `submit_match_result()`,
+`get_needs_attention()`, `log_export()`, `get_public_tournament()`, `get_public_calendar()`, `get_live_now()` (anon: live +
+next 3 matches with team/tournament names, for the homepage strip), `get_site_stats()` (anon: 4 totals for the
+counters), `send_checkin_open_notifications()` (pg_cron only), `submit_match_result()`,
 `respond_to_match_result()`, `review_match_result()`, `claim_gemini_call()`, `save_feedback_sentiment()`,
 `mark_feedback_pending()` (server key only), `get_prediction_split()`, `get_prediction_leaderboard()`.
 Business rules (roster size, registration checks, match results) are enforced by
@@ -532,6 +552,8 @@ triggers with readable error messages.
   (bracket, tables) scrolls inside its own `overflow-x-auto` box.
 - Game logos: always `components/GameLogo.tsx` (logo, or the game's initials when there is none or the image fails);
   never `getGameLogo()` + a conditional layout. A layout column that depends on a logo existing broke the LoL page.
+  Logo files are the trimmed `public/games/<id>.webp`; on card stages pass `balanced` + `className="absolute inset-0"`
+  (per-game width and real aspect ratio in `getGameLogoFit()`, `utils/game-logos.ts`) so all five look equally big.
   Grid columns get `min-w-0` (or a min width) so their content can't be squeezed letter by letter.
 - Mobile text: `app/globals.css` has an unlayered phone-only rule that makes small body paragraphs 16px / 1.5 line
   height / normal letter spacing and form fields 16px (no iOS zoom). Uppercase labels are left alone.
@@ -632,7 +654,7 @@ The final feature list for the documents is docs/new-features-summary.md.
   group who can see it, means updating `/privacy` and the version (everyone agrees again); small clarifications
   don't change the version.
 - **Logged-out data** comes only from published website rows and the `get_public_tournament()` /
-  `get_public_calendar()` functions (team names only). Don't open teams, registrations, streams or profiles to
+  `get_public_calendar()` / `get_live_now()` / `get_site_stats()` functions (team names only). Don't open teams, registrations, streams or profiles to
   `anon`; add a security definer function that returns just what the public page needs.
 - **New protected pages** go in `proxy.ts`. Public pages (website, `/t`, `/calendar`, `/privacy`) must not.
 

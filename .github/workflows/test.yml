@@ -31,9 +31,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      # The CLI is downloaded from GitHub releases, which sometimes answers 504 for a minute.
+      # If the first try fails, wait and try once more before failing the job.
       - uses: supabase/setup-cli@v1
+        id: cli
+        continue-on-error: true
         with:
           # keep in sync with the supabase devDependency so gen types output matches
+          version: 2.121.0
+      - if: steps.cli.outcome == 'failure'
+        run: sleep 60
+      - if: steps.cli.outcome == 'failure'
+        uses: supabase/setup-cli@v1
+        with:
           version: 2.121.0
       # Only what the database tests and type generation need. Skipping the email tester (mailpit),
       # Studio and the other extras makes startup faster and avoids "port already in use" failures

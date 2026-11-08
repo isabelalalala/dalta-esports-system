@@ -146,16 +146,17 @@ export default function TournamentsPage() {
               <Link
                 key={tournament.id}
                 href={`/tournaments/${tournament.id}`}
-                className="group flex flex-col rounded-2xl border border-stone-200/90 bg-white shadow-xs hover:shadow-lg hover:-translate-y-1 hover:border-amber-500/50 transition-all duration-300 overflow-hidden relative"
+                className="group card-interactive flex flex-col rounded-2xl border border-stone-200/90 bg-white shadow-xs overflow-hidden relative"
               >
                 {/* Visual Header Aspect-Video (Matching PostCard Layout in Events) */}
                 <div className="relative aspect-video bg-gradient-to-br from-stone-900 via-stone-950 to-amber-950/40 overflow-hidden flex items-center justify-center border-b border-stone-100">
                   <GameLogo
                     name={tournament.game}
                     gameId={tournament.game_id}
-                    className="w-36 h-28 group-hover:scale-105 transition-transform duration-300"
-                    imageClassName="p-2"
-                    sizes="150px"
+                    balanced
+                    className="absolute inset-0"
+                    imageClassName="drop-shadow-[0_6px_20px_rgba(0,0,0,0.6)] group-hover:scale-105 transition-transform duration-300"
+                    sizes="(max-width: 768px) 80vw, 320px"
                   />
 
                   {/* Status Badge in Corner */}

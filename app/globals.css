@@ -39,7 +39,9 @@
   /* Fluid heading sizes. cqi = 1% of the nearest container's width (the page's <main>, see
      SiteNavLayout), so titles shrink when the sidebar takes space, not only when the window does.
      Outside a container cqi falls back to the window width. */
-  --text-hero: clamp(3rem, 8cqi + 0.5rem, 9.5rem); /* home carousel title */
+  /* Home hero title on phones (HeroSlideshow overrides it from sm): fits "DALTA ESPORTS" on one
+     line inside the hero, which is its own container (100cqi = hero width, 2rem = side padding) */
+  --text-hero: clamp(1.75rem, calc((100cqi - 2rem) / 9), 7rem);
   --text-hero--line-height: 1.02;
   --text-page-hero: clamp(2.25rem, 3.5cqi + 1rem, 3.75rem); /* page hero titles */
   --text-page-hero--line-height: 1.15;
@@ -159,25 +161,48 @@ input::placeholder, textarea::placeholder {
   background: #120d0b;
 }
 
-/* Infinite Marquee for Partnerships and Logo Loops */
+/* Partner marquee (components/site/PartnershipSection.tsx). --marquee-duration is set from the
+   track width (35px per second). Two identical tracks move together for a seamless loop. */
 @keyframes marquee {
-  0% {
+  from {
     transform: translate3d(0, 0, 0);
   }
-  100% {
+  to {
     transform: translate3d(-100%, 0, 0);
   }
 }
 
-.animate-marquee {
-  display: flex !important;
-  flex-shrink: 0 !important;
-  animation: marquee 24s linear infinite !important;
+.partner-marquee-track {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  animation: marquee var(--marquee-duration, 60s) linear infinite;
   will-change: transform;
 }
 
-.animate-marquee:hover {
-  animation-play-state: paused !important;
+/* Pause while the pointer is over it or a logo has keyboard focus */
+.partner-marquee:hover .partner-marquee-track,
+.partner-marquee:focus-within .partner-marquee-track {
+  animation-play-state: paused;
+}
+
+/* Reduced motion: no movement, one centered row of the partners (repeats and fades hidden) */
+@media (prefers-reduced-motion: reduce) {
+  .partner-marquee {
+    justify-content: center;
+  }
+  .partner-marquee-track {
+    animation: none;
+    flex-shrink: 1;
+    max-width: 100%;
+    flex-wrap: wrap;
+    justify-content: center;
+    padding-inline: 1rem;
+  }
+  .partner-marquee-copy,
+  .partner-marquee-fade {
+    display: none;
+  }
 }
 
 /* Home Page Orchestrated Entrance Choreography */
@@ -573,6 +598,74 @@ input::placeholder, textarea::placeholder {
   animation: pageEnter 0.28s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
+/* Phase 8 motion. All of it is off with prefers-reduced-motion (block at the end of the file). */
+
+/* A score that just changed flashes gold (LiveNowStrip re-mounts the number when it changes) */
+@keyframes scoreFlash {
+  0% { color: var(--color-gold); transform: scale(1.35); }
+  100% { transform: scale(1); }
+}
+.animate-score-flash {
+  animation: scoreFlash 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Bracket (app/tournaments/[id]/BracketSlot.tsx): the winner of the previous round slides into
+   its new slot, and a newly decided winner's row gets a gold sweep */
+@keyframes teamAdvance {
+  0% { opacity: 0; transform: translateX(-24px); }
+  60% { opacity: 1; }
+  100% { transform: none; }
+}
+.animate-team-advance {
+  display: inline-block;
+  animation: teamAdvance 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+}
+@keyframes winnerSweep {
+  0% { background-position: 120% 0; }
+  100% { background-position: -20% 0; }
+}
+.animate-winner-sweep {
+  background-image: linear-gradient(100deg, transparent 30%, color-mix(in oklab, var(--color-gold) 45%, transparent) 50%, transparent 70%);
+  background-size: 250% 100%;
+  background-repeat: no-repeat;
+  animation: winnerSweep 1.1s ease-out;
+}
+
+/* Something that appears after the page loaded (the Live now strip) fades in */
+.animate-section-reveal {
+  animation: pageEnter 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Scroll reveal (components/Reveal.tsx): hidden until it scrolls into view. Only when scripts run
+   (otherwise nothing would ever reveal it) and motion is allowed; reveal-delay-* staggers cards. */
+@media (scripting: enabled) and (prefers-reduced-motion: no-preference) {
+  .reveal {
+    transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .reveal:not([data-revealed]) {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  .reveal-delay-1 { transition-delay: 80ms; }
+  .reveal-delay-2 { transition-delay: 160ms; }
+  .reveal-delay-3 { transition-delay: 240ms; }
+}
+
+/* Interactive cards (events, campaigns, divisions, tournaments, teams): lift, gold border and a
+   soft gold glow on hover and on keyboard focus */
+@utility card-interactive {
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s ease, border-color 0.25s ease;
+  &:hover, &:focus-visible {
+    transform: translateY(-4px);
+    border-color: color-mix(in oklab, var(--color-gold) 70%, transparent);
+    box-shadow: 0 14px 30px -12px color-mix(in oklab, var(--color-gold) 45%, transparent),
+      0 4px 12px -4px rgb(0 0 0 / 0.12);
+  }
+  &:active {
+    transform: translateY(-1px);
+  }
+}
+
 /* Tooltip bubble (components/Tooltip.tsx) */
 @keyframes tooltipIn {
   from { opacity: 0; }
@@ -584,7 +677,8 @@ input::placeholder, textarea::placeholder {
 
 @media (prefers-reduced-motion: reduce) {
   /* Pulsing LIVE dots, spinners that are decoration, page fades and theme fades: off */
-  .animate-pulse, .animate-ping, .animate-page-enter, .animate-tooltip-in {
+  .animate-pulse, .animate-ping, .animate-page-enter, .animate-tooltip-in,
+  .animate-score-flash, .animate-section-reveal, .animate-team-advance, .animate-winner-sweep {
     animation: none !important;
   }
   .theme-transition, .theme-transition * {
@@ -617,3 +711,12 @@ input::placeholder, textarea::placeholder {
 
 
 
+
+/* Reduced motion: cards still get the gold border and glow on hover, but don't move */
+@media (prefers-reduced-motion: reduce) {
+  .card-interactive:hover,
+  .card-interactive:focus-visible,
+  .card-interactive:active {
+    transform: none;
+  }
+}

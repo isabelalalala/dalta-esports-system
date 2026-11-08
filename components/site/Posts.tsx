@@ -5,9 +5,11 @@ import { getPost, getPosts } from '@/utils/site-data';
 import { siteImageUrl } from '@/utils/site';
 import { formatDate } from '@/utils/tournaments';
 import PostCard from './PostCard';
+import Reveal from '@/components/Reveal';
 import { EmptyNote, PageTitle, Paragraphs } from './SiteParts';
-import { Calendar, ExternalLink, Trophy } from 'lucide-react';
+import { Calendar, ExternalLink, MapPin, Trophy } from 'lucide-react';
 import PageHeroBackground from './PageHeroBackground';
+import EventCountdown from './EventCountdown';
 
 // Campaigns and events share these: the list page and the detail page.
 type PostTable = 'campaigns' | 'events';
@@ -21,7 +23,11 @@ export async function PostList({ table, title, subtitle }: { table: PostTable; t
         <EmptyNote>Nothing here yet. Check back soon!</EmptyNote>
       ) : (
         <div className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,24rem),1fr))] gap-6">
-          {posts.map((p) => <PostCard key={p.id} post={p} href={`/${table}/${p.id}`} />)}
+          {posts.map((p, i) => (
+            <Reveal key={p.id} delay={(i % 3) as 0 | 1 | 2} className="h-full">
+              <PostCard post={p} href={`/${table}/${p.id}`} showDateTba={table === 'events'} />
+            </Reveal>
+          ))}
         </div>
       )}
     </div>
@@ -52,10 +58,18 @@ export async function PostDetail({ table, id, backLabel }: { table: PostTable; i
             ← {backLabel}
           </Link>
 
-          {post.event_date && (
-            <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-white/10 border border-white/20 text-stone-200 text-xs font-black tracking-wider backdrop-blur-xs shadow-2xs">
-              <Calendar className="w-3.5 h-3.5 text-gold" />
-              <span>{formatDate(post.event_date)}</span>
+          {(post.event_date || table === 'events') && (
+            <span className="inline-flex flex-wrap items-center gap-x-3 gap-y-1 px-3.5 py-1 rounded-full bg-white/10 border border-white/20 text-stone-200 text-xs font-black tracking-wider backdrop-blur-xs shadow-2xs">
+              <span className="inline-flex items-center gap-1.5">
+                <Calendar className="w-3.5 h-3.5 text-gold" />
+                <span>{post.event_date ? formatDate(post.event_date) : 'Date TBA'}</span>
+              </span>
+              {post.venue && (
+                <span className="inline-flex items-center gap-1.5">
+                  <MapPin className="w-3.5 h-3.5 text-gold" />
+                  <span>{post.venue}</span>
+                </span>
+              )}
             </span>
           )}
         </div>
@@ -66,6 +80,7 @@ export async function PostDetail({ table, id, backLabel }: { table: PostTable; i
           >
             {post.title}
           </h1>
+          {table === 'events' && post.event_date && <EventCountdown eventDate={post.event_date} prefix="Starts in" size="sm" />}
         </div>
       </section>
 
