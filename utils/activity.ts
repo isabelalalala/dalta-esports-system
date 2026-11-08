@@ -1,6 +1,7 @@
 // Activity log (see migration 202610171100_activity_log): row type, action groups for the
 // filter, and the readable sentence for each entry.
 import { roundLabel } from '@/utils/tournaments';
+import { describeFilters, type SavedReport } from '@/utils/reports';
 
 // details holds the names as they were when it happened. Which keys are present depends on the action.
 export interface ActivityLog {
@@ -11,6 +12,8 @@ export interface ActivityLog {
   entity_id: string | null;
   details: {
     actor_name?: string;
+    // report.generated / report.deleted: the saved report's readable filters
+    filters?: SavedReport['filters'];
     tournament_name?: string;
     export_format?: string;
     filter?: string | null;
@@ -135,6 +138,13 @@ export const ACTION_GROUPS: { label: string; actions: { value: string; label: st
       { value: 'announcement.posted', label: 'Announcement posted' },
       { value: 'announcement.edited', label: 'Announcement edited' },
       { value: 'announcement.deleted', label: 'Announcement deleted' },
+    ],
+  },
+  {
+    label: 'Reports',
+    actions: [
+      { value: 'report.generated', label: 'Report generated' },
+      { value: 'report.deleted', label: 'Saved report deleted' },
     ],
   },
   {
@@ -340,6 +350,10 @@ export function describeActivity(log: ActivityLog): string {
       return `${actor} edited the stream "${d.title}"${forTournament}${listFields(d.fields)}`;
     case 'stream.removed':
       return `${actor} removed the stream "${d.title}"${forTournament}`;
+    case 'report.generated':
+      return `${actor} generated a report (${describeFilters(d.filters ?? {})})`;
+    case 'report.deleted':
+      return `${actor} deleted a saved report (${describeFilters(d.filters ?? {})})`;
 
     default:
       if (log.action.startsWith('export.')) {

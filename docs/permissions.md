@@ -33,7 +33,7 @@ direct API or database request is refused too. Keep this table and `PERMISSIONS`
 | `announcement.post` | ✓ | | | | Post/edit on `/announcements` | RLS write on `announcements` (admin) |
 | `feedback.submit` | ✓ | ✓ | ✓ | ✓ | `/feedback` | POST `/api/feedback` (login) + RLS insert (own row) |
 | `feedback.viewAll` | ✓ | | | | `/admin/feedback` | RLS select on `feedback` (admin); POST `/api/feedback/classify` role check |
-| `report.generate` | ✓ | | | | `/analytics` | `report_activity()`, `report_sentiment()` role checks; RLS on `analytics_reports` (admin) |
+| `report.generate` | ✓ | | | | `/analytics` | POST `/api/reports/generate` role check; `report_activity()`, `report_sentiment()`, `report_comments()`, `report_moderation()` role checks; RLS on `analytics_reports` (admin); generate/delete logged by trigger |
 | `report.viewEngagement` | ✓ | ✓ | | | `/analytics/engagement` | `report_engagement()`, `get_live_viewer_counts()` role checks |
 | `export.operations` | ✓ | ✓ | | | Export buttons (registrations, rosters, matches) | GET `/api/exports/[type]` `can()` check + `log_export()` role check + RLS reads |
 | `export.sensitive` | ✓ | | | | Export buttons (feedback, users) | same as above |

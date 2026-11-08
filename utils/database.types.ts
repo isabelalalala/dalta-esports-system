@@ -1138,7 +1138,13 @@ isOneToOne: false
 "report_comment_sentiment":
 { Args: { "p_from"?: string,"p_to"?: string,"p_tournament_id"?: string }; Returns: Json
                            },
+"report_comments":
+{ Args: { "p_from"?: string,"p_game_id"?: string,"p_to"?: string,"p_tournament_id"?: string }; Returns: Json
+                           },
 "report_engagement":
+{ Args: { "p_from"?: string,"p_game_id"?: string,"p_to"?: string,"p_tournament_id"?: string }; Returns: Json
+                           },
+"report_moderation":
 { Args: { "p_from"?: string,"p_game_id"?: string,"p_to"?: string,"p_tournament_id"?: string }; Returns: Json
                            },
 "report_sentiment":

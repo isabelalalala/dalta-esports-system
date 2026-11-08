@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { createClient } from '@/utils/supabase/client';
 import { getErrorMessage } from '@/utils/errors';
-import { dateInManila, emptyFilters, type ReportFilters as Filters, type SavedReport } from '@/utils/reports';
+import { DATA_SOURCES, dateInManila, emptyFilters, isDataSource, type ReportFilters as Filters, type SavedReport } from '@/utils/reports';
 
 export interface FilterOptions {
   tournaments: { id: string; name: string; game_id: string | null }[];
@@ -58,9 +58,11 @@ interface Props {
   value: Filters;
   onChange: (filters: Filters) => void;
   options: FilterOptions;
+  // The admin report's "data source" (feedback / comments / both); the staff engagement page has none
+  showSource?: boolean;
 }
 
-export default function ReportFilters({ value, onChange, options }: Props) {
+export default function ReportFilters({ value, onChange, options, showSource = false }: Props) {
   const tournaments = value.gameId
     ? options.tournaments.filter((t) => t.game_id === value.gameId)
     : options.tournaments;
@@ -73,7 +75,7 @@ export default function ReportFilters({ value, onChange, options }: Props) {
 
   return (
     <div className="bg-white border border-stone-200/90 rounded-2xl p-6 shadow-xs space-y-4 print:hidden text-stone-950">
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className={`grid grid-cols-1 sm:grid-cols-2 gap-4 ${showSource ? 'lg:grid-cols-5' : 'lg:grid-cols-4'}`}>
         <label className="flex flex-col gap-1.5 text-xs font-black text-stone-800 tracking-wider uppercase">
           <span>Game Title</span>
           <select value={value.gameId} onChange={(e) => setGame(e.target.value)} className={inputClass}>
@@ -100,6 +102,18 @@ export default function ReportFilters({ value, onChange, options }: Props) {
           <span>To Date</span>
           <input type="date" value={value.to} onChange={(e) => onChange({ ...value, to: e.target.value })} className={inputClass} />
         </label>
+        {showSource && (
+          <label className="flex flex-col gap-1.5 text-xs font-black text-stone-800 tracking-wider uppercase">
+            <span>Data Source</span>
+            <select
+              value={value.source}
+              onChange={(e) => onChange({ ...value, source: isDataSource(e.target.value) ? e.target.value : 'all' })}
+              className={inputClass}
+            >
+              {DATA_SOURCES.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
+            </select>
+          </label>
+        )}
       </div>
       <div className="flex flex-wrap items-center gap-2 pt-1 border-t border-stone-100">
         <button type="button" onClick={() => onChange({ ...value, from: daysAgo(6), to: daysAgo(0) })} className={presetClass}>

@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { Star } from 'lucide-react';
+import type { ChartId } from '@/utils/report-insights';
 
 // Small building blocks shared by the report sections
 
@@ -15,15 +16,25 @@ export function StatTile({ label, value, note }: { label: string; value: ReactNo
 }
 
 // A titled card around a chart or table. break-inside-avoid keeps it on one printed page.
-export function ReportCard({ title, note, children }: { title: string; note?: string; children: ReactNode }) {
+// insight = the written interpretation shown under the chart (Phase 5).
+export function ReportCard({ title, note, insight, children }: { title: string; note?: string; insight?: string; children: ReactNode }) {
   return (
     <div className="bg-white border border-stone-200/90 rounded-2xl p-5 sm:p-6 shadow-xs break-inside-avoid text-stone-950 print:border-stone-300 print:shadow-none">
       <h3 className="font-black text-amber-800 text-sm sm:text-base uppercase tracking-wider">{title}</h3>
       {note && <p className="text-xs text-stone-500 font-medium normal-case mt-0.5 mb-3">{note}</p>}
       <div className="mt-2">{children}</div>
+      {insight && (
+        <div className="mt-4 border-t border-stone-200 pt-3">
+          <p className="text-[11px] font-black uppercase tracking-wider text-stone-500">What this shows</p>
+          <p className="mt-1 text-sm leading-relaxed text-stone-800 normal-case">{insight}</p>
+        </div>
+      )}
     </div>
   );
 }
+
+// The interpretations of one report, by chart id (empty on the live engagement page)
+export type Insights = Partial<Record<ChartId, string>>;
 
 // Shown instead of a chart that has no data
 export function NoData({ text = 'No data for these filters.' }: { text?: string }) {

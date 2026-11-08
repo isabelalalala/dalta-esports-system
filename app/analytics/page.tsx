@@ -5,10 +5,10 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
 import { getErrorMessage } from '@/utils/errors';
-import type { Json } from '@/utils/database.types';
-import ReportFilters, { filterNames, useFilterOptions } from '@/components/ReportFilters';
+import ReportFilters, { useFilterOptions } from '@/components/ReportFilters';
+import ConfirmDialog from '@/components/ConfirmDialog';
 import {
-  describeFilters, emptyFilters, fetchFullReport, validateFilters,
+  describeFilters, emptyFilters, validateFilters,
   type ReportFilters as Filters, type SavedReport,
 } from '@/utils/reports';
 import PageLoading from '@/components/PageLoading';
@@ -33,6 +33,10 @@ export default function AnalyticsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [reloadCount, setReloadCount] = useState(0);
+  // The saved report waiting for delete confirmation
+  const [deleting, setDeleting] = useState<ReportListItem | null>(null);
+  const [deleteBusy, setDeleteBusy] = useState(false);
+  const [deleteError, setDeleteError] = useState('');
 
   useEffect(() => {
     const load = async () => {
@@ -72,34 +76,37 @@ export default function AnalyticsPage() {
     setGenerating(true);
     setError('');
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) throw new Error('You must be logged in to generate a report.');
-
-      const data = await fetchFullReport(supabase, filters);
-      const { data: saved, error: saveError } = await supabase
-        .from('analytics_reports')
-        // data is saved as jsonb exactly as the report functions returned it
-        .insert([{ filters: filterNames(filters, options), data: data as unknown as NonNullable<Json>, generated_by: session.user.id }])
-        .select('id')
-        .single();
-      if (saveError) throw saveError;
-      router.push(`/analytics/reports/${saved.id}`);
+      // The server runs the report functions, computes the interpretations (Gemini words them,
+      // numbers checked) and saves the report as this admin: POST /api/reports/generate
+      const response = await fetch('/api/reports/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(filters),
+      });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok || !result.id) throw new Error(result.error || 'The report could not be generated.');
+      router.push(`/analytics/reports/${result.id}`);
     } catch (err) {
       setError(getErrorMessage(err, 'Failed to generate the report'));
       setGenerating(false);
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('Delete this saved report?')) return;
-    setError('');
+  // Deleting is logged in the activity log by a database trigger (report.deleted)
+  const handleDelete = async () => {
+    if (!deleting) return;
+    setDeleteBusy(true);
+    setDeleteError('');
     try {
-      const { data, error: deleteError } = await supabase.from('analytics_reports').delete().eq('id', id).select('id');
-      if (deleteError) throw deleteError;
+      const { data, error: deleteErr } = await supabase.from('analytics_reports').delete().eq('id', deleting.id).select('id');
+      if (deleteErr) throw deleteErr;
       if (!data || data.length === 0) throw new Error('The report could not be deleted.');
+      setDeleting(null);
       setReloadCount((n) => n + 1);
     } catch (err) {
-      setError(getErrorMessage(err, 'Failed to delete the report'));
+      setDeleteError(getErrorMessage(err, 'Failed to delete the report'));
+    } finally {
+      setDeleteBusy(false);
     }
   };
 
@@ -159,14 +166,14 @@ export default function AnalyticsPage() {
           </div>
         )}
 
-        <ReportFilters value={filters} onChange={setFilters} options={options} />
+        <ReportFilters value={filters} onChange={setFilters} options={options} showSource />
 
         <button
           onClick={handleGenerate}
           disabled={generating}
           className="w-full rounded-xl bg-gold hover:bg-golddark text-stone-950 font-black px-6 py-3.5 text-xs tracking-widest border border-amber-400 shadow-xs hover:-translate-y-0.5 transition-all disabled:opacity-50 cursor-pointer"
         >
-          {generating ? 'Compiling Analytics...' : 'Generate New Report'}
+          {generating ? 'Compiling analytics and writing the summary…' : 'Generate New Report'}
         </button>
 
         <div className="space-y-4 pt-4">
@@ -195,7 +202,7 @@ export default function AnalyticsPage() {
                     </p>
                   </Link>
                   <button
-                    onClick={() => handleDelete(r.id)}
+                    onClick={() => { setDeleteError(''); setDeleting(r); }}
                     className="text-xs font-bold text-red-600 hover:text-red-700 underline cursor-pointer"
                   >
                     Delete
@@ -206,6 +213,21 @@ export default function AnalyticsPage() {
           )}
         </div>
       </div>
+
+      {deleting && (
+        <ConfirmDialog
+          title="Delete this saved report?"
+          confirmLabel="Delete report"
+          tone="danger"
+          busy={deleteBusy}
+          error={deleteError}
+          onConfirm={handleDelete}
+          onClose={() => setDeleting(null)}
+        >
+          <p className="break-words">{describeFilters(deleting.filters)}</p>
+          <p className="mt-2">The saved copy and its summary are deleted for every admin. This is recorded in the activity log.</p>
+        </ConfirmDialog>
+      )}
     </div>
   );
 }

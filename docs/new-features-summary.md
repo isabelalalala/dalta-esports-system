@@ -550,6 +550,33 @@ tournament and day, top topics and flagged counts are shown next to feedback sen
   `report_comment_sentiment()`, `custom_access_token_hook()` (Supabase Auth hook).
 - Privacy Notice `2026-11-08.2`, Terms of Service `2026-11-08` (Code of Conduct moderation rules).
 
+### Feature 22: Reports with written interpretations
+**Module:** 6 Administrative Reports
+
+**What it does:** every chart in the administrative report has a clear title, axis titles with units, a legend,
+tooltips, a data table and a color-blind-safe palette for light and dark mode (line charts for trends, bars for
+comparisons, a doughnut only for the 3-part sentiment split). Under each chart is a 2–3 sentence interpretation,
+and the report opens with key findings and recommendations for the Organizing Committee. The statistics and
+the rule-based findings are computed in code; Gemini only rewords them, and any sentence containing a number
+that isn't in the computed facts is replaced by the computed sentence. New charts: registrations over time,
+engagement per stream (views, unique viewers, comments), sentiment trend (weekly share), top topics, moderation
+outcomes, warnings over time, offense types. New filter: data source (feedback, stream comments, or both).
+Export PDF (print dialog "Save as PDF", charts in the light palette) and CSV with the new tables.
+
+**Actors / use cases**
+- Admin: *Generate report* (now with data source and written summary), *Export report to PDF*,
+  *Delete saved report* (confirmation, logged).
+
+**Data flows**
+- Admin → 6.0: Filters → D1/D2/D3/D4 (report functions) → 6.0: Computed facts → Gemini (external):
+  Facts only (no personal data) → 6.0: Wording (number-checked) → D5: Saved report → Admin.
+- 6.0 → D8: Activity entry (report generated / deleted).
+
+**Database**
+- Functions: `report_comments()`, `report_moderation()`; `report_activity()` adds `registrations_by_day`.
+- Trigger `analytics_reports_log` → activity actions `report.generated`, `report.deleted`.
+- `analytics_reports.data` may now also hold `comments`, `moderation` and `insights`; `filters.source`.
+
 ### Feature 13: Enhancements inside the original modules
 These additions stay inside existing modules but add flows you may want to draw.
 - **Module 4:** "Watching now" live viewer count (Supabase Realtime Presence, not stored). Staff see it on the

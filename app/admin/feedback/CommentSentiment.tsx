@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { createClient } from '@/utils/supabase/client';
 import { getErrorMessage } from '@/utils/errors';
-import { SENTIMENTS, sentimentColors } from '@/utils/reports';
+import { SENTIMENTS } from '@/utils/reports';
 import ReportChart from '@/components/ReportChart';
 import SectionHint from '@/components/SectionHint';
 import { SectionLoading } from '@/components/PageLoading';
@@ -28,7 +28,7 @@ const sentimentSeries = (rows: (Split | DaySplit)[]) =>
   SENTIMENTS.map((s) => ({
     label: s[0].toUpperCase() + s.slice(1),
     data: rows.map((r) => r[s]),
-    color: sentimentColors[s],
+    tone: s,
   }));
 
 // Admin dashboard (4.4): sentiment of live stream comments next to feedback sentiment — totals,
@@ -104,6 +104,8 @@ export default function CommentSentiment({ tournaments }: { tournaments: { id: s
               <ReportChart
                 type="line"
                 title="Comments per day by sentiment"
+                categoryTitle="Date"
+                valueTitle="Comments (count)"
                 labels={report.per_day.map((d) => d.day)}
                 series={sentimentSeries(report.per_day)}
               />
@@ -114,6 +116,8 @@ export default function CommentSentiment({ tournaments }: { tournaments: { id: s
                 type="bar"
                 horizontal
                 title="Most mentioned comment topics"
+                categoryTitle="Topic"
+                valueTitle="Mentions (count)"
                 labels={report.top_topics.map((t) => t.topic)}
                 series={[{ label: 'Comments', data: report.top_topics.map((t) => t.count) }]}
               />
@@ -125,6 +129,8 @@ export default function CommentSentiment({ tournaments }: { tournaments: { id: s
                 horizontal
                 stacked
                 title="Comments per stream by sentiment"
+                categoryTitle="Stream"
+                valueTitle="Comments (count)"
                 labels={report.per_stream.map((s) => s.label)}
                 series={sentimentSeries(report.per_stream)}
               />
@@ -136,6 +142,8 @@ export default function CommentSentiment({ tournaments }: { tournaments: { id: s
                 horizontal
                 stacked
                 title="Comments per tournament by sentiment"
+                categoryTitle="Tournament"
+                valueTitle="Comments (count)"
                 labels={report.per_tournament.map((s) => s.label)}
                 series={sentimentSeries(report.per_tournament)}
               />

@@ -8,9 +8,13 @@ import { getErrorMessage } from '@/utils/errors';
 import ActivitySection from '../../ActivitySection';
 import SentimentSection from '../../SentimentSection';
 import EngagementSection from '../../EngagementSection';
+import ModerationSection from '../../ModerationSection';
+import SummarySection from '../../SummarySection';
 import {
-  activityCsv, buildCsv, dateInManila, describeFilters, downloadCsv, engagementCsv, sentimentCsv, type SavedReport,
+  activityCsv, buildCsv, dateInManila, describeFilters, downloadCsv, engagementCsv, moderationCsv, prefixCsv,
+  registrationsCsv, sentimentCsv, sentimentForSource, sourceLabel, sourceNoun, type SavedReport,
 } from '@/utils/reports';
+import { buildInsightRequest, rulesInsights } from '@/utils/report-insights';
 import PageLoading from '@/components/PageLoading';
 import PageError from '@/components/PageError';
 import { usePageTitle } from '@/utils/page-title';
@@ -54,6 +58,19 @@ export default function SavedReportPage() {
   }
 
   const generatedAt = new Date(report.generated_at).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' });
+  const { data, filters } = report;
+  // Reports saved before Phase 5 have no written text: compute it from their numbers (no AI)
+  const insights = data.insights ?? rulesInsights(buildInsightRequest(data, filters.source, describeFilters(filters)));
+  const sentiment = sentimentForSource(data, filters.source);
+
+  // "Save as PDF" in the print dialog keeps the charts and every interpretation (the print styles
+  // hide the buttons, the page hero and the data tables). The page title becomes the file name.
+  const handlePdf = () => {
+    const previous = document.title;
+    document.title = `DALTA Esports report ${dateInManila(report.generated_at)}`;
+    window.print();
+    document.title = previous;
+  };
 
   const handleCsv = () => {
     const header = {
@@ -63,9 +80,17 @@ export default function SavedReportPage() {
     };
     const csv = buildCsv([
       header,
-      ...activityCsv(report.data.activity),
-      ...sentimentCsv(report.data.sentiment),
-      ...engagementCsv(report.data.engagement),
+      ...activityCsv(data.activity),
+      ...registrationsCsv(data.activity),
+      ...prefixCsv('Feedback', sentimentCsv(data.sentiment)),
+      ...(data.comments ? prefixCsv('Comment', sentimentCsv(data.comments)) : []),
+      ...engagementCsv(data.engagement),
+      ...(data.moderation ? moderationCsv(data.moderation) : []),
+      {
+        title: 'Summary',
+        columns: ['Type', 'Text'],
+        rows: [...insights.findings.map((f) => ['Finding', f]), ...insights.recommendations.map((r) => ['Recommendation', r])],
+      },
     ]);
     downloadCsv(`analytics-report-${dateInManila(report.generated_at)}.csv`, csv);
   };
@@ -93,11 +118,11 @@ export default function SavedReportPage() {
               <span>CSV</span>
             </button>
             <button
-              onClick={() => window.print()}
+              onClick={handlePdf}
               className="rounded-xl bg-gold hover:bg-golddark text-stone-950 font-black px-4 py-2 text-xs tracking-wider border border-amber-400 shadow-xs hover:-translate-y-0.5 transition-all inline-flex items-center gap-1.5 cursor-pointer"
             >
               <Printer className="w-3.5 h-3.5" />
-              <span>Print / PDF</span>
+              <span>Export PDF</span>
             </button>
           </div>
         </div>
@@ -124,11 +149,18 @@ export default function SavedReportPage() {
         </p>
       </div>
 
-      {/* 2. Report Sections */}
+      {/* 2. Summary, then the report sections, each chart with its interpretation */}
       <div className="space-y-10">
-        <ActivitySection report={report.data.activity} />
-        <SentimentSection report={report.data.sentiment} />
-        <EngagementSection report={report.data.engagement} />
+        <SummarySection insights={insights} saved={Boolean(data.insights)} />
+        <ActivitySection report={data.activity} insights={insights.charts} />
+        <SentimentSection
+          report={sentiment}
+          noun={sourceNoun(data, filters.source)}
+          sourceText={sourceLabel(data.comments ? filters.source : 'feedback')}
+          insights={insights.charts}
+        />
+        <EngagementSection report={data.engagement} comments={data.comments?.by_stream} insights={insights.charts} />
+        {data.moderation && <ModerationSection report={data.moderation} insights={insights.charts} />}
       </div>
     </div>
   );

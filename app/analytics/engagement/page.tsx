@@ -162,7 +162,7 @@ export default function EngagementPage() {
       <div className="hidden print:block border-b border-stone-300 pb-4 mb-6">
         <h1 className="text-2xl font-black text-black uppercase">Engagement Stats</h1>
         <p className="text-xs text-stone-600 mt-1">
-          {describeFilters(filterNames(filters, options))} · Printed {new Date().toLocaleString()}
+          {describeFilters(filterNames(filters, options), false)} · Printed {new Date().toLocaleString()}
         </p>
       </div>
 

@@ -2,44 +2,54 @@
 
 import Link from 'next/link';
 import ReportChart from '@/components/ReportChart';
-import { SENTIMENTS, sentimentColors, type SentimentReport } from '@/utils/reports';
+import { SENTIMENTS, sentimentShareByWeek, type SentimentReport } from '@/utils/reports';
 import type { Sentiment } from '@/utils/types';
-import { NoData, ReportCard, ReportTable, StatTile, capitalize, formatDay, formatRating } from './ReportParts';
+import { NoData, ReportCard, ReportTable, StatTile, capitalize, formatDay, formatRating, type Insights } from './ReportParts';
 import { Star } from 'lucide-react';
 
-// "Sentiment Analysis Report & viewer feedback insights" (Organizing Committee)
-export default function SentimentSection({ report }: { report: SentimentReport }) {
+interface Props {
+  report: SentimentReport;
+  // What the items are, e.g. "feedback entries", "comments", "feedback entries and comments"
+  noun?: string;
+  // The data source shown under the heading, e.g. "Feedback and comments"
+  sourceText?: string;
+  insights?: Insights;
+}
+
+// "Sentiment Analysis Report & viewer feedback insights" (Organizing Committee).
+// report is feedback, stream comments, or both combined (the data source filter).
+export default function SentimentSection({ report, noun = 'feedback entries', sourceText, insights = {} }: Props) {
   const t = report.totals;
   const classified = t.positive + t.neutral + t.negative;
   const percent = (n: number) => (classified ? `${Math.round((n / classified) * 100)}%` : '–');
-
-  // Common concerns: topics people mention in negative feedback, most frequent first
-  const concerns = report.topics
-    .filter((x) => x.negative > 0)
-    .sort((a, b) => b.negative - a.negative)
-    .slice(0, 8);
+  const weeks = sentimentShareByWeek(report.by_week);
+  const topics = [...report.topics].sort((a, b) => b.total - a.total).slice(0, 10);
+  const hasRating = t.avg_rating !== null && t.avg_rating !== undefined;
 
   // One series per sentiment, with its fixed color (used by the stacked charts)
   const sentimentSeries = (rows: Record<Sentiment, number>[]) =>
-    SENTIMENTS.map((s) => ({ label: capitalize(s), color: sentimentColors[s], data: rows.map((r) => r[s]) }));
+    SENTIMENTS.map((s) => ({ label: capitalize(s), tone: s, data: rows.map((r) => r[s]) }));
 
   return (
     <section className="space-y-4">
-      <h2 className="text-xl sm:text-2xl font-black text-amber-800 uppercase tracking-wider print:text-black">
-        Sentiment Analysis Report
-      </h2>
+      <div>
+        <h2 className="text-xl sm:text-2xl font-black text-amber-800 uppercase tracking-wider print:text-black">
+          Sentiment Analysis Report
+        </h2>
+        {sourceText && <p className="text-xs text-stone-500 font-medium normal-case mt-1">Data source: {sourceText}</p>}
+      </div>
 
       {t.pending > 0 && (
         <div className="bg-amber-50 border border-amber-200 text-amber-900 rounded-xl px-4 py-3 text-xs font-bold tracking-wide print:hidden">
-          {t.pending} feedback {t.pending === 1 ? 'is' : 'are'} pending analysis, so they only count towards the
-          rating.{' '}
-          <Link href="/admin/feedback" className="underline hover:text-amber-700">Retry them on Feedback Analysis</Link>, then generate again.
+          {t.pending} {noun} {t.pending === 1 ? 'is' : 'are'} pending analysis, so {t.pending === 1 ? 'it is' : 'they are'} not in
+          the sentiment charts.{' '}
+          <Link href="/admin/moderation" className="underline hover:text-amber-700">Retry the analysis</Link>, then generate again.
         </div>
       )}
 
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-        <StatTile label="Feedback" value={t.total} />
-        <StatTile label="Avg rating" value={formatRating(t.avg_rating)} />
+        <StatTile label="Items" value={t.total} note={noun} />
+        {hasRating && <StatTile label="Avg rating" value={formatRating(t.avg_rating)} note="feedback only" />}
         <StatTile label="Positive" value={t.positive} note={percent(t.positive)} />
         <StatTile label="Neutral" value={t.neutral} note={percent(t.neutral)} />
         <StatTile label="Negative" value={t.negative} note={percent(t.negative)} />
@@ -47,34 +57,38 @@ export default function SentimentSection({ report }: { report: SentimentReport }
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <ReportCard title="Sentiment breakdown" note="Classified feedback only.">
+        <ReportCard title="Sentiment distribution" note={`Analysed ${noun} only (parts of the whole).`} insight={insights.sentiment_distribution}>
           {classified === 0 ? <NoData /> : (
-            <ReportChart type="doughnut" title="Sentiment breakdown"
+            <ReportChart type="doughnut" title="Sentiment distribution"
               labels={SENTIMENTS.map(capitalize)}
-              series={[{ label: 'Feedback', data: [t.positive, t.neutral, t.negative], colors: SENTIMENTS.map((s) => sentimentColors[s]) }]} />
+              categoryTitle="Sentiment"
+              series={[{ label: capitalize(noun), data: [t.positive, t.neutral, t.negative], tones: SENTIMENTS }]} />
           )}
         </ReportCard>
 
-        <ReportCard title="Sentiment over time" note="Feedback per week (weeks start on Monday).">
-          {report.by_week.length === 0 ? <NoData /> : (
-            <ReportChart type="bar" title="Feedback per week by sentiment" stacked
-              labels={report.by_week.map((w) => formatDay(w.week))}
-              series={sentimentSeries(report.by_week)} />
+        <ReportCard title="Sentiment trend" note="Share of each sentiment per week (weeks start on Monday)." insight={insights.sentiment_trend}>
+          {weeks.length === 0 ? <NoData /> : (
+            <ReportChart type="line" title="Sentiment trend" unit="%"
+              labels={weeks.map((w) => formatDay(w.week))}
+              categoryTitle="Week starting" valueTitle={`Share of analysed ${noun} (%)`}
+              series={SENTIMENTS.map((s) => ({ label: capitalize(s), tone: s, data: weeks.map((w) => w[s]) }))} />
           )}
         </ReportCard>
 
-        <ReportCard title="Common concerns" note="Topics mentioned in negative feedback.">
-          {concerns.length === 0 ? <NoData text="No negative topics for these filters." /> : (
-            <ReportChart type="bar" title="Common concerns" horizontal
-              labels={concerns.map((c) => c.topic)}
-              series={[{ label: 'Negative mentions', color: sentimentColors.negative, data: concerns.map((c) => c.negative) }]} />
+        <ReportCard title="Top topics" note="The 10 most mentioned topics, split by sentiment." insight={insights.top_topics}>
+          {topics.length === 0 ? <NoData text="No topics for these filters." /> : (
+            <ReportChart type="bar" title="Top topics" stacked horizontal heightClass="h-80"
+              labels={topics.map((x) => x.topic)}
+              categoryTitle="Topic" valueTitle="Mentions (count)"
+              series={sentimentSeries(topics)} />
           )}
         </ReportCard>
 
-        <ReportCard title="Sentiment per tournament">
+        <ReportCard title="Sentiment per tournament" insight={insights.sentiment_per_tournament}>
           {report.by_tournament.length === 0 ? <NoData /> : (
             <ReportChart type="bar" title="Sentiment per tournament" stacked horizontal
               labels={report.by_tournament.map((x) => x.tournament_name ?? 'General')}
+              categoryTitle="Tournament" valueTitle={`${capitalize(noun)} (count)`}
               series={sentimentSeries(report.by_tournament)} />
           )}
         </ReportCard>
@@ -82,10 +96,11 @@ export default function SentimentSection({ report }: { report: SentimentReport }
 
       <ReportCard title="Per tournament" note="Score: -1 very negative … 1 very positive.">
         <ReportTable
-          columns={['Tournament', 'Feedback', 'Positive', 'Neutral', 'Negative', 'Pending analysis', 'Avg rating', 'Avg score']}
+          columns={['Tournament', 'Items', 'Positive', 'Neutral', 'Negative', 'Pending analysis', ...(hasRating ? ['Avg rating'] : []), 'Avg score']}
           rows={report.by_tournament.map((x) => [
             x.tournament_name ?? 'General', x.total, x.positive, x.neutral, x.negative, x.pending,
-            formatRating(x.avg_rating), x.avg_score === null ? '–' : Number(x.avg_score).toFixed(2),
+            ...(hasRating ? [formatRating(x.avg_rating)] : []),
+            x.avg_score === null ? '–' : Number(x.avg_score).toFixed(2),
           ])}
         />
       </ReportCard>
@@ -98,13 +113,14 @@ export default function SentimentSection({ report }: { report: SentimentReport }
       </ReportCard>
 
       {report.negative_examples.length > 0 && (
-        <ReportCard title="Examples of negative feedback">
+        <ReportCard title="Examples of negative feedback and comments" note="Hidden comments are never shown here; no names.">
           <ul className="space-y-3">
             {report.negative_examples.map((f, i) => (
               <li key={i} className="border-l-2 border-negative pl-3">
-                <p className="text-stone-800 whitespace-pre-wrap print:text-black">{f.comment}</p>
+                <p className="text-stone-800 whitespace-pre-wrap break-words print:text-black">{f.comment}</p>
                 <p className="text-xs text-stone-500 mt-1">
-                  {f.rating} <Star className="inline h-3 w-3 fill-yellow-400 text-yellow-400" /> · {f.tournament_name ?? 'General'} ·{' '}
+                  {f.rating ? <>{f.rating} <Star className="inline h-3 w-3 fill-yellow-400 text-yellow-400" /> · </> : 'Comment · '}
+                  {f.tournament_name ?? 'General'} ·{' '}
                   {new Date(f.created_at).toLocaleDateString(undefined, { dateStyle: 'medium' })}
                   {f.topics.length > 0 && ` · ${f.topics.join(', ')}`}
                 </p>

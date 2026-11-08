@@ -101,7 +101,7 @@ Enforced by a CHECK constraint on `profiles.role` (migration `202610161200_role_
 - RLS policies check roles with `public.get_my_role()`.
 
 ## Current schema (public)
-All migrations are in `supabase/migrations/`, run in filename order (202610151100 … 202611081600). `202610151100_base_schema` creates the three pre-migration base tables (`profiles`, `tournaments`, `tournament_registrations`). It is `if not exists`, so it is a no-op on databases that already have them.
+All migrations are in `supabase/migrations/`, run in filename order (202610151100 … 202611081700). `202610151100_base_schema` creates the three pre-migration base tables (`profiles`, `tournaments`, `tournament_registrations`). It is `if not exists`, so it is a no-op on databases that already have them.
 `202610181000_feedback_protection` also needs its one-time Vault key setup (the `feedback_server_key` secret +
 `FEEDBACK_SERVER_KEY`); the steps are at the top of that file.
 Readers: "anyone" = also logged out; "logged-in" = any role; "admin/staff" = organizers only.
@@ -329,13 +329,26 @@ Readers: "anyone" = also logged out; "logged-in" = any role; "admin/staff" = org
   (`components/MyWarnings.tsx`).
 
 **Administrative reports (Module 6)**, DFD store D5 "Analytics & Engagement DB"
-- `analytics_reports`: id, filters (jsonb, readable names: tournament, game, from, to), data (jsonb:
-  `{activity, sentiment, engagement}` exactly as the report functions return them), generated_by (set null when the
-  user is deleted), generated_at. Admins read, insert (as themselves) and delete; nobody updates.
+- `analytics_reports`: id, filters (jsonb, readable names: tournament, game, from, to, source), data (jsonb:
+  `{activity, sentiment, engagement, comments, moderation, insights}`: the report functions' results plus the
+  written text; reports saved before 202611081700 have only the first three), generated_by (set null when the
+  user is deleted), generated_at. Admins read, insert (as themselves) and delete; nobody updates. Generating and
+  deleting are logged (`report.generated` / `report.deleted`, trigger `analytics_reports_log`).
 - Report functions take `(p_tournament_id, p_game_id, p_from, p_to)`; null = all, dates inclusive in Manila time.
-  They are security definer and check the role first: `report_activity()` and `report_sentiment()` (admin),
+  They are security definer and check the role first: `report_activity()` (+ `registrations_by_day` since
+  202611081700), `report_sentiment()`, `report_comments()` (comment sentiment in the same shape as
+  report_sentiment + `by_stream`; negative examples only from visible comments) and `report_moderation()`
+  (warnings, hidden/removed/restored comments and feedback, offense types, bans from the activity log) (admin),
   `report_engagement()` (admin/staff). Each returns one jsonb object; the shapes are typed in `utils/reports.ts`.
   Byes don't count as matches; general feedback is left out when a tournament or game is chosen.
+- Written interpretations (Phase 5, `utils/report-insights.ts`): POST `/api/reports/generate` (admin) runs the
+  report functions as the admin, `buildInsightRequest()` computes facts per chart + rule-based findings and
+  recommendations, Gemini (`writeReportInsights()` in `utils/gemini.ts`, through `claim_gemini_call()`) only
+  rewords them, `acceptDraft()` keeps a sentence only if every number in it is in the facts (else the computed
+  sentence). No Gemini key / rate limit / error → computed sentences (`rulesInsights()`, also used for old
+  saved reports). Data source filter (`all`/`feedback`/`comments`): `sentimentForSource()` /
+  `combineSentiment()` in `utils/reports.ts`. Charts: `components/ReportChart.tsx` (axis titles, legend,
+  tooltips, "Show data table", palette per theme from `chartPalettes`, light when printing).
 
 **Activity log (audit)**
 - `activity_logs`: id, actor_id (→ profiles, set null when deleted; null = SQL Editor or self-deleted account),
@@ -423,10 +436,12 @@ triggers with readable error messages.
   teams with reason), `/admin/users` (admin only), `/admin/feedback` (admin only),
   `/admin/verification` (admin/staff: pending / rejected / verified students), `/admin/website` (admin only: public site editor), `/admin/activity` (admin only:
   activity log, 50 per page, filters by action, user and date).
-- Reports: `/analytics` (admin: filters, Generate report = calculate + save, saved reports list; staff are sent
-  to engagement), `/analytics/reports/[id]` (a saved report: all three parts, Print / PDF via `window.print()`,
-  Download CSV), `/analytics/engagement` (admin/staff: live stats, watching now, CSV, print).
-  Report sections live in `app/analytics/` (ActivitySection, SentimentSection, EngagementSection, ReportParts).
+- Reports: `/analytics` (admin: filters incl. data source, Generate report = POST `/api/reports/generate`,
+  saved reports list, delete with ConfirmDialog; staff are sent to engagement), `/analytics/reports/[id]` (a
+  saved report: Summary, then activity, sentiment, engagement and moderation with an interpretation under each
+  chart; Export PDF via `window.print()` (page title = file name), Download CSV), `/analytics/engagement`
+  (admin/staff: live stats, watching now, CSV, print). Report sections live in `app/analytics/`
+  (SummarySection, ActivitySection, SentimentSection, EngagementSection, ModerationSection, ReportParts).
 - Public website (`app/(site)/`): `/` (home), `/about`, `/divisions`, `/divisions/[game]` (official teams),
   `/divisions/[game]/[team]`, `/events`, `/events/[id]`, `/campaigns`, `/campaigns/[id]`, `/community`,
   `/search?q=` (tournaments, events, campaigns). Shared pieces in `components/site/`. Pages that read params or
@@ -464,10 +479,12 @@ triggers with readable error messages.
   `export.<type>`) BEFORE sending; no log, no file. Excel via `write-excel-file` (text cells are always strings,
   so nothing becomes a formula); CSV via `utils/csv.ts`. Times in Philippine time (UTC+8, no DST).
   Buttons: `components/ExportButtons.tsx`.
-- API: POST `/api/feedback` (send + analyse), POST `/api/comments` (post; analysis after the response),
+- API: POST `/api/reports/generate` (admin: report + written interpretations, saved),
+  POST `/api/feedback` (send + analyse), POST `/api/comments` (post; analysis after the response),
   POST `/api/feedback/classify` (admin) and `/api/moderation/retry` (admin/staff) retry the next waiting batch,
   POST `/api/streams/resolve-url`. `utils/gemini.ts`, `utils/moderation.ts` and `utils/facebook-resolve.ts`
-  start with `import 'server-only'` (build fails if a client file imports them).
+  start with `import 'server-only'` (build fails if a client file imports them). `utils/report-insights.ts` is
+  plain code (shared by the route, the report page and the tests).
 - Shared: `components/` (TeamDirectory, AskToJoin, TeamJoinRequests, AnnouncementCard, FacebookPlayer, StarRating, VerifiedBadge, PrivacyConsentCheckbox, TeamInvites, ReportChart (Chart.js), ReportFilters, ConfirmDialog (native `<dialog>` confirm modal), RemoveTeamDialog, RemovedTeamPanel, GameLogo, MatchDraftSection);
   `utils/permissions.ts` (`can()`, role → permissions map),
   `utils/types.ts` (row types), `utils/reports.ts` (report types, chart colors, CSV export),
@@ -530,8 +547,9 @@ triggers with readable error messages.
 5. Feedback and Sentiment Analysis: done. Audience and players submit feedback and ratings (one per tournament,
    per match and one general); Gemini classifies sentiment and topics when it's sent (rate-limited); failures stay
    "pending analysis" and admins retry them on `/admin/feedback`.
-6. Administrative Reports: done. Admins generate a saved report (activity, sentiment, engagement incl. pick'em)
-   with Chart.js charts, print/PDF and CSV; staff view engagement stats. Filters: tournament, game, date range.
+6. Administrative Reports: done. Admins generate a saved report (summary with findings and recommendations,
+   activity, sentiment, engagement incl. pick'em, moderation) with Chart.js charts, a written interpretation under
+   each chart (Phase 5), PDF and CSV; staff view engagement stats. Filters: tournament, game, date range, data source.
    Also: activity (audit) log and Excel/CSV exports.
 7. (added) Public Website & Content Management: done. `app/(site)/`, edited on `/admin/website` (DFD 7.0, store D6).
 8. (added) Audience Engagement (Pick'em Predictions): done. Picks, community split, leaderboard (DFD 8.0, store D9).
@@ -590,7 +608,7 @@ The final feature list for the documents is docs/new-features-summary.md.
   `get_needs_attention` → `202610171500_match_results`; `notifications_type_check` → `202611081500_comments_moderation`;
   `report_engagement` → `202610181100_predictions` (adds predictions, predictors, prediction_accuracy,
   audience_accounts, prediction_participation and predictions_by_tournament; older saved reports lack them);
-  `refuse_removed_team` → `202611081600_fix_refuse_removed_team`; `protect_feedback` → `202610181000_feedback_protection`; feedback insert policy → `202611081500_comments_moderation`; `generate_bracket` → `202610181800_bracket_seed_pairing`.
+  `refuse_removed_team` → `202611081600_fix_refuse_removed_team`; `report_activity` → `202611081700_report_insights`; `protect_feedback` → `202610181000_feedback_protection`; feedback insert policy → `202611081500_comments_moderation`; `generate_bracket` → `202610181800_bracket_seed_pairing`.
 - **Testing**: `npm test` runs Vitest on `utils/*.test.ts`. `npm run db:test` runs the pgTAP files in
   `supabase/tests/` against the local stack (`supabase start` first: needs Docker; `supabase/config.toml`
   exists for the local stack only, production migrations stay manual). `npm run db:types` regenerates
@@ -607,8 +625,11 @@ The final feature list for the documents is docs/new-features-summary.md.
 - **New protected pages** go in `proxy.ts`. Public pages (website, `/t`, `/calendar`, `/privacy`) must not.
 
 ### Notes on reports (Module 6)
-- Chart colors are in `utils/reports.ts` and were checked for color-blind safety (originally on the old dark card `#1f1714`; cards are white since the redesign, so recheck contrast if a color is changed).
-  Sentiment uses blue (positive) / gray (neutral) / red (negative); other charts use `categoryColors` in order.
+- Chart colors are `chartPalettes` in `utils/reports.ts`: one palette for light and one for dark, each validated
+  for color-blind safety against its own card surface (recheck with a palette validator if a color changes).
+  Sentiment uses blue (positive) / gray (neutral) / red (negative); other charts use the category slots in fixed
+  order (`slot` on a series keeps a color fixed). Every chart needs a title, `categoryTitle`/`valueTitle` with
+  units, and an interpretation (a facts function in `utils/report-insights.ts` + `insight` on its ReportCard).
 - Viewership is counted by the app, not by Facebook: one view per logged-in person per stream per day.
   Official Facebook viewer counts would need the Graph API (a Facebook App and page tokens). That isn't built.
 - Realtime Presence needs Realtime enabled for the project (it is, for `matches`); public channels must be allowed.
