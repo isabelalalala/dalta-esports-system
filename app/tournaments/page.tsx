@@ -6,7 +6,10 @@ import { createClient } from '@/utils/supabase/client';
 import Link from 'next/link';
 import { getErrorMessage } from '@/utils/errors';
 import { ACTIVE_REGISTRATION_STATUSES } from '@/utils/types';
-import { formatDate, getTournamentStatus, statusLabels, statusStyles } from '@/utils/tournaments';
+import { formatDate, getTournamentStatus, registrationClosesAt, statusLabels, statusStyles } from '@/utils/tournaments';
+import AnimatedProgress from '@/components/AnimatedProgress';
+import Countdown from '@/components/site/Countdown';
+import { Clock } from 'lucide-react';
 import type { Profile, Tournament } from '@/utils/types';
 import PageLoading from '@/components/PageLoading';
 import { usePageTitle } from '@/utils/page-title';
@@ -196,15 +199,20 @@ export default function TournamentsPage() {
                           {registeredCount} / {tournament.max_participants || '∞'}
                         </span>
                       </div>
-                      <progress
-                        value={Math.min(
-                          registeredCount,
-                          tournament.max_participants || registeredCount
-                        )}
+                      {/* Fills up the first time the card scrolls into view */}
+                      <AnimatedProgress
+                        value={Math.min(registeredCount, tournament.max_participants || registeredCount)}
                         max={tournament.max_participants || 1}
-                        aria-label="Teams registered"
+                        label={`${registeredCount} of ${tournament.max_participants || 'unlimited'} slots filled`}
                         className="w-full h-2 block appearance-none rounded-full overflow-hidden bg-stone-200 [&::-webkit-progress-bar]:bg-stone-200 [&::-webkit-progress-value]:bg-amber-500 [&::-moz-progress-bar]:bg-amber-500"
                       />
+                      {/* Live "closes in 2 days 4 hrs" while registration is open */}
+                      {status === 'upcoming' && registrationClosesAt(tournament) && (
+                        <p className="mt-2.5 inline-flex items-center gap-1.5 rounded-full border border-amber-500/30 bg-amber-500/10 px-2.5 py-1">
+                          <Clock className="size-3.5 text-maroon" aria-hidden="true" />
+                          <Countdown target={registrationClosesAt(tournament)} prefix="Closes in" size="sm" tone="light" />
+                        </p>
+                      )}
                     </div>
 
                     {/* Tournament Key Dates */}
@@ -232,7 +240,7 @@ export default function TournamentsPage() {
 
                   {/* View Details Action Link */}
                   <div className="pt-2">
-                    <span className="block text-center w-full py-3 rounded-xl border border-amber-400 bg-gold text-stone-950 font-black group-hover:bg-golddark transition-all uppercase text-xs tracking-widest shadow-xs">
+                    <span className="group-shine block text-center w-full py-3 rounded-xl border border-amber-400 bg-gold text-stone-950 font-black group-hover:bg-golddark uppercase text-xs tracking-widest shadow-xs">
                       View Tournament Details →
                     </span>
                   </div>

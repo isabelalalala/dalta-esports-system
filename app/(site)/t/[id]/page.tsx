@@ -23,6 +23,7 @@ import { BadgeCheck, ExternalLink, Target } from 'lucide-react';
 
 import GameLogo from '@/components/GameLogo';
 import AutoUpdateBadge from '@/components/AutoUpdateBadge';
+import { LiveTag, ScoreBoard, VersusBadge, VersusRow } from '@/components/MatchVersus';
 
 const TZ = 'Asia/Manila';
 
@@ -67,23 +68,33 @@ async function TournamentContent({ params }: { params: PageProps<'/t/[id]'>['par
     .filter((m) => m.status === 'completed')
     .sort((a, b) => b.round - a.round || a.match_number - b.match_number);
 
-  const matchRow = (m: Match) => (
-    <li key={m.id}>
-      <Link href={publicMatchPath(t.id, m.id)} className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 px-5 py-3.5 hover:bg-amber-50/50 transition-colors">
-        <span>
-          <span className={m.status === 'completed' && m.winner_team_id === m.team_a_id ? 'text-maroon font-black' : 'text-stone-950 font-bold'}>{name(m.team_a_id)}</span>
-          {m.status === 'completed'
-            ? <span className="mx-2 tabular-nums text-stone-900 font-extrabold">{m.is_forfeit ? 'forfeit' : `${m.score_a ?? '-'} : ${m.score_b ?? '-'}`}</span>
-            : <span className="mx-2 text-stone-500 font-medium">vs</span>}
-          <span className={m.status === 'completed' && m.winner_team_id === m.team_b_id ? 'text-maroon font-black' : 'text-stone-950 font-bold'}>{name(m.team_b_id)}</span>
-          {m.status === 'live' && <span className="ml-2 text-xs text-red-600 font-black"><span className="inline-block h-1.5 w-1.5 rounded-full bg-current animate-pulse" /> LIVE</span>}
-        </span>
-        <span className="text-xs text-stone-500 font-medium">
-          {roundLabel(m.round, roundCount)} · {formatDateTime(m.scheduled_at, TZ)}
-        </span>
-      </Link>
-    </li>
-  );
+  // One match: Team A vs Team B (score once it has started), round and time under it
+  const matchRow = (m: Match) => {
+    const winner = m.status === 'completed'
+      ? m.winner_team_id === m.team_a_id ? 'a' : m.winner_team_id === m.team_b_id ? 'b' : null
+      : null;
+    return (
+      <li key={m.id}>
+        <Link href={publicMatchPath(t.id, m.id)} className="block space-y-2 px-4 sm:px-5 py-4 hover:bg-amber-50/50 transition-colors">
+          <VersusRow
+            size="sm"
+            teamA={name(m.team_a_id)}
+            teamB={name(m.team_b_id)}
+            winner={winner}
+            middle={
+              m.status === 'scheduled'
+                ? <VersusBadge size="sm" />
+                : <ScoreBoard size="sm" finished={m.status === 'completed'} a={m.score_a} b={m.score_b} forfeit={m.status === 'completed' && m.is_forfeit} />
+            }
+          />
+          <span className="flex flex-wrap items-center justify-center gap-2 text-xs text-stone-500 font-medium">
+            {m.status === 'live' && <LiveTag />}
+            {roundLabel(m.round, roundCount)} · {formatDateTime(m.scheduled_at, TZ)}
+          </span>
+        </Link>
+      </li>
+    );
+  };
 
   return (
     <div className="space-y-8 text-stone-950">

@@ -9,6 +9,9 @@ import SiteStats from '@/components/site/SiteStats';
 import HeroSlideshow from '@/components/site/HeroSlideshow';
 import PartnershipSection from '@/components/site/PartnershipSection';
 import PostSectionCarousel from '@/components/site/PostSectionCarousel';
+import MatchTicker from '@/components/site/MatchTicker';
+import DarkBand from '@/components/site/DarkBand';
+import GameTiles from '@/components/site/GameTiles';
 
 // Home page of the public website:
 // - Hero Slideshow background
@@ -19,6 +22,9 @@ import PostSectionCarousel from '@/components/site/PostSectionCarousel';
 // - Official Partnership infinite loop ticker
 // - "Live now" strip on top (live scores or the next match; loads in the browser, so it is never
 //   stale even though this page is cached). Sections below the hero fade in as they scroll in.
+// - Phase 10: a results ticker above everything, and a full-width dark band with slanted edges
+//   (numbers + "Choose your game" tiles) between Campaigns and Events, so the page alternates
+//   dark hero / white / dark / white instead of one long white column.
 export const instant = false;
 
 export default async function HomePage() {
@@ -37,6 +43,7 @@ export default async function HomePage() {
     <div className="w-full space-y-12 sm:space-y-16">
       {/* Ribbon about the featured event, right above the hero */}
       <div className="space-y-3">
+      <MatchTicker />
       <LiveNowStrip />
       {featured && (
         <Link
@@ -62,9 +69,6 @@ export default async function HomePage() {
       />
       </div>
 
-      {/* DALTA in numbers: counters that count up when they scroll into view */}
-      <SiteStats />
-
       {/* Campaigns Section with 4-item view and Prev/Next arrows */}
       <Reveal>
         <PostSectionCarousel
@@ -75,6 +79,34 @@ export default async function HomePage() {
           posts={campaigns}
         />
       </Reveal>
+
+      {/* Dark band: DALTA in numbers (count up on scroll) + one tile per game division */}
+      <DarkBand label="Compete with DALTA Esports">
+        <Reveal className="flex flex-col items-center gap-4 text-center @3xl:flex-row @3xl:items-end @3xl:justify-between @3xl:text-left">
+          <div className="space-y-2">
+            <p className="text-[11px] sm:text-xs font-black uppercase tracking-[0.25em] text-gold">Collegiate esports · UPHSD Molino</p>
+            <h2 className="text-3xl sm:text-4xl @5xl:text-5xl font-black uppercase leading-none tracking-tight text-white">
+              Choose your <span className="text-gold text-glow-gold">game</span>
+            </h2>
+          </div>
+          <div className="flex flex-wrap justify-center gap-3">
+            <Link
+              href="/auth/register"
+              className="px-6 py-3 rounded-xl bg-gold text-ink font-black text-xs uppercase tracking-widest border border-golddark shadow-md hover:bg-golddark transition-colors"
+            >
+              Join DALTA Esports
+            </Link>
+            <Link
+              href="/divisions"
+              className="px-6 py-3 rounded-xl border border-white/30 bg-white/10 text-white font-extrabold text-xs uppercase tracking-widest hover:bg-white/20 transition-colors"
+            >
+              All divisions
+            </Link>
+          </div>
+        </Reveal>
+        <GameTiles />
+        <SiteStats plain />
+      </DarkBand>
 
       {/* Events Section with 4-item view and Prev/Next arrows */}
       <Reveal>

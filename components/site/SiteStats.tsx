@@ -5,7 +5,8 @@ import CountUp from './CountUp';
 
 // "DALTA in numbers": four totals that count up when they scroll into view (homepage, About).
 // Renders nothing (not even an empty wrapper) until get_site_stats() exists (202611091200_site_stats).
-export default async function SiteStats() {
+// plain = no card of its own (inside the homepage's dark band, which is already dark).
+export default async function SiteStats({ plain = false }: { plain?: boolean }) {
   const stats = await getSiteStats();
   if (!stats) return null;
 
@@ -20,8 +21,13 @@ export default async function SiteStats() {
 
   return (
     <Reveal>
-    <section aria-label="DALTA Esports in numbers" className="rounded-3xl border border-stone-800/80 bg-ink text-white shadow-md overflow-hidden relative">
-      <div className="absolute inset-0 bg-logo-stage pointer-events-none" aria-hidden="true" />
+    <section
+      aria-label="DALTA Esports in numbers"
+      className={plain
+        ? 'relative rounded-3xl border border-white/10 bg-white/5 text-white backdrop-blur-xs'
+        : 'rounded-3xl border border-stone-800/80 bg-ink text-white shadow-md overflow-hidden relative'}
+    >
+      {!plain && <div className="absolute inset-0 bg-logo-stage pointer-events-none" aria-hidden="true" />}
       <dl className="relative grid grid-cols-2 @3xl:grid-cols-none @3xl:grid-flow-col @3xl:auto-cols-fr divide-white/10 @3xl:divide-x">
         {tiles.map(({ label, value, Icon }) => (
           <div key={label} className="flex flex-col items-center justify-center gap-1.5 px-4 py-6 sm:py-8 text-center">

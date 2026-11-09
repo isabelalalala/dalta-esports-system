@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { ChevronRight, Radio, Swords, Tv } from 'lucide-react';
 import { createClient } from '@/utils/supabase/client';
 import Countdown from './Countdown';
+import { ScoreBoard, VersusBadge, VersusRow } from '@/components/MatchVersus';
 
 // One match as returned by get_live_now() (202611091100_live_now): team and tournament NAMES only
 interface LiveNowMatch {
@@ -92,15 +93,9 @@ function LiveMatches({ matches }: { matches: LiveNowMatch[] }) {
               <span className="min-w-0 sm:w-48 shrink-0 text-[11px] font-black uppercase tracking-wider text-stone-500 truncate">
                 {m.game} · {m.tournament_name}
               </span>
-              <span className="flex min-w-0 flex-1 items-center justify-center gap-3 font-black uppercase tracking-wide text-stone-950">
-                <span className="min-w-0 flex-1 truncate text-right">{m.team_a}</span>
-                <span className="shrink-0 rounded-lg bg-stone-900 px-3 py-1 text-base tabular-nums text-white">
-                  {/* key = score: a changed score re-mounts and flashes (animate-score-flash) */}
-                  <span key={`a${m.score_a}`} className="inline-block animate-score-flash">{m.score_a ?? 0}</span>
-                  <span className="px-1.5 text-stone-400">–</span>
-                  <span key={`b${m.score_b}`} className="inline-block animate-score-flash">{m.score_b ?? 0}</span>
-                </span>
-                <span className="min-w-0 flex-1 truncate">{m.team_b}</span>
+              <span className="min-w-0 flex-1">
+                {/* Digits flip when a score changes (FlipScore) */}
+                <VersusRow size="sm" teamA={m.team_a} teamB={m.team_b} middle={<ScoreBoard a={m.score_a} b={m.score_b} />} />
               </span>
               <span className="shrink-0 inline-flex items-center justify-center gap-1.5 text-xs font-black uppercase tracking-wider text-maroon">
                 {m.has_stream ? <Tv className="h-4 w-4" aria-hidden="true" /> : <Radio className="h-4 w-4" aria-hidden="true" />}
@@ -125,9 +120,9 @@ function NextMatch({ match }: { match: LiveNowMatch }) {
       <span className="inline-flex shrink-0 items-center gap-1.5 text-[11px] font-black uppercase tracking-widest text-maroon">
         <Swords className="h-4 w-4" aria-hidden="true" /> Next match
       </span>
-      <span className="min-w-0 flex-1 truncate text-sm font-black uppercase tracking-wide text-stone-950">
-        {match.team_a} <span className="text-stone-500">vs</span> {match.team_b}
-        <span className="ml-2 text-xs font-bold normal-case tracking-normal text-stone-600">{match.tournament_name}</span>
+      <span className="min-w-0 flex-1 space-y-0.5">
+        <VersusRow size="sm" teamA={match.team_a} teamB={match.team_b} middle={<VersusBadge size="sm" />} />
+        <span className="block truncate text-center text-xs font-bold text-stone-600">{match.tournament_name}</span>
       </span>
       {match.scheduled_at && (
         <Countdown target={match.scheduled_at} prefix="Starts in" size="sm" tone="light" startedText="Starting now" />

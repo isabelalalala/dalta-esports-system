@@ -99,6 +99,8 @@ export default function HeroSlideshow({ title, tagline, images = [], content }: 
       <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/60 to-black/75 backdrop-blur-[1px]" />
       {/* Slow brand glow + triangle grid over the photo, under the text */}
       <AmbientBackground onDark />
+      {/* One light sweep across the hero when the page opens (globals.css, Phase 10) */}
+      <div className="hero-sweep" aria-hidden="true" />
 
       {/* Foreground Hero Content */}
       <div className="relative z-10 w-full px-4 py-14 sm:px-12 sm:py-20 text-center space-y-6 sm:space-y-8 max-w-6xl mx-auto">

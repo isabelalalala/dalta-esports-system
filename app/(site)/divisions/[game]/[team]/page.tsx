@@ -7,6 +7,7 @@ import { siteImageUrl } from '@/utils/site';
 import { EmptyNote, Paragraphs, PersonPhoto } from '@/components/site/SiteParts';
 import PageLoading from '@/components/PageLoading';
 import PageHeroBackground from '@/components/site/PageHeroBackground';
+import PlayerTradingCard from '@/components/site/PlayerTradingCard';
 import { BadgeCheck, Crown, Shield, Users } from 'lucide-react';
 
 // Official team page (wireframe: captain profile, player profiles with "IGN – role", team description).
@@ -178,7 +179,7 @@ async function OfficialTeam({ params }: { params: PageProps<'/divisions/[game]/[
           <div>
             <h2 className="font-black text-stone-950 text-xl tracking-wider">Official Team Roster</h2>
             <p className="text-xs text-stone-500 font-medium tracking-wide mt-0.5">
-              Active collegiate players representing {team.name}.
+              Active collegiate players representing {team.name}. Hover or tap a card to flip it.
             </p>
           </div>
         </div>
@@ -187,43 +188,10 @@ async function OfficialTeam({ params }: { params: PageProps<'/divisions/[game]/[
           <EmptyNote>No players listed in this team yet.</EmptyNote>
         ) : (
           <div className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,18rem),1fr))] gap-5 sm:gap-6">
-            {players.map((p) => {
-              const isCap = p.is_captain;
-              return (
-                <div
-                  key={p.id}
-                  className={`group rounded-2xl border p-4 sm:p-5 shadow-xs hover:shadow-lg hover:-translate-y-1 transition-all duration-300 flex items-center gap-4 ${
-                    isCap
-                      ? 'border-amber-300 bg-amber-50/30 hover:border-amber-400'
-                      : 'border-stone-200/90 bg-white hover:border-gold/80'
-                  }`}
-                >
-                  <PersonPhoto path={p.photo_path} name={p.name || p.ign} size="md" />
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2">
-                      <p className="font-black text-stone-950 text-base truncate group-hover:text-maroon transition-colors">
-                        {p.ign}
-                      </p>
-                      {isCap && (
-                        <span className="shrink-0 inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-maroon text-white text-[9px] font-black tracking-widest uppercase">
-                          <Crown className="w-2.5 h-2.5 text-gold" /> Cpt
-                        </span>
-                      )}
-                    </div>
-                    {p.role && (
-                      <p className="text-xs text-maroon font-extrabold tracking-wider uppercase mt-0.5 truncate">
-                        {p.role}
-                      </p>
-                    )}
-                    {p.name && (
-                      <p className="text-xs text-stone-500 font-semibold tracking-wider uppercase truncate mt-0.5">
-                        {p.name}
-                      </p>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
+            {/* Trading cards: hover, focus or tap to flip for the details */}
+            {players.map((p) => (
+              <PlayerTradingCard key={p.id} player={p} teamName={team.name} gameName={gameName} />
+            ))}
           </div>
         )}
       </section>

@@ -104,7 +104,7 @@ Enforced by a CHECK constraint on `profiles.role` (migration `202610161200_role_
 - RLS policies check roles with `public.get_my_role()`.
 
 ## Current schema (public)
-All migrations are in `supabase/migrations/`, run in filename order (202610151100 … 202611091600). `202610151100_base_schema` creates the three pre-migration base tables (`profiles`, `tournaments`, `tournament_registrations`). It is `if not exists`, so it is a no-op on databases that already have them.
+All migrations are in `supabase/migrations/`, run in filename order (202610151100 … 202611091700). `202610151100_base_schema` creates the three pre-migration base tables (`profiles`, `tournaments`, `tournament_registrations`). It is `if not exists`, so it is a no-op on databases that already have them.
 `202610181000_feedback_protection` also needs its one-time Vault key setup (the `feedback_server_key` secret +
 `FEEDBACK_SERVER_KEY`); the steps are at the top of that file.
 Readers: "anyone" = also logged out; "logged-in" = any role; "admin/staff" = organizers only.
@@ -438,6 +438,21 @@ Readers: "anyone" = also logged out; "logged-in" = any role; "admin/staff" = org
   `get_site_stats()` (cached `getSiteStats()`), counting up with `CountUp.tsx`; zero tiles are left out.
   Bracket rows are `app/tournaments/[id]/BracketSlot.tsx`: while the page is open, a team advancing slides in, a new
   winner gets a gold sweep and a changed score flashes (nothing on first render).
+- Motion (Phase 10, CSS block "Phase 10" at the end of `globals.css`; everything still with reduced motion):
+  every `PageHeroBackground` hero slowly zooms (`hero-kenburns`, paused off-screen with the ambient layer) and gets
+  `AmbientBackground` + one light sweep (`hero-sweep`). Homepage: `components/site/MatchTicker.tsx` (results ticker
+  from `get_match_ticker()`, falls back to `get_live_now()`; marquee loop, pauses on hover/focus/off-screen) and
+  `components/site/DarkBand.tsx` (full-width dark band with slanted edges: "Choose your game" `GameTiles.tsx` +
+  `SiteStats plain`). Match cards use `components/MatchVersus.tsx` (`VersusRow`, `VersusBadge`, `ScoreBoard`,
+  `LiveTag`; digits flip with `FlipScore.tsx`) on `/schedule`, My Matches, `/t/[id]`, the live strip and bracket
+  boxes. Brackets: hovering a team highlights its route (`BracketPath.tsx`, rows carry `data-team-id`), the champion
+  gets `ChampionBanner.tsx` (trophy pop + `components/ConfettiBurst.tsx`). `components/TiltCard.tsx` + the
+  `border-trace` class on division cards/tiles; `AnimatedProgress.tsx` fills tournament slot bars and the pick'em
+  split on scroll; tournament cards show "Closes in" (`registrationClosesAt()` in `utils/tournaments.ts`); a correct
+  pick pops (+ small confetti on the full picker). Official team players are flip cards
+  (`components/site/PlayerTradingCard.tsx`). Gold links/buttons get a hover shine automatically (`.group-shine` for
+  a gold span inside a card link). Page changes use React's `<ViewTransition>` in `SiteNavLayout` (classes
+  `page-enter` / `page-exit`).
 
 **Storage buckets**
 - `match-proofs` (private): result screenshots, `<match id>/<random>.<ext>`, PNG/JPEG/WebP, 5 MB. Captains of the
@@ -455,7 +470,8 @@ Readers: "anyone" = also logged out; "logged-in" = any role; "admin/staff" = org
 `transfer_team_captaincy()`, `get_my_team_invites()`, `get_team_invites()`, `check_in_match()`, `declare_forfeit()`,
 `get_needs_attention()`, `log_export()`, `get_public_tournament()`, `get_public_calendar()`, `get_live_now()` (anon: live +
 next 3 matches with team/tournament names, for the homepage strip), `get_site_stats()` (anon: 4 totals for the
-counters), `send_checkin_open_notifications()` (pg_cron only), `submit_match_result()`,
+counters), `get_match_ticker()` (anon: live, latest 8 results and next 6 matches with team/tournament names, for the
+homepage ticker; 202611091700), `send_checkin_open_notifications()` (pg_cron only), `submit_match_result()`,
 `respond_to_match_result()`, `review_match_result()`, `claim_gemini_call()`, `save_feedback_sentiment()`,
 `mark_feedback_pending()` (server key only), `get_prediction_split()`, `get_prediction_leaderboard()`.
 Business rules (roster size, registration checks, match results) are enforced by
@@ -570,8 +586,10 @@ triggers with readable error messages.
 - **Action results**: `toast.success()/toast.error()/toast(msg, { action: { label: 'Undo', onClick } })` from
   `components/Toaster.tsx` (mounted once in `app/layout.tsx`). Keep inline messages for errors the user fixes in
   the form. Buttons: `btn btn-primary|btn-secondary|btn-danger` utilities in `globals.css`.
-- Live sections show `components/AutoUpdateBadge.tsx`. Help content is `utils/help.ts` (page `app/(site)/help`):
-  update it when a feature changes how something works.
+- Live sections show `components/AutoUpdateBadge.tsx`. Help content (page `app/(site)/help`): public spectator and
+  player questions in `utils/help.ts`; staff/admin questions in `utils/help-organizer.ts` (`server-only`), rendered
+  by `OrganizerHelp.tsx` only after a server-side `get_my_role()` check (staff: staff section, admin: both). Never
+  put organizer-only questions in the public file. Update them when a feature changes how something works.
 - **Breakpoints inside pages are container breakpoints** (Phase 6): `<main>` in `SiteNavLayout` is an `@container`,
   so page content uses `@3xl:` / `@5xl:` / `@7xl:` (48/64/80rem of CONTENT width) instead of `md:` / `lg:` / `xl:`.
   `sm:` stays a screen breakpoint (phone padding/text). Only the header, footer, sidebar/bottom bar, the standalone
@@ -690,7 +708,7 @@ The final feature list for the documents is docs/new-features-summary.md.
   group who can see it, means updating `/privacy` and the version (everyone agrees again); small clarifications
   don't change the version.
 - **Logged-out data** comes only from published website rows and the `get_public_tournament()` /
-  `get_public_calendar()` / `get_live_now()` / `get_site_stats()` functions (team names only). Don't open teams, registrations, streams or profiles to
+  `get_public_calendar()` / `get_live_now()` / `get_site_stats()` / `get_match_ticker()` functions (team names only). Don't open teams, registrations, streams or profiles to
   `anon`; add a security definer function that returns just what the public page needs.
 - **New protected pages** go in `proxy.ts`. Public pages (website, `/t`, `/calendar`, `/privacy`) must not.
 

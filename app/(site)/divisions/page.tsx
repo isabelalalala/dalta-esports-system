@@ -8,6 +8,7 @@ import PageHeroBackground from '@/components/site/PageHeroBackground';
 import { getGameLogo } from '@/utils/game-logos';
 import GameLogo from '@/components/GameLogo';
 import Reveal from '@/components/Reveal';
+import TiltCard from '@/components/TiltCard';
 
 // Game Divisions Page
 export const instant = false;
@@ -52,9 +53,11 @@ export default async function DivisionsPage() {
 
             return (
               <Reveal key={d.game_id} delay={(i % 3) as 0 | 1 | 2} className="h-full">
+              {/* Leans toward the mouse; a gold light runs around the border on hover / focus */}
+              <TiltCard className="h-full">
               <Link
                 href={`/divisions/${d.game_id}`}
-                className="group card-interactive h-full rounded-3xl border border-stone-200/90 bg-white shadow-xs overflow-hidden flex flex-col"
+                className="group card-interactive border-trace h-full rounded-3xl border border-stone-200/90 bg-white shadow-xs overflow-hidden flex flex-col"
               >
                 {/* Showcase Image Container Matching Image 2 */}
                 <div className="relative aspect-video border-b border-stone-800/80 bg-ink overflow-hidden grid place-items-center">
@@ -110,6 +113,7 @@ export default async function DivisionsPage() {
                   </p>
                 </div>
               </Link>
+              </TiltCard>
               </Reveal>
             );
           })}

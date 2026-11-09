@@ -830,3 +830,245 @@ input::placeholder, textarea::placeholder {
   color: white;
   &:hover:not(:disabled) { background-color: oklch(44.4% 0.177 26.899); }
 }
+
+/* ===================================================================================
+   Phase 10: "less static" motion. Same rules as Phase 8/9: only transform, opacity and
+   background-position animate (GPU), long loops pause off-screen, and everything is still
+   with prefers-reduced-motion (block at the end of this section).
+   =================================================================================== */
+
+/* Page heroes (components/site/PageHeroBackground.tsx): the photo zooms very slowly, and a soft
+   light band sweeps across the hero once when the page opens. The zoom pauses together with the
+   ambient layer (data-paused) when the hero is off-screen or the tab is hidden. */
+@keyframes heroKenBurns {
+  from { transform: scale(1.05) translate3d(0, 0, 0); }
+  to { transform: scale(1.14) translate3d(-1.5%, -1%, 0); }
+}
+.hero-kenburns {
+  animation: heroKenBurns 24s ease-in-out infinite alternate;
+  will-change: transform;
+}
+[data-hero-bg]:has([data-paused]) .hero-kenburns { animation-play-state: paused; }
+@keyframes heroSweep {
+  from { transform: translate3d(-120%, 0, 0) skewX(-18deg); }
+  to { transform: translate3d(260%, 0, 0) skewX(-18deg); }
+}
+.hero-sweep {
+  position: absolute;
+  inset-block: 0;
+  left: 0;
+  width: 45%;
+  background: linear-gradient(90deg, transparent, rgb(255 204 55 / 0.16), rgb(255 255 255 / 0.12), transparent);
+  transform: translate3d(-120%, 0, 0);
+  animation: heroSweep 1.8s cubic-bezier(0.45, 0, 0.2, 1) 0.35s 1 both;
+}
+
+/* Dark homepage band (components/site/DarkBand.tsx): slanted top and bottom edges */
+.band-angled {
+  clip-path: polygon(0 2.5rem, 100% 0, 100% calc(100% - 2.5rem), 0 100%);
+}
+@media (max-width: 639px) {
+  .band-angled { clip-path: polygon(0 1.25rem, 100% 0, 100% calc(100% - 1.25rem), 0 100%); }
+}
+/* In dark mode the page is near-black too: a deep maroon tint keeps the band (and its slanted
+   edges) visible */
+:root[data-theme="dark"] .band-angled {
+  background-color: oklch(23% 0.05 28);
+}
+
+/* Match cards (components/MatchVersus.tsx): the VS badge of a live match glows softly, and a
+   changed score digit flips down like a scoreboard (components/FlipScore.tsx) */
+@keyframes vsGlow {
+  0%, 100% { box-shadow: 0 0 0 0 rgb(255 204 55 / 0), 0 4px 10px -4px rgb(0 0 0 / 0.35); }
+  50% { box-shadow: 0 0 18px 2px rgb(255 204 55 / 0.45), 0 4px 10px -4px rgb(0 0 0 / 0.35); }
+}
+.vs-badge-live { animation: vsGlow 2.4s ease-in-out infinite; }
+@keyframes scoreFlip {
+  0% { transform: perspective(300px) rotateX(-90deg); opacity: 0; color: var(--color-gold); }
+  60% { transform: perspective(300px) rotateX(12deg); opacity: 1; }
+  100% { transform: perspective(300px) rotateX(0); }
+}
+.animate-score-flip {
+  display: inline-block;
+  transform-origin: 50% 0;
+  animation: scoreFlip 0.6s cubic-bezier(0.2, 0.9, 0.3, 1.2);
+}
+
+/* Results ticker (components/site/MatchTicker.tsx): the same seamless two-track loop as the
+   partner marquee; pauses on hover, keyboard focus and off-screen. Reduced motion: a still row
+   that scrolls sideways by hand. */
+.ticker-track {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  animation: marquee var(--ticker-duration, 60s) linear infinite;
+  will-change: transform;
+}
+.ticker:hover .ticker-track,
+.ticker:focus-within .ticker-track,
+.ticker[data-paused] .ticker-track {
+  animation-play-state: paused;
+}
+
+/* Bracket path (app/tournaments/[id]/BracketPath.tsx): hovering a team lights up every slot it
+   played in, so its route through the bracket is easy to follow */
+.bracket-path {
+  background-color: color-mix(in oklab, var(--color-gold) 24%, transparent) !important;
+  box-shadow: inset 3px 0 0 var(--color-gold);
+}
+
+/* Champion banner (app/tournaments/[id]/ChampionBanner.tsx) and confetti (components/ConfettiBurst.tsx) */
+@keyframes trophyReveal {
+  0% { transform: scale(0.2) rotate(-25deg); opacity: 0; }
+  60% { transform: scale(1.25) rotate(8deg); opacity: 1; }
+  100% { transform: scale(1) rotate(0); }
+}
+.animate-trophy-reveal { display: inline-block; animation: trophyReveal 0.9s cubic-bezier(0.2, 0.9, 0.3, 1.3) both; }
+@keyframes championShine {
+  from { background-position: 150% 0; }
+  to { background-position: -50% 0; }
+}
+.champion-shine {
+  background-image: linear-gradient(110deg, transparent 35%, rgb(255 255 255 / 0.4) 50%, transparent 65%);
+  background-size: 250% 100%;
+  background-repeat: no-repeat;
+  animation: championShine 2.2s ease-out 0.4s 1 both;
+}
+@keyframes confettiFly {
+  0% { transform: translate3d(0, 0, 0) rotate(0); opacity: 1; }
+  80% { opacity: 1; }
+  100% { transform: translate3d(var(--cx), var(--cy), 0) rotate(var(--cr)); opacity: 0; }
+}
+.confetti-piece {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 7px;
+  height: 11px;
+  border-radius: 2px;
+  opacity: 0;
+  animation: confettiFly 1.3s cubic-bezier(0.15, 0.7, 0.4, 1) var(--cd, 0s) 1 both;
+}
+.confetti-sm .confetti-piece { width: 5px; height: 7px; }
+
+/* Pick'em: a correct pick pops */
+@keyframes pickCorrect {
+  0% { transform: scale(0.6); }
+  60% { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}
+.animate-pick-correct { display: inline-flex; animation: pickCorrect 0.5s cubic-bezier(0.2, 0.9, 0.3, 1.4) both; }
+
+/* Division cards: a slight 3D tilt toward the mouse (components/TiltCard.tsx sets --tilt-x/y,
+   mouse only) and a gold light that runs around the border on hover / keyboard focus */
+.tilt-card {
+  transform: perspective(900px) rotateX(var(--tilt-y, 0deg)) rotateY(var(--tilt-x, 0deg));
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.tilt-card[data-tilting] { transition-duration: 0.08s; }
+@property --trace-angle {
+  syntax: '<angle>';
+  inherits: false;
+  initial-value: 0deg;
+}
+@keyframes borderTrace { to { --trace-angle: 360deg; } }
+.border-trace { position: relative; }
+.border-trace::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  border-radius: inherit;
+  padding: 2px;
+  background: conic-gradient(from var(--trace-angle), transparent 0 62%, var(--color-gold) 80%, rgb(255 243 196) 86%, transparent 100%);
+  /* Only the 2px ring shows: the content box is cut out of the gradient */
+  mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+.border-trace:hover::after,
+.border-trace:focus-visible::after {
+  opacity: 1;
+  animation: borderTrace 2.6s linear infinite;
+}
+
+/* Gold buttons: a quick light sweep on hover / keyboard focus. It is a background-image over the
+   gold background-color, so every gold link or button gets it without extra markup;
+   .group-shine does the same for a gold "button" inside a card link (.group). */
+:is(a, button).bg-gold,
+.btn-primary,
+.group-shine {
+  background-image: linear-gradient(110deg, transparent 35%, rgb(255 255 255 / 0.5) 50%, transparent 65%);
+  background-size: 250% 100%;
+  background-position: 160% 0;
+  background-repeat: no-repeat;
+  transition-property: background-position, background-color, border-color, color, transform, box-shadow;
+  transition-duration: 0.7s, 0.15s, 0.15s, 0.15s, 0.2s, 0.2s;
+}
+:is(a, button).bg-gold:hover:not(:disabled),
+:is(a, button).bg-gold:focus-visible,
+.btn-primary:hover:not(:disabled),
+.btn-primary:focus-visible,
+.group:hover .group-shine,
+.group:focus-visible .group-shine {
+  background-position: -60% 0;
+}
+
+/* Official team players: trading cards that flip on hover, keyboard focus or a tap */
+.flip-card { perspective: 1000px; }
+.flip-card-inner {
+  position: relative;
+  height: 100%;
+  transform-style: preserve-3d;
+  transition: transform 0.6s cubic-bezier(0.3, 0.9, 0.3, 1);
+}
+.flip-card:hover .flip-card-inner,
+.flip-card:focus .flip-card-inner {
+  transform: rotateY(180deg);
+}
+.flip-face {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+.flip-back { transform: rotateY(180deg); }
+
+/* Page changes (components/site/SiteNavLayout.tsx wraps the page in React's <ViewTransition>):
+   the old page fades out and the new one slides up; the header, sidebar and footer stay put.
+   Where the browser supports view transitions they replace the CSS page fade (no double fade). */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+}
+@keyframes vtPageOut { to { opacity: 0; transform: translateY(-6px); } }
+@keyframes vtPageIn { from { opacity: 0; transform: translateY(10px); } }
+::view-transition-old(.page-exit) { animation: vtPageOut 0.15s ease-in both; }
+::view-transition-new(.page-enter) { animation: vtPageIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) 0.05s both; }
+@supports (view-transition-class: a) {
+  .animate-page-enter { animation: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-kenburns, .hero-sweep, .vs-badge-live, .animate-score-flip, .ticker-track,
+  .animate-trophy-reveal, .champion-shine, .animate-pick-correct, .border-trace::after {
+    animation: none !important;
+  }
+  .hero-sweep, .confetti-piece { display: none; }
+  .hero-kenburns { transform: scale(1.05); }
+  /* The ticker becomes a still row the visitor can scroll sideways */
+  .ticker { overflow-x: auto !important; }
+  .ticker-copy { display: none; }
+  .tilt-card { transform: none !important; }
+  :is(a, button).bg-gold, .btn-primary, .group-shine { background-image: none; }
+  /* Flip cards: no 3D turn, the back simply fades in */
+  .flip-card-inner { transform: none !important; transition: none; }
+  .flip-face { backface-visibility: visible; transition: opacity 0.2s; }
+  .flip-back { transform: none; opacity: 0; }
+  .flip-card:is(:hover, :focus) .flip-back { opacity: 1; }
+  .flip-card:is(:hover, :focus) .flip-front { opacity: 0; }
+  ::view-transition-group(*), ::view-transition-old(*), ::view-transition-new(*) {
+    animation: none !important;
+  }
+}

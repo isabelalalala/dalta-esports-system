@@ -1,9 +1,11 @@
 import type { ReactNode } from 'react';
 import Link from 'next/link';
-import { Trophy } from 'lucide-react';
 import type { Match } from '@/utils/types';
 import { formatDateTime, isBye, roundLabel } from '@/utils/tournaments';
 import BracketSlot from './BracketSlot';
+import BracketPath from './BracketPath';
+import ChampionBanner from './ChampionBanner';
+import { LiveTag } from '@/components/MatchVersus';
 
 // Public single-elimination bracket: one column per round.
 // On small screens the columns scroll sideways, so each match card keeps a readable width.
@@ -31,12 +33,11 @@ export default function Bracket({
 
   return (
     <div className="w-full">
-      {champion && (
-        <div className="mb-6 rounded-2xl bg-amber-500/10 border border-amber-400/80 text-amber-950 px-5 py-3.5 text-center font-black tracking-wider flex items-center justify-center gap-2 shadow-xs">
-          <Trophy className="h-5 w-5 text-amber-600" /> Champion: {champion}
-        </div>
-      )}
+      {/* Trophy pop + confetti the first time it is seen (also right after the final is decided) */}
+      {champion && <ChampionBanner key={champion} champion={champion} />}
 
+      {/* Hovering a team highlights its path through the rounds */}
+      <BracketPath>
       <div className="overflow-x-auto pb-4 -mx-2 px-2 snap-x">
         <div className="flex gap-4 sm:gap-6 min-w-max">
           {rounds.map((round) => (
@@ -65,6 +66,7 @@ export default function Bracket({
           ))}
         </div>
       </div>
+      </BracketPath>
     </div>
   );
 }
@@ -82,7 +84,7 @@ function MatchBox({ match, teamNames, timeZone }: { match: Match; teamNames: Rec
     <div
       className={`rounded-2xl border text-xs sm:text-sm overflow-hidden shadow-2xs transition-all bg-white ${
         match.status === 'live'
-          ? 'border-emerald-500 ring-2 ring-emerald-500/20'
+          ? 'border-red-500 ring-2 ring-red-500/20'
           : 'border-stone-200/90 hover:border-amber-400/80 hover:shadow-xs'
       }`}
     >
@@ -111,7 +113,7 @@ function MatchBox({ match, teamNames, timeZone }: { match: Match; teamNames: Rec
       })}
       <div className="px-3.5 py-1.5 bg-stone-50 border-t border-stone-100 text-[10px] sm:text-[11px] font-bold text-stone-500 flex justify-between gap-2 tracking-wider">
         <span>{bye ? 'Advances automatically' : formatDateTime(match.scheduled_at, timeZone)}</span>
-        {match.status === 'live' && <span className="text-emerald-600 font-black animate-pulse">LIVE</span>}
+        {match.status === 'live' && <LiveTag />}
       </div>
     </div>
   );

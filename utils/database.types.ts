@@ -1051,6 +1051,9 @@ isOneToOne: false
               "stream_id": string,"viewers": number
             }[]
                            },
+"get_match_ticker":
+{ Args: Record<PropertyKey, never>; Returns: Json
+                           },
 "get_my_role":
 { Args: Record<PropertyKey, never>; Returns: string
                            },

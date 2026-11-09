@@ -620,8 +620,10 @@ tiers) on `/admin/games` without code changes.
 ### Feature 24: Help & FAQ, toasts and usability pass (Nielsen's 10 heuristics)
 **Module:** all (cross-cutting); Help & FAQ belongs to 7 Public Website
 
-**What it does:** a public `/help` page answers the common questions per role (spectators, players, staff,
-admins: registering a team, game profiles, check-in, results, streams, feedback, warnings and bans, reports).
+**What it does:** a public `/help` page answers the common questions of spectators and players (game profiles,
+registering a team, check-in, results, streams, feedback, warnings). Staff and admins see extra organizer
+questions (match control, streams setup, moderation, reports, bans) on the same page; those are only sent to a
+logged-in organizer, never shown publicly.
 After every main action a short message ("toast") confirms it worked. People can now delete their own chat
 comments (with a 5-second Undo) and edit or delete their own feedback. Organizers can approve all pending
 registrations at once and restore/remove several hidden comments at once. Every confirmation uses the same
@@ -641,6 +643,27 @@ brand background.
 **Database**
 - `202611091600_own_feedback_delete`: RLS delete policy on `feedback` for the owner, except while hidden for
   review or removed. No new table; the Privacy Notice is unchanged (no new data or readers).
+
+### Feature 25: Esports look and motion (Phase 10)
+**Module:** 7 Public Website (and the shared look of every page)
+
+**What it does:** the site moves more like an esports site, while staying subtle and still for people who turn
+off motion. A results ticker scrolls live scores, the latest results and the next matches across the top of the
+homepage, and a dark slanted band shows "Choose your game" tiles and the totals. Page headers slowly zoom with a
+light sweep. Match cards read "Team A vs Team B" with a gold VS badge, a red LIVE tag and scores that flip when
+they change. Hovering a team in a bracket lights up its route; the champion gets a trophy and confetti. Division
+cards tilt toward the mouse, slot and pick'em bars fill up, tournament cards count down to registration closing,
+official players are flip cards, and page changes slide.
+
+**Actors / use cases:** no new use cases (Audience: *View match ticker* is part of *View schedule & results*).
+
+**Data flows**
+- 2.0 Matches (D2) → 7.0 Public Website: live, latest results and next matches (team and tournament names only)
+  → Audience (homepage ticker).
+
+**Database**
+- `202611091700_match_ticker`: `get_match_ticker()` (security definer, anon + authenticated), returns names and
+  scores only. No new table; the Privacy Notice is unchanged (results and team names were already public).
 
 ### Feature 13: Enhancements inside the original modules
 These additions stay inside existing modules but add flows you may want to draw.

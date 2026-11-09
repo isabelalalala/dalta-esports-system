@@ -11,8 +11,9 @@ import { fetchRoundCounts, fetchTeamNames } from '@/utils/matches';
 import PageLoading from '@/components/PageLoading';
 import { usePageTitle } from '@/utils/page-title';
 import PageHeroBackground from '@/components/site/PageHeroBackground';
-import { Calendar, ChevronRight, Filter, Radio, Trophy, Tv } from 'lucide-react';
+import { Calendar, ChevronRight, Filter, Tv } from 'lucide-react';
 import AutoUpdateBadge from '@/components/AutoUpdateBadge';
+import { LiveTag, ScoreBoard, VersusBadge, VersusRow } from '@/components/MatchVersus';
 
 type ScheduleMatch = Match & { tournaments: { name: string } | null };
 
@@ -219,13 +220,10 @@ export default function SchedulePage() {
                 {live.map((m) => (
                   <div
                     key={m.id}
-                    className="bg-white border-2 border-red-500/70 rounded-2xl p-6 shadow-sm hover:shadow-md transition-all space-y-4 relative overflow-hidden"
+                    className="bg-white border-2 border-red-500/70 rounded-2xl p-5 sm:p-6 shadow-sm hover:shadow-md transition-all space-y-4 relative overflow-hidden"
                   >
                     <div className="flex items-center justify-between gap-2 border-b border-stone-100 pb-3">
-                      <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-red-100 text-red-800 text-[10px] font-black tracking-widest">
-                        <Radio className="w-3 h-3 text-red-600 animate-pulse" />
-                        LIVE ARENA
-                      </span>
+                      <LiveTag label="Live arena" />
                       <Link
                         href={`/tournaments/${m.tournament_id}`}
                         className="text-[11px] font-bold text-stone-600 hover:text-gold transition-colors"
@@ -235,23 +233,11 @@ export default function SchedulePage() {
                     </div>
 
                     {/* name | score | name: the score keeps its width, long names are cut with "..." */}
-                    <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2 sm:gap-3 text-center">
-                      <div className="min-w-0 text-right">
-                        <p className="font-black text-sm sm:text-base text-stone-950 truncate">
-                          {name(m.team_a_id)}
-                        </p>
-                      </div>
-                      <div className="flex flex-col items-center justify-center">
-                        <span className="px-2.5 sm:px-3 py-1 rounded-lg bg-stone-900 text-amber-400 font-black text-sm tabular-nums tracking-widest shadow-2xs">
-                          {m.score_a ?? 0} : {m.score_b ?? 0}
-                        </span>
-                      </div>
-                      <div className="min-w-0 text-left">
-                        <p className="font-black text-sm sm:text-base text-stone-950 truncate">
-                          {name(m.team_b_id)}
-                        </p>
-                      </div>
-                    </div>
+                    <VersusRow
+                      teamA={name(m.team_a_id)}
+                      teamB={name(m.team_b_id)}
+                      middle={<ScoreBoard a={m.score_a} b={m.score_b} />}
+                    />
 
                     <div className="pt-2 flex justify-end">
                       <Link
@@ -289,18 +275,12 @@ export default function SchedulePage() {
                     key={m.id}
                     className="bg-white border border-stone-200/90 rounded-2xl p-5 shadow-xs hover:border-stone-300 hover:-translate-y-0.5 transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-4"
                   >
-                    <div className="space-y-2 min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className="font-black text-stone-950 text-sm sm:text-base">
-                          {name(m.team_a_id)}
-                        </span>
-                        <span className="px-2 py-0.5 rounded-md bg-stone-100 text-stone-600 text-[11px] font-bold">
-                          VS
-                        </span>
-                        <span className="font-black text-stone-950 text-sm sm:text-base">
-                          {name(m.team_b_id)}
-                        </span>
-                      </div>
+                    <div className="space-y-2 min-w-0 flex-1">
+                      <VersusRow
+                        teamA={name(m.team_a_id)}
+                        teamB={name(m.team_b_id)}
+                        middle={<VersusBadge />}
+                      />
 
                       <div className="flex items-center gap-2 text-xs text-stone-500 font-medium tracking-wide">
                         <Link
@@ -350,56 +330,12 @@ export default function SchedulePage() {
                       className="bg-white border border-stone-200/90 rounded-2xl p-5 shadow-xs hover:border-stone-300 hover:-translate-y-0.5 transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-4"
                     >
                       <div className="space-y-2 min-w-0 flex-1">
-                        <div className="flex items-center gap-3 flex-wrap">
-                          {/* Team A */}
-                          <div className="flex items-center gap-1.5">
-                            <span
-                              className={`text-sm sm:text-base ${
-                                isTeamAWinner
-                                  ? 'font-black text-maroon'
-                                  : 'font-medium text-stone-500'
-                              }`}
-                            >
-                              {name(m.team_a_id)}
-                            </span>
-                            {isTeamAWinner && (
-                              <span className="px-1.5 py-0.5 rounded bg-amber-100 text-maroon text-[10px] font-black inline-flex items-center gap-0.5">
-                                <Trophy className="w-2.5 h-2.5 text-maroon" />
-                                WIN
-                              </span>
-                            )}
-                          </div>
-
-                          {/* Score or Forfeit */}
-                          {m.is_forfeit ? (
-                            <span className="px-2.5 py-0.5 rounded-full bg-red-50 text-red-700 border border-red-200 text-[11px] font-bold">
-                              FORFEIT
-                            </span>
-                          ) : (
-                            <span className="px-3 py-0.5 rounded-lg bg-stone-100 border border-stone-200 font-black text-stone-950 text-xs sm:text-sm tabular-nums">
-                              {m.score_a ?? '-'} : {m.score_b ?? '-'}
-                            </span>
-                          )}
-
-                          {/* Team B */}
-                          <div className="flex items-center gap-1.5">
-                            <span
-                              className={`text-sm sm:text-base ${
-                                isTeamBWinner
-                                  ? 'font-black text-maroon'
-                                  : 'font-medium text-stone-500'
-                              }`}
-                            >
-                              {name(m.team_b_id)}
-                            </span>
-                            {isTeamBWinner && (
-                              <span className="px-1.5 py-0.5 rounded bg-amber-100 text-maroon text-[10px] font-black inline-flex items-center gap-0.5">
-                                <Trophy className="w-2.5 h-2.5 text-maroon" />
-                                WIN
-                              </span>
-                            )}
-                          </div>
-                        </div>
+                        <VersusRow
+                          teamA={name(m.team_a_id)}
+                          teamB={name(m.team_b_id)}
+                          winner={isTeamAWinner ? 'a' : isTeamBWinner ? 'b' : null}
+                          middle={<ScoreBoard finished a={m.score_a} b={m.score_b} forfeit={m.is_forfeit} />}
+                        />
 
                         <div className="flex items-center gap-2 text-xs text-stone-500 font-medium tracking-wide">
                           <Link

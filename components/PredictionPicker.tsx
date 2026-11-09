@@ -5,6 +5,8 @@ import Link from 'next/link';
 import { Check, X } from 'lucide-react';
 import { usePredictions } from '@/components/PredictionsProvider';
 import { canBePicked, picksOpen, splitPercents, type PickMatch } from '@/utils/predictions';
+import AnimatedProgress from '@/components/AnimatedProgress';
+import ConfettiBurst from '@/components/ConfettiBurst';
 
 // Pick'em for one match: the community split (e.g. 62% / 38%) and, for logged-in audience
 // members, two buttons to pick the winner. Must be inside <PredictionsProvider>.
@@ -54,10 +56,20 @@ export default function PredictionPicker({
   else if (ownMatch) note = "You can't pick your own team's match.";
 
   // Correct / Wrong once the match has a winner
+  // A correct pick pops in, and on the full picker a small confetti burst plays once
   const verdict = mine && mine.is_correct !== null && (
-    <span className={`inline-flex items-center gap-1 font-bold ${mine.is_correct ? 'text-emerald-700' : 'text-rose-700'}`}>
-      {mine.is_correct ? <><Check className="h-3.5 w-3.5" /> Correct</> : <><X className="h-3.5 w-3.5" /> Wrong</>}
-    </span>
+    mine.is_correct ? (
+      <span className="relative inline-flex">
+        <span className="animate-pick-correct items-center gap-1 font-bold text-emerald-700">
+          <Check className="h-3.5 w-3.5" /> Correct
+        </span>
+        {!compact && <ConfettiBurst small count={16} />}
+      </span>
+    ) : (
+      <span className="inline-flex items-center gap-1 font-bold text-rose-700">
+        <X className="h-3.5 w-3.5" /> Wrong
+      </span>
+    )
   );
 
   const buttonClass = (teamId: string) =>
@@ -76,10 +88,11 @@ export default function PredictionPicker({
           <p className={`text-stone-500 font-semibold ${compact ? 'text-[10px]' : 'text-xs'}`}>No picks yet</p>
         ) : (
           <>
-            <progress
+            {/* Grows into place the first time it scrolls into view */}
+            <AnimatedProgress
               value={split.a}
               max={100}
-              aria-label={`${split.a}% picked ${nameA}, ${split.b}% picked ${nameB}`}
+              label={`${split.a}% picked ${nameA}, ${split.b}% picked ${nameB}`}
               className={`w-full block appearance-none rounded-full overflow-hidden border border-stone-200 bg-stone-100 [&::-webkit-progress-bar]:bg-stone-100 [&::-webkit-progress-value]:bg-amber-400 [&::-moz-progress-bar]:bg-amber-400 ${compact ? 'h-1.5' : 'h-2.5'}`}
             />
             <p className={`flex justify-between gap-2 text-stone-600 font-bold ${compact ? 'text-[10px]' : 'text-xs mt-1'}`}>

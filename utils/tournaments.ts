@@ -71,6 +71,14 @@ export function getTournamentStatus(
   return 'ongoing';
 }
 
+// The moment registration closes: the end of the deadline day (or the start date when there is no
+// deadline) in Philippine time, as an ISO string for <Countdown>. '' when neither date is set.
+export function registrationClosesAt(t: Pick<Tournament, 'start_date' | 'registration_deadline'>) {
+  const day = toDateInput(t.registration_deadline) || toDateInput(t.start_date);
+  if (!day) return '';
+  return new Date(new Date(`${day}T00:00:00+08:00`).getTime() + 24 * 60 * 60 * 1000).toISOString();
+}
+
 // Checks the date order. Returns an error message, or '' if the dates are fine.
 // The database enforces the same rules.
 export function validateTournamentDates(startDate: string, endDate: string, registrationDeadline: string) {

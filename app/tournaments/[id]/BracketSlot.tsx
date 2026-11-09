@@ -37,7 +37,8 @@ export default function BracketSlot({ teamId, name, won, scoreText, className }:
   }, [teamId, won, scoreText]);
 
   return (
-    <div ref={rowRef} className={className}>
+    // data-team-id: BracketPath highlights every row of the hovered team
+    <div ref={rowRef} className={`${className} transition-[background-color,box-shadow] duration-200`} data-team-id={teamId ?? undefined}>
       <span ref={nameRef} className="truncate">{name}</span>
       <span ref={scoreRef} className="tabular-nums font-black">{scoreText}</span>
     </div>

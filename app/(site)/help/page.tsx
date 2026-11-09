@@ -1,22 +1,20 @@
+import { Suspense } from 'react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { ChevronDown, Eye, Gamepad2, LifeBuoy, ShieldCheck, Swords } from 'lucide-react';
-import { HELP_SECTIONS, type HelpSection } from '@/utils/help';
+import { LifeBuoy } from 'lucide-react';
+import { HELP_SECTIONS } from '@/utils/help';
 import PageHeroBackground from '@/components/site/PageHeroBackground';
+import HelpSectionView, { HELP_ICONS } from '@/components/HelpSectionView';
+import OrganizerHelp from './OrganizerHelp';
 
 export const metadata: Metadata = {
   title: 'Help & FAQ',
-  description: 'How DALTA Esports works: accounts, teams, registration, streams, feedback, warnings and organizer tools.',
+  description: 'How DALTA Esports works: accounts, watching streams, Pick\'em, feedback, warnings, teams and registration.',
 };
 
-const ICONS: Record<HelpSection['id'], typeof Eye> = {
-  everyone: Eye,
-  player: Gamepad2,
-  staff: Swords,
-  admin: ShieldCheck,
-};
-
-// Public help page: one collapsible FAQ section per role. Content in utils/help.ts.
+// Help page. The spectator and player questions (utils/help.ts) are public; the staff and admin
+// questions (utils/help-organizer.ts, server only) are added by <OrganizerHelp> only for a
+// logged-in organizer.
 export default function HelpPage() {
   return (
     <div className="w-full space-y-10">
@@ -27,13 +25,13 @@ export default function HelpPage() {
             <LifeBuoy className="size-[0.8em] text-gold" aria-hidden="true" /> Help &amp; FAQ
           </h1>
           <p className="text-base sm:text-lg font-medium leading-relaxed text-white">
-            Quick answers for spectators, players and organizers.
+            Quick answers for spectators and players.
           </p>
         </div>
-        {/* Jump to a role */}
+        {/* Jump to a section */}
         <nav aria-label="Help sections" className="relative z-10 flex flex-wrap justify-center gap-2">
           {HELP_SECTIONS.map((s) => {
-            const Icon = ICONS[s.id];
+            const Icon = HELP_ICONS[s.id];
             return (
               <a
                 key={s.id}
@@ -47,39 +45,14 @@ export default function HelpPage() {
         </nav>
       </section>
 
-      {HELP_SECTIONS.map((section) => {
-        const Icon = ICONS[section.id];
-        return (
-          <section key={section.id} id={section.id} aria-labelledby={`${section.id}-title`} className="scroll-mt-24 space-y-4">
-            <div>
-              <h2 id={`${section.id}-title`} className="text-xl sm:text-2xl font-black uppercase tracking-wide flex items-center gap-2">
-                <Icon className="size-6 text-maroon" aria-hidden="true" /> {section.title}
-              </h2>
-              <p className="text-stone-600 font-medium mt-1">{section.intro}</p>
-            </div>
-            <div className="divide-y divide-stone-200/90 rounded-2xl border border-stone-200/90 bg-white shadow-xs">
-              {section.items.map((item) => (
-                <details key={item.q} className="group">
-                  <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-5 py-4 font-bold text-stone-950 hover:bg-stone-50 rounded-2xl focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-maroon [&::-webkit-details-marker]:hidden">
-                    <span>{item.q}</span>
-                    <ChevronDown className="size-5 shrink-0 text-stone-500 transition-transform group-open:rotate-180" aria-hidden="true" />
-                  </summary>
-                  <div className="space-y-2 px-5 pb-5 text-stone-800 leading-relaxed">
-                    {item.a.map((line) => (
-                      <p key={line}>{line}</p>
-                    ))}
-                    {item.link && (
-                      <Link href={item.link.href} className="inline-block pt-1 text-sm font-black uppercase tracking-wider text-maroon hover:underline">
-                        {item.link.label} →
-                      </Link>
-                    )}
-                  </div>
-                </details>
-              ))}
-            </div>
-          </section>
-        );
-      })}
+      {HELP_SECTIONS.map((section) => (
+        <HelpSectionView key={section.id} section={section} />
+      ))}
+
+      {/* Staff/admin questions: only for a logged-in organizer (checked on the server) */}
+      <Suspense fallback={null}>
+        <OrganizerHelp />
+      </Suspense>
 
       <p className="text-center text-stone-600">
         Still stuck? Restart the quick tour from <Link href="/profile" className="font-bold text-maroon underline">My Profile</Link>,

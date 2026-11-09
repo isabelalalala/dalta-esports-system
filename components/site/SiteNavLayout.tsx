@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useEffect, useState, useSyncExternalStore, type ReactNode } from 'react';
+import { Suspense, ViewTransition, useEffect, useState, useSyncExternalStore, type ReactNode } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import {
@@ -168,10 +168,13 @@ export default function SiteNavLayout({ children }: { children: ReactNode }) {
       {/* Page. Keyed by path: each new page fades in (off with reduced motion). Bottom padding
           keeps content clear of the phone tab bar. It is a CSS container: pages use container
           breakpoints (@3xl/@5xl/@7xl = 48/64/80rem of CONTENT width, not window width), so they
-          switch to their narrower layout when the sidebar takes space. */}
+          switch to their narrower layout when the sidebar takes space.
+          ViewTransition (Phase 10): in browsers with view transitions the old page fades out and
+          the new one slides up (CSS "Page changes" in globals.css; the header, sidebar and footer
+          don't move). Elsewhere the CSS fade above is used instead. */}
+      <ViewTransition key={pathname} enter="page-enter" exit="page-exit" default="none">
       <main
         id="main-content"
-        key={pathname}
         className={`@container animate-page-enter flex-1 min-w-0 w-full px-4 sm:px-8 lg:px-12 xl:px-16 py-6 sm:py-10 ${
           loggedIn ? 'pb-28 lg:pb-10' : ''
         }`}
@@ -183,6 +186,7 @@ export default function SiteNavLayout({ children }: { children: ReactNode }) {
         <FlaggedAccountNotice />
         {children}
       </main>
+      </ViewTransition>
 
       {/* Phones, logged in: bottom tab bar */}
       {ready && loggedIn && nav.bottom.length > 0 && (

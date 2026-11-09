@@ -9,6 +9,7 @@ import type { Match } from '@/utils/types';
 import { formatDateTime, roundLabel } from '@/utils/tournaments';
 import { SectionLoading } from '@/components/PageLoading';
 import { Swords } from 'lucide-react';
+import { LiveTag, ScoreBoard, VersusBadge, VersusRow } from '@/components/MatchVersus';
 
 type UpcomingMatch = Match & { tournaments: { name: string } | null };
 
@@ -133,21 +134,21 @@ export default function MyMatches({ userId }: { userId: string }) {
             return (
               <div
                 key={m.id}
-                className="rounded-2xl border border-stone-200/90 bg-stone-50/60 hover:bg-white p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-all duration-200 hover:shadow-xs hover:border-amber-500/40"
+                className={`rounded-2xl border bg-stone-50/60 hover:bg-white p-5 flex ${m.status === 'live' ? 'border-red-500/60' : 'border-stone-200/90'} flex-col sm:flex-row sm:items-center justify-between gap-4 transition-all duration-200 hover:shadow-xs hover:border-amber-500/40`}
               >
-                <div className="space-y-1">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="font-black text-stone-950 text-sm sm:text-base tracking-wide">
-                      {myTeam ? teamNames[myTeam] : 'Your team'}{' '}
-                      <span className="text-stone-500 font-normal">vs</span>{' '}
-                      {opponent ? teamNames[opponent] ?? 'Unknown team' : <span className="italic text-stone-500">TBD</span>}
-                    </span>
-                    {m.status === 'live' && (
-                      <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-700 text-[10px] font-black tracking-wider animate-pulse">
-                        LIVE NOW
-                      </span>
-                    )}
-                  </div>
+                <div className="space-y-2 min-w-0 flex-1">
+                  {m.status === 'live' && <LiveTag label="Live now" />}
+                  {/* Your team on the left, the opponent on the right */}
+                  <VersusRow
+                    size="sm"
+                    teamA={myTeam ? teamNames[myTeam] : 'Your team'}
+                    teamB={opponent ? teamNames[opponent] ?? 'Unknown team' : <span className="italic text-stone-500 normal-case">TBD</span>}
+                    middle={
+                      m.status === 'live'
+                        ? <ScoreBoard size="sm" a={mineIsA ? m.score_a : m.score_b} b={mineIsA ? m.score_b : m.score_a} />
+                        : <VersusBadge size="sm" live={false} />
+                    }
+                  />
                   <p className="text-xs text-stone-500 font-semibold tracking-wider">
                     <Link href={`/tournaments/${m.tournament_id}`} className="hover:text-amber-700 underline transition-colors">
                       {m.tournaments?.name}

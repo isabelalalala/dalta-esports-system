@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { DEFAULT_HERO_BANNER, siteImageUrl, type SiteContentKey } from '@/utils/site';
 import { createClient } from '@/utils/supabase/client';
+import AmbientBackground from '@/components/site/AmbientBackground';
 
 // Client-side cache to share between page navigations without duplicate queries
 let cachedSiteBannerMap: Record<string, string> | null = null;
@@ -67,7 +68,8 @@ export default function PageHeroBackground({
   specificKey,
   alt = 'DALTA Esports Banner',
   priority = true,
-  className = 'object-cover object-center scale-105',
+  // hero-kenburns: a very slow zoom (globals.css, Phase 10); still with reduced motion
+  className = 'object-cover object-center hero-kenburns',
   overlayClassName = 'absolute inset-0 bg-stone-950/75',
 }: PageHeroBackgroundProps) {
   // The banner looked up from site_content (used only when no `src` is given)
@@ -115,6 +117,10 @@ export default function PageHeroBackground({
         priority={priority}
       />
       <div className={overlayClassName} />
+      {/* Faint moving brand glows + triangle grid (pauses off-screen), then one light sweep
+          across the hero when the page opens. Both sit under the hero text (z-10). */}
+      <AmbientBackground onDark />
+      <div className="hero-sweep" />
     </div>
   );
 }
