@@ -280,7 +280,7 @@ export default function ManageStreamsPage() {
                     <span className={`px-2.5 py-1 rounded-md border text-[10px] font-black uppercase shadow-2xs ${streamStatusStyles[stream.status]}`}>
                       {stream.status === 'live' ? (
                         <span className="flex items-center gap-1.5 text-red-700">
-                          <span className="inline-block h-2 w-2 rounded-full bg-red-600 animate-ping" />
+                          <span className="relative inline-flex h-2 w-2" aria-hidden="true"><span className="absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75 animate-ping" /><span className="relative inline-flex h-2 w-2 rounded-full bg-red-600" /></span>
                           LIVE ON AIR
                         </span>
                       ) : (

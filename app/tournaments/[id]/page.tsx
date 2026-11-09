@@ -412,7 +412,7 @@ export default function TournamentDetailsPage() {
             </span>
             <div className="min-w-0">
               <div className="uppercase text-[10px] font-black text-red-700 tracking-widest flex items-center gap-1.5">
-                <span className="inline-block h-2 w-2 rounded-full bg-red-600 animate-ping" /> Live Match Stream
+                <span className="relative inline-flex h-2 w-2" aria-hidden="true"><span className="absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75 animate-ping" /><span className="relative inline-flex h-2 w-2 rounded-full bg-red-600" /></span> Live Match Stream
               </div>
               <p className="font-black text-sm sm:text-base text-stone-950 truncate tracking-wide">{s.title}</p>
             </div>

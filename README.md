@@ -88,6 +88,7 @@ git-ignored, so it will not show up in `git status`. Check for it with
 | `GEMINI_API_KEY` | Server-only, free key from Google AI Studio. Without it, feedback stays "pending analysis" |
 | `GEMINI_MODEL` | Optional, defaults to `gemini-3.5-flash-lite` |
 | `FEEDBACK_SERVER_KEY` | Server-only, must equal the Vault secret from step 4 |
+| `CRON_SECRET` | Server-only, any long random string (`openssl rand -hex 32`). Protects `/api/cron/moderation`; Vercel Cron sends it automatically |
 | `NEXT_PUBLIC_SITE_URL` | Public app URL, e.g. `https://<app>.vercel.app`: OG images, shared links, calendar files. Falls back to Vercel's production domain, then `http://localhost:3000` |
 | `NEXT_PUBLIC_PRIVACY_CONTACT_EMAIL` / `NEXT_PUBLIC_PRIVACY_CONTACT_PERSON` | Data-privacy contact shown on `/privacy` (placeholder fallback until set) |
 
@@ -212,6 +213,24 @@ changes need a rebuild; `GEMINI_API_KEY`/`FEEDBACK_SERVER_KEY` are runtime env v
    Preview deployments get other URLs; add `https://*-<your-team>.vercel.app/**` if you
    want email links to work on previews too.
 6. Deploy, then register a test account to check that the confirmation email arrives.
+
+7. **Daily retry of "pending analysis":** `vercel.json` schedules `GET /api/cron/moderation`
+   once a day (00:00 UTC = 8:00 PH; the free Hobby plan allows one run a day, Pro can use
+   e.g. `0 * * * *`). It needs `CRON_SECRET` set in Vercel and the migration
+   `202611091300_cron_moderation`. Check it under Project → Settings → Cron Jobs.
+
+### How deploys work
+- **Push to `main` = production.** Every push to another branch (or a pull request) gets a
+  Preview URL. Previews use the same environment variables you give the Preview environment,
+  so they talk to the real Supabase project unless you point them at a test project.
+- **Roll back:** Vercel → Deployments → pick the last good deployment → ⋯ → **Instant Rollback**
+  (or "Promote to Production"). This only rolls back the app; database migrations are not undone.
+- **Before running a migration in production:** take a backup (Supabase → Database → Backups;
+  daily backups are included on paid plans; on the free plan export with
+  `supabase db dump` or Project Settings → "Download backup").
+- **Security headers** (CSP, HSTS, nosniff, frame protection) are set in `next.config.ts`.
+  A new outside service the BROWSER talks to (a new embed, CDN or API) must be added to the CSP there.
+- After a deploy, check Vercel → Logs for errors while clicking through the main pages.
 
 The API routes set `maxDuration` (feedback 30 s, exports 60 s) because Vercel can stop
 a function after 10 s on the free plan and Gemini can take up to 15 s.

@@ -36,6 +36,9 @@ Full title: "DALTA Esports: Tournament Management System with AI-Powered Feedbac
   `202610181000_feedback_protection.sql`); lets the server read waiting comments/feedback, save sentiment and
   moderation results, and use the Gemini rate limit. Without it, comments and feedback are saved but stay
   "pending analysis" (comments stay visible, unmoderated).
+- `CRON_SECRET`: server only. Protects GET `/api/cron/moderation` (Vercel Cron, `vercel.json`, daily), which retries
+  "pending analysis" with the server key and no user session (`202611091300_cron_moderation` grants the four
+  key-checked moderation functions to anon).
 - `NEXT_PUBLIC_SITE_URL`: the app's public address, e.g. `https://<app>.vercel.app` (no trailing slash). Used
   for link previews (metadataBase), shared links and calendar files. Falls back to Vercel's production domain
   (`NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL`), then http://localhost:3000 (`utils/site-url.ts`).
@@ -101,7 +104,7 @@ Enforced by a CHECK constraint on `profiles.role` (migration `202610161200_role_
 - RLS policies check roles with `public.get_my_role()`.
 
 ## Current schema (public)
-All migrations are in `supabase/migrations/`, run in filename order (202610151100 … 202611091200). `202610151100_base_schema` creates the three pre-migration base tables (`profiles`, `tournaments`, `tournament_registrations`). It is `if not exists`, so it is a no-op on databases that already have them.
+All migrations are in `supabase/migrations/`, run in filename order (202610151100 … 202611091300). `202610151100_base_schema` creates the three pre-migration base tables (`profiles`, `tournaments`, `tournament_registrations`). It is `if not exists`, so it is a no-op on databases that already have them.
 `202610181000_feedback_protection` also needs its one-time Vault key setup (the `feedback_server_key` secret +
 `FEEDBACK_SERVER_KEY`); the steps are at the top of that file.
 Readers: "anyone" = also logged out; "logged-in" = any role; "admin/staff" = organizers only.
@@ -516,7 +519,11 @@ triggers with readable error messages.
   `utils/tournaments.ts` (dates, status, round labels), `utils/matches.ts` (team names, round counts),
   `utils/streams.ts` (Facebook link check and embed URL), `utils/errors.ts` (`getErrorMessage`), `utils/game-logos.ts` (`getGameLogo()`, `gameInitials()`, logos in `public/` incl. `LOL LOGO.png`; render with `GameLogo`),
   `utils/use-realtime-refresh.ts` (live reloads), `utils/lol-champions.ts` (LoL draft limits + suggestions).
-- `proxy.ts` lists every page that requires login; add new protected pages there.
+- `proxy.ts` lists every page that requires login; add new protected pages there, AND to `privatePaths` in
+  `next.config.ts` (X-Robots-Tag noindex) and `app/robots.ts`.
+- Security headers (CSP without nonces, HSTS, nosniff, X-Frame-Options, Referrer/Permissions-Policy) live in
+  `next.config.ts` `headers()`. A new origin the browser loads (embed, CDN, API) must be added to the CSP.
+- `scripts/prelaunch-cleanup.sql`: review-first test-data cleanup (ends in ROLLBACK; not a migration).
 - States: `components/PageLoading.tsx` (`PageLoading` full page, `SectionLoading` inline), `components/PageError.tsx`
   (page couldn't load), `app/not-found.tsx`, `app/error.tsx`, `app/global-error.tsx` (Next 16: props `error, retry`).
   `getErrorMessage()` turns raw Postgres/PostgREST/network errors into plain sentences and keeps our own trigger

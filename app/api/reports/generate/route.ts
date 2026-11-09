@@ -98,12 +98,14 @@ async function writeInsights(supabase: SupabaseClient<Database>, request: Insigh
   }
   const { data: limitReason, error } = await supabase.rpc('claim_gemini_call', { p_key: serverKey, p_items: 1 });
   if (error || limitReason) {
-    return rulesInsights(request, `AI wording skipped (${error?.message ?? limitReason}); the computed sentences are shown.`);
+    if (error) console.error('Report insights: claim_gemini_call failed', error);
+    return rulesInsights(request, `AI wording skipped (${error ? 'the AI limit could not be checked' : limitReason}); the computed sentences are shown.`);
   }
   try {
     return acceptDraft(await writeReportInsights(request), request);
   } catch (err) {
-    const reason = err instanceof Error ? err.message : 'Gemini failed.';
-    return rulesInsights(request, `AI wording unavailable (${reason}); the computed sentences are shown.`);
+    // The details stay in the server log; the saved report only says that the AI wording failed
+    console.error('Report insights: Gemini failed', err);
+    return rulesInsights(request, 'AI wording unavailable right now; the computed sentences are shown.');
   }
 }

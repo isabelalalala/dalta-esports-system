@@ -160,7 +160,11 @@ async function TournamentContent({ params }: { params: PageProps<'/t/[id]'>['par
           <div className="border-b border-stone-200/90 pb-3">
             <span className="text-[11px] font-black tracking-widest text-maroon uppercase">Live Broadcast</span>
             <h2 className="text-xl sm:text-2xl font-black text-stone-950 uppercase tracking-wide flex items-center gap-2">
-              <span className="inline-block h-3 w-3 rounded-full bg-red-600 animate-ping mr-1" />
+              {/* Solid dot with a pulsing halo (animate-ping on the dot itself made it a fading blob) */}
+              <span className="relative mr-1 inline-flex h-3 w-3" aria-hidden="true">
+                <span className="absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75 animate-ping" />
+                <span className="relative inline-flex h-3 w-3 rounded-full bg-red-600" />
+              </span>
               Live Stream Now
             </h2>
           </div>

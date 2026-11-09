@@ -56,3 +56,7 @@ comments (`get_stream_comments()`; hidden ones only for their author and moderat
 
 Banned accounts: sent to `/banned` by `proxy.ts` on every protected page, refused by `can_post()`, and (with the Auth
 hook switched on) refused a session by `custom_access_token_hook()`.
+
+**No role (system):** GET `/api/cron/moderation` is called by Vercel Cron, not by a user. It requires
+`Authorization: Bearer <CRON_SECRET>` (401 otherwise) and works only through the four moderation functions that
+check `FEEDBACK_SERVER_KEY` first (`202611091300_cron_moderation`); it returns counts only.

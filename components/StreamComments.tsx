@@ -56,7 +56,7 @@ export default function StreamComments({ streamId, replay = false, heightClass =
   const [removeNote, setRemoveNote] = useState('');
   const [warnOnRemove, setWarnOnRemove] = useState(false);
   const [busy, setBusy] = useState(false);
-  const listRef = useRef<HTMLOListElement>(null);
+  const listRef = useRef<HTMLDivElement>(null);
   const stickToBottom = useRef(true);
   const [reloadCount, setReloadCount] = useState(0);
 
@@ -162,7 +162,8 @@ export default function StreamComments({ streamId, replay = false, heightClass =
         <span className="text-xs font-semibold text-stone-600">{comments.length}{hasOlder ? '+' : ''}</span>
       </div>
 
-      <ol
+      {/* role="log" isn't allowed on a list, so the scrolling live region wraps the <ol> */}
+      <div
         ref={listRef}
         role="log"
         aria-live="polite"
@@ -171,8 +172,9 @@ export default function StreamComments({ streamId, replay = false, heightClass =
           const el = e.currentTarget;
           stickToBottom.current = el.scrollHeight - el.scrollTop - el.clientHeight < 40;
         }}
-        className={`${heightClass} overflow-y-auto px-4 py-3 space-y-3`}
+        className={`${heightClass} overflow-y-auto px-4 py-3`}
       >
+      <ol className="space-y-3">
         {hasOlder && (
           <li className="text-center">
             <button type="button" onClick={loadOlder} className="text-xs font-black uppercase tracking-wider text-maroon hover:underline cursor-pointer">
@@ -220,6 +222,7 @@ export default function StreamComments({ streamId, replay = false, heightClass =
           );
         })}
       </ol>
+      </div>
 
       <div className="border-t border-stone-100 p-3">
         {viewer.status !== 'ready' ? null : !viewer.userId ? (
