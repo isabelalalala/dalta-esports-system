@@ -1,10 +1,11 @@
--- pgTAP: game-specific profile fields (202611091400_game_profile_schemas).
+-- pgTAP: game-specific profile fields (202611091400_game_profile_schemas) and the private
+-- details column (202611091500_game_profile_details_privacy).
 
 begin;
 
 create extension if not exists pgtap;
 
-select plan(11);
+select plan(13);
 
 set local session_replication_role = 'replica';
 create temp table fx (key text primary key, val uuid);
@@ -82,6 +83,17 @@ select public.update_game_profile_schema('valorant',
 select is(
   (select rank from public.player_game_profiles where game_id = 'valorant' and user_id = (select val from fx where key = 'player')),
   'Gold Renamed 2', 'renaming an option updates the saved rank text');
+
+-- 6. Game account IDs: not readable from the table, only through the checked function
+select set_config('request.jwt.claims', '{"sub":"' || (select val from fx where key = 'player') || '"}', true);
+set local role authenticated;
+select throws_ok(
+  $$select details from public.player_game_profiles$$,
+  '42501', null, 'logged-in users cannot read the details column directly');
+select results_eq(
+  $$select count(*)::int from public.get_game_profile_details()$$,
+  $$values (2)$$, 'the player reads their own details through get_game_profile_details()');
+reset role;
 
 select * from finish();
 rollback;

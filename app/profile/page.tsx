@@ -84,14 +84,21 @@ export default function ProfilePage() {
         setFullName(profileData.full_name || '');
         setSignupName(session.user.user_metadata?.full_name ?? '');
 
-        const [gamesRes, gpRes] = await Promise.all([
+        // The game account details (Riot ID, User/Zone ID, UID...) aren't readable from the table
+        // (202611091500): the player gets their own through get_game_profile_details()
+        const [gamesRes, gpRes, detailsRes] = await Promise.all([
           supabase.from('games').select('*').order('name'),
-          supabase.from('player_game_profiles').select('*').eq('user_id', session.user.id),
+          supabase.from('player_game_profiles')
+            .select('id, user_id, game_id, ign, in_game_role, rank, created_at')
+            .eq('user_id', session.user.id),
+          supabase.rpc('get_game_profile_details'),
         ]);
         if (gamesRes.error) throw gamesRes.error;
         if (gpRes.error) throw gpRes.error;
+        if (detailsRes.error) throw detailsRes.error;
+        const detailsByGame = new Map((detailsRes.data ?? []).map((d) => [d.game_id, d.details]));
         setGames(gamesRes.data || []);
-        setGameProfiles(gpRes.data || []);
+        setGameProfiles((gpRes.data || []).map((gp) => ({ ...gp, details: detailsByGame.get(gp.game_id) ?? {} })));
       } catch (err) {
         setError(getErrorMessage(err, 'Failed to load profile'));
       } finally {

@@ -614,6 +614,8 @@ tiers) on `/admin/games` without code changes.
   `update_game_profile_schema()` (admin); `search_players()` gains role / rank-range filters;
   `get_team_roster()` / `get_team_join_requests()` return the rank position for the badge.
 - Activity action `game.profile_schema_updated`.
+- Privacy (`202611091500_game_profile_details_privacy`): the `details` column (game account IDs) is readable only by
+  the player and organizers, through `get_game_profile_details()`; Privacy Notice version `2026-11-09`.
 
 ### Feature 13: Enhancements inside the original modules
 These additions stay inside existing modules but add flows you may want to draw.

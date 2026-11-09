@@ -1038,6 +1038,11 @@ isOneToOne: false
 "generate_bracket":
 { Args: { "p_tournament_id": string }; Returns: number
                            },
+"get_game_profile_details":
+{ Args: { "p_user_id"?: string }; Returns: {
+              "details": Json,"game_id": string
+            }[]
+                           },
 "get_live_now":
 { Args: Record<PropertyKey, never>; Returns: Json
                            },

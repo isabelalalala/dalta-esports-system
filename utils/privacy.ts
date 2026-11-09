@@ -11,7 +11,9 @@
 // 2026-11-01: account emails are now sent through Brevo; the website is hosted on Vercel (was Railway).
 // 2026-11-08: optional profile pictures (shown to logged-in users; public file address).
 // 2026-11-08.2: stream comments (public on tournament pages), AI moderation, warnings and bans.
-export const PRIVACY_NOTICE_VERSION = '2026-11-08.2';
+// 2026-11-09: game-specific profiles: game account IDs (Riot ID, MLBB User/Zone ID, CODM UID, Tekken ID),
+//   server/platform and favorite heroes; visible only to the player and organizers (202611091500).
+export const PRIVACY_NOTICE_VERSION = '2026-11-09';
 
 // Where people send privacy requests and questions. Set the real contact in
 // NEXT_PUBLIC_PRIVACY_CONTACT_* before going live; the fallbacks are placeholders.

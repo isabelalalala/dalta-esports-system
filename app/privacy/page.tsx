@@ -141,7 +141,7 @@ export default function PrivacyNoticePage() {
                 <strong className="text-stone-950 font-black">Profile picture (optional):</strong> a picture you choose to upload. It is cropped to a square and stored as a small image. You can change or remove it any time on your profile. We also note whether you finished or skipped the quick tour, so it isn&apos;t shown again.
               </li>
               <li>
-                <strong className="text-stone-950 font-black">Player details:</strong> in-game name (IGN), in-game role and rank for each game you play.
+                <strong className="text-stone-950 font-black">Player details:</strong> for each game you play, your in-game name (IGN), rank, in-game role(s) and favorite heroes, agents, champions or characters, plus the game account details that game&apos;s form asks for: Riot ID and server (Valorant, League of Legends), User ID and Zone ID (Mobile Legends), UID and preferred mode (Call of Duty: Mobile), Tekken ID and platform (Tekken 8).
               </li>
               <li>
                 <strong className="text-stone-950 font-black">Student details (players):</strong> your student ID number, school and course/year, and whether an organizer verified them (with the date, and the reason if they were not accepted).
@@ -218,6 +218,9 @@ export default function PrivacyNoticePage() {
               </li>
               <li>
                 Other users never see your student ID, school or course/year; they only see a &quot;Verified&quot; badge next to your name on team rosters.
+              </li>
+              <li>
+                Your game account details (Riot ID, Mobile Legends User/Zone ID, CODM UID, Tekken ID, server, platform, favorite heroes and the like) are visible only to you and to tournament staff and administrators, who may need them to check eligibility or set up matches. Other users see only your IGN, rank and in-game role.
               </li>
               <li>
                 <strong className="text-stone-950 font-black">Administrators only:</strong> feedback comments and their sentiment. Staff only see the number of feedback and the average rating.

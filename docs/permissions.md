@@ -61,3 +61,7 @@ hook switched on) refused a session by `custom_access_token_hook()`.
 **No role (system):** GET `/api/cron/moderation` is called by Vercel Cron, not by a user. It requires
 `Authorization: Bearer <CRON_SECRET>` (401 otherwise) and works only through the four moderation functions that
 check `FEEDBACK_SERVER_KEY` first (`202611091300_cron_moderation`); it returns counts only.
+
+**Game account details:** `player_game_profiles.details` (Riot ID, MLBB User/Zone ID, CODM UID, Tekken ID) is left out
+of the column grant for logged-in users (`202611091500`); the player and admin/staff read it through
+`get_game_profile_details(user)`, which checks who is asking. Everyone logged in still reads IGN, rank and role.

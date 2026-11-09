@@ -104,7 +104,7 @@ Enforced by a CHECK constraint on `profiles.role` (migration `202610161200_role_
 - RLS policies check roles with `public.get_my_role()`.
 
 ## Current schema (public)
-All migrations are in `supabase/migrations/`, run in filename order (202610151100 … 202611091400). `202610151100_base_schema` creates the three pre-migration base tables (`profiles`, `tournaments`, `tournament_registrations`). It is `if not exists`, so it is a no-op on databases that already have them.
+All migrations are in `supabase/migrations/`, run in filename order (202610151100 … 202611091500). `202610151100_base_schema` creates the three pre-migration base tables (`profiles`, `tournaments`, `tournament_registrations`). It is `if not exists`, so it is a no-op on databases that already have them.
 `202610181000_feedback_protection` also needs its one-time Vault key setup (the `feedback_server_key` secret +
 `FEEDBACK_SERVER_KEY`); the steps are at the top of that file.
 Readers: "anyone" = also logged out; "logged-in" = any role; "admin/staff" = organizers only.
@@ -149,7 +149,10 @@ Readers: "anyone" = also logged out; "logged-in" = any role; "admin/staff" = org
   `check_game_profile()` validates `details` (same rules as `validateGameProfile()` in `utils/game-profiles.ts`) and
   fills ign / rank ("Gold 2") / in_game_role; old rows with `details = {}` keep their text until edited, and those
   columns can't be typed in directly. UI: `components/GameProfileForm.tsx`, `GameProfileSummary.tsx`, `RankBadge.tsx`
-  (color by position in the rank list). `search_players(game, search, role, rank_min, rank_max)` filters recruiting. Logged-in read; players write their own. Can't be deleted (or moved to another game)
+  (color by position in the rank list). `search_players(game, search, role, rank_min, rank_max)` filters recruiting.
+  `details` holds game account IDs, so it is NOT readable from the table (202611091500 column grant: logged-in users
+  read every column except `details`; never `select('*')` on this table). The player (or admin/staff) reads them with
+  `get_game_profile_details(user)`. Logged-in read; players write their own. Can't be deleted (or moved to another game)
   while its owner is on a team for that game (202611011100); editing IGN/role/rank is fine.
 - `teams`: id, name, description, game_id (→ games), captain_id (→ profiles), recruiting (open to join requests,
   202611011300; changed by the captain or through `set_team_recruiting()`, which admin/staff may also call),
@@ -666,8 +669,8 @@ The final feature list for the documents is docs/new-features-summary.md.
   `utils/database.types.ts` from the local schema; CI diffs it to catch drift.
 - **Scheduled jobs (pg_cron, enabled)**: `dalta-checkin-open-notifications` every 5 minutes. Manual cleanups run in
   the SQL Editor: `purge_old_activity_logs()` (1 year), `purge_old_notifications()` (read, 90 days).
-- **Privacy Notice**: current version `2026-11-08.2` (`utils/privacy.ts`; profile pictures, then comments, AI moderation,
-  warnings and bans). Terms of Service: `2026-11-08` (Code of Conduct moderation rules). A new kind of personal data, or a new
+- **Privacy Notice**: current version `2026-11-09` (`utils/privacy.ts`; profile pictures, comments, AI moderation,
+  warnings and bans, then game account IDs in game profiles). Terms of Service: `2026-11-08` (Code of Conduct moderation rules). A new kind of personal data, or a new
   group who can see it, means updating `/privacy` and the version (everyone agrees again); small clarifications
   don't change the version.
 - **Logged-out data** comes only from published website rows and the `get_public_tournament()` /
