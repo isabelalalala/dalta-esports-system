@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import Image from 'next/image';
 import { Gamepad2 } from 'lucide-react';
 import { siteImageUrl } from '@/utils/site';
+import GameBadge from '@/components/GameBadge';
 
 // Small building blocks shared by the public website pages
 // Softened & refined: Natural border-radius, thin intentional borders, polished empty states.
@@ -69,11 +70,14 @@ export function PersonCard({
   line,
   photoPath,
   extra,
+  game,
 }: {
   name: string;
   line?: string;
   photoPath: string | null;
   extra?: string;
+  // The person's game (officers, coaches): shown with its logo icon
+  game?: string | null;
 }) {
   const url = siteImageUrl(photoPath);
   const initials = name
@@ -117,7 +121,14 @@ export function PersonCard({
             {line}
           </p>
         )}
-        {extra && (
+        {game && (
+          <div className="pt-2 mt-auto">
+            <span className="inline-flex max-w-full items-center px-2 py-1 rounded-full bg-stone-100 border border-stone-200/80 text-[10px] sm:text-[11px] font-black text-stone-700 uppercase tracking-wider">
+              <GameBadge name={game} size="xs" withName />
+            </span>
+          </div>
+        )}
+        {extra && !game && (
           <div className="pt-2 mt-auto">
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-stone-100 border border-stone-200/80 text-[10px] sm:text-[11px] font-black text-stone-700 uppercase tracking-wider">
               <Gamepad2 className="h-3.5 w-3.5 text-maroon shrink-0" />

@@ -9,6 +9,7 @@ import { streamStatusStyles } from '@/utils/streams';
 import PageLoading from '@/components/PageLoading';
 import { usePageTitle } from '@/utils/page-title';
 import PageHeroBackground from '@/components/site/PageHeroBackground';
+import GameBadge from '@/components/GameBadge';
 
 export default function LiveStreamsPage() {
   const supabase = createClient();
@@ -66,8 +67,8 @@ export default function LiveStreamsPage() {
                 )}
               </span>
               <h3 className="text-base sm:text-lg font-black text-stone-950 tracking-wide uppercase">{s.title}</h3>
-              <p className="text-xs sm:text-sm text-stone-500 font-semibold tracking-wider mt-1">
-                {s.tournaments?.name} · {s.tournaments?.game}
+              <p className="flex flex-wrap items-center gap-x-1.5 text-xs sm:text-sm text-stone-500 font-semibold tracking-wider mt-1">
+                {s.tournaments?.name} · <GameBadge name={s.tournaments?.game} size="xs" withName />
               </p>
             </Link>
           ))}

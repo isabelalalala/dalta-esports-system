@@ -5,8 +5,8 @@ import { ArrowRight, Pin, TriangleAlert } from 'lucide-react';
 import AnnouncementCover from '@/components/announcements/AnnouncementCover';
 import CategoryBadge from '@/components/announcements/CategoryBadge';
 import { AuthorLine, NewBadge, RelativeTime } from '@/components/announcements/AnnouncementMeta';
-import GameIcon from '@/components/GameIcon';
 import { excerptOf, isUrgent, type FeedAnnouncement } from '@/utils/announcements';
+import GameBadge from '@/components/GameBadge';
 
 // Featured posts on top of the feed: the first is a big photo card (cover or the game-themed
 // gradient behind a dark fade, white text), up to two more sit beside it on wide screens and
@@ -64,7 +64,7 @@ function HeroCard({ a, readIds, gameName, big = false }: {
           <NewBadge id={a.id} publishAt={a.publish_at} readIds={readIds} />
           {a.game_id && (
             <span className="inline-flex items-center gap-1.5 rounded-md bg-white/10 px-1.5 py-0.5 text-[10px] font-black uppercase tracking-widest text-white backdrop-blur-sm">
-              <GameIcon gameId={a.game_id} name={gameName} size="xs" /> {gameName ?? a.game_id}
+              <GameBadge game={a.game_id} name={gameName} size="xs" surface="dark" withName />
             </span>
           )}
         </div>

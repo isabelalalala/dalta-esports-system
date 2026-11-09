@@ -27,7 +27,6 @@ export default async function GameTiles() {
                     balanced
                     className="absolute inset-0"
                     imageClassName="drop-shadow-[0_6px_18px_rgba(0,0,0,0.7)] transition-transform duration-300 group-hover:scale-110"
-                    fallbackClassName="text-2xl text-white"
                     sizes="(max-width: 768px) 45vw, 200px"
                   />
                 </span>

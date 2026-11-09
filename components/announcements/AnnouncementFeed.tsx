@@ -18,7 +18,7 @@ import { loadAnnouncements, loadReactions, loadReadIds, markRead } from '@/utils
 import AnnouncementFeedCard from '@/components/announcements/AnnouncementFeedCard';
 import AnnouncementHero from '@/components/announcements/AnnouncementHero';
 import AnnouncementEditor from '@/components/announcements/AnnouncementEditor';
-import GameLogo from '@/components/GameLogo';
+import GameFilterChips from '@/components/GameFilterChips';
 import Reveal from '@/components/Reveal';
 import AutoUpdateBadge from '@/components/AutoUpdateBadge';
 import { useConfirm } from '@/components/useConfirm';
@@ -245,21 +245,7 @@ export default function AnnouncementFeed() {
           </div>
         </div>
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1" role="group" aria-label="Game">
-            <button type="button" onClick={() => setGame('')} aria-pressed={!game} className={chip(!game)}>All games</button>
-            {games.map((g) => (
-              <button key={g.id} type="button" onClick={() => setGame(game === g.id ? '' : g.id)} aria-pressed={game === g.id} className={`${chip(game === g.id)} pl-1`}>
-                {/* The game's real logo on a small dark plate (the logos are made for dark backgrounds) */}
-                <GameLogo
-                  gameId={g.id} name={g.name} sizes="80px"
-                  className="h-8 w-20 shrink-0 rounded-full bg-ink ring-1 ring-white/10"
-                  imageClassName="px-2.5 py-1"
-                  fallbackClassName="text-[10px]"
-                />
-                <span>{g.name.length > 14 ? g.id.toUpperCase() : g.name}</span>
-              </button>
-            ))}
-          </div>
+          <GameFilterChips games={games} value={game} onChange={setGame} />
           <div className="flex items-center gap-3">
             {unreadCount > 0 && (
               <button type="button" onClick={markAllRead} className="inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-wider text-maroon cursor-pointer hover:underline">

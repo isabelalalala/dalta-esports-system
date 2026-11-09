@@ -7,9 +7,9 @@ import AnnouncementCover from '@/components/announcements/AnnouncementCover';
 import CategoryBadge from '@/components/announcements/CategoryBadge';
 import AnnouncementReactions from '@/components/announcements/AnnouncementReactions';
 import { AuthorLine, NewBadge, RelativeTime } from '@/components/announcements/AnnouncementMeta';
-import GameIcon from '@/components/GameIcon';
 import { useNow } from '@/components/site/Countdown';
 import { excerptOf, isUrgent, type FeedAnnouncement, type ReactionCounts } from '@/utils/announcements';
+import GameBadge from '@/components/GameBadge';
 
 export interface FeedCardProps {
   a: FeedAnnouncement;
@@ -63,7 +63,7 @@ export default function AnnouncementFeedCard({
           </h3>
           <p className="text-[11px] font-semibold text-stone-600">
             <RelativeTime value={a.publish_at} />
-            {gameName && <> · {gameName}</>}
+            {a.game_id && <> · <GameBadge game={a.game_id} name={gameName} size="xs" withName className="align-middle" /></>}
           </p>
           {actions && <div className="relative z-10 mt-1">{actions}</div>}
         </div>
@@ -95,8 +95,7 @@ export default function AnnouncementFeedCard({
         <div className="flex flex-wrap items-center gap-2 min-h-6">
           {a.game_id && (
             <span className="inline-flex items-center gap-1.5 text-[11px] font-black uppercase tracking-wider text-stone-700">
-              <GameIcon gameId={a.game_id} name={gameName} size="xs" />
-              {gameName ?? a.game_id}
+              <GameBadge game={a.game_id} name={gameName} size="xs" withName />
             </span>
           )}
           <OrganizerChips a={a} />

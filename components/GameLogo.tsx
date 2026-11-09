@@ -2,7 +2,8 @@
 
 import { useState } from 'react';
 import Image from 'next/image';
-import { gameInitials, getGameLogo, getGameLogoFit } from '@/utils/game-logos';
+import { Gamepad2 } from 'lucide-react';
+import { getGameLogo, getGameLogoFit } from '@/utils/game-logos';
 
 interface Props {
   name?: string | null;
@@ -11,8 +12,10 @@ interface Props {
   className?: string;
   // Extra classes for the <Image> (object-contain is always on)
   imageClassName?: string;
-  // Text size of the initials badge, e.g. "text-sm" for small boxes
+  // Size of the gamepad fallback icon, e.g. "size-6" for small boxes
   fallbackClassName?: string;
+  // Another file of the same logo (the light-background version from components/GameBadge.tsx)
+  src?: string;
   sizes?: string;
   priority?: boolean;
   // Card stages: the logo is centered at a per-game width (about 60% of the box) so all five
@@ -20,14 +23,14 @@ interface Props {
   balanced?: boolean;
 }
 
-// A game's logo inside a box the caller sizes. Never blank: without a logo, or when the image
-// fails to load, it shows the game's initials ("LOL") instead. Meant for the dark logo stages
-// (bg-ink), so the initials are gold.
+// A game's wordmark inside a box the caller sizes (used by components/GameBadge.tsx variant="wordmark"
+// and the card stages). Never blank or broken: without a logo, or when the image fails to load, it
+// shows a neutral gamepad icon (11.4: never colored text like "LOL").
 export default function GameLogo({
-  name, gameId, className = '', imageClassName = '', fallbackClassName = 'text-2xl', sizes = '160px', priority,
-  balanced = false,
+  name, gameId, className = '', imageClassName = '', fallbackClassName = 'size-[40%]', sizes = '160px', priority,
+  balanced = false, src: srcOverride,
 }: Props) {
-  const src = getGameLogo(name, gameId);
+  const src = srcOverride ?? getGameLogo(name, gameId);
   const fit = balanced ? getGameLogoFit(name, gameId) : null;
   const [failed, setFailed] = useState(false);
   // The box is `relative` unless the caller positions it (e.g. "absolute inset-0" on a card stage);
@@ -64,12 +67,8 @@ export default function GameLogo({
           className={`object-contain ${imageClassName}`}
         />
       ) : (
-        <span
-          role="img"
-          aria-label={name || 'Game'}
-          className={`absolute inset-0 grid place-items-center font-black uppercase tracking-wider text-gold ${fallbackClassName}`}
-        >
-          {gameInitials(name || gameId)}
+        <span role="img" aria-label={name || 'Game'} className="absolute inset-0 grid place-items-center text-stone-400">
+          <Gamepad2 className={`max-h-12 max-w-12 ${fallbackClassName}`} aria-hidden="true" />
         </span>
       )}
     </div>

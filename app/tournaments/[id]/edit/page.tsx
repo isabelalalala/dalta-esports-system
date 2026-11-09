@@ -220,7 +220,6 @@ export default function EditTournamentPage() {
                 balanced
                 className="absolute inset-0 z-0"
                 imageClassName="drop-shadow-[0_8px_24px_rgba(0,0,0,0.7)]"
-                fallbackClassName="text-5xl"
                 sizes="(max-width: 1024px) 80vw, 360px"
                 priority
               />

@@ -9,6 +9,7 @@ import GameIcon from '@/components/GameIcon';
 import AvatarStack from '@/components/AvatarStack';
 import StatusBadge, { type BadgeKind } from '@/components/StatusBadge';
 import Celebrate from '@/components/Celebrate';
+import GameBadge from '@/components/GameBadge';
 
 export interface RegistrationCardData {
   id: string;
@@ -72,7 +73,7 @@ export default function RegistrationCard({
               <StatusBadge kind={STATUS_BADGE[reg.status]} />
             </div>
             <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm font-semibold text-stone-600">
-              <span className="font-black text-maroon">{reg.gameName}</span>
+              <GameBadge name={reg.gameName} game={reg.gameId} size="xs" withName nameClassName="font-black text-maroon text-sm" />
               <span aria-hidden="true">·</span>
               <span className="font-black text-stone-900 break-words">{reg.teamName}</span>
               <StatusBadge kind={reg.isCaptain ? 'captain' : 'member'} />

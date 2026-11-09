@@ -12,20 +12,25 @@ interface GameLogoInfo {
   // Background behind a team's initials when it has no logo (components/TeamLogo.tsx). Palette
   // classes that dark mode doesn't remap, with white text; not the meaning colors.
   color: string;
-  // Two versions per game: the wide wordmark (`src`, card stages) and a compact square icon for
-  // small spaces (team badges, registration cards, lists). `short` is the text of the built-in
-  // icon badge (components/GameIcon.tsx); `icon` is an optional square image file in
-  // /public/games (e.g. '/games/valorant-icon.png'): set it to use an official icon instead.
+  // Two versions per game (11.4), both cut/recolored from the wordmark by scripts/make-game-icons.mjs:
+  // `icon` = the square symbol for small spaces (badges, tables, chips, notifications), `light` = the
+  // wordmark for light backgrounds when its letters are white (Tekken 8, CODM). `short` is only used
+  // in text contexts (alt texts, sorting), never as a visible badge.
   short: string;
-  icon?: string;
+  icon: string;
+  // The icon for light backgrounds, when the logo has white parts (Tekken 8's whole wordmark)
+  iconLight?: string;
+  light?: string;
+  // Full game name, for alt texts and tooltips when the caller has none
+  label: string;
 }
 
 const LOGOS: Record<'mlbb' | 'valorant' | 'tekken8' | 'codm' | 'lol', GameLogoInfo> = {
-  mlbb: { src: '/games/mlbb.webp', fit: 'w-[60%] aspect-[913/275]', color: 'bg-orange-700', short: 'ML' },
-  valorant: { src: '/games/valorant.webp', fit: 'w-[42%] aspect-[805/532]', color: 'bg-rose-700', short: 'VAL' },
-  tekken8: { src: '/games/tekken8.webp', fit: 'w-[78%] aspect-[921/138]', color: 'bg-violet-700', short: 'T8' },
-  codm: { src: '/games/codm.webp', fit: 'w-[57%] aspect-[956/318]', color: 'bg-lime-800', short: 'COD' },
-  lol: { src: '/games/lol.webp', fit: 'w-[54%] aspect-[1400/531]', color: 'bg-cyan-800', short: 'LoL' },
+  mlbb: { src: '/games/mlbb.webp', fit: 'w-[60%] aspect-[913/275]', color: 'bg-orange-700', short: 'ML', icon: '/games/mlbb-icon.webp', label: 'Mobile Legends: Bang Bang' },
+  valorant: { src: '/games/valorant.webp', fit: 'w-[42%] aspect-[805/532]', color: 'bg-rose-700', short: 'VAL', icon: '/games/valorant-icon.webp', label: 'Valorant' },
+  tekken8: { src: '/games/tekken8.webp', fit: 'w-[78%] aspect-[921/138]', color: 'bg-violet-700', short: 'T8', icon: '/games/tekken8-icon.webp', iconLight: '/games/tekken8-icon-light.webp', light: '/games/tekken8-light.webp', label: 'Tekken 8' },
+  codm: { src: '/games/codm.webp', fit: 'w-[57%] aspect-[956/318]', color: 'bg-lime-800', short: 'COD', icon: '/games/codm-icon.webp', light: '/games/codm-light.webp', label: 'Call of Duty: Mobile' },
+  lol: { src: '/games/lol.webp', fit: 'w-[54%] aspect-[1400/531]', color: 'bg-cyan-800', short: 'LoL', icon: '/games/lol-icon.webp', label: 'League of Legends' },
 };
 
 // Which game it is, matched by game id (e.g. `mlbb`) and/or name (e.g. "Mobile Legends: Bang Bang")
@@ -60,10 +65,18 @@ export function gameInitials(name?: string | null): string {
   return words.slice(0, 3).map((w) => w[0]).join('').toUpperCase();
 }
 
-// The compact icon of a game: an image file if one is set, and the badge text ("VAL") otherwise
+// The compact icon of a game (square image) and the text used where no image fits
 export function getGameIcon(name?: string | null, gameId?: string | null): { src: string | null; short: string } {
   const info = findLogo(name, gameId);
   return { src: info?.icon ?? null, short: info?.short ?? gameInitials(name || gameId).slice(0, 3) };
+}
+
+// Everything components/GameBadge.tsx needs: wordmark, light-background wordmark, icon and full name.
+// null for an unknown game (the badge then shows a neutral gamepad icon).
+export function getGameLogoSet(name?: string | null, gameId?: string | null) {
+  const info = findLogo(name, gameId);
+  if (!info) return null;
+  return { wordmark: info.src, light: info.light ?? null, icon: info.icon, iconLight: info.iconLight ?? null, label: info.label, fit: info.fit };
 }
 
 // The game's color for a team's initials badge (maroon for an unknown game)

@@ -7,6 +7,7 @@ import { getErrorMessage } from '@/utils/errors';
 import type { MyTeamInvite } from '@/utils/types';
 import { Mail } from 'lucide-react';
 import { toast } from '@/components/Toaster';
+import GameBadge from '@/components/GameBadge';
 
 // The logged-in player's open team invites with Accept / Decline.
 // Shown on the dashboard and on /teams; shows nothing when there are no invites.
@@ -105,7 +106,7 @@ export default function TeamInvites({ onAnswered }: { onAnswered?: () => void })
               >
                 <div>
                   <p className="font-black text-stone-950 text-sm sm:text-base tracking-wide">
-                    {invite.team_name} <span className="text-amber-700 font-bold">· {invite.game_name}</span>
+                    {invite.team_name} <span className="text-amber-700 font-bold">·</span> <GameBadge name={invite.game_name} size="xs" withName className="align-middle" nameClassName="text-amber-700 font-bold" />
                   </p>
                   <p className="text-xs text-stone-500 font-medium mt-1">
                     Captain: {invite.captain_name || 'Unnamed'} · {invite.member_count} / {invite.max_players} players

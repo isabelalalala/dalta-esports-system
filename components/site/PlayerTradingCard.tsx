@@ -1,6 +1,7 @@
 import Image from 'next/image';
 import { Crown, Gamepad2, Shield, User } from 'lucide-react';
 import { siteImageUrl, type OfficialTeamPlayer } from '@/utils/site';
+import GameBadge from '@/components/GameBadge';
 
 // An official team player as a trading card: the front shows the photo and IGN, the back shows
 // the details (IGN, role, name, team, game). It flips on hover, on keyboard focus and on a tap
@@ -38,8 +39,8 @@ export default function PlayerTradingCard({
               <Crown className="size-3 text-gold" /> Captain
             </span>
           )}
-          <span className="absolute right-3 top-3 rounded-md border border-white/20 bg-black/50 px-2 py-1 text-[10px] font-black uppercase tracking-widest text-stone-200">
-            {gameName}
+          <span className="absolute right-3 top-3 inline-flex items-center rounded-md border border-white/20 bg-black/50 pl-1 pr-2 py-1 text-[10px] font-black uppercase tracking-widest text-stone-200">
+            <GameBadge name={gameName} size="xs" surface="dark" withName />
           </span>
         </div>
 

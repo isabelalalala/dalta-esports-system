@@ -12,6 +12,7 @@ import PageLoading from '@/components/PageLoading';
 import PageError from '@/components/PageError';
 import PageHeroBackground from '@/components/site/PageHeroBackground';
 import { can } from '@/utils/permissions';
+import GameBadge from '@/components/GameBadge';
 
 type TournamentWithMatches = Tournament & { matches: { count: number }[] };
 
@@ -127,8 +128,8 @@ export default function MatchesOverviewPage() {
                         {statusLabels[status]}
                       </span>
                     </div>
-                    <p className="text-stone-500 font-medium text-xs tracking-wider">
-                      {t.game} · {formatDate(t.start_date)} – {formatDate(t.end_date)}
+                    <p className="flex flex-wrap items-center gap-x-1.5 text-stone-500 font-medium text-xs tracking-wider">
+                      <GameBadge name={t.game} game={t.game_id} size="xs" withName /> · {formatDate(t.start_date)} – {formatDate(t.end_date)}
                     </p>
                   </div>
 

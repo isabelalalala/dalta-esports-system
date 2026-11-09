@@ -568,6 +568,8 @@ triggers with readable error messages.
   home hero with `onDark`): two faint drifting glows on top of the zigzag grid (`.zigzag-pattern`: one 56x32 tile
   repeated with a CSS mask, layer one tile larger than the box, so it covers every edge while it moves), transform/opacity only, paused off-screen or
   in a hidden tab, still with reduced motion.
+- Page heroes: `components/site/PageHeroBackground.tsx` is the first child of a section that often uses `space-y-*`;
+  its layer has `m-0!` (11.5), otherwise that margin shrinks the absolute photo and leaves a strip at the bottom.
 - Every page (public and logged in) has the same header and footer, both in `app/layout.tsx`:
   `components/site/SiteHeader.tsx` (logo, search, and `SiteAuthButtons`: theme toggle + Log in / Sign up, or
   theme toggle + Dashboard + `NotificationBell` + your avatar (→ /profile) + Log out) and `components/Footer.tsx`.
@@ -670,6 +672,14 @@ triggers with readable error messages.
 - Mobile (375px): no page may scroll sideways. Page padding `px-4` (`sm:p-6/8`), cards `p-4 sm:p-6`, rows with
   buttons use `flex-col sm:flex-row` or `flex-wrap`, long names get `break-words` (emails `break-all`), wide content
   (bracket, tables) scrolls inside its own `overflow-x-auto` box.
+- Game logos (11.4): show a game with `components/GameBadge.tsx` (`game`/`name`, `variant` icon|wordmark,
+  `size` xs–xl, `withName`, `surface` auto|dark): the square **icon** in small spaces (badges, lists, tables, chips,
+  next to a game name), the **wordmark** in large ones. Files per game in `public/games/`: `<id>.webp` (wordmark),
+  `<id>-icon.webp` (square: the game's complete emblem for MLBB/Valorant/CODM, the whole wordmark fitted with padding
+  for Tekken 8/LoL, never a cropped piece; `tekken8-icon-light.webp` for light backgrounds), `<id>-light.webp` (dark
+  letters for light backgrounds: Tekken 8, CODM); badges on dark surfaces pass `surface="dark"`; regenerate with `node scripts/make-game-icons.mjs` if a wordmark changes. Unknown game / failed image =
+  gamepad icon, never colored text. `GameIcon` = GameBadge icon; game filters use `components/GameFilterChips.tsx`
+  (logo-only chips). Game names inside sentences, `<select>` options and report charts stay text.
 - Game logos: always `components/GameLogo.tsx` (logo, or the game's initials when there is none or the image fails);
   never `getGameLogo()` + a conditional layout. A layout column that depends on a logo existing broke the LoL page.
   Logo files are the trimmed `public/games/<id>.webp`; on card stages pass `balanced` + `className="absolute inset-0"`

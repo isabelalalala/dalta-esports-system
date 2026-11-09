@@ -22,6 +22,7 @@ import MatchDraftSection from '@/components/MatchDraftSection';
 import SectionHint from '@/components/SectionHint';
 import { Target } from 'lucide-react';
 import { can } from '@/utils/permissions';
+import GameBadge from '@/components/GameBadge';
 
 interface MatchTournament {
   id: string;
@@ -165,8 +166,8 @@ export default function MatchPage() {
           {match.status === 'completed' && match.winner_team_id && myWinningTeam && (
             <Celebrate storageKey={`match-won:${match.id}`} message={`${winnerName ?? 'Your team'} won! Well played.`} />
           )}
-          <h1 className="text-xs uppercase font-bold text-stone-500 tracking-widest">
-            {tournament.game} · {roundLabel(match.round, roundCount)} · Match {match.match_number}
+          <h1 className="flex flex-wrap items-center justify-center gap-x-1.5 text-xs uppercase font-bold text-stone-500 tracking-widest">
+            <GameBadge name={tournament.game} game={tournament.game_id} size="xs" withName /> · {roundLabel(match.round, roundCount)} · Match {match.match_number}
           </h1>
           <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2 sm:gap-4 text-center">
             <p className={`text-lg sm:text-2xl font-bold break-words ${teamClass(teamA?.id)}`}>{teamA?.name ?? <span className="italic text-stone-500">TBD</span>}</p>

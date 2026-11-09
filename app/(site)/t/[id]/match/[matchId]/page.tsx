@@ -16,6 +16,7 @@ import PredictionsProvider from '@/components/PredictionsProvider';
 import PredictionPicker from '@/components/PredictionPicker';
 import MatchDraftSection from '@/components/MatchDraftSection';
 import { Target } from 'lucide-react';
+import GameBadge from '@/components/GameBadge';
 
 const TZ = 'Asia/Manila';
 
@@ -80,8 +81,8 @@ async function MatchContent({ params }: { params: PageProps<'/t/[id]/match/[matc
       </Link>
 
       <section className="rounded-2xl border border-stone-200/90 bg-white shadow-xs p-6 sm:p-8 space-y-5 text-center">
-        <p className="text-xs text-amber-800 font-extrabold">
-          {data.tournament.game} · {info.round} · Match {match.match_number}
+        <p className="flex flex-wrap items-center justify-center gap-x-1.5 text-xs text-amber-800 font-extrabold">
+          <GameBadge name={data.tournament.game} game={data.tournament.game_id} size="xs" withName /> · {info.round} · Match {match.match_number}
         </p>
         <h1 className="sr-only">{teamA} vs {teamB}</h1>
         <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto_1fr] items-center gap-4">

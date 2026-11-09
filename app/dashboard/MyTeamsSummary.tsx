@@ -8,6 +8,7 @@ import type { TeamListEntry } from '@/utils/types';
 import { teamBadges, teamSlots } from '@/utils/team-cards';
 import TeamLogo from '@/components/TeamLogo';
 import StatusBadge from '@/components/StatusBadge';
+import GameBadge from '@/components/GameBadge';
 
 // Dashboard side column (players): the player's teams with roster slots and status, linking to
 // each team page. Same data as the "My teams" cards (list_teams with p_mine).
@@ -47,7 +48,7 @@ export default function MyTeamsSummary() {
                   <TeamLogo url={t.logo_url} name={t.name} gameId={t.game_id} gameName={t.game_name} size="sm" />
                   <span className="min-w-0 flex-1">
                     <span className="block truncate font-black text-stone-950">{t.name}</span>
-                    <span className="block truncate text-xs text-stone-600">{t.game_name} · {slots.label}</span>
+                    <span className="flex min-w-0 items-center gap-1 text-xs text-stone-600"><GameBadge name={t.game_name} game={t.game_id} size="xs" withName /><span className="shrink-0">· {slots.label}</span></span>
                   </span>
                   {badge && <StatusBadge kind={badge} />}
                 </Link>

@@ -7,6 +7,7 @@ import type { Tournament } from '@/utils/types';
 import SiteSearchBox from '@/components/site/SiteSearchBox';
 import { EmptyNote, PageTitle, SectionTitle } from '@/components/site/SiteParts';
 import { SectionLoading } from '@/components/PageLoading';
+import GameBadge from '@/components/GameBadge';
 
 const LIMIT = 20;
 
@@ -82,7 +83,7 @@ async function SearchResults({ searchParams }: { searchParams: PageProps<'/searc
           <SectionTitle>Tournaments</SectionTitle>
           <ResultList>
             {tournaments.map((t) => (
-              <ResultItem key={t.id} href={`/t/${t.id}`} title={t.name}
+              <ResultItem key={t.id} href={`/t/${t.id}`} title={t.name} game={t.game}
                 meta={`${t.game} · ${statusLabels[getTournamentStatus(t)]} · ${formatDate(t.start_date)}`} />
             ))}
           </ResultList>
@@ -120,12 +121,17 @@ function ResultList({ children }: { children: ReactNode }) {
   return <ul className="rounded-2xl border border-stone-200/90 bg-white shadow-xs divide-y divide-stone-100 overflow-hidden">{children}</ul>;
 }
 
-function ResultItem({ href, title, meta, text }: { href: string; title: string; meta?: string; text?: string }) {
+function ResultItem({ href, title, meta, text, game }: { href: string; title: string; meta?: string; text?: string; game?: string }) {
   return (
     <li>
       <Link href={href} className="block px-5 py-4 hover:bg-amber-50/50 transition-colors group">
         <p className="font-black text-stone-950 group-hover:text-amber-700 transition-colors">{title}</p>
-        {meta && <p className="text-xs text-amber-700 font-extrabold uppercase tracking-wider mt-0.5">{meta}</p>}
+        {meta && (
+          <p className="mt-0.5 flex items-center gap-1.5 text-xs text-amber-700 font-extrabold uppercase tracking-wider">
+            {game && <GameBadge name={game} size="xs" />}
+            <span className="min-w-0">{meta}</span>
+          </p>
+        )}
         {text && <p className="text-xs sm:text-sm text-stone-600 font-medium line-clamp-2 mt-1">{text}</p>}
       </Link>
     </li>

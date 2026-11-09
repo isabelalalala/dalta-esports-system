@@ -9,6 +9,7 @@ import { getGameLogo } from '@/utils/game-logos';
 import GameLogo from '@/components/GameLogo';
 import Reveal from '@/components/Reveal';
 import TiltCard from '@/components/TiltCard';
+import GameBadge from '@/components/GameBadge';
 
 // Game Divisions Page
 export const instant = false;
@@ -93,14 +94,15 @@ export default async function DivisionsPage() {
                       className="object-cover group-hover:scale-105 transition-transform duration-500"
                     />
                   ) : (
-                    <span className="font-black text-stone-200 text-sm uppercase tracking-wider">{d.games?.name}</span>
+                    <GameBadge name={d.games?.name} game={d.game_id} variant="wordmark" surface="dark" className="h-16 w-48" />
                   )}
                 </div>
 
                 {/* Card Information */}
                 <div className="p-6 flex-1 flex flex-col justify-between">
                   <div>
-                    <h2 className="font-black text-stone-950 text-lg uppercase tracking-wide group-hover:text-maroon transition-colors">
+                    <h2 className="flex items-center gap-2 font-black text-stone-950 text-lg uppercase tracking-wide group-hover:text-maroon transition-colors">
+                      <GameBadge name={d.games?.name} game={d.game_id} size="sm" />
                       {d.games?.name}
                     </h2>
                     <p className="text-xs sm:text-sm text-stone-600 font-medium mt-1.5 leading-relaxed">

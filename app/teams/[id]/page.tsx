@@ -39,6 +39,7 @@ import { fieldFor, parseSchema } from '@/utils/game-profiles';
 import { useRealtimeRefresh } from '@/utils/use-realtime-refresh';
 import { useConfirm } from '@/components/useConfirm';
 import { toast } from '@/components/Toaster';
+import GameBadge from '@/components/GameBadge';
 
 const inputClass =
   'w-full p-3.5 rounded-xl bg-white text-stone-950 border border-stone-300 placeholder:text-stone-400 focus:border-gold focus:ring-2 focus:ring-gold/25 shadow-xs outline-none transition-all font-medium text-xs sm:text-sm';
@@ -405,8 +406,8 @@ export default function ManageTeamPage() {
             </Link>
 
             <div className="flex flex-wrap items-center gap-2">
-              <span className="text-[10px] sm:text-xs font-black px-3 py-1 rounded-md border border-gold/50 bg-gold/15 text-gold uppercase tracking-wider shadow-2xs">
-                {team.games?.name}
+              <span className="inline-flex items-center text-[10px] sm:text-xs font-black pl-1.5 pr-3 py-1 rounded-md border border-gold/50 bg-gold/15 text-gold uppercase tracking-wider shadow-2xs">
+                <GameBadge name={team.games?.name} game={team.game_id} size="xs" surface="dark" withName />
               </span>
               <span className="text-[10px] sm:text-xs font-black px-3.5 py-1 rounded-md border border-white/20 bg-white/10 text-stone-200 uppercase tracking-widest backdrop-blur-xs shadow-2xs">
                 {roster.length} / {maxPlayers} Players
@@ -433,7 +434,7 @@ export default function ManageTeamPage() {
             <p
               className="animate-hero-tagline text-xs sm:text-sm font-semibold uppercase tracking-wider flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 text-white"
             >
-              <span>{team.games?.name} Squad</span>
+              <span className="inline-flex items-center gap-1.5"><GameBadge name={team.games?.name} game={team.game_id} size="sm" surface="dark" /> {team.games?.name} Squad</span>
               <span>•</span>
               <span>
                 {roster.length} of {maxPlayers} Roster Slots Filled

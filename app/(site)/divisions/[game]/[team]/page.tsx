@@ -9,6 +9,7 @@ import PageLoading from '@/components/PageLoading';
 import PageHeroBackground from '@/components/site/PageHeroBackground';
 import PlayerTradingCard from '@/components/site/PlayerTradingCard';
 import { BadgeCheck, Crown, Shield, Users } from 'lucide-react';
+import GameBadge from '@/components/GameBadge';
 
 // Official team page (wireframe: captain profile, player profiles with "IGN – role", team description).
 export default function OfficialTeamPage({ params }: PageProps<'/divisions/[game]/[team]'>) {
@@ -45,8 +46,8 @@ async function OfficialTeam({ params }: { params: PageProps<'/divisions/[game]/[
           </Link>
 
           <div className="flex flex-wrap items-center gap-2">
-            <span className="text-[10px] sm:text-xs font-black px-3 py-1 rounded-md border border-gold/50 bg-gold/15 text-gold uppercase tracking-wider shadow-2xs">
-              {gameName}
+            <span className="inline-flex items-center text-[10px] sm:text-xs font-black pl-1.5 pr-3 py-1 rounded-md border border-gold/50 bg-gold/15 text-gold uppercase tracking-wider shadow-2xs">
+              <GameBadge name={gameName} size="xs" surface="dark" withName />
             </span>
             <span className="inline-flex items-center gap-1 text-[10px] sm:text-xs font-black px-3 py-1 rounded-md border border-white/20 bg-white/10 text-stone-200 uppercase tracking-widest backdrop-blur-xs">
               <BadgeCheck className="w-3.5 h-3.5 text-gold" /> Official Team
@@ -134,7 +135,7 @@ async function OfficialTeam({ params }: { params: PageProps<'/divisions/[game]/[
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-3 border-t border-stone-100 text-xs">
               <div className="p-4 rounded-2xl bg-stone-50/70 border border-stone-200/80 space-y-1">
                 <span className="uppercase text-stone-500 font-black tracking-wider text-[11px] block">Game Discipline</span>
-                <span className="font-extrabold text-stone-950 text-sm tracking-wide block">{gameName}</span>
+                <GameBadge name={gameName} size="sm" withName nameClassName="font-extrabold text-stone-950 text-sm tracking-wide" />
               </div>
               <div className="p-4 rounded-2xl bg-stone-50/70 border border-stone-200/80 space-y-1">
                 <span className="uppercase text-stone-500 font-black tracking-wider text-[11px] block">Active Roster</span>

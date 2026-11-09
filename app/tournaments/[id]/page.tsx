@@ -47,6 +47,7 @@ import { teamLabel } from '@/utils/matches';
 import { useConfirm } from '@/components/useConfirm';
 import { toast } from '@/components/Toaster';
 import AutoUpdateBadge from '@/components/AutoUpdateBadge';
+import GameBadge from '@/components/GameBadge';
 
 export default function TournamentDetailsPage() {
   const [confirmDialog, ask] = useConfirm();
@@ -371,7 +372,7 @@ export default function TournamentDetailsPage() {
           <p
             className="animate-hero-tagline text-xs sm:text-sm font-semibold uppercase tracking-wider flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 text-white"
           >
-            <span className="text-gold font-black">{tournament.game}</span>
+            <GameBadge name={tournament.game} game={tournament.game_id} size="sm" surface="dark" withName nameClassName="text-gold font-black" />
             <span className="hidden sm:inline" aria-hidden>•</span>
             <span>{formatDate(tournament.start_date)} – {formatDate(tournament.end_date)}</span>
             <span className="hidden sm:inline" aria-hidden>•</span>
@@ -449,7 +450,6 @@ export default function TournamentDetailsPage() {
               balanced
               className="absolute inset-0 z-0"
               imageClassName="drop-shadow-[0_8px_24px_rgba(0,0,0,0.7)]"
-              fallbackClassName="text-5xl"
               sizes="(max-width: 1024px) 80vw, 360px"
               priority
             />

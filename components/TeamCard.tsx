@@ -6,12 +6,12 @@ import type { TeamListEntry } from '@/utils/types';
 import { parseSchema } from '@/utils/game-profiles';
 import { joinAction, lookingForText, teamBadges, teamSlots } from '@/utils/team-cards';
 import TeamLogo from '@/components/TeamLogo';
-import GameIcon from '@/components/GameIcon';
 import Avatar from '@/components/Avatar';
 import AvatarStack from '@/components/AvatarStack';
 import StatusBadge from '@/components/StatusBadge';
 import AnimatedProgress from '@/components/AnimatedProgress';
 import AskToJoin from '@/components/AskToJoin';
+import GameBadge from '@/components/GameBadge';
 
 export interface TeamCardViewer {
   // Only players can ask to join (spectators and organizers see View Team only)
@@ -59,8 +59,7 @@ export default function TeamCard({
           </h3>
           {/* Compact square game icon (the wide wordmark is unreadable this small) + the name */}
           <span className="flex min-w-0 items-center gap-2">
-            <GameIcon name={t.game_name} gameId={t.game_id} size="xs" />
-            <span className="min-w-0 truncate text-xs font-bold text-stone-600">{t.game_name}</span>
+            <GameBadge name={t.game_name} game={t.game_id} size="xs" withName nameClassName="font-bold text-stone-600" />
           </span>
         </div>
       </div>

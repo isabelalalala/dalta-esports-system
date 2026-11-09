@@ -13,6 +13,7 @@ import PageError from '@/components/PageError';
 import PageHeroBackground from '@/components/site/PageHeroBackground';
 import RemoveTeamDialog from '@/components/RemoveTeamDialog';
 import { Trash2 } from 'lucide-react';
+import GameBadge from '@/components/GameBadge';
 
 const inputClass =
   'w-full p-3 rounded-xl bg-white text-stone-950 border border-stone-300 placeholder:text-stone-500 focus:border-gold focus:ring-2 focus:ring-gold/25 shadow-xs outline-none text-base sm:text-sm';
@@ -180,8 +181,8 @@ export default function AdminTeamsPage() {
                     <Link href={`/teams/${t.id}`} className="font-black text-stone-950 hover:text-maroon break-words">
                       {t.name}
                     </Link>
-                    <p className="text-sm text-stone-600 break-words">
-                      {t.game_name} · Captain: {t.captain_name || 'Unnamed'} · {t.member_count}/{t.max_players} players
+                    <p className="flex flex-wrap items-center gap-x-1.5 text-sm text-stone-600 break-words">
+                      <GameBadge name={t.game_name} game={t.game_id} size="xs" withName /> · Captain: {t.captain_name || 'Unnamed'} · {t.member_count}/{t.max_players} players
                       {t.recruiting && ' · Recruiting'}
                     </p>
                   </div>
@@ -217,8 +218,8 @@ export default function AdminTeamsPage() {
                     <Link href={`/teams/${t.id}`} className="font-black text-stone-950 hover:text-maroon break-words">
                       {t.name}
                     </Link>
-                    <span className="text-sm text-stone-600">
-                      {t.games?.name} · removed {formatDateTime(t.removed_at)}
+                    <span className="flex flex-wrap items-center gap-x-1.5 text-sm text-stone-600">
+                      <GameBadge name={t.games?.name} size="xs" withName /> · removed {formatDateTime(t.removed_at)}
                     </span>
                   </div>
                   {latest && <p className="text-sm text-stone-800 break-words">Reason: {latest.reason}</p>}

@@ -24,6 +24,7 @@ import { BadgeCheck, ExternalLink, Target } from 'lucide-react';
 import GameLogo from '@/components/GameLogo';
 import AutoUpdateBadge from '@/components/AutoUpdateBadge';
 import { LiveTag, ScoreBoard, VersusBadge, VersusRow } from '@/components/MatchVersus';
+import GameBadge from '@/components/GameBadge';
 
 const TZ = 'Asia/Manila';
 
@@ -132,7 +133,7 @@ async function TournamentContent({ params }: { params: PageProps<'/t/[id]'>['par
           <p
             className="animate-hero-tagline text-xs sm:text-sm font-semibold uppercase tracking-wider flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 text-white"
           >
-            <span className="text-gold font-black">{t.game}</span>
+            <GameBadge name={t.game} game={t.game_id} size="sm" surface="dark" withName nameClassName="text-gold font-black" />
             <span className="hidden sm:inline" aria-hidden>•</span>
             <span>{formatDate(t.start_date)} – {formatDate(t.end_date)}</span>
             <span className="hidden sm:inline" aria-hidden>•</span>
@@ -210,7 +211,6 @@ async function TournamentContent({ params }: { params: PageProps<'/t/[id]'>['par
               balanced
               className="absolute inset-0 z-0"
               imageClassName="drop-shadow-[0_8px_24px_rgba(0,0,0,0.7)]"
-              fallbackClassName="text-5xl"
               sizes="(max-width: 1024px) 80vw, 360px"
               priority
             />

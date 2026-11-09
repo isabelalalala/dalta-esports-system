@@ -15,6 +15,7 @@ import { can } from '@/utils/permissions';
 import { useRealtimeRefresh } from '@/utils/use-realtime-refresh';
 import PageHeroBackground from '@/components/site/PageHeroBackground';
 import { Plus, Shield, AlertCircle } from 'lucide-react';
+import GameBadge from '@/components/GameBadge';
 
 const inputClass =
   'w-full p-3.5 rounded-xl bg-white text-stone-950 border border-stone-300 placeholder:text-stone-400 focus:border-gold focus:ring-2 focus:ring-gold/25 shadow-xs outline-none transition-all font-medium text-xs sm:text-sm';
@@ -278,7 +279,7 @@ export default function TeamsPage() {
                     <Link href={`/teams/${r.team_id}`} className="font-black text-stone-950 hover:text-maroon break-words">
                       {r.teams?.name || 'Team'}
                     </Link>
-                    <p className="text-xs text-stone-500 font-semibold">{r.teams?.games?.name}</p>
+                    <GameBadge name={r.teams?.games?.name} size="xs" withName nameClassName="text-stone-500 font-semibold" />
                   </div>
                   <AskToJoin teamId={r.team_id} requestId={r.id} onChanged={() => setReloadCount((n) => n + 1)} compact />
                 </li>

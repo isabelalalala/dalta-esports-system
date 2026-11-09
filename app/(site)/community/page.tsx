@@ -171,7 +171,7 @@ function OfficerSection({
               key={o.id}
               name={o.name}
               line={o.position}
-              extra={o.games?.name}
+              game={o.games?.name}
               photoPath={o.photo_path}
             />
           ))}

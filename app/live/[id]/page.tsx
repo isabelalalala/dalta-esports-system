@@ -17,6 +17,7 @@ import PageError from '@/components/PageError';
 import { usePageTitle } from '@/utils/page-title';
 import { MessageSquare } from 'lucide-react';
 import { isOrganizer } from '@/utils/permissions';
+import GameBadge from '@/components/GameBadge';
 
 // Watch page: Facebook player + a scoreboard that updates in real time
 export default function WatchStreamPage() {
@@ -185,7 +186,7 @@ export default function WatchStreamPage() {
             <Link href={`/tournaments/${stream.tournament_id}`} className="underline hover:text-stone-950">
               {stream.tournaments?.name}
             </Link>
-            {' · '}{stream.tournaments?.game}
+            {' · '}<GameBadge name={stream.tournaments?.game} size="xs" withName className="align-middle" />
           </p>
         </div>
 

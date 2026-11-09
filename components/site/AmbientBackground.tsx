@@ -36,7 +36,7 @@ export default function AmbientBackground({ className = '', onDark = false }: { 
       aria-hidden="true"
       // Paused until the observer says it's on screen
       data-paused=""
-      className={`pointer-events-none absolute inset-0 overflow-hidden ${onDark ? 'ambient-on-dark' : ''} ${className}`}
+      className={`pointer-events-none absolute inset-0 m-0! overflow-hidden ${onDark ? 'ambient-on-dark' : ''} ${className}`}
     >
       {/* Triangles like the DALTA logo: one 56x32 tile repeated (CSS mask, globals.css
           "zigzag pattern"), always edge to edge */}

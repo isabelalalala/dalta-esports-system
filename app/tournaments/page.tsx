@@ -17,6 +17,7 @@ import PageHeroBackground from '@/components/site/PageHeroBackground';
 
 import GameLogo from '@/components/GameLogo';
 import { can } from '@/utils/permissions';
+import GameBadge from '@/components/GameBadge';
 
 export default function TournamentsPage() {
   usePageTitle('Tournaments');
@@ -175,9 +176,7 @@ export default function TournamentsPage() {
                 {/* Card Content Area */}
                 <div className="p-5 sm:p-6 flex flex-col flex-1 justify-between space-y-4">
                   <div className="space-y-1.5">
-                    <p className="text-amber-700 text-xs font-black tracking-widest uppercase">
-                      {tournament.game}
-                    </p>
+                    <GameBadge name={tournament.game} game={tournament.game_id} size="xs" withName nameClassName="text-amber-700 font-black tracking-widest uppercase" />
                     <h3 className="text-xl sm:text-2xl font-black text-stone-950 leading-tight uppercase tracking-wide group-hover:text-amber-700 transition-colors">
                       {tournament.name}
                     </h3>

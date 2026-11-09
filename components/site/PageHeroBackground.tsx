@@ -69,7 +69,7 @@ export default function PageHeroBackground({
   alt = 'DALTA Esports Banner',
   priority = true,
   // hero-kenburns: a very slow zoom (globals.css, Phase 10); still with reduced motion
-  className = 'object-cover object-center hero-kenburns',
+  className = 'block object-cover object-center hero-kenburns',
   overlayClassName = 'absolute inset-0 bg-stone-950/75',
 }: PageHeroBackgroundProps) {
   // The banner looked up from site_content (used only when no `src` is given)
@@ -106,8 +106,11 @@ export default function PageHeroBackground({
   }, [src, specificKey]);
 
   return (
-    // data-hero-bg: in dark mode the section around a hero keeps its light-mode colors (globals.css)
-    <div data-hero-bg className="absolute inset-0 -z-0 pointer-events-none overflow-hidden" aria-hidden="true">
+    // data-hero-bg: in dark mode the section around a hero keeps its light-mode colors (globals.css).
+    // m-0!: hero sections space their content with space-y-*, which also gives THIS first child a
+    // bottom margin; on an absolute inset-0 box that margin shrank the photo and left a dark strip at
+    // the bottom of every banner (11.5). The layer must always fill the rounded box edge to edge.
+    <div data-hero-bg className="absolute inset-0 m-0! -z-0 pointer-events-none overflow-hidden rounded-[inherit]" aria-hidden="true">
       <Image
         src={src || resolvedSrc}
         alt={alt}

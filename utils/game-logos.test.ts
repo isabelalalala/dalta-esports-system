@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { gameInitials, getGameLogo, getGameLogoFit } from '@/utils/game-logos';
+import { gameInitials, getGameIcon, getGameLogo, getGameLogoFit, getGameLogoSet } from '@/utils/game-logos';
 
 describe('getGameLogo', () => {
   it('matches by game id', () => {
@@ -42,5 +42,26 @@ describe('gameInitials', () => {
     expect(gameInitials('Call of Duty: Mobile')).toBe('COD');
     expect(gameInitials('Valorant')).toBe('VALO');
     expect(gameInitials('')).toBe('?');
+  });
+});
+
+describe('getGameLogoSet (11.4)', () => {
+  it('gives every supported game an icon and a full name', () => {
+    for (const id of ['mlbb', 'valorant', 'tekken8', 'lol', 'codm']) {
+      const set = getGameLogoSet(null, id);
+      expect(set?.icon).toBe(`/games/${id}-icon.webp`);
+      expect(set?.label.length).toBeGreaterThan(2);
+      expect(getGameIcon(null, id).src).toBe(`/games/${id}-icon.webp`);
+    }
+  });
+  it('has light-background wordmarks for the white logos only', () => {
+    expect(getGameLogoSet(null, 'tekken8')?.light).toBe('/games/tekken8-light.webp');
+    expect(getGameLogoSet(null, 'codm')?.light).toBe('/games/codm-light.webp');
+    expect(getGameLogoSet(null, 'mlbb')?.light).toBeNull();
+    expect(getGameLogoSet(null, 'tekken8')?.iconLight).toBe('/games/tekken8-icon-light.webp');
+    expect(getGameLogoSet(null, 'valorant')?.iconLight).toBeNull();
+  });
+  it('returns null for unknown games', () => {
+    expect(getGameLogoSet('Chess', 'chess')).toBeNull();
   });
 });

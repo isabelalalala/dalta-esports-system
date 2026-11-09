@@ -17,9 +17,9 @@ import AnnouncementReactions from '@/components/announcements/AnnouncementReacti
 import AnnouncementFeedCard from '@/components/announcements/AnnouncementFeedCard';
 import { AuthorLine } from '@/components/announcements/AnnouncementMeta';
 import { BackToFeed, EditAnnouncementLink, ReadTracker } from '@/components/announcements/AnnouncementClientBits';
-import GameIcon from '@/components/GameIcon';
 import ShareButton from '@/components/ShareButton';
 import { DetailBodySkeleton } from '@/components/PageLoading';
+import GameBadge from '@/components/GameBadge';
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -94,7 +94,7 @@ async function AnnouncementContent({ params }: { params: PageProps<'/announcemen
               <CategoryBadge category={a.category} />
               {a.game_id && (
                 <span className="inline-flex items-center gap-1.5 rounded-md bg-white/10 px-1.5 py-0.5 text-[10px] font-black uppercase tracking-widest text-white backdrop-blur-sm">
-                  <GameIcon gameId={a.game_id} name={gameName} size="xs" /> {gameName ?? a.game_id}
+                  <GameBadge game={a.game_id} name={gameName} size="xs" surface="dark" withName />
                 </span>
               )}
               {a.is_draft && (

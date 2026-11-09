@@ -6,6 +6,7 @@ import { ChevronRight, Radio, Swords, Tv } from 'lucide-react';
 import { createClient } from '@/utils/supabase/client';
 import Countdown from './Countdown';
 import { ScoreBoard, VersusBadge, VersusRow } from '@/components/MatchVersus';
+import GameBadge from '@/components/GameBadge';
 
 // One match as returned by get_live_now() (202611091100_live_now): team and tournament NAMES only
 interface LiveNowMatch {
@@ -90,8 +91,9 @@ function LiveMatches({ matches }: { matches: LiveNowMatch[] }) {
               href={`/t/${m.tournament_id}/match/${m.id}`}
               className="group flex flex-col gap-2 px-4 py-3 sm:flex-row sm:items-center sm:gap-4 hover:bg-stone-50 transition-colors"
             >
-              <span className="min-w-0 sm:w-48 shrink-0 text-[11px] font-black uppercase tracking-wider text-stone-500 truncate">
-                {m.game} · {m.tournament_name}
+              <span className="flex min-w-0 sm:w-48 shrink-0 items-center gap-1.5 text-[11px] font-black uppercase tracking-wider text-stone-500">
+                <GameBadge name={m.game} size="xs" />
+                <span className="min-w-0 truncate">{m.game} · {m.tournament_name}</span>
               </span>
               <span className="min-w-0 flex-1">
                 {/* Digits flip when a score changes (FlipScore) */}

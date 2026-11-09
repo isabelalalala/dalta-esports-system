@@ -1152,3 +1152,19 @@ input::placeholder, textarea::placeholder {
   .reaction-pop { animation: reactionPop 0.35s cubic-bezier(0.16, 1, 0.3, 1); }
   .new-post-pill, .urgent-banner { animation: slideDownIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) both; }
 }
+
+/* 11.4: white game logos (Tekken 8, CODM) have a dark-letter file for light backgrounds
+   (components/GameBadge.tsx surface="auto"); the theme decides which one shows. */
+.logo-on-dark { display: none; }
+@media screen {
+  :root[data-theme="dark"] .logo-on-light { display: none; }
+  :root[data-theme="dark"] .logo-on-dark { display: block; }
+}
+/* Scrolling chip rows (components/GameFilterChips.tsx): an even fade at both edges on phones hints
+   that the row scrolls */
+@media (max-width: 767px) {
+  .chip-fade > div {
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 14px, #000 calc(100% - 28px), transparent);
+    mask-image: linear-gradient(90deg, transparent, #000 14px, #000 calc(100% - 28px), transparent);
+  }
+}
