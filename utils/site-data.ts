@@ -7,7 +7,7 @@
 import { cacheLife, cacheTag } from 'next/cache';
 import { createPublicClient } from '@/utils/supabase/public';
 import {
-  DEFAULT_SITE_CONTENT, manilaToday, pickFeaturedEvent, type GameDivision, type HeroImage, type Officer, type OfficialTeam,
+  DEFAULT_SITE_CONTENT, manilaToday, stripDraftMarker, pickFeaturedEvent, type GameDivision, type HeroImage, type Officer, type OfficialTeam,
   type SiteContent, type SitePost,
 } from '@/utils/site';
 
@@ -24,8 +24,10 @@ export async function getSiteContent(): Promise<SiteContent> {
   const content = { ...DEFAULT_SITE_CONTENT };
   for (const row of data) {
     // Keep the default for empty texts, except optional ones like social links and images
-    if (row.key in content && (row.value || !DEFAULT_SITE_CONTENT[row.key as keyof SiteContent])) {
-      content[row.key as keyof SiteContent] = row.value;
+    // A leading "(draft)" marker is never shown to the public
+    const value = stripDraftMarker(row.value ?? '');
+    if (row.key in content && (value || !DEFAULT_SITE_CONTENT[row.key as keyof SiteContent])) {
+      content[row.key as keyof SiteContent] = value;
     }
   }
   return content;

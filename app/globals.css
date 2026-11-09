@@ -23,6 +23,9 @@
   --color-negative: #e66767;
   --color-sitebg: #ffffff;
   --color-sitecard: #ffffff;
+  /* Warm banner tint (About motto, legal page heroes, captain card): pale amber in light mode,
+     dark maroon in dark mode (see the DARK THEME block). Used as from-motto/70 via-surface ... */
+  --color-motto: oklch(98.7% 0.022 95.277);
   /* --font-montserrat-next is set by next/font (utils/fonts.ts) on <html>. It must have a different
      name from these tokens: a token pointing at itself is invalid and the page falls back to serif. */
   --font-montserrat: var(--font-montserrat-next), "Montserrat", sans-serif;
@@ -402,6 +405,7 @@ input::placeholder, textarea::placeholder {
     --surface: oklch(19% 0.006 50);
     --color-sitebg: oklch(15.5% 0.005 50);
     --color-sitecard: oklch(19% 0.006 50);
+    --color-motto: oklch(27% 0.07 25);
 
     --color-stone-50: oklch(22% 0.006 50);
     --color-stone-100: oklch(25% 0.006 50);

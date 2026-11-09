@@ -47,7 +47,7 @@ export default function SecurityPage() {
   return (
     <main id="main-content" className="min-h-screen w-full bg-white text-stone-900 px-4 sm:px-6 lg:px-8 py-8 sm:py-12 space-y-10 sm:space-y-12">
       {/* 1. Large Main Hero Container */}
-      <section className="w-full rounded-3xl border border-stone-200/90 bg-gradient-to-br from-amber-50/70 via-white to-stone-50 p-8 sm:p-14 lg:p-16 text-center shadow-xs flex flex-col items-center justify-center space-y-4">
+      <section className="w-full rounded-3xl border border-stone-200/90 bg-gradient-to-br from-motto/70 via-surface to-stone-50 p-8 sm:p-14 lg:p-16 text-center shadow-xs flex flex-col items-center justify-center space-y-4">
         <div className="w-full flex justify-start">
           <Link
             href="/"

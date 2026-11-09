@@ -34,6 +34,7 @@ Since Phase 3 the app has a dark theme. It follows the device setting by default
 - **Solid colored surfaces keep their light look**: photo heroes (anything containing `PageHeroBackground`), `bg-gold` buttons, `bg-ink`/logo stages, video, and red/green/maroon/dark-stone surfaces. Inside them every variable is restored, so `bg-gold text-stone-950` stays dark-on-gold.
 - `text-white` is never remapped (white text on red, maroon or photos stays white).
 - Printing always uses the light theme.
+- Gradients: never `from-white` / `via-white` / `to-white` (white isn't remapped, so dark mode gets a bright band under light text). Use `via-surface`, and `from-motto/70` for the warm banner tint (pale amber in light, dark maroon in dark).
 - Focus states: `focus:bg-surface`, not `focus:bg-white` (only the plain `bg-white` class is remapped). Native `<option>` lists get the dark surface from `globals.css`.
 - New UI: keep using the same tokens. A new solid background color needs to be added to the "keep their light-mode colors" list in `globals.css`. Don't use hex colors (they don't switch).
 

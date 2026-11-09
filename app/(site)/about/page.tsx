@@ -111,7 +111,7 @@ export default async function AboutPage() {
 
       {/* 4. Final Container: Game With Purpose */}
       <Reveal>
-      <section className="w-full rounded-3xl border border-stone-200/90 bg-gradient-to-br from-amber-50/70 via-white to-stone-50 p-8 sm:p-12 @5xl:p-14 text-center space-y-4 shadow-xs">
+      <section className="w-full rounded-3xl border border-stone-200/90 bg-gradient-to-br from-motto/70 via-surface to-stone-50 p-8 sm:p-12 @5xl:p-14 text-center space-y-4 shadow-xs">
         <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-800 text-xs font-black uppercase tracking-widest shadow-2xs">
           Official Organization Motto
         </div>

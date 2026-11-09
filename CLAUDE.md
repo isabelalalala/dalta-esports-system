@@ -545,6 +545,9 @@ triggers with readable error messages.
   auth and legal pages (outside `SiteNavLayout`) and `PageLoading` use `md:`/`lg:`/`xl:`. Card lists use
   `grid-cols-[repeat(auto-fill,minmax(min(100%,18rem),1fr))]`-style grids; filter bars `flex-wrap`. Hero titles
   use the fluid sizes `text-hero` / `text-page-hero` / `text-display` (`clamp()` with `cqi`, in `@theme`).
+- Gradients: `via-surface` / `from-motto/70`, never `from|via|to-white` (white stays white in dark mode).
+- Site texts: a leading "(draft)" is stripped before the public sees it (`stripDraftMarker()` in `utils/site.ts`,
+  applied in `getSiteContent()`); the Site text editor warns about it.
 - Focused fields: `focus:bg-surface`, never `focus:bg-white` (it stays pure white in dark mode; `surface` is
   white in light mode and dark grey in dark mode).
 - Mobile (375px): no page may scroll sideways. Page padding `px-4` (`sm:p-6/8`), cards `p-4 sm:p-6`, rows with

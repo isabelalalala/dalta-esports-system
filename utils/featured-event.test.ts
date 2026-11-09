@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { eventStartsAt, manilaToday, pickFeaturedEvent, type SitePost } from './site';
+import { eventStartsAt, manilaToday, pickFeaturedEvent, stripDraftMarker, type SitePost } from './site';
 
 const event = (over: Partial<SitePost>): SitePost => ({
   id: over.id ?? 'e',
@@ -47,5 +47,17 @@ describe('pickFeaturedEvent', () => {
     const past = event({ id: 'past', event_date: '2026-10-01' });
     const tba = event({ id: 'tba' });
     expect(pickFeaturedEvent([hidden, past, tba], today)).toBeNull();
+  });
+});
+
+describe('stripDraftMarker', () => {
+  it('removes a leading (draft) marker in any case or bracket style', () => {
+    expect(stripDraftMarker('(draft) DALTA Esports was founded')).toBe('DALTA Esports was founded');
+    expect(stripDraftMarker('  (DRAFT): Our mission')).toBe('Our mission');
+    expect(stripDraftMarker('[Draft] - Vision')).toBe('Vision');
+  });
+  it('leaves other text alone', () => {
+    expect(stripDraftMarker('A draft of our plan (draft)')).toBe('A draft of our plan (draft)');
+    expect(stripDraftMarker('')).toBe('');
   });
 });

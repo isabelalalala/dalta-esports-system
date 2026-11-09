@@ -144,7 +144,7 @@ async function OfficialTeam({ params }: { params: PageProps<'/divisions/[game]/[
 
           {/* Captain Spotlight Card (if captain exists) */}
           {captain && (
-            <div className="rounded-3xl border border-amber-300/80 bg-gradient-to-br from-amber-50/80 via-white to-amber-50/30 p-6 shadow-xs flex flex-col sm:flex-row items-center gap-5">
+            <div className="rounded-3xl border border-amber-300/80 bg-gradient-to-br from-motto/80 via-surface to-motto/30 p-6 shadow-xs flex flex-col sm:flex-row items-center gap-5">
               <PersonPhoto path={captain.photo_path} name={captain.name || captain.ign} size="lg" />
               <div className="text-center sm:text-left flex-1 min-w-0">
                 <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-maroon text-white text-[10px] font-black tracking-widest uppercase mb-2 shadow-2xs">

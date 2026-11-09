@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { createClient } from '@/utils/supabase/client';
 import { getErrorMessage } from '@/utils/errors';
-import { DEFAULT_HERO_BANNER, DEFAULT_LOGO, SITE_CONTENT_FIELDS, siteImageUrl } from '@/utils/site';
+import { DEFAULT_HERO_BANNER, DEFAULT_LOGO, DRAFT_MARKER, SITE_CONTENT_FIELDS, siteImageUrl } from '@/utils/site';
 import { clearSiteBannerClientCache } from '@/components/site/PageHeroBackground';
 import { deleteSiteImage } from '@/utils/site-images';
 import { refreshSite } from './actions';
@@ -244,6 +244,11 @@ export default function SiteTextEditor() {
                     onChange={(e) => setValues((v) => ({ ...v, [f.key]: e.target.value }))}
                     className={`${inputClass} font-normal`}
                   />
+                )}
+                {DRAFT_MARKER.test(values[f.key] ?? '') && (
+                  <span role="note" className="mt-1.5 block rounded-lg border border-yellow-200 bg-yellow-50 px-2.5 py-1.5 text-[11px] font-semibold normal-case tracking-normal text-yellow-800">
+                    Starts with &quot;(draft)&quot;: the public site leaves that marker out. Remove it when the text is final.
+                  </span>
                 )}
               </label>
             ))}

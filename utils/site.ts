@@ -90,6 +90,14 @@ export interface SitePost {
   venue?: string | null;
 }
 
+// Admins sometimes start a text with "(draft)" while writing it. The public site never shows that
+// marker: it is removed from the start of every site text (getSiteContent in utils/site-data.ts),
+// and the editor warns about it (DRAFT_MARKER).
+export const DRAFT_MARKER = /^\s*[([]\s*draft\s*[)\]]\s*[:\-–]?\s*/i;
+export function stripDraftMarker(value: string): string {
+  return value.replace(DRAFT_MARKER, '');
+}
+
 // Today's date in the Philippines (UTC+8, no daylight saving) as YYYY-MM-DD, the format of
 // event_date. The server clock is UTC, so new Date().toISOString() would be a day behind until 8am.
 export function manilaToday(now: Date = new Date()): string {
