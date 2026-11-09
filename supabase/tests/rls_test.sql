@@ -6,7 +6,7 @@ begin;
 
 create extension if not exists pgtap;
 
-select plan(12);
+select plan(13);
 
 set local session_replication_role = 'replica';
 
@@ -62,6 +62,9 @@ begin
 
   insert into public.announcements (title, body, created_by)
   values ('RLS announcement', 'body', admin_id);
+  -- a draft: organizers only, never public (202611092000)
+  insert into public.announcements (title, body, created_by, is_draft)
+  values ('RLS draft', 'body', admin_id, true);
 
   insert into public.tournament_registrations (tournament_id, user_id, team_id, status)
   values (t_id, admin_id, (select val from fx where key = 'team_a'), 'approved');
@@ -175,9 +178,14 @@ select throws_matching(
 set local role = 'anon';
 select set_config('request.jwt.claims', '', true);
 
+-- Published announcements are public since 202611092000; drafts never are
+select isnt_empty(
+  $$select * from public.announcements where title = 'RLS announcement'$$,
+  'logged-out visitors can read published announcements');
+
 select is_empty(
-  $$select * from public.announcements$$,
-  'logged-out visitors cannot read announcements');
+  $$select * from public.announcements where is_draft$$,
+  'logged-out visitors cannot read draft announcements');
 
 select * from finish();
 rollback;

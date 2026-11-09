@@ -494,7 +494,7 @@ Readers: "anyone" = also logged out; "logged-in" = any role; "admin/staff" = org
   every `PageHeroBackground` hero slowly zooms (`hero-kenburns`, paused off-screen with the ambient layer) and gets
   `AmbientBackground` + one light sweep (`hero-sweep`). Homepage: `components/site/MatchTicker.tsx` (results ticker
   from `get_match_ticker()`, falls back to `get_live_now()`; marquee loop, pauses on hover/focus/off-screen) and
-  `components/site/DarkBand.tsx` (full-width dark band with slanted edges: "Choose your game" `GameTiles.tsx` +
+  `components/site/DarkBand.tsx` (full-width dark band, straight edges with slanted gold accents inside (9.4: no clip-path, so no corner gaps): "Choose your game" `GameTiles.tsx` +
   `SiteStats plain`). Match cards use `components/MatchVersus.tsx` (`VersusRow`, `VersusBadge`, `ScoreBoard`,
   `LiveTag`; digits flip with `FlipScore.tsx`) on `/schedule`, My Matches, `/t/[id]`, the live strip and bracket
   boxes. Brackets: hovering a team highlights its route (`BracketPath.tsx`, rows carry `data-team-id`), the champion
@@ -565,7 +565,8 @@ triggers with readable error messages.
 - Footer (Phase 9, `components/Footer.tsx`): max-width columns, Lucide icon before each link, round social buttons
   (`components/BrandIcons.tsx` SVGs; shown only when the Site text link is an https URL: Facebook, Instagram,
   TikTok, YouTube, Discord), contact email, `BackToTop`, and `components/site/AmbientBackground.tsx` (also on the
-  home hero with `onDark`): two faint drifting glows + triangle grid, transform/opacity only, paused off-screen or
+  home hero with `onDark`): two faint drifting glows on top of the zigzag grid (`.zigzag-pattern`: one 56x32 tile
+  repeated with a CSS mask, layer one tile larger than the box, so it covers every edge while it moves), transform/opacity only, paused off-screen or
   in a hidden tab, still with reduced motion.
 - Every page (public and logged in) has the same header and footer, both in `app/layout.tsx`:
   `components/site/SiteHeader.tsx` (logo, search, and `SiteAuthButtons`: theme toggle + Log in / Sign up, or

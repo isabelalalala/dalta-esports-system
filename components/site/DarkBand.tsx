@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import AmbientBackground from '@/components/site/AmbientBackground';
 
-// Full-width dark section with slanted top and bottom edges (CSS .band-angled) and the moving
+// Full-width dark section (straight edges, with slanted gold accents inside: CSS .band-angled) and the moving
 // brand background, to break up the long white homepage. The negative margins cancel <main>'s
 // side padding (SiteNavLayout: px-4 sm:px-8 lg:px-12 xl:px-16), so the band reaches both edges of
 // the content area without making the page scroll sideways. bg-ink keeps light-mode text colors

@@ -18,7 +18,7 @@ import { loadAnnouncements, loadReactions, loadReadIds, markRead } from '@/utils
 import AnnouncementFeedCard from '@/components/announcements/AnnouncementFeedCard';
 import AnnouncementHero from '@/components/announcements/AnnouncementHero';
 import AnnouncementEditor from '@/components/announcements/AnnouncementEditor';
-import GameIcon from '@/components/GameIcon';
+import GameLogo from '@/components/GameLogo';
 import Reveal from '@/components/Reveal';
 import AutoUpdateBadge from '@/components/AutoUpdateBadge';
 import { useConfirm } from '@/components/useConfirm';
@@ -248,8 +248,15 @@ export default function AnnouncementFeed() {
           <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1" role="group" aria-label="Game">
             <button type="button" onClick={() => setGame('')} aria-pressed={!game} className={chip(!game)}>All games</button>
             {games.map((g) => (
-              <button key={g.id} type="button" onClick={() => setGame(game === g.id ? '' : g.id)} aria-pressed={game === g.id} className={`${chip(game === g.id)} pl-1.5`}>
-                <GameIcon gameId={g.id} name={g.name} size="xs" /> {g.name.length > 14 ? g.id.toUpperCase() : g.name}
+              <button key={g.id} type="button" onClick={() => setGame(game === g.id ? '' : g.id)} aria-pressed={game === g.id} className={`${chip(game === g.id)} pl-1`}>
+                {/* The game's real logo on a small dark plate (the logos are made for dark backgrounds) */}
+                <GameLogo
+                  gameId={g.id} name={g.name} sizes="80px"
+                  className="h-8 w-20 shrink-0 rounded-full bg-ink ring-1 ring-white/10"
+                  imageClassName="px-2.5 py-1"
+                  fallbackClassName="text-[10px]"
+                />
+                <span>{g.name.length > 14 ? g.id.toUpperCase() : g.name}</span>
               </button>
             ))}
           </div>
