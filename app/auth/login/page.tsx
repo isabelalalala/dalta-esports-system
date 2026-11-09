@@ -266,7 +266,7 @@ function LoginContent() {
               disabled={loading}
               className="w-full py-4 rounded-xl bg-gold hover:bg-golddark text-stone-950 font-black text-xs sm:text-sm uppercase tracking-widest shadow-xs hover:-translate-y-0.5 transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer mt-2"
             >
-              {loading ? 'Signing in...' : 'Login'}
+              {loading ? 'Logging in...' : 'Log in'}
             </button>
  
           </form>

@@ -5,11 +5,12 @@ import Link from 'next/link';
 import { createClient } from '@/utils/supabase/client';
 import { getErrorMessage } from '@/utils/errors';
 import type { Registration, RegistrationStatus, Tournament } from '@/utils/types';
-import { formatDate } from '@/utils/tournaments';
+import { formatDate, formatMomentDate } from '@/utils/tournaments';
 import PageLoading from '@/components/PageLoading';
 import { usePageTitle } from '@/utils/page-title';
 import PageHeroBackground from '@/components/site/PageHeroBackground';
 import { Trophy, Calendar, AlertCircle, Clock, CheckCircle2, XCircle, Shield } from 'lucide-react';
+import { useConfirm } from '@/components/useConfirm';
 
 type MyRegistration = Registration & {
   tournaments: Pick<Tournament, 'id' | 'name' | 'game' | 'start_date'> | null;
@@ -30,6 +31,7 @@ const statusIcons: Record<RegistrationStatus, typeof Clock> = {
 };
 
 export default function MyRegistrationsPage() {
+  const [confirmDialog, ask] = useConfirm();
   const supabase = createClient();
   usePageTitle('My Registrations');
   const [registrations, setRegistrations] = useState<MyRegistration[]>([]);
@@ -74,7 +76,7 @@ export default function MyRegistrationsPage() {
   }, [supabase]);
 
   const handleWithdraw = async (reg: MyRegistration) => {
-    if (!confirm(`Withdraw ${reg.teams?.name} from ${reg.tournaments?.name}?`)) return;
+    if (!(await ask({ title: 'Withdraw registration?', message: `Withdraw ${reg.teams?.name} from ${reg.tournaments?.name}? You can register again while registration is open.`, confirmLabel: 'Withdraw', tone: 'danger' }))) return;
     setBusyId(reg.id);
     setError('');
 
@@ -101,7 +103,9 @@ export default function MyRegistrationsPage() {
   }
 
   return (
-    // The layout (SiteNavLayout) renders the main element and the page padding
+    <>
+    {confirmDialog}
+    {/* The layout (SiteNavLayout) renders the main element and the page padding */}
     <div className="w-full text-stone-950">
       <div className="w-full max-w-6xl mx-auto space-y-8">
         {/* 1. Main Hero Container */}
@@ -224,7 +228,7 @@ export default function MyRegistrationsPage() {
                     </div>
 
                     <p className="text-[11px] text-stone-500 font-medium tracking-wide">
-                      Registered on {new Date(reg.registered_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+                      Registered on {formatMomentDate(reg.registered_at)}
                     </p>
                   </div>
 
@@ -254,5 +258,6 @@ export default function MyRegistrationsPage() {
         )}
       </div>
     </div>
+    </>
   );
 }

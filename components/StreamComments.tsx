@@ -13,6 +13,7 @@ import { formatDateTime } from '@/utils/tournaments';
 import Avatar from '@/components/Avatar';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import SectionHint from '@/components/SectionHint';
+import { toast } from '@/components/Toaster';
 
 interface Props {
   streamId: string;
@@ -36,11 +37,14 @@ interface StreamComment {
 const MAX_LENGTH = 300;
 const COOLDOWN_MS = 3000;
 const PAGE = 100;
+// Your own comment is really deleted only after the Undo window
+const UNDO_MS = 5000;
 
 // Comments under a stream, live and on replays (Phase 4). Everyone (also logged out) reads the
 // visible comments through get_stream_comments(); logged-in users who aren't flagged or banned can
 // post. New comments, and comments the AI hides, show up for everyone through Realtime (the
-// stream_comment_activity signal). Moderators can remove a comment from here.
+// stream_comment_activity signal). Moderators can remove a comment from here; authors delete their
+// own (shown/approved ones, as the RLS delete policy allows) with a 5-second Undo.
 export default function StreamComments({ streamId, replay = false, heightClass = 'h-96' }: Props) {
   const supabase = createClient();
   const viewer = useViewer();
@@ -59,6 +63,9 @@ export default function StreamComments({ streamId, replay = false, heightClass =
   const listRef = useRef<HTMLDivElement>(null);
   const stickToBottom = useRef(true);
   const [reloadCount, setReloadCount] = useState(0);
+  // Own comments waiting to be deleted (hidden on screen until the Undo window ends)
+  const [deleting, setDeleting] = useState<Set<string>>(new Set());
+  const deleteTimers = useRef(new Map<string, () => void>());
 
   const reload = useCallback(() => setReloadCount((n) => n + 1), []);
   useRealtimeRefresh(`comments-${streamId}`, [{ table: 'stream_comment_activity', filter: `stream_id=eq.${streamId}` }], reload, 300);
@@ -141,6 +148,7 @@ export default function StreamComments({ streamId, replay = false, heightClass =
       });
       if (rpcError) throw rpcError;
       setRemoving(null);
+      toast.success('Comment removed.');
       reload();
     } catch (err) {
       setError(getErrorMessage(err, 'The comment could not be removed.'));
@@ -148,6 +156,54 @@ export default function StreamComments({ streamId, replay = false, heightClass =
       setBusy(false);
     }
   };
+
+  // Deletes one of your own comments for real (after the Undo window, or right away when leaving)
+  const deleteNow = useCallback(async (id: string) => {
+    deleteTimers.current.delete(id);
+    const { data, error: deleteError } = await supabase.from('stream_comments').delete().eq('id', id).select('id');
+    setDeleting((current) => {
+      const next = new Set(current);
+      next.delete(id);
+      return next;
+    });
+    if (deleteError || !data?.length) {
+      toast.error(deleteError ? getErrorMessage(deleteError, 'Your comment could not be deleted.') : 'Your comment could not be deleted. It may be under review.');
+      return;
+    }
+    setComments((current) => current.filter((c) => c.id !== id));
+  }, [supabase]);
+
+  const deleteOwn = (c: StreamComment) => {
+    setDeleting((current) => new Set(current).add(c.id));
+    const timer = window.setTimeout(() => deleteNow(c.id), UNDO_MS);
+    deleteTimers.current.set(c.id, () => window.clearTimeout(timer));
+    toast('Comment deleted.', {
+      duration: UNDO_MS,
+      action: {
+        label: 'Undo',
+        onClick: () => {
+          deleteTimers.current.get(c.id)?.();
+          deleteTimers.current.delete(c.id);
+          setDeleting((current) => {
+            const next = new Set(current);
+            next.delete(c.id);
+            return next;
+          });
+        },
+      },
+    });
+  };
+
+  // Leaving the page doesn't cancel a delete: finish the waiting ones now
+  useEffect(() => {
+    const timers = deleteTimers.current;
+    return () => {
+      for (const [id, cancel] of timers) {
+        cancel();
+        void deleteNow(id);
+      }
+    };
+  }, [deleteNow]);
 
   const isModerator = can(viewer.role, 'moderation.review');
   const remaining = MAX_LENGTH - text.length;
@@ -187,7 +243,7 @@ export default function StreamComments({ streamId, replay = false, heightClass =
         {!loading && !error && comments.length === 0 && (
           <li className="text-sm text-stone-600">No comments yet. Say hi!</li>
         )}
-        {comments.map((c) => {
+        {comments.filter((c) => !deleting.has(c.id)).map((c) => {
           const hidden = c.moderation_status === 'hidden';
           return (
             <li key={c.id} className={`flex gap-2.5 ${hidden ? 'rounded-xl border border-red-200 bg-red-50 p-2' : ''}`}>
@@ -208,6 +264,17 @@ export default function StreamComments({ streamId, replay = false, heightClass =
                   </p>
                 )}
               </div>
+              {c.is_mine && (c.moderation_status === 'approved' || c.moderation_status === 'restored') && (
+                <button
+                  type="button"
+                  onClick={() => deleteOwn(c)}
+                  aria-label="Delete your comment"
+                  title="Delete your comment"
+                  className="self-start p-1 text-stone-500 hover:text-red-700 cursor-pointer"
+                >
+                  <Trash2 className="h-4 w-4" aria-hidden="true" />
+                </button>
+              )}
               {isModerator && !c.is_mine && (
                 <button
                   type="button"

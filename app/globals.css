@@ -724,3 +724,109 @@ input::placeholder, textarea::placeholder {
     transform: none;
   }
 }
+
+/* Phase 9: ambient background (components/site/AmbientBackground.tsx). Two soft maroon/gold glows
+   and a faint triangle grid drift slowly behind the footer and the home hero. Only transform and
+   opacity animate (GPU), the glows are radial gradients (no blur filter), the whole layer stays
+   at 10-15% so text contrast never changes, and AmbientBackground pauses it off-screen or while
+   the tab is hidden (data-paused). Reduced motion: a still picture. */
+@keyframes ambientDriftA {
+  0% { transform: translate3d(-8%, -6%, 0) scale(1); }
+  100% { transform: translate3d(10%, 8%, 0) scale(1.15); }
+}
+@keyframes ambientDriftB {
+  0% { transform: translate3d(6%, 8%, 0) scale(1.1); }
+  100% { transform: translate3d(-10%, -6%, 0) scale(0.95); }
+}
+@keyframes ambientGrid {
+  from { transform: translate3d(0, 0, 0); }
+  to { transform: translate3d(-56px, -32px, 0); }
+}
+.ambient-orb {
+  position: absolute;
+  width: 55%;
+  aspect-ratio: 1;
+  border-radius: 9999px;
+  will-change: transform;
+}
+.ambient-orb-a {
+  left: -10%;
+  top: -30%;
+  background: radial-gradient(circle, color-mix(in oklab, var(--color-maroonlight) 70%, transparent) 0%, transparent 65%);
+  animation: ambientDriftA 34s ease-in-out infinite alternate;
+}
+.ambient-orb-b {
+  right: -12%;
+  bottom: -40%;
+  background: radial-gradient(circle, color-mix(in oklab, var(--color-gold) 75%, transparent) 0%, transparent 65%);
+  animation: ambientDriftB 40s ease-in-out infinite alternate;
+}
+.ambient-grid {
+  position: absolute;
+  inset: -64px;
+  color: var(--color-maroon);
+  will-change: transform;
+  animation: ambientGrid 30s linear infinite;
+}
+/* The light page is white, the dark page near-black: gold reads better on dark
+   (data-theme is always set before paint, also when it follows the system setting) */
+:root[data-theme="dark"] .ambient-grid, .ambient-on-dark .ambient-grid { color: var(--color-gold); }
+[data-paused] .ambient-orb,
+[data-paused] .ambient-grid {
+  animation-play-state: paused;
+}
+@media (prefers-reduced-motion: reduce) {
+  .ambient-orb, .ambient-grid { animation: none !important; }
+}
+
+/* Phase 9: toasts (components/Toaster.tsx) slide up from the bottom corner */
+@keyframes toastIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: none; }
+}
+.animate-toast-in {
+  animation: toastIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .animate-toast-in { animation: none !important; }
+}
+
+/* Phase 9: one look per kind of button (Nielsen #4). Primary = the main action (gold),
+   secondary = Cancel/Back/other actions (outlined), danger = remove/delete/ban (red). */
+@utility btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1.25rem;
+  border-radius: 0.75rem;
+  border-width: 1px;
+  font-size: 0.75rem;
+  line-height: 1rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+  &:disabled { opacity: 0.5; cursor: not-allowed; }
+}
+@utility btn-primary {
+  background-color: var(--color-gold);
+  border-color: var(--color-golddark);
+  /* ink, not stone-950: stone-950 turns light in dark mode, and gold needs dark text */
+  color: var(--color-ink);
+  &:hover:not(:disabled) { background-color: var(--color-golddark); }
+}
+@utility btn-secondary {
+  background-color: var(--color-surface);
+  border-color: var(--color-stone-300);
+  color: var(--color-stone-950);
+  &:hover:not(:disabled) { background-color: var(--color-stone-50); }
+}
+@utility btn-danger {
+  /* Tailwind's red-700/800 values, written out because dark mode remaps the red tokens */
+  background-color: oklch(50.5% 0.213 27.518);
+  border-color: oklch(44.4% 0.177 26.899);
+  color: white;
+  &:hover:not(:disabled) { background-color: oklch(44.4% 0.177 26.899); }
+}

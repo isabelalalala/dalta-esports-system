@@ -9,6 +9,8 @@ interface Props {
   // 'danger' = red confirm button (removing, banning, deleting)
   tone?: 'danger' | 'normal';
   busy?: boolean;
+  // Button text while busy, e.g. 'Uploading...' (default 'Working...')
+  busyLabel?: string;
   // Disable the confirm button (e.g. a required reason is still empty)
   confirmDisabled?: boolean;
   error?: string;
@@ -20,7 +22,7 @@ interface Props {
 // element: showModal() traps focus, Esc closes it and the page behind can't be clicked.
 // Render it only while it should be open (the parent decides with a condition).
 export default function ConfirmDialog({
-  title, children, confirmLabel, tone = 'normal', busy = false, confirmDisabled = false, error, onConfirm, onClose,
+  title, children, confirmLabel, tone = 'normal', busy = false, busyLabel = 'Working...', confirmDisabled = false, error, onConfirm, onClose,
 }: Props) {
   const ref = useRef<HTMLDialogElement>(null);
 
@@ -75,7 +77,7 @@ export default function ConfirmDialog({
             disabled={busy || confirmDisabled}
             className={`px-5 py-2.5 rounded-xl border text-xs font-black uppercase tracking-widest disabled:opacity-50 cursor-pointer ${confirmClass}`}
           >
-            {busy ? 'Working...' : confirmLabel}
+            {busy ? busyLabel : confirmLabel}
           </button>
         </div>
       </div>

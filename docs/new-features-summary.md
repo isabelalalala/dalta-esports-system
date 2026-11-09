@@ -617,6 +617,31 @@ tiers) on `/admin/games` without code changes.
 - Privacy (`202611091500_game_profile_details_privacy`): the `details` column (game account IDs) is readable only by
   the player and organizers, through `get_game_profile_details()`; Privacy Notice version `2026-11-09`.
 
+### Feature 24: Help & FAQ, toasts and usability pass (Nielsen's 10 heuristics)
+**Module:** all (cross-cutting); Help & FAQ belongs to 7 Public Website
+
+**What it does:** a public `/help` page answers the common questions per role (spectators, players, staff,
+admins: registering a team, game profiles, check-in, results, streams, feedback, warnings and bans, reports).
+After every main action a short message ("toast") confirms it worked. People can now delete their own chat
+comments (with a 5-second Undo) and edit or delete their own feedback. Organizers can approve all pending
+registrations at once and restore/remove several hidden comments at once. Every confirmation uses the same
+dialog, every date and time is shown in Philippine time ("Nov 9, 2026 · 7:00 PM"), and live sections say
+"Updates automatically". The footer has icons, social buttons and a back-to-top button, over a slow, faint
+brand background.
+
+**Actors / use cases**
+- Audience / Player: *Read help*, *Delete own comment*, *Edit/delete own feedback* (new).
+- Tournament Staff / Admin: *Approve all pending registrations*, *Bulk moderate comments* (new; each item is
+  still checked and logged by the existing functions).
+
+**Data flows**
+- Audience → 5.0: Delete own feedback → D4 (`feedback` row removed; warnings in D8/user_warnings stay).
+- Audience → 4.0: Delete own comment → D3 (`stream_comments` row removed).
+
+**Database**
+- `202611091600_own_feedback_delete`: RLS delete policy on `feedback` for the owner, except while hidden for
+  review or removed. No new table; the Privacy Notice is unchanged (no new data or readers).
+
 ### Feature 13: Enhancements inside the original modules
 These additions stay inside existing modules but add flows you may want to draw.
 - **Module 4:** "Watching now" live viewer count (Supabase Realtime Presence, not stored). Staff see it on the

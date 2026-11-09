@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { createClient } from '@/utils/supabase/client';
 import { getErrorMessage } from '@/utils/errors';
 import type { Match, MatchResultSubmission, MatchTeam, ResultStatus } from '@/utils/types';
+import { formatDateTime } from '@/utils/tournaments';
 
 const PROOF_BUCKET = 'match-proofs';
 const MAX_PROOF_BYTES = 5 * 1024 * 1024;
@@ -178,7 +179,7 @@ export default function ResultSection({ match, teamA, teamB, submissions, isStaf
             </span>
           </div>
           <p className="text-sm text-stone-500">
-            Submitted by {teamName(open.team_id)} on {new Date(open.created_at).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })}
+            Submitted by {teamName(open.team_id)} on {formatDateTime(open.created_at)}
           </p>
           {open.dispute_reason && <p className="text-sm text-red-700">Dispute: {open.dispute_reason}</p>}
 

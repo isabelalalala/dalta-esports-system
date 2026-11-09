@@ -7,6 +7,8 @@ import { getErrorMessage } from '@/utils/errors';
 import type { Match, MatchCheckin, MatchTeam } from '@/utils/types';
 import { formatCountdown, getCheckinState, getCheckinWindow } from '@/utils/checkin';
 import { CircleCheck, Hourglass } from 'lucide-react';
+import { useConfirm } from '@/components/useConfirm';
+import { formatTime } from '@/utils/tournaments';
 
 interface Props {
   match: Match;
@@ -21,11 +23,11 @@ interface Props {
   onChanged: () => void;
 }
 
-const timeFormat: Intl.DateTimeFormatOptions = { hour: 'numeric', minute: '2-digit', month: 'short', day: 'numeric' };
 
 // Check-in status for both teams, the captain's "Check in" button,
 // and "Declare forfeit" for staff once the match time has passed.
 export default function CheckinSection({ match, windowMinutes, teamA, teamB, checkins, isStaff, myTeamId, now, onChanged }: Props) {
+  const [confirmDialog, ask] = useConfirm();
   const supabase = createClient();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
@@ -63,7 +65,7 @@ export default function CheckinSection({ match, windowMinutes, teamA, teamB, che
 
   const handleForfeit = async () => {
     const winner = chosenWinner === teamA?.id ? teamA : teamB;
-    if (!winner || !confirm(`Give ${winner.name} the win by forfeit? The match will be completed and ${winner.name} advances.`)) return;
+    if (!winner || !(await ask({ title: 'Declare a forfeit?', message: `Give ${winner.name} the win by forfeit? The match will be completed and ${winner.name} advances.`, confirmLabel: 'Declare forfeit', tone: 'danger' }))) return;
     setBusy(true);
     setError('');
     try {
@@ -81,6 +83,8 @@ export default function CheckinSection({ match, windowMinutes, teamA, teamB, che
   };
 
   return (
+    <>
+    {confirmDialog}
     <section className="bg-white border border-stone-200/90 rounded-2xl shadow-xs p-6 space-y-4">
       <h2 className="text-xl font-bold flex items-center gap-1.5">Check-in <SectionHint text="Check-in — captains confirm their team is ready before the match. It opens shortly before the match time and closes when the match starts." /></h2>
 
@@ -88,8 +92,8 @@ export default function CheckinSection({ match, windowMinutes, teamA, teamB, che
       {state === 'no_time' && <p className="text-stone-500 text-sm">Check-in opens once the match has a time.</p>}
       {checkinWindow && (
         <p className="text-stone-700 text-sm">
-          Opens {new Date(checkinWindow.opensAt).toLocaleString(undefined, timeFormat)}, closes at the match time{' '}
-          {new Date(checkinWindow.closesAt).toLocaleString(undefined, timeFormat)}.{' '}
+          Opens {formatTime(checkinWindow.opensAt, true)}, closes at the match time{' '}
+          {formatTime(checkinWindow.closesAt, true)}.{' '}
           {state === 'not_open' && <span className="text-yellow-700">Opens {formatCountdown(checkinWindow.opensAt - now)}.</span>}
           {state === 'open' && <span className="text-emerald-700 font-semibold">Open now, closes {formatCountdown(checkinWindow.closesAt - now)}.</span>}
           {state === 'closed' && <span className="text-stone-500">Closed.</span>}
@@ -108,7 +112,7 @@ export default function CheckinSection({ match, windowMinutes, teamA, teamB, che
                 <p className={`text-sm inline-flex items-center gap-1.5 ${row ? 'text-emerald-700' : 'text-stone-500'}`}>
                   {row ? <CircleCheck className="h-4 w-4" /> : <Hourglass className="h-4 w-4" />}
                   {row
-                    ? `Checked in ${new Date(row.checked_in_at).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })}`
+                    ? `Checked in ${formatTime(row.checked_in_at)}`
                     : 'Not checked in'}
                 </p>
               </li>
@@ -157,5 +161,6 @@ export default function CheckinSection({ match, windowMinutes, teamA, teamB, che
         </div>
       )}
     </section>
+    </>
   );
 }

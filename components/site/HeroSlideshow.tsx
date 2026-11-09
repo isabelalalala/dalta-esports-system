@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import AmbientBackground from '@/components/site/AmbientBackground';
 import { heroBannerUrl, siteImageUrl, type HeroImage, type SiteContent } from '@/utils/site';
 
 interface Props {
@@ -96,6 +97,8 @@ export default function HeroSlideshow({ title, tagline, images = [], content }: 
 
       {/* Dark semi-transparent overlay ensuring high-contrast readability */}
       <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/60 to-black/75 backdrop-blur-[1px]" />
+      {/* Slow brand glow + triangle grid over the photo, under the text */}
+      <AmbientBackground onDark />
 
       {/* Foreground Hero Content */}
       <div className="relative z-10 w-full px-4 py-14 sm:px-12 sm:py-20 text-center space-y-6 sm:space-y-8 max-w-6xl mx-auto">

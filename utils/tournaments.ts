@@ -145,17 +145,31 @@ export function fromDateTimeInput(value: string) {
   return value ? new Date(value).toISOString() : null;
 }
 
-// Readable date and time such as "Oct 19, 2026, 2:30 PM" in the viewer's time zone.
-// Pages rendered on the server (public pages) pass timeZone 'Asia/Manila', because the
-// server's own clock is UTC.
-export function formatDateTime(value: string | null | undefined, timeZone?: string) {
+// Every real moment (match times, posted at, submitted at) is shown the same way, in Philippine
+// time, whatever the viewer's device or the server clock says: "Nov 9, 2026 · 7:00 PM".
+// (DALTA's players and audience are in the Philippines; UTC+8, no daylight saving.)
+export const PH_TIME_ZONE = 'Asia/Manila';
+const phDate = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: PH_TIME_ZONE });
+const phTime = new Intl.DateTimeFormat('en-US', { hour: 'numeric', minute: '2-digit', timeZone: PH_TIME_ZONE });
+const phShortDate = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', timeZone: PH_TIME_ZONE });
+
+// "Nov 9, 2026 · 7:00 PM" (Philippine time unless another zone is given)
+export function formatDateTime(value: string | Date | null | undefined, timeZone: string = PH_TIME_ZONE) {
   if (!value) return 'Time TBD';
-  return new Date(value).toLocaleString(timeZone ? 'en-PH' : undefined, {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-    hour: 'numeric',
-    minute: '2-digit',
-    timeZone,
-  });
+  const date = new Date(value);
+  if (timeZone === PH_TIME_ZONE) return `${phDate.format(date)} · ${phTime.format(date)}`;
+  const day = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone }).format(date);
+  const time = new Intl.DateTimeFormat('en-US', { hour: 'numeric', minute: '2-digit', timeZone }).format(date);
+  return `${day} · ${time}`;
+}
+
+// "Nov 9, 2026" for a moment (e.g. joined on), in Philippine time
+export function formatMomentDate(value: string | Date | null | undefined) {
+  return value ? phDate.format(new Date(value)) : '—';
+}
+
+// "7:00 PM", or "Nov 9 · 7:00 PM" with withDay
+export function formatTime(value: string | number | Date, withDay = false) {
+  const date = new Date(value);
+  return withDay ? `${phShortDate.format(date)} · ${phTime.format(date)}` : phTime.format(date);
 }

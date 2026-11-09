@@ -344,7 +344,7 @@ export default function Register() {
                 disabled={loading || !consent || !tosConsent || cooldown.remaining > 0}
                 className="w-full py-4 rounded-xl bg-gold hover:bg-golddark text-stone-950 font-black text-xs sm:text-sm uppercase tracking-widest shadow-md hover:-translate-y-0.5 transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
               >
-                {loading ? 'Creating account...' : cooldown.remaining > 0 ? `Sign Up (wait ${cooldown.remaining}s)` : 'Sign Up'}
+                {loading ? 'Creating account...' : cooldown.remaining > 0 ? `Sign up (wait ${cooldown.remaining}s)` : 'Sign up'}
               </button>
 
               {/* Bottom Login Link */}
@@ -354,7 +354,7 @@ export default function Register() {
                   href="/auth/login"
                   className="text-amber-700 font-black tracking-wider hover:underline hover:text-amber-800 ml-1.5"
                 >
-                  Login
+                  Log in
                 </Link>
               </p>
             </form>

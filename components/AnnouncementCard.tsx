@@ -2,6 +2,7 @@ import Link from 'next/link';
 import type { ReactNode } from 'react';
 import { Pin } from 'lucide-react';
 import type { Announcement } from '@/utils/types';
+import { formatDateTime } from '@/utils/tournaments';
 
 // One announcement. Used on /announcements, the tournament page and the dashboard.
 // `compact` shortens the text to 3 lines; `actions` holds admin buttons (Edit / Delete).
@@ -48,7 +49,7 @@ export default function AnnouncementCard({
       <div>
         <h3 className="text-base sm:text-lg font-black text-stone-950 tracking-wide">{a.title}</h3>
         <p className="text-xs text-stone-500 font-semibold tracking-wider mt-1">
-          {new Date(a.created_at).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })}
+          {formatDateTime(a.created_at)}
           {edited && ' · edited'}
         </p>
       </div>

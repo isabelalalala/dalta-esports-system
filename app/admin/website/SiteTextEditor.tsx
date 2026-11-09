@@ -8,6 +8,7 @@ import { clearSiteBannerClientCache } from '@/components/site/PageHeroBackground
 import { deleteSiteImage } from '@/utils/site-images';
 import { refreshSite } from './actions';
 import ImageField from './ImageField';
+import { toast } from '@/components/Toaster';
 
 const inputClass =
   'w-full p-3 rounded-xl bg-white text-stone-950 border border-stone-300 placeholder:text-stone-400 focus:border-amber-600 focus:ring-2 focus:ring-amber-500/20 shadow-xs outline-none transition-all font-medium text-xs sm:text-sm';
@@ -100,7 +101,7 @@ export default function SiteTextEditor() {
       }
       clearSiteBannerClientCache();
       await refreshSite();
-      setMessage('Saved. The website is updated.');
+      toast.success('Saved. The website is updated.');
       setReloadCount((n) => n + 1);
     } catch (err) {
       setError(getErrorMessage(err, 'Failed to save'));

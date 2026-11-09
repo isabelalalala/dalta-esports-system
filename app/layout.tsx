@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import Footer from "@/components/Footer";
+import Toaster from "@/components/Toaster";
 import SiteHeader from "@/components/site/SiteHeader";
 import { SITE_URL } from "@/utils/site-url";
 import { montserrat } from "@/utils/fonts";
@@ -41,6 +42,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <SiteHeader />
         {children}
         <Footer />
+        <Toaster />
       </body>
     </html>
   );

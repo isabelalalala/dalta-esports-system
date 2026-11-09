@@ -35,11 +35,15 @@ import AvatarUploader from '@/components/AvatarUploader';
 import MyWarnings from '@/components/MyWarnings';
 import { refreshViewer } from '@/utils/use-viewer';
 import { can } from '@/utils/permissions';
+import { useConfirm } from '@/components/useConfirm';
+import { formatMomentDate } from '@/utils/tournaments';
+import { toast } from '@/components/Toaster';
 
 const inputClass =
   'w-full p-3.5 rounded-xl bg-white text-stone-950 border border-stone-300 placeholder:text-stone-400 focus:border-gold focus:ring-2 focus:ring-gold/25 shadow-xs outline-none transition-all font-medium text-xs sm:text-sm';
 
 export default function ProfilePage() {
+  const [confirmDialog, ask] = useConfirm();
   usePageTitle('Profile');
   const supabase = createClient();
   const router = useRouter();
@@ -122,7 +126,7 @@ export default function ProfilePage() {
         .update({ full_name: fullName.trim() || null })
         .eq('id', profile.id);
       if (updateError) throw updateError;
-      setMessage('Name updated successfully.');
+      toast.success('Name updated successfully.');
       // The header shows the name's initials when there is no picture
       refreshViewer().catch(() => undefined);
     } catch (err) {
@@ -139,7 +143,7 @@ export default function ProfilePage() {
   };
 
   const handleRemoveGameProfile = async (gp: PlayerGameProfile, gameName: string) => {
-    if (!confirm(`Remove your ${gameName} profile? (Not possible while you are on a ${gameName} team.)`)) return;
+    if (!(await ask({ title: `Remove your ${gameName} profile?`, message: `This isn't possible while you are on a ${gameName} team.`, confirmLabel: 'Remove profile', tone: 'danger' }))) return;
     setSaving(true);
     setError('');
 
@@ -153,7 +157,7 @@ export default function ProfilePage() {
       if (deleteError) throw deleteError;
       if (!data || data.length === 0) throw new Error('The game profile could not be removed.');
       setReloadCount((n) => n + 1);
-      setMessage('Game profile removed.');
+      toast.success('Game profile removed.');
     } catch (err) {
       setError(getErrorMessage(err, 'Failed to remove game profile'));
     } finally {
@@ -191,7 +195,9 @@ export default function ProfilePage() {
   }
 
   return (
-    // The layout (SiteNavLayout) renders the main element and the page padding
+    <>
+    {confirmDialog}
+    {/* The layout (SiteNavLayout) renders the main element and the page padding */}
     <div className="w-full text-stone-950">
       <div className="w-full max-w-6xl mx-auto space-y-8">
         {/* 1. Main Hero Container (Matching Dashboard & Tournaments Layout) */}
@@ -315,11 +321,7 @@ export default function ProfilePage() {
                   <>
                     You agreed to the Perpetualite Privacy Notice on{' '}
                     <strong className="text-stone-900">
-                      {new Date(profile.privacy_consent_at).toLocaleDateString(undefined, {
-                        month: 'short',
-                        day: 'numeric',
-                        year: 'numeric',
-                      })}
+                      {formatMomentDate(profile.privacy_consent_at)}
                     </strong>
                     .{' '}
                   </>
@@ -397,7 +399,7 @@ export default function ProfilePage() {
                   onSaved={(gameName) => {
                     setEditingGameId(null);
                     setReloadCount((n) => n + 1);
-                    setMessage(`${gameName} profile saved.`);
+                    toast.success(`${gameName} profile saved.`);
                   }}
                 />
               )}
@@ -463,6 +465,31 @@ export default function ProfilePage() {
           </Suspense>
         </div>
 
+        {/* Help: replay the first-login tour (it shows on the dashboard until dismissed again) */}
+        <div className="animate-stagger-3 bg-white border border-stone-200/90 rounded-3xl p-6 sm:p-8 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h2 className="text-lg sm:text-xl font-black text-stone-950 tracking-wider uppercase">Help</h2>
+            <p className="text-sm text-stone-600 font-medium normal-case mt-1">
+              See the quick tour again, or read the <Link href="/help" className="font-bold text-maroon underline">Help &amp; FAQ</Link>.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={async () => {
+              const { error: tourError } = await supabase.from('profiles').update({ tour_dismissed_at: null }).eq('id', profile.id);
+              if (tourError) {
+                setError(getErrorMessage(tourError, 'The tour could not be restarted.'));
+                return;
+              }
+              await refreshViewer().catch(() => undefined);
+              router.push('/dashboard');
+            }}
+            className="btn btn-secondary shrink-0"
+          >
+            Restart quick tour
+          </button>
+        </div>
+
         {/* 6. Danger Zone: Delete Account */}
         <div className="animate-stagger-3 bg-red-50/20 border border-red-200/90 rounded-3xl p-6 sm:p-8 shadow-xs space-y-4">
           <div className="flex items-center gap-3 pb-4 border-b border-red-100">
@@ -522,6 +549,7 @@ export default function ProfilePage() {
         </div>
       </div>
     </div>
+    </>
   );
 }
 
@@ -577,7 +605,7 @@ function ChangePassword({ email, fullName }: { email: string; fullName: string }
         reloadTo('/dashboard');
         return;
       }
-      setMessage('Password changed successfully.');
+      toast.success('Password changed successfully.');
       setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');

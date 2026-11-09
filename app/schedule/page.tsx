@@ -12,6 +12,7 @@ import PageLoading from '@/components/PageLoading';
 import { usePageTitle } from '@/utils/page-title';
 import PageHeroBackground from '@/components/site/PageHeroBackground';
 import { Calendar, ChevronRight, Filter, Radio, Trophy, Tv } from 'lucide-react';
+import AutoUpdateBadge from '@/components/AutoUpdateBadge';
 
 type ScheduleMatch = Match & { tournaments: { name: string } | null };
 
@@ -194,6 +195,7 @@ export default function SchedulePage() {
                 <span className="text-red-700">Live Now</span>
                 <span className="text-xs text-stone-500 font-bold">({live.length})</span>
               </h2>
+              <AutoUpdateBadge />
               {live.length > 0 && (
                 <Link
                   href="/live"

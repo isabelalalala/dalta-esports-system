@@ -22,6 +22,7 @@ import PageHeroBackground from '@/components/site/PageHeroBackground';
 import { BadgeCheck, ExternalLink, Target } from 'lucide-react';
 
 import GameLogo from '@/components/GameLogo';
+import AutoUpdateBadge from '@/components/AutoUpdateBadge';
 
 const TZ = 'Asia/Manila';
 
@@ -289,7 +290,9 @@ async function TournamentContent({ params }: { params: PageProps<'/t/[id]'>['par
         <div className="border-b border-stone-100 pb-3 flex flex-wrap items-center justify-between gap-3">
           <div>
             <span className="text-[11px] font-black tracking-widest text-maroon uppercase">Playoffs</span>
-            <h2 className="text-xl sm:text-2xl font-black text-stone-950 uppercase tracking-wide">Tournament Bracket</h2>
+            <h2 className="text-xl sm:text-2xl font-black text-stone-950 uppercase tracking-wide flex flex-wrap items-center gap-2">
+              Tournament Bracket {data.matches.length > 0 && <AutoUpdateBadge />}
+            </h2>
           </div>
           {data.matches.length > 0 && (
             <div className="flex items-center gap-1.5 text-xs text-stone-600 font-black uppercase tracking-wider">

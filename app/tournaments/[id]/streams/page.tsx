@@ -26,12 +26,15 @@ import {
   Video,
 } from 'lucide-react';
 import { can } from '@/utils/permissions';
+import { useConfirm } from '@/components/useConfirm';
+import SectionHint from '@/components/SectionHint';
 
 const inputClass =
   'w-full border border-stone-300 bg-stone-50 px-4 py-3.5 text-stone-950 font-bold text-xs rounded-xl outline-none focus:border-amber-600 focus:bg-surface focus:ring-2 focus:ring-amber-500/20 transition-all placeholder:text-stone-400 shadow-xs';
 const labelClass = 'block text-stone-950 text-xs font-black tracking-wider uppercase mb-2';
 
 export default function ManageStreamsPage() {
+  const [confirmDialog, ask] = useConfirm();
   usePageTitle('Tournament streams');
   const supabase = createClient();
   const [tournament, setTournament] = useState<Tournament | null>(null);
@@ -121,7 +124,7 @@ export default function ManageStreamsPage() {
   };
 
   const handleDelete = async (stream: Stream) => {
-    if (!confirm(`Delete the stream "${stream.title}"? Its viewing stats are deleted too.`)) return;
+    if (!(await ask({ title: 'Delete stream?', message: `Delete "${stream.title}"? Its viewing stats are deleted too.`, confirmLabel: 'Delete stream', tone: 'danger' }))) return;
     setError('');
     try {
       const { data, error: deleteError } = await supabase
@@ -158,6 +161,8 @@ export default function ManageStreamsPage() {
   }
 
   return (
+    <>
+    {confirmDialog}
     <div className="w-full space-y-8 text-stone-950">
       {/* 1. Main Hero Container */}
       <section className="relative w-full rounded-3xl border border-stone-800/80 bg-stone-950 overflow-hidden shadow-md p-8 sm:p-12 @5xl:p-14 text-center text-white flex flex-col items-center justify-center space-y-4">
@@ -349,6 +354,7 @@ export default function ManageStreamsPage() {
         </div>
       )}
     </div>
+    </>
   );
 }
 
@@ -476,6 +482,7 @@ function StreamForm({
         <span className="text-[11px] font-black tracking-widest text-maroon uppercase">Broadcast Studio</span>
         <h2 className="text-xl sm:text-2xl font-black text-stone-950 uppercase tracking-wide flex items-center gap-2">
           <Video className="w-5 h-5 text-maroon" /> {existing ? 'Edit Broadcast Stream' : 'Configure New Live Stream'}
+          <SectionHint text="Checklist: 1) the Facebook video is Public, 2) paste its link (videos, watch, reel or share links work), 3) set Live when it starts and Ended after. Full guide on Help & FAQ." />
         </h2>
       </div>
 
@@ -552,10 +559,11 @@ function StreamForm({
               )}
               {check.embeddable === false && (
                 <p role="alert" className="rounded-xl border border-yellow-500/50 bg-yellow-50 p-3 font-semibold text-stone-950">
-                  Facebook says this video can&apos;t be shown here (&quot;Video unavailable / you don&apos;t have
-                  permission&quot;). Viewers will see that message instead of the stream. Go through the checklist above:
-                  usually the video isn&apos;t Public, is on a personal profile, or has embedding turned off. You can
-                  still save it and fix the settings on Facebook.
+                  <strong className="block">This Facebook link can&apos;t be played here.</strong>
+                  Make sure the video is Public, or paste the full video link. Facebook would show viewers
+                  &quot;Video unavailable&quot; instead of the stream. It usually means the video isn&apos;t Public, is on a
+                  personal profile, or has embedding turned off (see the checklist above). You can still save it
+                  and fix the settings on Facebook.
                 </p>
               )}
             </div>

@@ -6,6 +6,8 @@ import { getErrorMessage } from '@/utils/errors';
 import type { Profile } from '@/utils/types';
 import { SCHOOL_SUGGESTIONS, verificationLabels, verificationStyles } from '@/utils/verification';
 import { BadgeCheck, GraduationCap, ShieldCheck } from 'lucide-react';
+import { useConfirm } from '@/components/useConfirm';
+import { toast } from '@/components/Toaster';
 
 const inputClass =
   'w-full p-3.5 rounded-xl bg-white text-stone-950 border border-stone-300 placeholder:text-stone-400 focus:border-gold focus:ring-2 focus:ring-gold/25 shadow-xs outline-none transition-all font-medium text-xs sm:text-sm';
@@ -19,6 +21,7 @@ interface Props {
 // Student details for verification (players only). Saving sends them to admin/staff for
 // review; the database sets the status, and changing details later means a new review.
 export default function StudentDetails({ profile, onSaved }: Props) {
+  const [confirmDialog, ask] = useConfirm();
   const supabase = createClient();
   const [studentId, setStudentId] = useState(profile.student_id || '');
   const [school, setSchool] = useState(profile.school || '');
@@ -35,7 +38,7 @@ export default function StudentDetails({ profile, onSaved }: Props) {
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (status === 'verified' && !confirm('Changing your details removes your verification until an organizer checks them again. Continue?')) {
+    if (status === 'verified' && !(await ask({ title: 'Change verified details?', message: 'Changing your details removes your verification until an organizer checks them again.', confirmLabel: 'Save changes' }))) {
       return;
     }
     setSaving(true);
@@ -49,7 +52,7 @@ export default function StudentDetails({ profile, onSaved }: Props) {
         .select('id');
       if (saveError) throw saveError;
       if (!data || data.length === 0) throw new Error('Your details could not be saved.');
-      setMessage('Saved. An organizer will review your details.');
+      toast.success('Saved. An organizer will review your details.');
       onSaved();
     } catch (err) {
       setError(getErrorMessage(err, 'Failed to save your student details'));
@@ -59,6 +62,8 @@ export default function StudentDetails({ profile, onSaved }: Props) {
   };
 
   return (
+    <>
+    {confirmDialog}
     <form onSubmit={handleSave} className="bg-white border border-stone-200/90 rounded-3xl p-6 sm:p-8 shadow-xs space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-stone-100">
         <div className="flex items-center gap-3">
@@ -159,5 +164,6 @@ export default function StudentDetails({ profile, onSaved }: Props) {
         </button>
       </div>
     </form>
+    </>
   );
 }

@@ -20,6 +20,7 @@ import PageError from '@/components/PageError';
 import { usePageTitle } from '@/utils/page-title';
 import PageHeroBackground from '@/components/site/PageHeroBackground';
 import { Download, Printer } from 'lucide-react';
+import { formatDateTime } from '@/utils/tournaments';
 
 // A generated report, shown from its saved copy ("display after report": print or export).
 export default function SavedReportPage() {
@@ -57,7 +58,7 @@ export default function SavedReportPage() {
     return <PageError message={error || 'Report not found. It may have been deleted.'} backHref="/analytics" backLabel="Back to Analytics" />;
   }
 
-  const generatedAt = new Date(report.generated_at).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' });
+  const generatedAt = formatDateTime(report.generated_at);
   const { data, filters } = report;
   // Reports saved before Phase 5 have no written text: compute it from their numbers (no AI)
   const insights = data.insights ?? rulesInsights(buildInsightRequest(data, filters.source, describeFilters(filters)));

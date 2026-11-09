@@ -23,8 +23,8 @@ describe('getErrorMessage', () => {
   });
   it('translates not-found and common Postgres codes', () => {
     expect(getErrorMessage({ code: 'PGRST116', message: '0 rows' }, FALLBACK)).toContain('Not found');
-    expect(getErrorMessage({ code: '23505', message: 'duplicate key' }, FALLBACK)).toBe('This already exists.');
-    expect(getErrorMessage({ code: '23503', message: 'foreign key' }, FALLBACK)).toContain('linked to other records');
+    expect(getErrorMessage({ code: '23505', message: 'duplicate key' }, FALLBACK)).toContain('This already exists.');
+    expect(getErrorMessage({ code: '23503', message: 'foreign key' }, FALLBACK)).toContain('still used elsewhere');
     expect(getErrorMessage({ code: '23514', message: 'check violation' }, FALLBACK)).toContain("aren't allowed");
     expect(getErrorMessage({ code: '57014', message: 'canceling statement' }, FALLBACK)).toContain('took too long');
   });

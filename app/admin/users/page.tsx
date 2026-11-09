@@ -18,6 +18,8 @@ import { AVATARS_BUCKET, avatarPathFromUrl } from '@/utils/avatars';
 import PageHeroBackground from '@/components/site/PageHeroBackground';
 import PageLoading from '@/components/PageLoading';
 import { can } from '@/utils/permissions';
+import { useConfirm } from '@/components/useConfirm';
+import { formatMomentDate } from '@/utils/tournaments';
 
 const ROLES = ['admin', 'staff', 'player', 'spectator'] as const;
 
@@ -191,6 +193,7 @@ export default function ManageUsersPage() {
 
 // One user with inline name editing, role dropdown, and delete.
 function UserRow({ user, isMe, onChanged }: { user: Profile; isMe: boolean; onChanged: () => void }) {
+  const [confirmDialog, ask] = useConfirm();
   const supabase = createClient();
   const [editingName, setEditingName] = useState(false);
   const [fullName, setFullName] = useState(user.full_name || '');
@@ -239,10 +242,10 @@ function UserRow({ user, isMe, onChanged }: { user: Profile; isMe: boolean; onCh
     }
   };
 
-  const handleRoleChange = (role: string) => {
+  const handleRoleChange = async (role: string) => {
     if (role === user.role) return;
     if ((role === 'admin' || role === 'staff') &&
-        !confirm(`Make ${user.email} ${roleLabels[role]}? They will get access to organizer tools.`)) {
+        !(await ask({ title: `Make ${roleLabels[role]}?`, message: `${user.email} will get access to organizer tools.`, confirmLabel: `Make ${roleLabels[role]}` }))) {
       return;
     }
     updateProfile({ role });
@@ -254,7 +257,7 @@ function UserRow({ user, isMe, onChanged }: { user: Profile; isMe: boolean; onCh
   };
 
   const handleDelete = async () => {
-    if (!confirm(`Permanently delete the account ${user.email}? This can't be undone.`)) return;
+    if (!(await ask({ title: 'Delete account?', message: `Permanently delete the account ${user.email}? This can't be undone.`, confirmLabel: 'Delete account', tone: 'danger' }))) return;
     setBusy(true);
     setError('');
     try {
@@ -268,6 +271,8 @@ function UserRow({ user, isMe, onChanged }: { user: Profile; isMe: boolean; onCh
   };
 
   return (
+    <>
+    {confirmDialog}
     <div className="px-6 py-4 grid grid-cols-1 @3xl:grid-cols-12 gap-3 @3xl:gap-4 @3xl:items-center hover:bg-stone-50/60 transition-colors">
       {/* Name and email */}
       <div className="@3xl:col-span-4 min-w-0">
@@ -327,10 +332,10 @@ function UserRow({ user, isMe, onChanged }: { user: Profile; isMe: boolean; onCh
       {/* Join date */}
       <div className="@3xl:col-span-2 text-stone-600 font-medium text-xs tracking-wider">
         <span className="@3xl:hidden">Joined </span>
-        {new Date(user.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+        {formatMomentDate(user.created_at)}
         <span className="block text-[11px] text-stone-500 mt-0.5 normal-case font-normal">
           {user.privacy_consent_at
-            ? `Consent: ${new Date(user.privacy_consent_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}`
+            ? `Consent: ${formatMomentDate(user.privacy_consent_at)}`
             : 'No privacy consent yet'}
         </span>
       </div>
@@ -398,6 +403,7 @@ function UserRow({ user, isMe, onChanged }: { user: Profile; isMe: boolean; onCh
         </ConfirmDialog>
       )}
     </div>
+    </>
   );
 }
 

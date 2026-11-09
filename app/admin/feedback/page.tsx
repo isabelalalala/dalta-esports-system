@@ -15,6 +15,7 @@ import PageLoading from '@/components/PageLoading';
 import PageError from '@/components/PageError';
 import PageHeroBackground from '@/components/site/PageHeroBackground';
 import { can } from '@/utils/permissions';
+import { formatDateTime } from '@/utils/tournaments';
 
 const inputClass =
   'w-full p-3 rounded-xl bg-white text-stone-950 border border-stone-300 placeholder:text-stone-400 focus:border-amber-600 focus:ring-2 focus:ring-amber-500/20 shadow-xs outline-none transition-all font-medium text-xs sm:text-sm';
@@ -312,7 +313,7 @@ export default function FeedbackAnalysisPage() {
                   <span className="text-xs text-stone-500 font-semibold tracking-wide">
                     {f.tournaments?.name ?? (f.target_removed ? 'Deleted tournament' : 'General')}
                     {f.matches && ` · Match ${f.matches.match_number} (round ${f.matches.round})`}
-                    {' · '}{new Date(f.created_at).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })}
+                    {' · '}{formatDateTime(f.created_at)}
                   </span>
                 </div>
 

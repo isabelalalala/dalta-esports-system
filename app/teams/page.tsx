@@ -53,6 +53,7 @@ export default function TeamsPage() {
   const tabParam = searchParams.get('tab');
   const tab = tabParam === 'mine' || tabParam === 'all' ? tabParam : null;
   const recruitingParam = searchParams.get('recruiting') === '1';
+  const searchParam = (searchParams.get('q') ?? '').slice(0, 100);
   const setTab = (t: 'mine' | 'all') => router.replace(`/teams?tab=${t}`, { scroll: false });
   const [myId, setMyId] = useState('');
 
@@ -239,8 +240,9 @@ export default function TeamsPage() {
 
         {activeTab === 'all' ? (
           <TeamDirectory
-            key={recruitingParam ? 'recruiting' : 'all'}
+            key={`${recruitingParam ? 'recruiting' : 'all'}-${searchParam}`}
             initialRecruitingOnly={recruitingParam}
+            initialSearch={searchParam}
             games={games}
             isPlayer={isPlayer}
             myTeamIds={teams.map((t) => t.id)}

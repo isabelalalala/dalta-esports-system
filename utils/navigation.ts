@@ -8,7 +8,7 @@ export type NavIcon =
   | 'home' | 'dashboard' | 'events' | 'tournaments' | 'live' | 'teams' | 'feedback' | 'profile' | 'myteam'
   | 'schedule' | 'recruiting' | 'matches' | 'brackets' | 'users' | 'announcements' | 'sentiment' | 'reports'
   | 'verification' | 'website' | 'activity' | 'about' | 'campaigns' | 'divisions' | 'community' | 'stats'
-  | 'registrations' | 'moderation';
+  | 'registrations' | 'moderation' | 'help';
 
 export interface NavItem {
   href: string;
@@ -63,9 +63,10 @@ const I = {
   campaigns: { href: '/campaigns', label: 'Campaigns', icon: 'campaigns', hint: 'Our campaigns and programs' },
   divisions: { href: '/divisions', label: 'Game Divisions', icon: 'divisions', hint: 'Our official teams per game' },
   community: { href: '/community', label: 'Community', icon: 'community', hint: 'Join the DALTA community' },
+  help: { href: '/help', label: 'Help & FAQ', icon: 'help', hint: 'How things work: teams, streams, feedback, warnings' },
 } satisfies Record<string, NavItem>;
 
-const EXPLORE: NavGroup = { label: 'Explore', items: [I.about, I.campaigns, I.divisions, I.community] };
+const EXPLORE: NavGroup = { label: 'Explore', items: [I.about, I.campaigns, I.divisions, I.community, I.help] };
 
 export function navFor(role: string | null | undefined, loggedIn: boolean): RoleNav {
   if (role === 'admin') {
@@ -155,7 +156,7 @@ const SEGMENT_LABELS: Record<string, string> = {
   activity: 'Activity Log', edit: 'Edit', create: 'Create', streams: 'Streams', predictions: "Pick'em",
   events: 'Events', campaigns: 'Campaigns', divisions: 'Game Divisions', about: 'About Us', community: 'Community',
   match: 'Match', search: 'Search', privacy: 'Privacy', terms: 'Terms', consent: 'Consent', accept: 'Accept',
-  moderation: 'Moderation', banned: 'Account banned', games: 'Game Profiles',
+  moderation: 'Moderation', banned: 'Account banned', games: 'Game Profiles', help: 'Help & FAQ',
 };
 
 // Labels for an id segment, by the segment before it

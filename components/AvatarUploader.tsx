@@ -11,6 +11,7 @@ import {
 } from '@/utils/avatars';
 import Avatar from '@/components/Avatar';
 import ConfirmDialog from '@/components/ConfirmDialog';
+import { toast } from '@/components/Toaster';
 
 interface Props {
   userId: string;
@@ -152,6 +153,7 @@ export default function AvatarUploader({ userId, name, url, onChange }: Props) {
       onChange(publicUrl);
       await refreshViewer();
       closeCropper();
+      toast.success('Profile picture saved.');
     } catch (err) {
       setError(getErrorMessage(err, 'Your picture could not be saved.'));
     } finally {
@@ -171,6 +173,7 @@ export default function AvatarUploader({ userId, name, url, onChange }: Props) {
       onChange(null);
       await refreshViewer();
       setConfirmRemove(false);
+      toast.success('Profile picture removed.');
     } catch (err) {
       setError(getErrorMessage(err, 'Your picture could not be removed.'));
     } finally {
@@ -218,6 +221,7 @@ export default function AvatarUploader({ userId, name, url, onChange }: Props) {
           title="Crop your picture"
           confirmLabel="Save picture"
           busy={busy}
+          busyLabel="Uploading..."
           error={error}
           onConfirm={save}
           onClose={closeCropper}
@@ -272,6 +276,7 @@ export default function AvatarUploader({ userId, name, url, onChange }: Props) {
           confirmLabel="Remove picture"
           tone="danger"
           busy={busy}
+          busyLabel="Removing..."
           error={error}
           onConfirm={remove}
           onClose={() => setConfirmRemove(false)}

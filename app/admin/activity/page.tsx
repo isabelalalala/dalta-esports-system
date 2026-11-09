@@ -10,6 +10,7 @@ import PageLoading from '@/components/PageLoading';
 import PageError from '@/components/PageError';
 import PageHeroBackground from '@/components/site/PageHeroBackground';
 import { can } from '@/utils/permissions';
+import { formatDateTime } from '@/utils/tournaments';
 
 const PAGE_SIZE = 50;
 
@@ -245,7 +246,7 @@ export default function ActivityLogPage() {
                 >
                   <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 flex-1 min-w-0">
                     <time className="text-xs text-stone-500 font-bold sm:w-44 shrink-0" dateTime={log.created_at}>
-                      {new Date(log.created_at).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })}
+                      {formatDateTime(log.created_at)}
                     </time>
                     <p className="font-extrabold text-stone-900 text-xs sm:text-sm tracking-wide">
                       {describeActivity(log)}

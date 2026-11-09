@@ -8,6 +8,7 @@ import ConfirmDialog from '@/components/ConfirmDialog';
 import {
   optionIdFrom, type GameOption, type GameProfileField, type GameProfileSchema,
 } from '@/utils/game-profiles';
+import { toast } from '@/components/Toaster';
 
 const inputClass =
   'w-full p-2.5 rounded-xl bg-white text-stone-950 border border-stone-300 focus:border-gold focus:ring-2 focus:ring-gold/25 outline-none text-sm font-medium';
@@ -63,7 +64,7 @@ export default function GameSchemaEditor({
       });
       if (rpcError) throw rpcError;
       setConfirming(false);
-      setMessage(`${gameName} saved. Players see the new lists right away.`);
+      toast.success(`${gameName} saved. Players see the new lists right away.`);
       onSaved(schema);
     } catch (err) {
       setError(getErrorMessage(err, 'The changes could not be saved.'));

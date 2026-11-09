@@ -22,8 +22,7 @@ import { can, isOrganizer } from '@/utils/permissions';
 import {
   Activity, Brain, CalendarDays, ChartColumn, ClipboardList,
   Crown, Eye, Gamepad2, Globe, GraduationCap, Megaphone, MessageSquare, RadioTower,
-  Shield, Target, Trophy, Tv, Users, type LucideIcon,
-} from 'lucide-react';
+  Shield, Target, Trophy, Tv, Users, type LucideIcon, LifeBuoy } from 'lucide-react';
 
 interface DashCard {
   href: string;
@@ -52,6 +51,12 @@ const roleIcons: Record<string, LucideIcon> = {
 // Shortcuts for each role, picked by permission (utils/permissions.ts). The pages check the
 // role themselves (and RLS protects the data); the cards are only a convenience.
 function cardsFor(role: string | undefined): DashCard[] {
+  return [...roleCards(role), HELP_CARD];
+}
+
+const HELP_CARD: DashCard = { href: '/help', title: 'Help & FAQ', text: 'How teams, streams, feedback and warnings work', icon: LifeBuoy };
+
+function roleCards(role: string | undefined): DashCard[] {
   if (can(role, 'team.join')) {
     return [
       { href: '/tournaments', title: 'Available Tournaments', text: 'Browse and register for tournaments', icon: ClipboardList },

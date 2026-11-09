@@ -4,6 +4,7 @@ import { Suspense, useEffect, useState, useSyncExternalStore, type ReactNode } f
 import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import {
+  LifeBuoy,
   Activity, Brain, CalendarDays, ChartColumn, ChevronLeft, ChevronRight, ClipboardList, Flame, Gamepad2,
   Globe, GraduationCap, Home, Info, LayoutDashboard, Megaphone, Menu, MessageSquare, MoreHorizontal,
   PanelLeftClose, PanelLeftOpen, Shield, ShieldAlert, Swords, Trophy, Tv, UserCircle, UserPlus, Users, Network, X,
@@ -23,7 +24,7 @@ const ICONS: Record<NavIcon, LucideIcon> = {
   matches: Swords, brackets: Network, users: Users, announcements: Megaphone, sentiment: Brain,
   reports: ChartColumn, verification: GraduationCap, website: Globe, activity: Activity, about: Info,
   campaigns: Flame, divisions: Gamepad2, community: Users, stats: ChartColumn, registrations: ClipboardList,
-  moderation: ShieldAlert,
+  moderation: ShieldAlert, help: LifeBuoy,
 };
 
 // The "collapse menu" choice, saved in localStorage (kept in memory when storage is blocked,

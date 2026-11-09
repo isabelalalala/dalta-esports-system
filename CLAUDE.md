@@ -104,7 +104,7 @@ Enforced by a CHECK constraint on `profiles.role` (migration `202610161200_role_
 - RLS policies check roles with `public.get_my_role()`.
 
 ## Current schema (public)
-All migrations are in `supabase/migrations/`, run in filename order (202610151100 … 202611091500). `202610151100_base_schema` creates the three pre-migration base tables (`profiles`, `tournaments`, `tournament_registrations`). It is `if not exists`, so it is a no-op on databases that already have them.
+All migrations are in `supabase/migrations/`, run in filename order (202610151100 … 202611091600). `202610151100_base_schema` creates the three pre-migration base tables (`profiles`, `tournaments`, `tournament_registrations`). It is `if not exists`, so it is a no-op on databases that already have them.
 `202610181000_feedback_protection` also needs its one-time Vault key setup (the `feedback_server_key` secret +
 `FEEDBACK_SERVER_KEY`); the steps are at the top of that file.
 Readers: "anyone" = also logged out; "logged-in" = any role; "admin/staff" = organizers only.
@@ -299,6 +299,8 @@ Readers: "anyone" = also logged out; "logged-in" = any role; "admin/staff" = org
   (POST `/api/feedback/classify` admin, or `/api/moderation/retry` admin/staff) runs the next batch of 20,
   skipping rows that already failed `MAX_FEEDBACK_ANALYSIS_ATTEMPTS` (5, `utils/feedback.ts`): "Gave up".
   `save_feedback_sentiment()` / `mark_feedback_pending()` still exist but the app no longer uses them.
+- Since 202611091600 users may delete their own feedback (not while hidden/removed); `/feedback` My History has
+  Edit (delete + put it back in the form) and Delete, and shows "Analyzing…" while moderation is pending.
 - Notes for reports: `topics` mix praise and complaints; "common concerns" = topics on negative feedback.
   Pending rows still have a rating.
 
@@ -489,6 +491,11 @@ triggers with readable error messages.
   Asia/Manila VTIMEZONE, fixed UID per match + SEQUENCE from updated_at (re-import updates), 1-hour events,
   `webcal://` subscribe links (`components/CalendarLinks.tsx`). Data from `get_public_calendar()`.
 - `components/ShareButton.tsx`: native share sheet when available, Copy link, Share on Facebook.
+- Footer (Phase 9, `components/Footer.tsx`): max-width columns, Lucide icon before each link, round social buttons
+  (`components/BrandIcons.tsx` SVGs; shown only when the Site text link is an https URL: Facebook, Instagram,
+  TikTok, YouTube, Discord), contact email, `BackToTop`, and `components/site/AmbientBackground.tsx` (also on the
+  home hero with `onDark`): two faint drifting glows + triangle grid, transform/opacity only, paused off-screen or
+  in a hidden tab, still with reduced motion.
 - Every page (public and logged in) has the same header and footer, both in `app/layout.tsx`:
   `components/site/SiteHeader.tsx` (logo, search, and `SiteAuthButtons`: theme toggle + Log in / Sign up, or
   theme toggle + Dashboard + `NotificationBell` + your avatar (→ /profile) + Log out) and `components/Footer.tsx`.
@@ -555,7 +562,16 @@ triggers with readable error messages.
 - When RLS blocks an update or delete, Supabase returns no error and no rows. Add `.select('id')` and check
   that a row came back, then show a clear message.
 - Dates without a time (tournament dates) are stored as midnight UTC: use `toDateInput()` and `formatDate()`.
-  Real moments (`created_at`, `scheduled_at`) are shown in the viewer's local time.
+  Real moments (`created_at`, `scheduled_at`) are shown in Philippine time with `formatDateTime()` ("Nov 9, 2026 ·
+  7:00 PM"), `formatMomentDate()` or `formatTime()` from `utils/tournaments.ts` (Phase 9); never `toLocaleString()`.
+- **Confirmations**: `const [confirmDialog, ask] = useConfirm()` (`components/useConfirm.tsx`) +
+  `if (!(await ask({...}))) return;`, render `{confirmDialog}` once. Never `window.confirm()`. Dialogs with extra
+  fields use `ConfirmDialog` directly (`busyLabel` for "Uploading..." etc.).
+- **Action results**: `toast.success()/toast.error()/toast(msg, { action: { label: 'Undo', onClick } })` from
+  `components/Toaster.tsx` (mounted once in `app/layout.tsx`). Keep inline messages for errors the user fixes in
+  the form. Buttons: `btn btn-primary|btn-secondary|btn-danger` utilities in `globals.css`.
+- Live sections show `components/AutoUpdateBadge.tsx`. Help content is `utils/help.ts` (page `app/(site)/help`):
+  update it when a feature changes how something works.
 - **Breakpoints inside pages are container breakpoints** (Phase 6): `<main>` in `SiteNavLayout` is an `@container`,
   so page content uses `@3xl:` / `@5xl:` / `@7xl:` (48/64/80rem of CONTENT width) instead of `md:` / `lg:` / `xl:`.
   `sm:` stays a screen breakpoint (phone padding/text). Only the header, footer, sidebar/bottom bar, the standalone

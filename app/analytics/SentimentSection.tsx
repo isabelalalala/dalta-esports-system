@@ -6,6 +6,8 @@ import { SENTIMENTS, sentimentShareByWeek, type SentimentReport } from '@/utils/
 import type { Sentiment } from '@/utils/types';
 import { NoData, ReportCard, ReportTable, StatTile, capitalize, formatDay, formatRating, type Insights } from './ReportParts';
 import { Star } from 'lucide-react';
+import { formatMomentDate } from '@/utils/tournaments';
+import SectionHint from '@/components/SectionHint';
 
 interface Props {
   report: SentimentReport;
@@ -33,8 +35,9 @@ export default function SentimentSection({ report, noun = 'feedback entries', so
   return (
     <section className="space-y-4">
       <div>
-        <h2 className="text-xl sm:text-2xl font-black text-amber-800 uppercase tracking-wider print:text-black">
+        <h2 className="text-xl sm:text-2xl font-black text-amber-800 uppercase tracking-wider print:text-black flex items-center gap-1.5">
           Sentiment Analysis Report
+          <span className="print:hidden"><SectionHint text="Each feedback or comment is labelled positive, neutral or negative by AI, with up to 3 topics. Common concerns = the topics of negative ones. Items still pending analysis aren't counted yet." /></span>
         </h2>
         {sourceText && <p className="text-xs text-stone-500 font-medium normal-case mt-1">Data source: {sourceText}</p>}
       </div>
@@ -121,7 +124,7 @@ export default function SentimentSection({ report, noun = 'feedback entries', so
                 <p className="text-xs text-stone-500 mt-1">
                   {f.rating ? <>{f.rating} <Star className="inline h-3 w-3 fill-yellow-400 text-yellow-400" /> · </> : 'Comment · '}
                   {f.tournament_name ?? 'General'} ·{' '}
-                  {new Date(f.created_at).toLocaleDateString(undefined, { dateStyle: 'medium' })}
+                  {formatMomentDate(f.created_at)}
                   {f.topics.length > 0 && ` · ${f.topics.join(', ')}`}
                 </p>
               </li>

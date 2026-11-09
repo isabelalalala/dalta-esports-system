@@ -26,7 +26,7 @@ export function getErrorMessage(err: unknown, fallback: string) {
   }
   // RLS or missing grants
   if (code === '42501' || /row-level security|permission denied/i.test(message)) {
-    return "You don't have permission to do that.";
+    return "You don't have permission to do that. If you think you should, ask an organizer.";
   }
   // .single() found nothing
   if (code === 'PGRST116') {
@@ -40,8 +40,8 @@ export function getErrorMessage(err: unknown, fallback: string) {
     case 'weak_password': return 'This password is too weak. Use at least 10 characters with uppercase and lowercase letters, a number and a symbol.';
     case 'email_address_invalid': return "This email address can't be used. Please check it or use another one.";
     case 'same_password': return 'The new password must be different from your current one.';
-    case '23505': return 'This already exists.';
-    case '23503': return "This is still linked to other records, so it can't be changed or deleted.";
+    case '23505': return 'This already exists. Check the list for the same name or entry.';
+    case '23503': return "This is still used elsewhere (for example by a team, match or registration), so it can't be changed or deleted yet.";
     case '23514':
     case '23502': return "Some values aren't allowed. Please check the form and try again.";
     case '22P02': return 'This link or value is not valid.';

@@ -10,7 +10,8 @@ import { SectionLoading } from '@/components/PageLoading';
 
 const LIMIT = 20;
 
-// Search: tournaments, events and campaigns (only what logged-out visitors may see).
+// Search: tournaments, events and campaigns (only what logged-out visitors may see), plus a link
+// to the team directory with the same words (teams need an account, so they aren't listed here).
 // The query comes from the URL, so the results are inside Suspense.
 export default function SearchPage({ searchParams }: PageProps<'/search'>) {
   return (
@@ -33,7 +34,7 @@ async function SearchResults({ searchParams }: { searchParams: PageProps<'/searc
     return (
       <div className="space-y-4">
         <SiteSearchBox />
-        <p className="text-stone-500 text-xs sm:text-sm font-semibold">Type a tournament, event or campaign name.</p>
+        <p className="text-stone-500 text-xs sm:text-sm font-semibold">Type a tournament, event, campaign or team name.</p>
       </div>
     );
   }
@@ -67,6 +68,14 @@ async function SearchResults({ searchParams }: { searchParams: PageProps<'/searc
       </div>
 
       {total === 0 && <EmptyNote>Nothing matched. Try a game name like &quot;MLBB&quot; or part of a title.</EmptyNote>}
+
+      <p className="text-sm text-stone-700">
+        Looking for a team?{' '}
+        <Link href={`/teams?tab=all&q=${encodeURIComponent(query)}`} className="font-bold text-maroon underline">
+          Search teams for &quot;{query}&quot;
+        </Link>{' '}
+        (needs an account).
+      </p>
 
       {tournaments.length > 0 && (
         <section>

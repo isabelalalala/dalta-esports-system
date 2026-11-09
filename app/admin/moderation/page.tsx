@@ -14,6 +14,7 @@ import PageLoading from '@/components/PageLoading';
 import PageError from '@/components/PageError';
 import PageHeroBackground from '@/components/site/PageHeroBackground';
 import ConfirmDialog from '@/components/ConfirmDialog';
+import { toast } from '@/components/Toaster';
 import Avatar from '@/components/Avatar';
 import SectionHint from '@/components/SectionHint';
 
@@ -110,6 +111,8 @@ function Moderation() {
   const [busy, setBusy] = useState(false);
   const [actionError, setActionError] = useState('');
   const [reloadCount, setReloadCount] = useState(0);
+  // Hidden comments ticked for a bulk Restore / Remove
+  const [selected, setSelected] = useState<Set<string>>(new Set());
 
   const isAdmin = can(role, 'moderation.ban');
   const tabParam = searchParams.get('tab');
@@ -217,8 +220,9 @@ function Moderation() {
     setActionError('');
     try {
       await action.run(note.trim(), checked);
-      setMessage(`${action.confirmLabel}: done.`);
+      toast.success(`${action.confirmLabel}: done.`);
       setAction(null);
+      setSelected(new Set());
       setHistory({});
       reload();
     } catch (err) {
@@ -226,6 +230,27 @@ function Moderation() {
     } finally {
       setBusy(false);
     }
+  };
+
+  // Bulk: the same function once per ticked comment. Stops at the first refusal (the dialog shows
+  // it); the ones already done stay done and disappear after the reload.
+  const bulkComments = (mode: 'restore' | 'remove') => {
+    const ids = comments.filter((c) => selected.has(c.id)).map((c) => c.id);
+    ask({
+      title: mode === 'restore' ? `Restore ${ids.length} comments?` : `Confirm removing ${ids.length} comments?`,
+      body: mode === 'restore'
+        ? 'They become visible again and the warnings the AI gave for them are removed. The authors are told.'
+        : 'They stay hidden for good. The warnings stay.',
+      confirmLabel: mode === 'restore' ? 'Restore selected' : 'Remove selected',
+      danger: mode === 'remove',
+      reasonLabel: 'Note for all of them (optional)',
+      reasonRequired: false,
+      run: async (n) => {
+        for (const id of ids) {
+          await rpc(supabase.rpc('moderate_comment', { p_comment_id: id, p_action: mode, p_note: n }));
+        }
+      },
+    });
   };
 
   // Each moderator action is one database function; it throws our readable message on refusal
@@ -314,7 +339,31 @@ function Moderation() {
       {tab === 'queue' && (
         <div className="space-y-6">
           <section className="space-y-3">
-            <h2 className="text-lg font-black">Hidden comments</h2>
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <h2 className="text-lg font-black">Hidden comments</h2>
+              {comments.length > 1 && (
+                <div className="flex flex-wrap items-center gap-2">
+                  <label className="inline-flex items-center gap-2 text-xs font-black uppercase tracking-wider text-stone-700 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={selected.size === comments.length}
+                      onChange={(e) => setSelected(e.target.checked ? new Set(comments.map((c) => c.id)) : new Set())}
+                    />
+                    Select all
+                  </label>
+                  {selected.size > 0 && (
+                    <>
+                      <button type="button" onClick={() => bulkComments('restore')} className="btn btn-secondary !py-2">
+                        Restore selected ({selected.size})
+                      </button>
+                      <button type="button" onClick={() => bulkComments('remove')} className="btn btn-danger !py-2">
+                        Remove selected ({selected.size})
+                      </button>
+                    </>
+                  )}
+                </div>
+              )}
+            </div>
             {comments.length === 0 ? (
               <p className="rounded-2xl border border-stone-200/90 bg-white p-6 text-center text-stone-600">Nothing to review.</p>
             ) : (
@@ -322,6 +371,19 @@ function Moderation() {
                 {comments.map((c) => (
                   <li key={c.id} className="rounded-2xl border border-stone-200/90 bg-white p-4 shadow-xs space-y-2">
                     <div className="flex flex-wrap items-center gap-2 text-sm">
+                      {comments.length > 1 && (
+                        <input
+                          type="checkbox"
+                          aria-label={`Select the comment by ${c.author?.full_name || 'unknown user'}`}
+                          checked={selected.has(c.id)}
+                          onChange={(e) => setSelected((cur) => {
+                            const next = new Set(cur);
+                            if (e.target.checked) next.add(c.id);
+                            else next.delete(c.id);
+                            return next;
+                          })}
+                        />
+                      )}
                       <Avatar url={c.author?.avatar_url} name={c.author?.full_name} size="sm" />
                       <span className="font-black break-words">{c.author?.full_name || 'Unknown user'}</span>
                       <span className="text-stone-600">on {c.streams?.title ?? 'a stream'} · {formatDateTime(c.created_at)}</span>

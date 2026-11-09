@@ -11,6 +11,7 @@ import PageLoading from '@/components/PageLoading';
 import PageError from '@/components/PageError';
 import PageHeroBackground from '@/components/site/PageHeroBackground';
 import { can } from '@/utils/permissions';
+import { formatDateTime } from '@/utils/tournaments';
 
 const inputClass =
   'w-full p-3 rounded-xl bg-white text-stone-950 border border-stone-300 placeholder:text-stone-400 focus:border-amber-600 focus:ring-2 focus:ring-amber-500/20 shadow-xs outline-none transition-all font-medium text-xs sm:text-sm';
@@ -218,8 +219,8 @@ export default function VerificationPage() {
 
                   <div className="flex flex-wrap items-center justify-between gap-4 pt-1">
                     <p className="text-xs text-stone-500 font-medium">
-                      {p.submitted_at && `Submitted ${new Date(p.submitted_at).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })}`}
-                      {p.reviewed_at && ` · Reviewed ${new Date(p.reviewed_at).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })}`}
+                      {p.submitted_at && `Submitted ${formatDateTime(p.submitted_at)}`}
+                      {p.reviewed_at && ` · Reviewed ${formatDateTime(p.reviewed_at)}`}
                     </p>
 
                     {p.verification_note && (

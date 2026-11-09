@@ -25,6 +25,7 @@ export const SITE_CONTENT_FIELDS = [
   { key: 'social_instagram', label: 'Instagram link', group: 'Connect With Us', multiline: false, fallback: '' },
   { key: 'social_tiktok', label: 'TikTok link', group: 'Connect With Us', multiline: false, fallback: '' },
   { key: 'social_youtube', label: 'YouTube link', group: 'Connect With Us', multiline: false, fallback: '' },
+  { key: 'social_discord', label: 'Discord invite link', group: 'Connect With Us', multiline: false, fallback: '' },
   { key: 'contact_email', label: 'Contact email', group: 'Connect With Us', multiline: false, fallback: '' },
 ] as const;
 

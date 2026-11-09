@@ -11,6 +11,7 @@ import { usePageTitle } from '@/utils/page-title';
 import { Pin } from 'lucide-react';
 import PageHeroBackground from '@/components/site/PageHeroBackground';
 import { can } from '@/utils/permissions';
+import { useConfirm } from '@/components/useConfirm';
 
 const inputClass =
   'w-full p-3 rounded-xl bg-white text-stone-950 border border-stone-300 placeholder:text-stone-400 focus:border-amber-600 focus:ring-2 focus:ring-amber-500/20 shadow-xs outline-none transition-all font-medium text-xs sm:text-sm';
@@ -18,6 +19,7 @@ const inputClass =
 type TournamentOption = Pick<Tournament, 'id' | 'name'>;
 
 export default function AnnouncementsPage() {
+  const [confirmDialog, ask] = useConfirm();
   const supabase = createClient();
   usePageTitle('Announcements');
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
@@ -79,7 +81,7 @@ export default function AnnouncementsPage() {
   };
 
   const handleDelete = async (a: Announcement) => {
-    if (!confirm(`Delete announcement "${a.title}"?`)) return;
+    if (!(await ask({ title: 'Delete announcement?', message: `"${a.title}" will be removed for everyone.`, confirmLabel: 'Delete', tone: 'danger' }))) return;
     setError('');
     try {
       // .select() returns the deleted rows. If RLS blocked the delete, nothing comes back.
@@ -101,6 +103,8 @@ export default function AnnouncementsPage() {
   });
 
   return (
+    <>
+    {confirmDialog}
     <div className="w-full space-y-8">
       {/* 1. Main Hero Container with Official Banner */}
       <section className="relative w-full rounded-3xl border border-stone-800/80 bg-stone-950 overflow-hidden shadow-md p-8 sm:p-14 @5xl:p-16 text-center text-white flex flex-col items-center justify-center space-y-4">
@@ -212,6 +216,7 @@ export default function AnnouncementsPage() {
         )}
       </div>
     </div>
+    </>
   );
 }
 

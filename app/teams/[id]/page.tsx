@@ -35,11 +35,14 @@ import { can } from '@/utils/permissions';
 import RankBadge from '@/components/RankBadge';
 import { fieldFor, parseSchema } from '@/utils/game-profiles';
 import { useRealtimeRefresh } from '@/utils/use-realtime-refresh';
+import { useConfirm } from '@/components/useConfirm';
+import { toast } from '@/components/Toaster';
 
 const inputClass =
   'w-full p-3.5 rounded-xl bg-white text-stone-950 border border-stone-300 placeholder:text-stone-400 focus:border-gold focus:ring-2 focus:ring-gold/25 shadow-xs outline-none transition-all font-medium text-xs sm:text-sm';
 
 export default function ManageTeamPage() {
+  const [confirmDialog, ask] = useConfirm();
   usePageTitle('Team');
   const supabase = createClient();
   const [team, setTeam] = useState<Team | null>(null);
@@ -163,7 +166,7 @@ export default function ManageTeamPage() {
       if (updateError) throw updateError;
       setEditing(false);
       setReloadCount((n) => n + 1);
-      setMessage('Team details updated.');
+      toast.success('Team details updated.');
     } catch (err) {
       setError(getErrorMessage(err, 'Failed to save team'));
     } finally {
@@ -208,7 +211,7 @@ export default function ManageTeamPage() {
       setResults((current) =>
         (current || []).map((p) => (p.user_id === player.user_id ? { ...p, invited: true } : p))
       );
-      setMessage(`Invite sent to ${player.ign}.`);
+      toast.success(`Invite sent to ${player.ign}.`);
       setReloadCount((n) => n + 1);
     } catch (err) {
       setError(getErrorMessage(err, 'Failed to send the invite'));
@@ -237,7 +240,7 @@ export default function ManageTeamPage() {
         (current || []).map((p) => (p.user_id === invite.user_id ? { ...p, invited: false } : p))
       );
       setReloadCount((n) => n + 1);
-      setMessage('Invite cancelled.');
+      toast.success('Invite cancelled.');
     } catch (err) {
       setError(getErrorMessage(err, 'Failed to cancel the invite'));
     } finally {
@@ -248,9 +251,11 @@ export default function ManageTeamPage() {
   const handleMakeCaptain = async (member: RosterMember) => {
     const targetName = member.ign || member.full_name || 'this player';
     if (
-      !confirm(
-        `Make ${targetName} the captain? You will become a regular player and cannot undo this yourself.`
-      )
+      !(await ask({
+        title: 'Transfer captaincy?',
+        message: `Make ${targetName} the captain? You will become a regular player and cannot undo this yourself.`,
+        confirmLabel: 'Make captain',
+      }))
     )
       return;
     setBusy(true);
@@ -263,7 +268,7 @@ export default function ManageTeamPage() {
         p_new_captain: member.user_id,
       });
       if (transferError) throw transferError;
-      setMessage(`${targetName} is now the team captain.`);
+      toast.success(`${targetName} is now the team captain.`);
       setResults(null);
       setPendingInvites([]);
       setReloadCount((n) => n + 1);
@@ -275,7 +280,7 @@ export default function ManageTeamPage() {
   };
 
   const removeMember = async (memberId: string, confirmText: string) => {
-    if (!confirm(confirmText)) return;
+    if (!(await ask({ title: 'Remove from team?', message: confirmText, confirmLabel: 'Remove', tone: 'danger' }))) return;
     setBusy(true);
     setError('');
     setMessage('');
@@ -296,7 +301,7 @@ export default function ManageTeamPage() {
       }
 
       setReloadCount((n) => n + 1);
-      setMessage('Player removed from team.');
+      toast.success('Player removed from team.');
     } catch (err) {
       setError(getErrorMessage(err, 'Failed to remove member'));
     } finally {
@@ -306,9 +311,12 @@ export default function ManageTeamPage() {
 
   const handleDeleteTeam = async () => {
     if (
-      !confirm(
-        'Delete this team? All pending tournament registrations for this team will be cancelled. This action cannot be undone.'
-      )
+      !(await ask({
+        title: 'Delete team?',
+        message: "All pending tournament registrations for this team will be cancelled. This can't be undone.",
+        confirmLabel: 'Delete team',
+        tone: 'danger',
+      }))
     )
       return;
     setBusy(true);
@@ -376,7 +384,9 @@ export default function ManageTeamPage() {
     can(role, 'team.join') && !isMember && !isSolo && (myRequestId !== null || (team.recruiting && !isFull));
 
   return (
-    // The layout (SiteNavLayout) renders the main element and the page padding
+    <>
+    {confirmDialog}
+    {/* The layout (SiteNavLayout) renders the main element and the page padding */}
     <div className="w-full text-stone-950">
       <div className="w-full max-w-5xl mx-auto space-y-8">
         {/* 1. Main Hero Container */}
@@ -872,5 +882,6 @@ export default function ManageTeamPage() {
         )}
       </div>
     </div>
+    </>
   );
 }

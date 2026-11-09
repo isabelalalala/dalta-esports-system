@@ -43,8 +43,12 @@ import {
 import GameLogo from '@/components/GameLogo';
 import { can } from '@/utils/permissions';
 import { teamLabel } from '@/utils/matches';
+import { useConfirm } from '@/components/useConfirm';
+import { toast } from '@/components/Toaster';
+import AutoUpdateBadge from '@/components/AutoUpdateBadge';
 
 export default function TournamentDetailsPage() {
+  const [confirmDialog, ask] = useConfirm();
   usePageTitle('Tournament');
   const supabase = createClient();
   const [tournament, setTournament] = useState<Tournament | null>(null);
@@ -233,7 +237,7 @@ export default function TournamentDetailsPage() {
 
       if (regError) throw regError;
 
-      setMessage('Registration submitted. An organizer will review it.');
+      toast.success('Registration submitted. An organizer will review it.');
       setShowForm(false);
       setSelectedTeamId('');
       setReloadCount((n) => n + 1);
@@ -248,7 +252,7 @@ export default function TournamentDetailsPage() {
     const warning = matches.length > 0
       ? 'Generate a new bracket? The current bracket, including any schedule, will be replaced.'
       : 'Generate the bracket from the approved teams? Teams are placed in random order.';
-    if (!confirm(warning)) return;
+    if (!(await ask({ title: 'Generate bracket?', message: warning, confirmLabel: 'Generate bracket' }))) return;
 
     setGenerating(true);
     setError('');
@@ -259,7 +263,7 @@ export default function TournamentDetailsPage() {
         .rpc('generate_bracket', { p_tournament_id: id });
       if (genError) throw genError;
 
-      setMessage(`Bracket generated with ${created} matches.`);
+      toast.success(`Bracket generated with ${created} matches.`);
       setReloadCount((n) => n + 1);
     } catch (err) {
       setError(getErrorMessage(err, 'Failed to generate bracket'));
@@ -269,7 +273,7 @@ export default function TournamentDetailsPage() {
   };
 
   const handleDelete = async () => {
-    if (!confirm('Are you sure you want to delete this tournament? This action cannot be undone.')) return;
+    if (!(await ask({ title: 'Delete tournament?', message: "The tournament, its bracket and registrations will be deleted. This can't be undone.", confirmLabel: 'Delete tournament', tone: 'danger' }))) return;
 
     setDeleting(true);
     try {
@@ -328,6 +332,8 @@ export default function TournamentDetailsPage() {
   ];
 
   return (
+    <>
+    {confirmDialog}
     <div className="w-full space-y-8 text-stone-950">
       {/* 1. Main Hero Container */}
       <section className="animate-hero-entrance relative w-full rounded-3xl border border-stone-800/80 bg-stone-950 overflow-hidden shadow-md p-8 sm:p-12 @5xl:p-14 text-center text-white flex flex-col items-center justify-center space-y-4">
@@ -667,7 +673,9 @@ export default function TournamentDetailsPage() {
         <div className="border-b border-stone-100 pb-3 flex flex-wrap items-center justify-between gap-3">
           <div>
             <span className="text-[11px] font-black tracking-widest text-maroon uppercase">Playoffs</span>
-            <h2 className="text-xl sm:text-2xl font-black text-stone-950 uppercase tracking-wide">Tournament Bracket</h2>
+            <h2 className="text-xl sm:text-2xl font-black text-stone-950 uppercase tracking-wide flex flex-wrap items-center gap-2">
+              Tournament Bracket {matches.length > 0 && <AutoUpdateBadge />}
+            </h2>
           </div>
           {matches.length > 0 && can(role, 'prediction.pick') && (
             <div className="flex items-center gap-1.5 text-xs text-stone-600 font-black tracking-wider">
@@ -815,5 +823,6 @@ export default function TournamentDetailsPage() {
         </section>
       )}
     </div>
+    </>
   );
 }

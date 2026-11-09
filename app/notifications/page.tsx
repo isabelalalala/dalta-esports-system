@@ -12,6 +12,7 @@ import {
 import PageLoading from '@/components/PageLoading';
 import { usePageTitle } from '@/utils/page-title';
 import PageHeroBackground from '@/components/site/PageHeroBackground';
+import { formatDateTime } from '@/utils/tournaments';
 
 const PAGE_SIZE = 30;
 
@@ -225,10 +226,7 @@ export default function NotificationsPage() {
                     </p>
 
                     <p className="text-[11px] font-semibold text-stone-500 tracking-wider pt-1">
-                      {new Date(n.created_at).toLocaleString(undefined, {
-                        dateStyle: 'medium',
-                        timeStyle: 'short',
-                      })}
+                      {formatDateTime(n.created_at)}
                     </p>
                   </button>
 

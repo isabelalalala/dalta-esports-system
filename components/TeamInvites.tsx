@@ -6,6 +6,7 @@ import { createClient } from '@/utils/supabase/client';
 import { getErrorMessage } from '@/utils/errors';
 import type { MyTeamInvite } from '@/utils/types';
 import { Mail } from 'lucide-react';
+import { toast } from '@/components/Toaster';
 
 // The logged-in player's open team invites with Accept / Decline.
 // Shown on the dashboard and on /teams; shows nothing when there are no invites.
@@ -54,7 +55,7 @@ export default function TeamInvites({ onAnswered }: { onAnswered?: () => void })
         p_accept: accept,
       });
       if (respondError) throw respondError;
-      setMessage(accept ? `You joined ${invite.team_name}.` : `You declined the invite from ${invite.team_name}.`);
+      toast.success(accept ? `You joined ${invite.team_name}.` : `You declined the invite from ${invite.team_name}.`);
       setReloadCount((n) => n + 1);
       onAnswered?.();
     } catch (err) {

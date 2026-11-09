@@ -14,6 +14,9 @@ import { usePageTitle } from '@/utils/page-title';
 import PageHeroBackground from '@/components/site/PageHeroBackground';
 import { AlertCircle, Users } from 'lucide-react';
 import { can } from '@/utils/permissions';
+import { useConfirm } from '@/components/useConfirm';
+import { toast } from '@/components/Toaster';
+import { formatMomentDate } from '@/utils/tournaments';
 
 const statusStyles: Record<RegistrationStatus, string> = {
   pending: 'bg-amber-500/15 text-amber-800 border-amber-500/40',
@@ -23,6 +26,7 @@ const statusStyles: Record<RegistrationStatus, string> = {
 };
 
 export default function RegistrationsPage() {
+  const [confirmDialog, ask] = useConfirm();
   usePageTitle('Tournament registrations');
   const supabase = createClient();
   const [registrations, setRegistrations] = useState<Registration[]>([]);
@@ -88,6 +92,7 @@ export default function RegistrationsPage() {
       setRegistrations((current) =>
         current.map((r) => (r.id === registrationId ? { ...r, status } : r))
       );
+      toast.success(status === 'approved' ? 'Registration approved. The captain is notified.' : 'Registration rejected. The captain is notified.');
     } catch (err) {
       setError(getErrorMessage(err, 'Failed to update registration'));
     } finally {
@@ -96,7 +101,7 @@ export default function RegistrationsPage() {
   };
 
   const handleDelete = async (registrationId: string) => {
-    if (!confirm('Are you sure you want to remove this registration?')) return;
+    if (!(await ask({ title: 'Remove registration?', message: 'The team is taken off this tournament and its captain is notified.', confirmLabel: 'Remove', tone: 'danger' }))) return;
 
     setBusyId(registrationId);
     setError('');
@@ -112,11 +117,44 @@ export default function RegistrationsPage() {
       if (!data || data.length === 0) throw new Error('You don\'t have permission to remove this registration.');
 
       setRegistrations((current) => current.filter((r) => r.id !== registrationId));
+      toast.success('Registration removed.');
     } catch (err) {
       setError(getErrorMessage(err, 'Failed to delete registration'));
     } finally {
       setBusyId(null);
     }
+  };
+
+  // Approve every pending registration, oldest first. Pending ones already count towards the
+  // team limit, so approving them can't overfill the tournament; a team that fails a check
+  // (e.g. an unverified member) is skipped and listed afterwards.
+  const handleApproveAll = async () => {
+    const pending = registrations
+      .filter((r) => r.status === 'pending')
+      .sort((a, b) => a.registered_at.localeCompare(b.registered_at));
+    const ok = await ask({
+      title: `Approve ${pending.length} pending registrations?`,
+      message: 'Every pending team is approved and its captain is notified. Teams that fail a check (for example an unverified member) stay pending.',
+      confirmLabel: 'Approve all',
+    });
+    if (!ok) return;
+    setBusyId('all');
+    setError('');
+    const approved: string[] = [];
+    const skipped: string[] = [];
+    for (const reg of pending) {
+      const { data, error: updateError } = await supabase
+        .from('tournament_registrations')
+        .update({ status: 'approved' })
+        .eq('id', reg.id)
+        .select('id');
+      if (updateError || !data?.length) skipped.push(`${reg.teams?.name ?? 'A team'}: ${updateError ? getErrorMessage(updateError, 'not allowed') : 'not allowed'}`);
+      else approved.push(reg.id);
+    }
+    setRegistrations((current) => current.map((r) => (approved.includes(r.id) ? { ...r, status: 'approved' } : r)));
+    setBusyId(null);
+    if (approved.length) toast.success(`${approved.length} registration${approved.length === 1 ? '' : 's'} approved.`);
+    if (skipped.length) setError(`Still pending: ${skipped.join(' · ')}`);
   };
 
   if (loading) {
@@ -130,8 +168,11 @@ export default function RegistrationsPage() {
   }
 
   const activeCount = registrations.filter((r) => ACTIVE_REGISTRATION_STATUSES.includes(r.status)).length;
+  const pendingCount = registrations.filter((r) => r.status === 'pending').length;
 
   return (
+    <>
+    {confirmDialog}
     <div className="w-full space-y-8 text-stone-950">
       {/* 1. Main Hero Container */}
       <section className="animate-hero-entrance relative w-full rounded-3xl border border-stone-800/80 bg-stone-950 overflow-hidden shadow-md p-8 sm:p-12 @5xl:p-14 text-center text-white flex flex-col items-center justify-center space-y-4">
@@ -169,8 +210,15 @@ export default function RegistrationsPage() {
           <ExportButtons type="registrations" label="Registrations" params={{ tournament: id }} />
           <ExportButtons type="rosters" label="Team rosters" params={{ tournament: id }} />
         </div>
-        <div className="text-xs font-black text-stone-600 uppercase tracking-wider">
-          Active: <span className="text-maroon font-black">{activeCount}</span> / {tournament?.max_participants || '∞'} Teams
+        <div className="flex flex-wrap items-center gap-3">
+          {pendingCount > 1 && (
+            <button type="button" onClick={handleApproveAll} disabled={busyId !== null} className="btn btn-primary">
+              {busyId === 'all' ? 'Approving...' : `Approve all pending (${pendingCount})`}
+            </button>
+          )}
+          <div className="text-xs font-black text-stone-600 uppercase tracking-wider">
+            Active: <span className="text-maroon font-black">{activeCount}</span> / {tournament?.max_participants || '∞'} Teams
+          </div>
         </div>
       </div>
 
@@ -223,7 +271,7 @@ export default function RegistrationsPage() {
                     </span>
                   </div>
                   <div className="@3xl:col-span-2 text-stone-500 text-xs font-semibold">
-                    {new Date(reg.registered_at).toLocaleDateString()}
+                    {formatMomentDate(reg.registered_at)}
                   </div>
                   <div className="@3xl:col-span-2 flex @3xl:justify-end gap-2 flex-wrap">
                     {reg.status !== 'approved' && (
@@ -267,6 +315,7 @@ export default function RegistrationsPage() {
         </div>
       )}
     </div>
+    </>
   );
 }
 

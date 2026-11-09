@@ -32,6 +32,8 @@ direct API or database request is refused too. Keep this table and `PERMISSIONS`
 | `stream.configure` | ✓ | ✓ | | | `/tournaments/[id]/streams` (link check, preview, checklist) | RLS write on `streams` (admin/staff); POST `/api/streams/resolve-url` `can()` check |
 | `announcement.post` | ✓ | | | | Post/edit on `/announcements` | RLS write on `announcements` (admin) |
 | `feedback.submit` | ✓ | ✓ | ✓ | ✓ | `/feedback` | POST `/api/feedback` (login) + RLS insert (own row) |
+| (own feedback edit/delete) | ✓ | ✓ | ✓ | ✓ | `/feedback` My History | RLS delete: own row, not hidden/removed (`202611091600_own_feedback_delete`); edit = delete + resend |
+| (own comment delete) | ✓ | ✓ | ✓ | ✓ | `StreamComments` (5 s Undo, then delete) | RLS delete on `stream_comments`: own row, approved/restored only |
 | `feedback.viewAll` | ✓ | | | | `/admin/feedback` | RLS select on `feedback` (admin); POST `/api/feedback/classify` role check |
 | `report.generate` | ✓ | | | | `/analytics` | POST `/api/reports/generate` role check; `report_activity()`, `report_sentiment()`, `report_comments()`, `report_moderation()` role checks; RLS on `analytics_reports` (admin); generate/delete logged by trigger |
 | `report.viewEngagement` | ✓ | ✓ | | | `/analytics/engagement` | `report_engagement()`, `get_live_viewer_counts()` role checks |

@@ -6,12 +6,14 @@ import Link from 'next/link';
 import { createClient } from '@/utils/supabase/client';
 import { getErrorMessage } from '@/utils/errors';
 import type { Feedback, Match, Tournament } from '@/utils/types';
-import { isBye, roundLabel } from '@/utils/tournaments';
+import { formatMomentDate, isBye, roundLabel } from '@/utils/tournaments';
 import StarRating from '@/components/StarRating';
 import PageLoading from '@/components/PageLoading';
 import { usePageTitle } from '@/utils/page-title';
 import PageHeroBackground from '@/components/site/PageHeroBackground';
-import { CheckCircle2, MessageSquare, Send } from 'lucide-react';
+import { CheckCircle2, Loader2, MessageSquare, Pencil, Send, Trash2 } from 'lucide-react';
+import { useConfirm } from '@/components/useConfirm';
+import { toast } from '@/components/Toaster';
 
 const inputClass =
   'w-full p-3 rounded-xl bg-white text-stone-950 border border-stone-300 placeholder:text-stone-400 focus:border-amber-600 focus:ring-2 focus:ring-amber-500/20 shadow-xs outline-none transition-all font-medium text-xs sm:text-sm';
@@ -50,6 +52,8 @@ function FeedbackPageContent() {
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(true);
   const [reloadCount, setReloadCount] = useState(0);
+  const [confirmDialog, ask] = useConfirm();
+  const [busyId, setBusyId] = useState('');
 
   useEffect(() => {
     const fetchData = async () => {
@@ -178,6 +182,7 @@ function FeedbackPageContent() {
         throw new Error(body.error || 'Your feedback could not be sent. Please try again.');
 
       setMessage('Thanks! Your feedback was received. The organizers use it to improve future events.');
+      toast.success('Feedback sent. Thank you!');
       setRating(0);
       setComment('');
       setReloadCount((n) => n + 1);
@@ -185,6 +190,49 @@ function FeedbackPageContent() {
       setError(getErrorMessage(err, 'Your feedback could not be sent. Please try again.'));
     } finally {
       setSaving(false);
+    }
+  };
+
+  // Deletes one of your own feedback entries (RLS: not while hidden for review or removed).
+  // rewrite = put its text back in the form so it can be changed and sent again.
+  const deleteFeedback = async (f: Feedback, rewrite: boolean) => {
+    const ok = await ask(
+      rewrite
+        ? {
+            title: 'Edit your feedback?',
+            message: 'Your feedback is taken back and its rating and text are put in the form, so you can change them and send it again.',
+            confirmLabel: 'Edit',
+          }
+        : {
+            title: 'Delete your feedback?',
+            message: "It's removed from the organizers' reports. You can send new feedback for the same tournament or match later.",
+            confirmLabel: 'Delete',
+            tone: 'danger',
+          }
+    );
+    if (!ok) return;
+    setBusyId(f.id);
+    setError('');
+    setMessage('');
+    try {
+      const { data, error: deleteError } = await supabase.from('feedback').delete().eq('id', f.id).select('id');
+      if (deleteError) throw deleteError;
+      if (!data?.length) throw new Error('This feedback can’t be changed right now: it may be under review by a moderator.');
+      setMyFeedback((list) => list.filter((x) => x.id !== f.id));
+      if (rewrite) {
+        setTournamentId(f.tournament_id ?? '');
+        setMatchId(f.match_id ?? '');
+        setRating(f.rating);
+        setComment(f.comment);
+        document.getElementById('feedback-form')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        toast('Your feedback is back in the form. Change it and press Submit.');
+      } else {
+        toast.success('Feedback deleted.');
+      }
+    } catch (err) {
+      toast.error(getErrorMessage(err, 'Your feedback could not be changed. Please try again.'));
+    } finally {
+      setBusyId('');
     }
   };
 
@@ -199,6 +247,7 @@ function FeedbackPageContent() {
 
   return (
     <div className="w-full space-y-8 text-stone-950">
+      {confirmDialog}
       {/* 1. Main Hero Container with Official Banner */}
       <section className="relative w-full rounded-3xl border border-stone-800/80 bg-stone-950 overflow-hidden shadow-md p-8 sm:p-14 @5xl:p-16 text-center text-white flex flex-col items-center justify-center space-y-4">
         <PageHeroBackground specificKey="hero_banner_path" alt="DALTA Esports Feedback Banner" />
@@ -239,7 +288,7 @@ function FeedbackPageContent() {
             </p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-5">
+          <form id="feedback-form" onSubmit={handleSubmit} className="space-y-5 scroll-mt-24">
             {error && (
               <div
                 role="alert"
@@ -371,7 +420,7 @@ function FeedbackPageContent() {
                   <div className="flex items-center justify-between gap-2 flex-wrap">
                     <StarRating value={f.rating} size="sm" />
                     <span className="text-[11px] font-bold text-stone-500 tracking-wider">
-                      {new Date(f.created_at).toLocaleDateString()}
+                      {formatMomentDate(f.created_at)}
                     </span>
                   </div>
 
@@ -382,6 +431,45 @@ function FeedbackPageContent() {
                   <p className="text-xs text-stone-700 font-normal normal-case whitespace-pre-wrap break-words leading-relaxed">
                     {f.comment}
                   </p>
+
+                  {/* What happens to it: checked by the AI first, then counted in the reports */}
+                  <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
+                    {f.moderation_status === 'pending' ? (
+                      <span className="inline-flex items-center gap-1 text-[11px] font-bold text-stone-600">
+                        <Loader2 className="size-3 animate-spin" aria-hidden="true" /> Analyzing…
+                      </span>
+                    ) : f.moderation_status === 'hidden' || f.moderation_status === 'removed' ? (
+                      <span className="text-[11px] font-bold text-red-700">
+                        {f.moderation_status === 'hidden' ? 'Hidden while a moderator reviews it' : 'Removed by a moderator'}
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700">
+                        <CheckCircle2 className="size-3" aria-hidden="true" /> Received
+                      </span>
+                    )}
+                    {f.moderation_status !== 'hidden' && f.moderation_status !== 'removed' && (
+                      <span className="flex gap-1">
+                        {!f.target_removed && (
+                          <button
+                            type="button"
+                            onClick={() => deleteFeedback(f, true)}
+                            disabled={busyId === f.id}
+                            className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-[11px] font-black uppercase tracking-wider text-stone-700 hover:bg-white hover:text-stone-950 disabled:opacity-50 cursor-pointer"
+                          >
+                            <Pencil className="size-3" aria-hidden="true" /> Edit
+                          </button>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => deleteFeedback(f, false)}
+                          disabled={busyId === f.id}
+                          className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-[11px] font-black uppercase tracking-wider text-red-700 hover:bg-white disabled:opacity-50 cursor-pointer"
+                        >
+                          <Trash2 className="size-3" aria-hidden="true" /> Delete
+                        </button>
+                      </span>
+                    )}
+                  </div>
                 </li>
               ))}
             </ul>

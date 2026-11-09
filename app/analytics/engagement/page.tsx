@@ -16,6 +16,7 @@ import { usePageTitle } from '@/utils/page-title';
 import PageHeroBackground from '@/components/site/PageHeroBackground';
 import { Download, Printer, RotateCw } from 'lucide-react';
 import { can } from '@/utils/permissions';
+import { formatDateTime } from '@/utils/tournaments';
 
 // "View engagement stats" (use case, Tournament Staff). Admins can open it too.
 export default function EngagementPage() {
@@ -162,7 +163,7 @@ export default function EngagementPage() {
       <div className="hidden print:block border-b border-stone-300 pb-4 mb-6">
         <h1 className="text-2xl font-black text-black uppercase">Engagement Stats</h1>
         <p className="text-xs text-stone-600 mt-1">
-          {describeFilters(filterNames(filters, options), false)} · Printed {new Date().toLocaleString()}
+          {describeFilters(filterNames(filters, options), false)} · Printed {formatDateTime(new Date())}
         </p>
       </div>
 

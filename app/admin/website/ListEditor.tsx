@@ -11,6 +11,8 @@ import { siteImageUrl } from '@/utils/site';
 import { deleteSiteImage, uploadSiteImage } from '@/utils/site-images';
 import { refreshSite } from './actions';
 import ImageField from './ImageField';
+import { useConfirm } from '@/components/useConfirm';
+import { toast } from '@/components/Toaster';
 
 export type Row = Record<string, unknown>;
 
@@ -54,6 +56,7 @@ export default function ListEditor({
   table, idKey = 'id', fields, titleOf, subtitleOf, newRow = null, addWithImage, canDelete = true,
   hasPublish = true, filter, imageFolder, beforeSave, renderExtra, viewHref,
 }: Props) {
+  const [confirmDialog, ask] = useConfirm();
   const supabase = createClient();
   // Rows are edited generically (the columns come from `fields`), so these queries can't be
   // checked against the generated types. The table name still is (SiteTable).
@@ -89,7 +92,7 @@ export default function ListEditor({
     try {
       await action();
       await refreshSite();
-      setMessage(done);
+      toast.success(done);
       setReloadCount((n) => n + 1);
     } catch (err) {
       setError(getErrorMessage(err, fallback));
@@ -175,8 +178,8 @@ export default function ListEditor({
     }, 'Item added.', 'Failed to upload and add item');
   };
 
-  const handleDelete = (row: Row) => {
-    if (!confirm(`Delete "${titleOf(row)}"? This action cannot be undone.`)) return;
+  const handleDelete = async (row: Row) => {
+    if (!(await ask({ title: 'Delete item?', message: `Delete "${titleOf(row)}"? This can't be undone.`, confirmLabel: 'Delete', tone: 'danger' }))) return;
     run(async () => {
       // Check a row was really deleted before removing its images (RLS blocks silently)
       const { data, error: deleteError } = await db.from(table).delete().eq(idKey, row[idKey] as string).select(idKey);
@@ -285,6 +288,8 @@ export default function ListEditor({
   };
 
   return (
+    <>
+    {confirmDialog}
     <div className="space-y-6 text-stone-950">
       {error && (
         <div role="alert" className="bg-red-50 border border-red-200 text-red-800 rounded-xl p-4 text-xs font-bold tracking-wider shadow-2xs">
@@ -455,5 +460,6 @@ export default function ListEditor({
         </ul>
       )}
     </div>
+    </>
   );
 }
