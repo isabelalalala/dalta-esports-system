@@ -55,6 +55,7 @@ const I = {
   stats: { href: '/analytics/engagement', label: 'Engagement Stats', icon: 'stats', hint: 'Viewers, watching now and audience activity' },
   verification: { href: '/admin/verification', label: 'Student Verification', icon: 'verification', hint: "Check players' student details" },
   website: { href: '/admin/website', label: 'Website', icon: 'website', hint: 'Edit the public pages, photos and teams' },
+  gameProfiles: { href: '/admin/games', label: 'Game Profiles', icon: 'divisions', hint: 'Ranks, roles and heroes players pick from' },
   activity: { href: '/admin/activity', label: 'Activity Log', icon: 'activity', hint: 'Who did what, and when' },
   moderation: { href: '/admin/moderation', label: 'Moderation', icon: 'moderation', hint: 'Hidden comments, warnings and bans' },
   moderationQueue: { href: '/admin/moderation', label: 'Moderation Queue', icon: 'moderation', hint: 'Comments the AI hid: restore or remove them' },
@@ -72,7 +73,7 @@ export function navFor(role: string | null | undefined, loggedIn: boolean): Role
     return {
       groups: [
         { label: null, items: [dashboard, I.tournaments, I.manageTeams, I.users, I.announcements, I.moderation, I.sentiment, I.reports] },
-        { label: 'Tools', items: [I.matchControl, I.streams, I.verification, I.website, I.activity] },
+        { label: 'Tools', items: [I.matchControl, I.streams, I.verification, I.website, I.gameProfiles, I.activity] },
         { label: 'Explore', items: [I.home, ...EXPLORE.items] },
       ],
       bottom: [dashboard, I.tournaments, I.manageTeams, I.reports],
@@ -154,7 +155,7 @@ const SEGMENT_LABELS: Record<string, string> = {
   activity: 'Activity Log', edit: 'Edit', create: 'Create', streams: 'Streams', predictions: "Pick'em",
   events: 'Events', campaigns: 'Campaigns', divisions: 'Game Divisions', about: 'About Us', community: 'Community',
   match: 'Match', search: 'Search', privacy: 'Privacy', terms: 'Terms', consent: 'Consent', accept: 'Accept',
-  moderation: 'Moderation', banned: 'Account banned',
+  moderation: 'Moderation', banned: 'Account banned', games: 'Game Profiles',
 };
 
 // Labels for an id segment, by the segment before it

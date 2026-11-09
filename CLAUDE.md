@@ -104,7 +104,7 @@ Enforced by a CHECK constraint on `profiles.role` (migration `202610161200_role_
 - RLS policies check roles with `public.get_my_role()`.
 
 ## Current schema (public)
-All migrations are in `supabase/migrations/`, run in filename order (202610151100 … 202611091300). `202610151100_base_schema` creates the three pre-migration base tables (`profiles`, `tournaments`, `tournament_registrations`). It is `if not exists`, so it is a no-op on databases that already have them.
+All migrations are in `supabase/migrations/`, run in filename order (202610151100 … 202611091400). `202610151100_base_schema` creates the three pre-migration base tables (`profiles`, `tournaments`, `tournament_registrations`). It is `if not exists`, so it is a no-op on databases that already have them.
 `202610181000_feedback_protection` also needs its one-time Vault key setup (the `feedback_server_key` secret +
 `FEEDBACK_SERVER_KEY`); the steps are at the top of that file.
 Readers: "anyone" = also logged out; "logged-in" = any role; "admin/staff" = organizers only.
@@ -141,8 +141,15 @@ Readers: "anyone" = also logged out; "logged-in" = any role; "admin/staff" = org
   created_at, updated_at. Anyone reads; admin/staff create and edit; only admin deletes.
   The status shown in the app (upcoming / registration closed / ongoing / completed / cancelled) is calculated
   from the dates by `getTournamentStatus()` in `utils/tournaments.ts`.
-- `player_game_profiles`: id, user_id, game_id (→ games), ign, in_game_role, rank, created_at.
-  UNIQUE (user_id, game_id). Logged-in read; players write their own. Can't be deleted (or moved to another game)
+- `player_game_profiles`: id, user_id, game_id (→ games), ign, in_game_role, rank, created_at, details (jsonb,
+  202611091400). UNIQUE (user_id, game_id). Game-specific fields: each game's form is `games.profile_schema`
+  (fields with key/label/type text|number|select|multiselect, ordered options `{id, label, sub?}` where `sub` is a
+  Tier/Division/Stars field; `maps_to` ign|rank|role), edited by admins on `/admin/games` through
+  `update_game_profile_schema()` (relabels saved profiles, logs `game.profile_schema_updated`). Trigger
+  `check_game_profile()` validates `details` (same rules as `validateGameProfile()` in `utils/game-profiles.ts`) and
+  fills ign / rank ("Gold 2") / in_game_role; old rows with `details = {}` keep their text until edited, and those
+  columns can't be typed in directly. UI: `components/GameProfileForm.tsx`, `GameProfileSummary.tsx`, `RankBadge.tsx`
+  (color by position in the rank list). `search_players(game, search, role, rank_min, rank_max)` filters recruiting. Logged-in read; players write their own. Can't be deleted (or moved to another game)
   while its owner is on a team for that game (202611011100); editing IGN/role/rank is fine.
 - `teams`: id, name, description, game_id (→ games), captain_id (→ profiles), recruiting (open to join requests,
   202611011300; changed by the captain or through `set_team_recruiting()`, which admin/staff may also call),
@@ -647,7 +654,7 @@ The final feature list for the documents is docs/new-features-summary.md.
 - **Redefining an existing function or trigger function**: always start from its LATEST version (create or
   replace keeps only what you write). Latest versions: `check_tournament_registration`, `check_registration_update`
   → `202610171000_student_verification`; `check_team_member` → `202610171000`; `check_team_member_leave`, `notify_team_member_left`, `list_teams` → `202611081000_team_removal`; `get_team_roster`,
-  `search_players`, `get_team_join_requests` → `202611081400_avatars_and_tour` (they return avatar_url); `protect_team_fields` → `202610171300`; `protect_profile_role`,
+  `search_players`, `get_team_join_requests` → `202611091400_game_profile_schemas` (avatar_url, rank, rank_position); `protect_team_fields` → `202610171300`; `protect_profile_role`,
   `handle_new_user` → `202610170900_privacy_consent`; `log_match` → `202610171400_match_checkin`;
   `get_needs_attention` → `202610171500_match_results`; `notifications_type_check` → `202611081500_comments_moderation`;
   `report_engagement` → `202610181100_predictions` (adds predictions, predictors, prediction_accuracy,

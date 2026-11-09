@@ -28,6 +28,8 @@ import {
 } from 'lucide-react';
 
 import GameLogo from '@/components/GameLogo';
+import GameProfileForm from '@/components/GameProfileForm';
+import GameProfileSummary from '@/components/GameProfileSummary';
 import Avatar from '@/components/Avatar';
 import AvatarUploader from '@/components/AvatarUploader';
 import MyWarnings from '@/components/MyWarnings';
@@ -54,11 +56,8 @@ export default function ProfilePage() {
   const [message, setMessage] = useState('');
   const [reloadCount, setReloadCount] = useState(0);
 
-  // Game profile form: which game is being edited, and its fields
+  // Game profile form (components/GameProfileForm.tsx): the game it opens on, or null when closed
   const [editingGameId, setEditingGameId] = useState<string | null>(null);
-  const [ign, setIgn] = useState('');
-  const [inGameRole, setInGameRole] = useState('');
-  const [rank, setRank] = useState('');
 
   // Delete account confirmation
   const [showDelete, setShowDelete] = useState(false);
@@ -127,44 +126,9 @@ export default function ProfilePage() {
   };
 
   const startEditing = (gameId: string) => {
-    const existing = gameProfiles.find((gp) => gp.game_id === gameId);
     setEditingGameId(gameId);
-    setIgn(existing?.ign || '');
-    setInGameRole(existing?.in_game_role || '');
-    setRank(existing?.rank || '');
     setError('');
     setMessage('');
-  };
-
-  const handleSaveGameProfile = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!profile || !editingGameId) return;
-    setSaving(true);
-    setError('');
-
-    const fields = {
-      ign: ign.trim(),
-      in_game_role: inGameRole.trim() || null,
-      rank: rank.trim() || null,
-    };
-
-    try {
-      const existing = gameProfiles.find((gp) => gp.game_id === editingGameId);
-      const { error: saveError } = existing
-        ? await supabase.from('player_game_profiles').update(fields).eq('id', existing.id)
-        : await supabase
-            .from('player_game_profiles')
-            .insert([{ ...fields, user_id: profile.id, game_id: editingGameId }]);
-      if (saveError) throw saveError;
-
-      setEditingGameId(null);
-      setReloadCount((n) => n + 1);
-      setMessage('Game profile saved.');
-    } catch (err) {
-      setError(getErrorMessage(err, 'Failed to save game profile'));
-    } finally {
-      setSaving(false);
-    }
   };
 
   const handleRemoveGameProfile = async (gp: PlayerGameProfile, gameName: string) => {
@@ -415,93 +379,23 @@ export default function ProfilePage() {
             </div>
 
             <div className="space-y-4">
+              {editingGameId && (
+                <GameProfileForm
+                  key={editingGameId}
+                  games={games}
+                  profiles={gameProfiles}
+                  userId={profile.id}
+                  initialGameId={editingGameId}
+                  onCancel={() => setEditingGameId(null)}
+                  onSaved={(gameName) => {
+                    setEditingGameId(null);
+                    setReloadCount((n) => n + 1);
+                    setMessage(`${gameName} profile saved.`);
+                  }}
+                />
+              )}
               {games.map((game) => {
                 const gp = gameProfiles.find((p) => p.game_id === game.id);
-
-                if (editingGameId === game.id) {
-                  return (
-                    <form
-                      key={game.id}
-                      onSubmit={handleSaveGameProfile}
-                      className="bg-stone-50/80 border border-gold/70 rounded-2xl p-5 sm:p-6 space-y-4 shadow-sm"
-                    >
-                      <div className="flex items-center gap-3 pb-2 border-b border-stone-200">
-                        <div className="w-10 h-10 rounded-xl bg-ink border border-stone-800 flex items-center justify-center p-1.5 shadow-xs shrink-0">
-                          <GameLogo name={game.name} gameId={game.id} className="w-8 h-8" fallbackClassName="text-[10px]" sizes="32px" />
-                        </div>
-                        <div>
-                          <h3 className="font-black text-maroon text-sm tracking-wider uppercase">
-                            Editing {game.name} Profile
-                          </h3>
-                          <p className="text-[11px] text-stone-500 font-medium">
-                            Enter your official IGN, role, and current competitive tier.
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="space-y-1.5">
-                        <label className="block text-xs font-black text-stone-700 tracking-wider">
-                          In-Game Name (IGN) *
-                        </label>
-                        <input
-                          type="text"
-                          placeholder="e.g. DALTA_Sniper"
-                          aria-label="IGN (in-game name)"
-                          value={ign}
-                          onChange={(e) => setIgn(e.target.value)}
-                          className={inputClass}
-                          required
-                        />
-                      </div>
-
-                      <div className="grid grid-cols-1 @3xl:grid-cols-2 gap-4">
-                        <div className="space-y-1.5">
-                          <label className="block text-xs font-black text-stone-700 tracking-wider">
-                            In-Game Role
-                          </label>
-                          <input
-                            type="text"
-                            placeholder="e.g. Jungler, Duelist, Anchor"
-                            aria-label="In-game role"
-                            value={inGameRole}
-                            onChange={(e) => setInGameRole(e.target.value)}
-                            className={inputClass}
-                          />
-                        </div>
-                        <div className="space-y-1.5">
-                          <label className="block text-xs font-black text-stone-700 tracking-wider">
-                            Competitive Rank
-                          </label>
-                          <input
-                            type="text"
-                            placeholder="e.g. Mythic, Diamond 2, Ascendant"
-                            aria-label="Rank"
-                            value={rank}
-                            onChange={(e) => setRank(e.target.value)}
-                            className={inputClass}
-                          />
-                        </div>
-                      </div>
-
-                      <div className="flex items-center gap-3 pt-2">
-                        <button
-                          type="submit"
-                          disabled={saving}
-                          className="rounded-xl bg-gold hover:bg-golddark text-stone-950 font-black px-6 py-2.5 text-xs tracking-wider shadow-xs hover:-translate-y-0.5 transition-all cursor-pointer disabled:opacity-50"
-                        >
-                          Save
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setEditingGameId(null)}
-                          className="rounded-xl border border-stone-300 hover:border-stone-400 bg-white text-stone-700 font-bold px-5 py-2.5 text-xs tracking-wider transition-all cursor-pointer"
-                        >
-                          Cancel
-                        </button>
-                      </div>
-                    </form>
-                  );
-                }
 
                 return (
                   <div
@@ -517,15 +411,7 @@ export default function ProfilePage() {
                           {game.name}
                         </h3>
                         {gp ? (
-                          <p className="text-xs sm:text-sm font-semibold text-stone-700 mt-0.5">
-                            IGN: <span className="text-stone-950 font-black">{gp.ign}</span>
-                            {gp.in_game_role && (
-                              <span className="text-stone-500 font-medium"> · Role: {gp.in_game_role}</span>
-                            )}
-                            {gp.rank && (
-                              <span className="text-stone-500 font-medium"> · Rank: {gp.rank}</span>
-                            )}
-                          </p>
+                          <GameProfileSummary game={game} profile={gp} />
                         ) : (
                           <p className="text-xs text-stone-500 font-medium tracking-wide mt-0.5">
                             Not set up yet

@@ -72,8 +72,10 @@ begin
 
   -- Alice: a Tekken 8 game profile and a spot on a third team (not in the match above,
   -- so her prediction tests still work)
-  insert into public.player_game_profiles (user_id, game_id, ign)
-  values ((select val from fx where key = 'alice'), 'tekken8', 'AliceIGN');
+  -- details must pass the Tekken 8 profile form (check_game_profile, 202611091400)
+  insert into public.player_game_profiles (user_id, game_id, ign, details)
+  values ((select val from fx where key = 'alice'), 'tekken8', 'AliceIGN',
+          '{"player_name": "AliceIGN", "tekken_id": "ALICE-001", "platform": "ps5"}');
   insert into public.teams (name, game_id, captain_id)
   values ('RLS Team C', 'tekken8', admin_id) returning id into m_id;
   insert into public.team_members (team_id, user_id, role)

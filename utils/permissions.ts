@@ -47,6 +47,7 @@ export type Action =
   | 'verification.submit'
   | 'verification.review'
   | 'website.edit'
+  | 'games.editProfiles'       // game profile fields and options (/admin/games)
   | 'activity.view'
   // Moderation (Phase 4)
   | 'comment.post'             // logged-in users; flagged/banned accounts are refused by the database
@@ -83,6 +84,7 @@ export const PERMISSIONS: Record<Role, readonly Action[]> = {
     'export.sensitive',
     'user.manage',
     'website.edit',
+    'games.editProfiles',
     'activity.view',
     'moderation.ban',
   ],

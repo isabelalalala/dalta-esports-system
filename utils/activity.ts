@@ -53,6 +53,9 @@ export interface ActivityLog {
     tournaments?: string[];
     walkovers?: number;
     skipped?: string[];
+    // game.profile_schema_updated (202611091400)
+    game_name?: string;
+    field_count?: number;
   };
   created_at: string;
 }
@@ -164,6 +167,10 @@ export const ACTION_GROUPS: { label: string; actions: { value: string; label: st
       { value: 'stream.edited', label: 'Stream edited' },
       { value: 'stream.removed', label: 'Stream removed' },
     ],
+  },
+  {
+    label: 'Games',
+    actions: [{ value: 'game.profile_schema_updated', label: 'Game profile options edited' }],
   },
 ];
 
@@ -350,6 +357,8 @@ export function describeActivity(log: ActivityLog): string {
       return `${actor} edited the stream "${d.title}"${forTournament}${listFields(d.fields)}`;
     case 'stream.removed':
       return `${actor} removed the stream "${d.title}"${forTournament}`;
+    case 'game.profile_schema_updated':
+      return `${actor} edited the ${d.game_name ?? 'game'} profile options (${d.field_count ?? '?'} fields)`;
     case 'report.generated':
       return `${actor} generated a report (${describeFilters(d.filters ?? {})})`;
     case 'report.deleted':

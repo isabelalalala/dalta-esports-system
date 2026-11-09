@@ -43,6 +43,7 @@ direct API or database request is refused too. Keep this table and `PERMISSIONS`
 | `verification.submit` | | | ✓ | | Student details on `/profile` | `profiles` verification trigger refuses non-player accounts |
 | `verification.review` | ✓ | ✓ | | | `/admin/verification` | `review_student_verification()` role check |
 | `website.edit` | ✓ | | | | `/admin/website` | RLS write on website tables + `site-images` (admin); `refreshSite()` role check |
+| `games.editProfiles` | ✓ | | | | `/admin/games` | `update_game_profile_schema()` role check (games has no write policy); logged |
 | `activity.view` | ✓ | | | | `/admin/activity` | RLS select on `activity_logs` (admin) |
 | `comment.post` | ✓ | ✓ | ✓ | ✓ | Comment box in `StreamComments` (logged out: "Log in to comment") | POST `/api/comments` (login + `can_post()`), RLS insert (own + `can_post()`: not flagged/banned), `check_stream_comment()` (300 chars, 1 per 3 s) |
 | `moderation.review` | ✓ | ✓ | | | `/admin/moderation` hidden comments, Remove on the comments panel, Retry pending analysis | `moderate_comment()` role check; POST `/api/moderation/retry` `can()` check |

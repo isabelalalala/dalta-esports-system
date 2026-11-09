@@ -38,6 +38,7 @@ updated to match the final system.
 | 19 | Profile pictures | 1 Account Management | bucket `avatars` (+ `profiles.avatar_url`) | `202611081400_avatars_and_tour` |
 | 20 | Live stream comments | 4 Live Streaming | `stream_comments`, `stream_comment_activity` | `202611081500_comments_moderation` |
 | 21 | AI moderation, warnings and bans (comments + feedback) | 5 Feedback & Sentiment Analysis, 1 Account Management | `user_warnings` (+ `profiles.ban_status`, moderation columns on `feedback`) | `202611081500_comments_moderation` |
+| 23 | Game-specific game profiles (per-game fields, ranks, roles, heroes) + recruiting filters | 2 Registration & Tournament Mgmt | (`games.profile_schema`, `player_game_profiles.details`) | `202611091400_game_profile_schemas` |
 
 ---
 
@@ -582,6 +583,37 @@ Export PDF (print dialog "Save as PDF", charts in the light palette) and CSV wit
 - Functions: `report_comments()`, `report_moderation()`; `report_activity()` adds `registrations_by_day`.
 - Trigger `analytics_reports_log` → activity actions `report.generated`, `report.deleted`.
 - `analytics_reports.data` may now also hold `comments`, `moderation` and `insights`; `filters.source`.
+
+### Feature 23: Game-specific game profiles
+**Module:** 2 Registration and Tournament Management
+
+**What it does:** the game profile form changes with the game: the player picks a game (with its logo) and sees
+only that game's fields (Valorant: Riot ID, rank + tier, main role, up to 3 agents; League of Legends: Riot ID,
+server, rank + division, primary/secondary role, champion pool; MLBB: IGN, User ID, Zone ID, rank + tier or stars,
+lane, heroes; CODM: IGN, UID, MP and BR rank, mode, weapon class; Tekken 8: player name, Tekken ID, platform,
+rank, characters). A tier/division/stars field appears only for ranks that have one (not for Radiant or Master+).
+Everything is checked again by the database, so a Valorant rank can't be saved on an MLBB profile even through
+the API. Rosters, invite search and join requests show the IGN, a colored rank badge and the main role; captains
+filter the invite search by role and rank range. Admins edit every list (add, rename, reorder, remove options and
+tiers) on `/admin/games` without code changes.
+
+**Actors / use cases**
+- Player: *Create/edit game profile* (now per-game fields).
+- Team Captain: *Search players by role and rank range*.
+- Admin: *Manage game profile options* (new; logged).
+
+**Data flows**
+- Player → 2.0: Game profile details → D1 (validated against the game's options) → Player.
+- Admin → 2.0: Game options → D1 (`games.profile_schema`) → D8: Activity entry.
+- Captain → 2.0: Search filters → D1 → Captain: Matching players (name, IGN, rank, role only).
+
+**Database**
+- Columns `games.profile_schema` (fields + ordered option lists, admin-editable) and
+  `player_game_profiles.details` (the player's values).
+- Trigger `check_game_profile()` (validation; fills `ign`, `rank`, `in_game_role`); function
+  `update_game_profile_schema()` (admin); `search_players()` gains role / rank-range filters;
+  `get_team_roster()` / `get_team_join_requests()` return the rank position for the badge.
+- Activity action `game.profile_schema_updated`.
 
 ### Feature 13: Enhancements inside the original modules
 These additions stay inside existing modules but add flows you may want to draw.

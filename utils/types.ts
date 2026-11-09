@@ -38,6 +38,8 @@ export interface Game {
   // How many teams (players for solo games) a tournament may allow (202610251000)
   min_participants: number;
   max_participants: number;
+  // The game's profile form (202611091400): see utils/game-profiles.ts (parseSchema)
+  profile_schema?: unknown;
 }
 
 export interface Tournament {
@@ -96,11 +98,20 @@ export interface PlayerGameProfile {
   in_game_role: string | null;
   rank: string | null;
   created_at: string;
+  // Game-specific values (202611091400); {} on profiles saved before the new form
+  details?: unknown; // read it with parseDetails() from utils/game-profiles.ts
+}
+
+// The rank's place in its game's ordered list, for the colored badge (1 = lowest; null = unranked
+// or an old free-text rank). Returned by get_team_roster / search_players / get_team_join_requests.
+interface RankPosition {
+  rank_position?: number | null;
+  rank_count?: number | null;
 }
 
 // One row returned by the get_team_roster() database function.
 // ign and in_game_role are empty if the member has no game profile for the team's game.
-export interface RosterMember {
+export interface RosterMember extends RankPosition {
   user_id: string;
   full_name: string | null;
   ign: string | null;
@@ -109,10 +120,11 @@ export interface RosterMember {
   joined_at: string;
   is_verified: boolean;
   avatar_url?: string | null;
+  rank?: string | null;
 }
 
 // One row returned by the search_players() database function
-export interface PlayerSearchResult {
+export interface PlayerSearchResult extends RankPosition {
   user_id: string;
   full_name: string | null;
   ign: string;
@@ -161,7 +173,7 @@ export interface TeamListEntry {
 }
 
 // One row returned by get_team_join_requests(): an open request the captain can answer
-export interface TeamJoinRequest {
+export interface TeamJoinRequest extends RankPosition {
   request_id: string;
   user_id: string;
   full_name: string | null;

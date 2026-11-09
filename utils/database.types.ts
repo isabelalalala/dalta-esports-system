@@ -183,14 +183,14 @@ isOneToOne: true
                   ]
                 },"games": {
                   Row: {
-                    "id": string,"max_participants": number,"max_players": number,"min_participants": number,"min_players": number,"name": string
+                    "id": string,"max_participants": number,"max_players": number,"min_participants": number,"min_players": number,"name": string,"profile_schema": NonNullable<Json>
                   }
                   ComputedFields: never
                   Insert: {
-                    "id": string,"max_participants"?: number,"max_players": number,"min_participants"?: number,"min_players": number,"name": string
+                    "id": string,"max_participants"?: number,"max_players": number,"min_participants"?: number,"min_players": number,"name": string,"profile_schema"?: NonNullable<Json>
                   }
                   Update: {
-                    "id"?: string,"max_participants"?: number,"max_players"?: number,"min_participants"?: number,"min_players"?: number,"name"?: string
+                    "id"?: string,"max_participants"?: number,"max_players"?: number,"min_participants"?: number,"min_players"?: number,"name"?: string,"profile_schema"?: NonNullable<Json>
                   }
                   Relationships: [
                     
@@ -457,14 +457,14 @@ isOneToOne: false
                   ]
                 },"player_game_profiles": {
                   Row: {
-                    "created_at": string,"game_id": string,"id": string,"ign": string,"in_game_role": string | null,"rank": string | null,"user_id": string
+                    "created_at": string,"details": NonNullable<Json>,"game_id": string,"id": string,"ign": string,"in_game_role": string | null,"rank": string | null,"user_id": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "created_at"?: string,"game_id": string,"id"?: string,"ign": string,"in_game_role"?: string | null,"rank"?: string | null,"user_id": string
+                    "created_at"?: string,"details"?: NonNullable<Json>,"game_id": string,"id"?: string,"ign": string,"in_game_role"?: string | null,"rank"?: string | null,"user_id": string
                   }
                   Update: {
-                    "created_at"?: string,"game_id"?: string,"id"?: string,"ign"?: string,"in_game_role"?: string | null,"rank"?: string | null,"user_id"?: string
+                    "created_at"?: string,"details"?: NonNullable<Json>,"game_id"?: string,"id"?: string,"ign"?: string,"in_game_role"?: string | null,"rank"?: string | null,"user_id"?: string
                   }
                   Relationships: [
                     {
@@ -1017,6 +1017,24 @@ isOneToOne: false
 "feedback_server_key_ok":
 { Args: { "p_key": string }; Returns: boolean
                            },
+"game_profile_field":
+{ Args: { "p_maps_to": string,"p_schema": Json }; Returns: Json
+                           },
+"game_profile_option":
+{ Args: { "p_field": Json,"p_id": string }; Returns: Json
+                           },
+"game_profile_rank_count":
+{ Args: { "p_game_id": string }; Returns: number
+                           },
+"game_profile_rank_position":
+{ Args: { "p_details": Json,"p_game_id": string }; Returns: number
+                           },
+"game_profile_select_label":
+{ Args: { "p_details": Json,"p_field": Json }; Returns: string
+                           },
+"game_rank_id_position":
+{ Args: { "p_game_id": string,"p_rank_id": string }; Returns: number
+                           },
 "generate_bracket":
 { Args: { "p_tournament_id": string }; Returns: number
                            },
@@ -1074,12 +1092,12 @@ isOneToOne: false
                            },
 "get_team_join_requests":
 { Args: { "p_team_id": string }; Returns: {
-              "avatar_url": string,"created_at": string,"full_name": string,"ign": string,"in_game_role": string,"is_verified": boolean,"message": string,"rank": string,"request_id": string,"user_id": string
+              "avatar_url": string,"created_at": string,"full_name": string,"ign": string,"in_game_role": string,"is_verified": boolean,"message": string,"rank": string,"rank_count": number,"rank_position": number,"request_id": string,"user_id": string
             }[]
                            },
 "get_team_roster":
 { Args: { "p_team_id": string }; Returns: {
-              "avatar_url": string,"full_name": string,"ign": string,"in_game_role": string,"is_verified": boolean,"joined_at": string,"role": string,"user_id": string
+              "avatar_url": string,"full_name": string,"ign": string,"in_game_role": string,"is_verified": boolean,"joined_at": string,"rank": string,"rank_count": number,"rank_position": number,"role": string,"user_id": string
             }[]
                            },
 "give_privacy_consent":
@@ -1181,8 +1199,8 @@ isOneToOne: false
 { Args: { "p_id": string,"p_is_offensive": boolean,"p_is_profane": boolean,"p_key": string,"p_kind": string,"p_offense_type": string,"p_reason": string,"p_score": number,"p_sentiment": string,"p_topics": (string)[] }; Returns: boolean
                            },
 "search_players":
-{ Args: { "p_game_id": string,"p_search": string }; Returns: {
-              "avatar_url": string,"full_name": string,"ign": string,"in_game_role": string,"invited": boolean,"is_verified": boolean,"rank": string,"user_id": string
+{ Args: { "p_game_id": string,"p_rank_max"?: string,"p_rank_min"?: string,"p_role"?: string,"p_search": string }; Returns: {
+              "avatar_url": string,"full_name": string,"ign": string,"in_game_role": string,"invited": boolean,"is_verified": boolean,"rank": string,"rank_count": number,"rank_position": number,"user_id": string
             }[]
                            },
 "send_checkin_open_notifications":
@@ -1211,6 +1229,9 @@ isOneToOne: false
                            },
 "unverified_team_members":
 { Args: { "p_team_id": string }; Returns: string
+                           },
+"update_game_profile_schema":
+{ Args: { "p_game_id": string,"p_schema": Json }; Returns: undefined
                            }
           }
           Enums: {

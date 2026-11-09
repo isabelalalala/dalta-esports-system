@@ -32,6 +32,8 @@ import {
   Clock,
 } from 'lucide-react';
 import { can } from '@/utils/permissions';
+import RankBadge from '@/components/RankBadge';
+import { fieldFor, parseSchema } from '@/utils/game-profiles';
 import { useRealtimeRefresh } from '@/utils/use-realtime-refresh';
 
 const inputClass =
@@ -60,6 +62,10 @@ export default function ManageTeamPage() {
 
   // Invite search and open invites (captain only)
   const [search, setSearch] = useState('');
+  // Recruiting filters from the game's profile form: main role and a rank range (option ids)
+  const [roleFilter, setRoleFilter] = useState('');
+  const [rankMin, setRankMin] = useState('');
+  const [rankMax, setRankMax] = useState('');
   const [results, setResults] = useState<PlayerSearchResult[] | null>(null);
   const [pendingInvites, setPendingInvites] = useState<PendingTeamInvite[]>([]);
   const [message, setMessage] = useState('');
@@ -175,6 +181,9 @@ export default function ManageTeamPage() {
       const { data, error: searchError } = await supabase.rpc('search_players', {
         p_game_id: team.game_id,
         p_search: search,
+        p_role: roleFilter || undefined,
+        p_rank_min: rankMin || undefined,
+        p_rank_max: rankMax || undefined,
       });
       if (searchError) throw searchError;
       setResults(data || []);
@@ -354,6 +363,10 @@ export default function ManageTeamPage() {
   const isCaptain = team.captain_id === userId;
   const isMember = roster.some((m) => m.user_id === userId);
   const maxPlayers = team.games?.max_players ?? 0;
+  // The game's profile form: its role and rank lists feed the recruiting filters
+  const gameSchema = parseSchema(team.games?.profile_schema);
+  const roleField = fieldFor(gameSchema, 'role');
+  const rankField = fieldFor(gameSchema, 'rank');
   const minPlayers = team.games?.min_players ?? 0;
   const isFull = roster.length >= maxPlayers;
   const isSolo = maxPlayers <= 1;
@@ -570,7 +583,8 @@ export default function ManageTeamPage() {
                     )}
                     <VerifiedBadge verified={member.is_verified} />
                   </div>
-                  <p className="text-xs text-stone-500 font-semibold mt-1">
+                  <p className="flex flex-wrap items-center gap-x-1 gap-y-1 text-xs text-stone-500 font-semibold mt-1">
+                    <RankBadge rank={member.rank} position={member.rank_position} count={member.rank_count} className="mr-1" />
                     {member.in_game_role && <span className="text-maroon font-extrabold">{member.in_game_role}</span>}
                     {member.in_game_role && member.full_name && <span> · </span>}
                     {member.full_name && <span>{member.full_name}</span>}
@@ -664,16 +678,33 @@ export default function ManageTeamPage() {
               </p>
             ) : (
               <div className="space-y-4">
-                <form onSubmit={handleSearch} className="flex flex-col sm:flex-row gap-3">
+                <form onSubmit={handleSearch} className="flex flex-col sm:flex-row sm:flex-wrap gap-3">
                   <input
                     type="text"
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
-                    placeholder="Search by IGN or full student name..."
+                    placeholder="IGN or name (empty = everyone)"
                     aria-label="IGN or name"
-                    className={inputClass}
-                    required
+                    className={`${inputClass} sm:flex-1 sm:min-w-[14rem]`}
                   />
+                  {roleField?.options && (
+                    <select value={roleFilter} onChange={(e) => setRoleFilter(e.target.value)} aria-label={`Filter by ${roleField.label.toLowerCase()}`} className={`${inputClass} sm:w-44`}>
+                      <option value="">Any {roleField.label.toLowerCase()}</option>
+                      {roleField.options.map((o) => <option key={o.id} value={o.id}>{o.label}</option>)}
+                    </select>
+                  )}
+                  {rankField?.options && (
+                    <>
+                      <select value={rankMin} onChange={(e) => setRankMin(e.target.value)} aria-label="Lowest rank" className={`${inputClass} sm:w-40`}>
+                        <option value="">Rank from: any</option>
+                        {rankField.options.map((o) => <option key={o.id} value={o.id}>From {o.label}</option>)}
+                      </select>
+                      <select value={rankMax} onChange={(e) => setRankMax(e.target.value)} aria-label="Highest rank" className={`${inputClass} sm:w-40`}>
+                        <option value="">Rank to: any</option>
+                        {rankField.options.map((o) => <option key={o.id} value={o.id}>To {o.label}</option>)}
+                      </select>
+                    </>
+                  )}
                   <button
                     type="submit"
                     disabled={busy}
@@ -704,9 +735,9 @@ export default function ManageTeamPage() {
                             </span>
                             <VerifiedBadge verified={player.is_verified} />
                           </div>
-                          <p className="text-xs text-stone-500 font-semibold mt-0.5">
-                            {player.in_game_role && <span>Role: {player.in_game_role} · </span>}
-                            {player.rank && <span>Rank: {player.rank} · </span>}
+                          <p className="flex flex-wrap items-center gap-x-1.5 gap-y-1 text-xs text-stone-500 font-semibold mt-0.5">
+                            <RankBadge rank={player.rank} position={player.rank_position} count={player.rank_count} />
+                            {player.in_game_role && <span className="text-maroon font-extrabold">{player.in_game_role} ·</span>}
                             <span>{player.full_name}</span>
                           </p>
                         </div>

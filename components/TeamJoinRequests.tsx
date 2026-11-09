@@ -9,6 +9,7 @@ import Avatar from '@/components/Avatar';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import SectionHint from '@/components/SectionHint';
 import { timeAgo } from '@/utils/notifications';
+import RankBadge from '@/components/RankBadge';
 import { UserPlus } from 'lucide-react';
 
 interface Props {
@@ -244,9 +245,9 @@ export default function TeamJoinRequests({
                   <VerifiedBadge verified={r.is_verified} />
                   <span className="text-[11px] text-stone-500 font-medium">{timeAgo(r.created_at)}</span>
                 </div>
-                <p className="text-xs text-stone-500 font-semibold">
-                  {r.in_game_role && <span>Role: {r.in_game_role} · </span>}
-                  {r.rank && <span>Rank: {r.rank} · </span>}
+                <p className="flex flex-wrap items-center gap-x-1.5 gap-y-1 text-xs text-stone-500 font-semibold">
+                  <RankBadge rank={r.rank} position={r.rank_position} count={r.rank_count} />
+                  {r.in_game_role && <span className="text-maroon font-extrabold">{r.in_game_role} ·</span>}
                   <span>{r.full_name}</span>
                 </p>
                 {r.message && (
