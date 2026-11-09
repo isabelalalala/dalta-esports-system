@@ -14,7 +14,6 @@ const protectedRoutes = [
   /^\/matches(\/.*)?$/,
   /^\/admin(\/.*)?$/,
   /^\/registrations(\/.*)?$/,
-  /^\/announcements(\/.*)?$/,
   /^\/schedule(\/.*)?$/,
   /^\/live(\/.*)?$/,
   /^\/feedback(\/.*)?$/,
@@ -99,6 +98,20 @@ export async function proxy(request: NextRequest) {
       const redirect = NextResponse.redirect(new URL('/banned', request.url));
       response.cookies.getAll().forEach((cookie) => redirect.cookies.set(cookie));
       return redirect;
+    }
+
+    // Organizers who turned on two-factor authentication must enter their code once per login
+    // (AAL2) before any protected page. The database enforces the same: get_my_role() treats such a
+    // session as a spectator until it is AAL2 (202611091900_phase12_security_engagement).
+    if (profile?.role === 'admin' || profile?.role === 'staff') {
+      const { data: aal } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+      if (aal && aal.nextLevel === 'aal2' && aal.currentLevel !== 'aal2') {
+        const target = new URL('/auth/mfa', request.url);
+        target.searchParams.set('next', path);
+        const redirect = NextResponse.redirect(target);
+        response.cookies.getAll().forEach((cookie) => redirect.cookies.set(cookie));
+        return redirect;
+      }
     }
 
     const needed =

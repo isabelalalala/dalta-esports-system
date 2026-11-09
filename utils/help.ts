@@ -31,6 +31,15 @@ export const HELP_SECTIONS: HelpSection[] = [
         link: { href: '/auth/register', label: 'Sign up' },
       },
       {
+        q: 'Where do I find news and announcements?',
+        a: [
+          'Open Announcements (also from the homepage’s "Latest news"). Filter by Tournaments, Match Updates, Results, Events or Streams, pick a game, or search. Posts marked NEW are from the last two days, or ones you haven’t opened yet when you’re logged in.',
+          'A red URGENT banner at the top of the site means an important change, like a new match time or a cancellation. Read it, then close it with the X.',
+          'Logged in, you can react to a post with Hype, GG or a heart; everyone sees the totals, never who reacted.',
+        ],
+        link: { href: '/announcements', label: 'Announcements' },
+      },
+      {
         q: 'How do I watch a live match?',
         a: [
           'Open Watch Live. Live streams are at the top; ended ones stay as replays.',
@@ -46,6 +55,7 @@ export const HELP_SECTIONS: HelpSection[] = [
           'A moderator can restore a comment hidden by mistake, which removes its warning.',
           'With 5 active warnings your account is flagged and an administrator decides on a ban. You can see your warnings on your profile.',
           'You can delete your own visible comments (there is an Undo for a few seconds).',
+          'See a comment the AI missed? Tap the flag next to it to report it. A moderator reviews it; the author isn’t told who reported.',
         ],
         link: { href: '/profile#warnings', label: 'My warnings' },
       },
@@ -69,7 +79,21 @@ export const HELP_SECTIONS: HelpSection[] = [
       {
         q: 'How do I add matches to my calendar or share a tournament?',
         a: [
-          'Tournament, match and team pages have "Add to calendar" (a file for any calendar app) and Subscribe, which keeps the times up to date when a match is rescheduled. Share copies the link or opens your phone’s share sheet.',
+          'Tournament, match and team pages have "Add to calendar" (a file for any calendar app), "Google Calendar", and Subscribe, which keeps the times up to date when a match is rescheduled. Share copies the link or opens your phone’s share sheet.',
+        ],
+      },
+      {
+        q: 'Can I choose which notifications I get?',
+        a: [
+          'Yes. Open Notifications and use "What to notify me about" to turn kinds of notifications on or off. Warnings, bans and changes to your account always arrive.',
+        ],
+        link: { href: '/notifications', label: 'Notifications' },
+      },
+      {
+        q: 'Can I install the site like an app?',
+        a: [
+          'Yes. On Android (Chrome), open the menu and tap "Install app" or "Add to Home screen". On iPhone (Safari), tap Share, then "Add to Home Screen". It opens full screen with the DALTA icon.',
+          'Inside the Facebook or Messenger app, first tap the menu and choose "Open in browser".',
         ],
       },
     ],

@@ -6,6 +6,7 @@ import { DEFAULT_LOGO, logoUrl } from '@/utils/site';
 import SiteAuthButtons from './SiteAuthButtons';
 import SiteSearchBox from './SiteSearchBox';
 import HeaderHeight from './HeaderHeight';
+import { LivePill } from './LiveNow';
 
 // The one header of the whole app (added in app/layout.tsx): logo, search, and
 // Log in / Sign up, or Dashboard + notifications + Log out when logged in.
@@ -31,7 +32,9 @@ export default function SiteHeader() {
         </div>
 
         {/* Auth CTA Controls */}
-        <div className="shrink-0 flex items-center">
+        <div className="shrink-0 flex items-center gap-2">
+          {/* Pulsing LIVE pill while a stream is live (links straight to it) */}
+          <LivePill />
           <SiteAuthButtons />
         </div>
       </div>

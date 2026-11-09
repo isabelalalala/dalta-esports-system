@@ -31,7 +31,10 @@ function LoginContent() {
   usePageTitle('Log in')
   const supabase = createClient()
   // ?confirmed=1: the user came from the "confirm your email" link
-  const confirmed = useSearchParams().get('confirmed') === '1'
+  const searchParams = useSearchParams()
+  const confirmed = searchParams.get('confirmed') === '1'
+  // ?idle=1: an organizer account was logged out after 30 minutes without activity (IdleLogout)
+  const idle = searchParams.get('idle') === '1'
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
@@ -196,6 +199,12 @@ function LoginContent() {
             {confirmed && !notConfirmed && !error && (
               <div role="status" className="bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-800 px-4 py-2.5 text-xs sm:text-sm font-bold shadow-2xs">
                 Thanks for confirming your email. You can log in now.
+              </div>
+            )}
+
+            {idle && !error && (
+              <div role="status" className="bg-yellow-50 border border-yellow-200 rounded-xl text-yellow-800 px-4 py-2.5 text-xs sm:text-sm font-bold shadow-2xs">
+                You were logged out after 30 minutes without activity. Log in again to continue.
               </div>
             )}
 

@@ -22,6 +22,13 @@ function subscribe(notify: () => void) {
 }
 const currentMinute = () => Math.floor(Date.now() / 60_000);
 
+// The current time rounded to the minute from the same shared clock (null on the server and during
+// hydration), for anything that changes with time: "2 hours ago", NEW badges.
+export function useNow(): number | null {
+  const minute = useSyncExternalStore(subscribe, currentMinute, () => null);
+  return minute === null ? null : minute * 60_000;
+}
+
 const MINUTE = 60_000;
 
 interface Props {

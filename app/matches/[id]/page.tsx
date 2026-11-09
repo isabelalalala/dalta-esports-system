@@ -10,6 +10,7 @@ import type { Match, MatchCheckin, MatchResultSubmission, MatchTeam } from '@/ut
 import { formatDateTime, roundLabel } from '@/utils/tournaments';
 import { usePageTitle } from '@/utils/page-title';
 import CheckinSection from './CheckinSection';
+import Celebrate from '@/components/Celebrate';
 import ShareButton from '@/components/ShareButton';
 import CalendarLinks from '@/components/CalendarLinks';
 import ResultSection from './ResultSection';
@@ -53,6 +54,8 @@ export default function MatchPage() {
   const [error, setError] = useState('');
   // Increase this to load everything again
   const [reloadCount, setReloadCount] = useState(0);
+  // The viewer is on the team that won (for the one-time celebration)
+  const [myWinningTeam, setMyWinningTeam] = useState(false);
 
   useEffect(() => {
     const load = async () => {
@@ -68,6 +71,11 @@ export default function MatchPage() {
           .from('matches').select('*').eq('id', id).single();
         if (matchError) throw matchError;
         setMatch(matchData as Match);
+        if (matchData.winner_team_id) {
+          const { data: mine } = await supabase.from('team_members').select('id')
+            .eq('team_id', matchData.winner_team_id).eq('user_id', session.user.id).limit(1);
+          setMyWinningTeam(Boolean(mine?.length));
+        }
 
         const [tournamentRes, teamsRes, checkinsRes, roundsRes, resultsRes] = await Promise.all([
           supabase.from('tournaments').select('id, name, game, game_id, checkin_window_minutes').eq('id', matchData.tournament_id).single(),
@@ -152,7 +160,11 @@ export default function MatchPage() {
         </Link>
 
         {/* Match header */}
-        <div className="bg-white border border-stone-200/90 rounded-2xl shadow-xs p-4 sm:p-6 space-y-4">
+        <div className="relative bg-white border border-stone-200/90 rounded-2xl shadow-xs p-4 sm:p-6 space-y-4">
+          {/* The viewer's team won: a small one-time celebration */}
+          {match.status === 'completed' && match.winner_team_id && myWinningTeam && (
+            <Celebrate storageKey={`match-won:${match.id}`} message={`${winnerName ?? 'Your team'} won! Well played.`} />
+          )}
           <h1 className="text-xs uppercase font-bold text-stone-500 tracking-widest">
             {tournament.game} · {roundLabel(match.round, roundCount)} · Match {match.match_number}
           </h1>

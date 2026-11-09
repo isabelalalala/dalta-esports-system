@@ -13,7 +13,11 @@
 // 2026-11-08.2: stream comments (public on tournament pages), AI moderation, warnings and bans.
 // 2026-11-09: game-specific profiles: game account IDs (Riot ID, MLBB User/Zone ID, CODM UID, Tekken ID),
 //   server/platform and favorite heroes; visible only to the player and organizers (202611091500).
-export const PRIVACY_NOTICE_VERSION = '2026-11-09';
+// 2026-11-09.2: comment reports (who reported which comment, seen by staff/admins), notification
+//   settings, and two-factor authentication keys for organizers who turn it on (202611091900).
+// 2026-11-09.3: announcement reactions (which reactions you gave; others only see totals) and which
+//   announcements you opened (NEW badge), visible only to you (202611092000).
+export const PRIVACY_NOTICE_VERSION = '2026-11-09.3';
 
 // Where people send privacy requests and questions. Set the real contact in
 // NEXT_PUBLIC_PRIVACY_CONTACT_* before going live; the fallbacks are placeholders.

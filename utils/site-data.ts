@@ -6,6 +6,7 @@
 // build before the migration has run).
 import { cacheLife, cacheTag } from 'next/cache';
 import { createPublicClient } from '@/utils/supabase/public';
+import type { FeedAnnouncement } from '@/utils/announcements';
 import {
   DEFAULT_SITE_CONTENT, manilaToday, stripDraftMarker, pickFeaturedEvent, type GameDivision, type HeroImage, type Officer, type OfficialTeam,
   type SiteContent, type SitePost,
@@ -129,4 +130,21 @@ export async function getOfficialTeams(gameId?: string): Promise<OfficialTeam[]>
       (a, b) => Number(b.is_captain) - Number(a.is_captain) || a.display_order - b.display_order
     ),
   }));
+}
+
+// Homepage "Latest news": the newest published announcements (pinned first) + game names.
+// The public client only sees published posts (RLS). The editor calls refreshSite() after saving.
+export async function getLatestAnnouncements(limit = 4): Promise<{ rows: FeedAnnouncement[]; games: Record<string, string> }> {
+  'use cache';
+  cacheSite();
+  const supabase = createPublicClient();
+  const [ann, games] = await Promise.all([
+    supabase.from('announcements').select('*')
+      .order('pinned', { ascending: false }).order('publish_at', { ascending: false }).limit(limit),
+    supabase.from('games').select('id, name'),
+  ]);
+  return {
+    rows: (ann.data ?? []) as FeedAnnouncement[],
+    games: Object.fromEntries((games.data ?? []).map((g) => [g.id, g.name])),
+  };
 }

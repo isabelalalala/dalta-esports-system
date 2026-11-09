@@ -162,6 +162,18 @@ export default function PrivacyNoticePage() {
                 <strong className="text-stone-950 font-black">Warnings and bans:</strong> warnings you receive for comments or feedback (type, reason, date, and whether a moderator removed one), and your account status (flagged or banned, with the date and the administrator&apos;s reason). Your feedback is checked for profanity and offensive content in the same way.
               </li>
               <li>
+                <strong className="text-stone-950 font-black">Comment reports:</strong> when you report a stream comment, we save which comment, the reason you chose, any details you add, the time, and that you sent the report.
+              </li>
+              <li>
+                <strong className="text-stone-950 font-black">Notification settings:</strong> which kinds of notifications you turned off.
+              </li>
+              <li>
+                <strong className="text-stone-950 font-black">Announcement reactions and reading:</strong> the reactions you give to announcements (hype, GG, heart) and which announcements you have opened, with the time, so we can mark new posts for you.
+              </li>
+              <li>
+                <strong className="text-stone-950 font-black">Two-factor authentication (organizers who turn it on):</strong> our login provider (Supabase Auth) keeps the secret key of your authenticator app so it can check your codes. We never see the codes.
+              </li>
+              <li>
                 <strong className="text-stone-950 font-black">Viewing activity:</strong> which live streams you opened and on which day. While a stream page is open, we also see that you are watching it right now; that is not saved.
               </li>
               <li>
@@ -230,6 +242,12 @@ export default function PrivacyNoticePage() {
                 <strong className="text-stone-950 font-black">Stream comments:</strong> anyone, even without an account, can read visible comments on public tournament and match pages, shown with your first name and the first letter of your last name (e.g. &quot;Juan C.&quot;) and your profile picture. A comment the automatic check hides is visible only to you and to tournament staff and administrators (who review it).
               </li>
               <li>Your warnings and account status are visible to you and to administrators.</li>
+              <li>
+                <strong className="text-stone-950 font-black">Announcement reactions and reading:</strong> everyone sees only the total number of each reaction on a post, never who reacted. Which reactions you gave and which posts you opened are visible only to you.
+              </li>
+              <li>
+                <strong className="text-stone-950 font-black">Comment reports:</strong> tournament staff and administrators see each report, including who sent it, so they can review the comment. The comment&apos;s author is not told who reported it.
+              </li>
               <li>Result screenshots are visible only to the members of the two teams in that match and to tournament staff.</li>
               <li>
                 Organizers may download files to run tournaments: registrations (which include each member&apos;s student ID, school and course/year), team rosters, schedules and results. Administrators can also download the full account list (names, email addresses, student details, consent date) and all feedback including comment text. Every download is recorded in the activity log.
@@ -275,7 +293,7 @@ export default function PrivacyNoticePage() {
             </p>
             <ul className="list-disc pl-6 space-y-3">
               <li>
-                <strong className="text-stone-950 font-black">Deleted:</strong> your account and profile (including your student details), player details, team memberships, teams you captain alone, registrations you made, your pick&apos;em picks, your viewing activity, your stream comments, your warnings and your profile picture.
+                <strong className="text-stone-950 font-black">Deleted:</strong> your account and profile (including your student details), player details, team memberships, teams you captain alone, registrations you made, your pick&apos;em picks, your viewing activity, your stream comments, the comment reports you sent, your notification settings, your announcement reactions and reading history, your warnings and your profile picture.
               </li>
               <li>
                 <strong className="text-stone-950 font-black">Kept without your name:</strong> your feedback (rating, comment and sentiment), so event statistics stay correct. It is no longer linked to you. Saved reports may contain totals and short examples of feedback comments.

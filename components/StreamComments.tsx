@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { MessageSquare, Send, Trash2 } from 'lucide-react';
+import { Flag, MessageSquare, Send, Trash2 } from 'lucide-react';
 import { createClient } from '@/utils/supabase/client';
 import { getErrorMessage } from '@/utils/errors';
 import { useViewer } from '@/utils/use-viewer';
@@ -40,6 +40,16 @@ const PAGE = 100;
 // Your own comment is really deleted only after the Undo window
 const UNDO_MS = 5000;
 
+// Why a comment is reported (comment_reports.reason)
+const REPORT_REASONS = [
+  { value: 'harassment', label: 'Harassment or bullying' },
+  { value: 'hate_speech', label: 'Hate speech' },
+  { value: 'threat', label: 'Threat or violence' },
+  { value: 'sexual', label: 'Sexual content' },
+  { value: 'spam', label: 'Spam or scam' },
+  { value: 'other', label: 'Something else' },
+] as const;
+
 // Comments under a stream, live and on replays (Phase 4). Everyone (also logged out) reads the
 // visible comments through get_stream_comments(); logged-in users who aren't flagged or banned can
 // post. New comments, and comments the AI hides, show up for everyone through Realtime (the
@@ -58,6 +68,12 @@ export default function StreamComments({ streamId, replay = false, heightClass =
   const [cooldown, setCooldown] = useState(false);
   const [removing, setRemoving] = useState<StreamComment | null>(null);
   const [removeNote, setRemoveNote] = useState('');
+  // Reporting a comment (viewers)
+  const [reporting, setReporting] = useState<StreamComment | null>(null);
+  const [reportReason, setReportReason] = useState<string>('harassment');
+  const [reportNote, setReportNote] = useState('');
+  const [reportError, setReportError] = useState('');
+  const [reported, setReported] = useState<Set<string>>(() => new Set());
   const [warnOnRemove, setWarnOnRemove] = useState(false);
   const [busy, setBusy] = useState(false);
   const listRef = useRef<HTMLDivElement>(null);
@@ -139,6 +155,27 @@ export default function StreamComments({ streamId, replay = false, heightClass =
     }
   };
 
+  // Report a comment the AI missed (comment_reports; one per person per comment, 10 per hour)
+  const sendReport = async () => {
+    if (!reporting || !viewer.userId) return;
+    setBusy(true);
+    setReportError('');
+    try {
+      const { error: insertError } = await supabase.from('comment_reports').insert({
+        comment_id: reporting.id, reporter_id: viewer.userId, reason: reportReason, note: reportNote.trim() || null,
+      });
+      // 23505 = already reported by you: treat it as done
+      if (insertError && insertError.code !== '23505') throw insertError;
+      setReported((current) => new Set(current).add(reporting.id));
+      setReporting(null);
+      toast.success('Thanks. A moderator will review this comment.');
+    } catch (err) {
+      setReportError(getErrorMessage(err, 'The report could not be sent.'));
+    } finally {
+      setBusy(false);
+    }
+  };
+
   const removeComment = async () => {
     if (!removing) return;
     setBusy(true);
@@ -206,6 +243,7 @@ export default function StreamComments({ streamId, replay = false, heightClass =
   }, [deleteNow]);
 
   const isModerator = can(viewer.role, 'moderation.review');
+
   const remaining = MAX_LENGTH - text.length;
 
   return (
@@ -275,6 +313,22 @@ export default function StreamComments({ streamId, replay = false, heightClass =
                   <Trash2 className="h-4 w-4" aria-hidden="true" />
                 </button>
               )}
+              {/* Report: logged-in viewers, someone else's visible comment */}
+              {viewer.userId && !isModerator && !c.is_mine && !hidden && (
+                reported.has(c.id) ? (
+                  <span className="self-start p-1 text-[10px] font-black uppercase text-stone-500" title="You reported this comment">Reported</span>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => { setReportReason('harassment'); setReportNote(''); setReportError(''); setReporting(c); }}
+                    aria-label={`Report comment by ${c.author_name}`}
+                    title="Report this comment"
+                    className="self-start grid size-8 place-items-center rounded-lg text-stone-500 hover:bg-stone-100 hover:text-red-700 cursor-pointer"
+                  >
+                    <Flag className="h-4 w-4" aria-hidden="true" />
+                  </button>
+                )
+              )}
               {isModerator && !c.is_mine && (
                 <button
                   type="button"
@@ -338,6 +392,45 @@ export default function StreamComments({ streamId, replay = false, heightClass =
           </form>
         )}
       </div>
+
+      {reporting && (
+        <ConfirmDialog
+          title="Report this comment?"
+          confirmLabel="Send report"
+          tone="danger"
+          busy={busy}
+          busyLabel="Sending..."
+          error={reportError}
+          onConfirm={sendReport}
+          onClose={() => setReporting(null)}
+        >
+          <blockquote className="rounded-xl border border-stone-200 bg-stone-50 p-3 text-sm break-words">
+            <span className="font-black">{reporting.author_name}:</span> {reporting.content}
+          </blockquote>
+          <p>A moderator reviews it. The author isn&apos;t told who reported it.</p>
+          <label className="block">
+            <span className="text-xs font-black uppercase tracking-wider text-stone-700">Reason</span>
+            <select
+              value={reportReason}
+              onChange={(e) => setReportReason(e.target.value)}
+              className="mt-1 w-full rounded-xl border border-stone-300 bg-white px-3 py-2 text-base sm:text-sm"
+            >
+              {REPORT_REASONS.map((r) => (
+                <option key={r.value} value={r.value}>{r.label}</option>
+              ))}
+            </select>
+          </label>
+          <label className="block">
+            <span className="text-xs font-black uppercase tracking-wider text-stone-700">Details (optional)</span>
+            <input
+              value={reportNote}
+              onChange={(e) => setReportNote(e.target.value)}
+              maxLength={300}
+              className="mt-1 w-full rounded-xl border border-stone-300 bg-white px-3 py-2 text-base sm:text-sm"
+            />
+          </label>
+        </ConfirmDialog>
+      )}
 
       {removing && (
         <ConfirmDialog

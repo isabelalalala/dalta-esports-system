@@ -47,6 +47,7 @@ export interface ActivityLog {
     rows?: number;
     // Moderation (202611081500)
     warned?: boolean;
+    reports?: number;
     warning_type?: string;
     // Team removal / restore (202611081000)
     members?: number;
@@ -118,6 +119,7 @@ export const ACTION_GROUPS: { label: string; actions: { value: string; label: st
     actions: [
       { value: 'comment.restored', label: 'Comment restored' },
       { value: 'comment.removed', label: 'Comment removed' },
+      { value: 'comment.reports_dismissed', label: 'Comment reports dismissed' },
       { value: 'feedback.restored', label: 'Feedback restored' },
       { value: 'feedback.removed', label: 'Feedback removed' },
       { value: 'warning.removed', label: 'Warning removed' },
@@ -307,6 +309,8 @@ export function describeActivity(log: ActivityLog): string {
       return `${actor} restored ${d.team_name || 'a team'}${d.game ? ` (${d.game})` : ''}${d.skipped?.length ? ` (not added back: ${d.skipped.join(', ')})` : ''}`;
     case 'team.logo_removed':
       return `${actor} removed the logo of ${d.team_name || 'a team'}${d.note ? `: "${d.note}"` : ''}`;
+    case 'comment.reports_dismissed':
+      return `${actor} kept a reported comment and dismissed ${d.reports ?? 'its'} report${d.reports === 1 ? '' : 's'}${d.note ? `: "${d.note}"` : ''}`;
     case 'comment.restored':
       return `${actor} restored ${d.user_name || 'a user'}'s comment${d.title ? ` on ${d.title}` : ''}${d.note ? `: "${d.note}"` : ''}`;
     case 'comment.removed':

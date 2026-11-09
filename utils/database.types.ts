@@ -63,16 +63,68 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
-                },"announcements": {
+                },"announcement_reactions": {
                   Row: {
-                    "body": string,"created_at": string,"created_by": string | null,"id": string,"pinned": boolean,"title": string,"tournament_id": string | null,"updated_at": string
+                    "announcement_id": string,"created_at": string,"reaction": string,"user_id": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "body": string,"created_at"?: string,"created_by"?: string | null,"id"?: string,"pinned"?: boolean,"title": string,"tournament_id"?: string | null,"updated_at"?: string
+                    "announcement_id": string,"created_at"?: string,"reaction": string,"user_id"?: string
                   }
                   Update: {
-                    "body"?: string,"created_at"?: string,"created_by"?: string | null,"id"?: string,"pinned"?: boolean,"title"?: string,"tournament_id"?: string | null,"updated_at"?: string
+                    "announcement_id"?: string,"created_at"?: string,"reaction"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "announcement_reactions_announcement_id_fkey"
+      columns: ["announcement_id"]
+isOneToOne: false
+      referencedRelation: "announcements"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "announcement_reactions_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"announcement_reads": {
+                  Row: {
+                    "announcement_id": string,"read_at": string,"user_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "announcement_id": string,"read_at"?: string,"user_id"?: string
+                  }
+                  Update: {
+                    "announcement_id"?: string,"read_at"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "announcement_reads_announcement_id_fkey"
+      columns: ["announcement_id"]
+isOneToOne: false
+      referencedRelation: "announcements"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "announcement_reads_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"announcements": {
+                  Row: {
+                    "body": string,"category": string,"cover_path": string | null,"created_at": string,"created_by": string | null,"game_id": string | null,"id": string,"is_draft": boolean,"is_urgent": boolean,"linked_id": string | null,"linked_type": string | null,"notified_at": string | null,"pinned": boolean,"publish_at": string,"title": string,"tournament_id": string | null,"updated_at": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "body": string,"category"?: string,"cover_path"?: string | null,"created_at"?: string,"created_by"?: string | null,"game_id"?: string | null,"id"?: string,"is_draft"?: boolean,"is_urgent"?: boolean,"linked_id"?: string | null,"linked_type"?: string | null,"notified_at"?: string | null,"pinned"?: boolean,"publish_at"?: string,"title": string,"tournament_id"?: string | null,"updated_at"?: string
+                  }
+                  Update: {
+                    "body"?: string,"category"?: string,"cover_path"?: string | null,"created_at"?: string,"created_by"?: string | null,"game_id"?: string | null,"id"?: string,"is_draft"?: boolean,"is_urgent"?: boolean,"linked_id"?: string | null,"linked_type"?: string | null,"notified_at"?: string | null,"pinned"?: boolean,"publish_at"?: string,"title"?: string,"tournament_id"?: string | null,"updated_at"?: string
                   }
                   Relationships: [
                     {
@@ -80,6 +132,12 @@ isOneToOne: false
       columns: ["created_by"]
 isOneToOne: false
       referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "announcements_game_id_fkey"
+      columns: ["game_id"]
+isOneToOne: false
+      referencedRelation: "games"
       referencedColumns: ["id"]
     },{
       foreignKeyName: "announcements_tournament_id_fkey"
@@ -102,6 +160,38 @@ isOneToOne: false
                   }
                   Relationships: [
                     
+                  ]
+                },"comment_reports": {
+                  Row: {
+                    "comment_id": string,"created_at": string,"id": string,"note": string | null,"reason": string,"reporter_id": string,"resolved_at": string | null,"resolved_by": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "comment_id": string,"created_at"?: string,"id"?: string,"note"?: string | null,"reason": string,"reporter_id": string,"resolved_at"?: string | null,"resolved_by"?: string | null
+                  }
+                  Update: {
+                    "comment_id"?: string,"created_at"?: string,"id"?: string,"note"?: string | null,"reason"?: string,"reporter_id"?: string,"resolved_at"?: string | null,"resolved_by"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "comment_reports_comment_id_fkey"
+      columns: ["comment_id"]
+isOneToOne: false
+      referencedRelation: "stream_comments"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "comment_reports_reporter_id_fkey"
+      columns: ["reporter_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "comment_reports_resolved_by_fkey"
+      columns: ["resolved_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    }
                   ]
                 },"events": {
                   Row: {
@@ -372,6 +462,26 @@ isOneToOne: false
       columns: ["winner_team_id"]
 isOneToOne: false
       referencedRelation: "teams"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"notification_preferences": {
+                  Row: {
+                    "muted_types": (string)[],"updated_at": string,"user_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "muted_types"?: (string)[],"updated_at"?: string,"user_id": string
+                  }
+                  Update: {
+                    "muted_types"?: (string)[],"updated_at"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "notification_preferences_user_id_fkey"
+      columns: ["user_id"]
+isOneToOne: true
+      referencedRelation: "profiles"
       referencedColumns: ["id"]
     }
                   ]
@@ -1014,6 +1124,9 @@ isOneToOne: false
 "dismiss_ban":
 { Args: { "p_note": string,"p_user_id": string }; Returns: undefined
                            },
+"dismiss_comment_reports":
+{ Args: { "p_comment_id": string,"p_note"?: string }; Returns: number
+                           },
 "feedback_server_key_ok":
 { Args: { "p_key": string }; Returns: boolean
                            },
@@ -1037,6 +1150,16 @@ isOneToOne: false
                            },
 "generate_bracket":
 { Args: { "p_tournament_id": string }; Returns: number
+                           },
+"get_announcement_links":
+{ Args: { "p_ids": (string)[] }; Returns: {
+              "announcement_id": string,"link": Json
+            }[]
+                           },
+"get_announcement_reactions":
+{ Args: { "p_ids": (string)[] }; Returns: {
+              "announcement_id": string,"gg": number,"heart": number,"hype": number,"mine": (string)[]
+            }[]
                            },
 "get_game_profile_details":
 { Args: { "p_user_id"?: string }; Returns: {
@@ -1155,6 +1278,9 @@ isOneToOne: false
 "notify_users":
 { Args: { "p_link": string,"p_message": string,"p_title": string,"p_type": string,"p_user_ids": (string)[] }; Returns: undefined
                            },
+"publish_scheduled_announcements":
+{ Args: Record<PropertyKey, never>; Returns: undefined
+                           },
 "purge_old_activity_logs":
 { Args: Record<PropertyKey, never>; Returns: number
                            },
@@ -1216,6 +1342,9 @@ isOneToOne: false
 { Args: { "p_game_id": string,"p_rank_max"?: string,"p_rank_min"?: string,"p_role"?: string,"p_search": string }; Returns: {
               "avatar_url": string,"full_name": string,"ign": string,"in_game_role": string,"invited": boolean,"is_verified": boolean,"rank": string,"rank_count": number,"rank_position": number,"user_id": string
             }[]
+                           },
+"send_announcement_notification":
+{ Args: { "p_id": string }; Returns: undefined
                            },
 "send_checkin_open_notifications":
 { Args: Record<PropertyKey, never>; Returns: number

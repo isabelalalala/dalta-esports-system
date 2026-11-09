@@ -110,7 +110,7 @@ export default function NotificationBell({ userId }: { userId: string }) {
     <div ref={wrapperRef} className="relative">
       <button
         onClick={() => setOpen((o) => !o)}
-        className="relative w-10 h-10 flex items-center justify-center rounded-xl border border-stone-200 bg-white hover:bg-stone-50 hover:border-stone-300 text-stone-700 hover:text-stone-950 shadow-xs transition-all"
+        className="relative size-11 flex items-center justify-center rounded-xl border border-stone-200 bg-white hover:bg-stone-50 hover:border-stone-300 text-stone-700 hover:text-stone-950 shadow-xs transition-all"
         aria-label={unread > 0 ? `Notifications, ${unread} unread` : 'Notifications'}
         aria-expanded={open}
       >

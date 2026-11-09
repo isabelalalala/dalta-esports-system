@@ -37,8 +37,11 @@ export default function GameLogo({
   return (
     <div className={`${position} ${className}`}>
       {src && !failed && fit ? (
-        <div className="absolute inset-0 grid place-items-center">
-          <div className={`relative max-h-full ${fit}`}>
+        // Flex, not grid: iOS Safari (also inside the Messenger/Facebook browsers) resolved the
+        // percentage width of a centered grid item against its own content, so wide logos grew
+        // past the card and were cut off on the right. Padding keeps them off the edges.
+        <div className="absolute inset-0 flex items-center justify-center p-[6%]">
+          <div className={`relative max-h-full max-w-full ${fit}`}>
             <Image
               src={src}
               alt={name || 'Game logo'}

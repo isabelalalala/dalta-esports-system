@@ -33,7 +33,7 @@ export default function SiteAuthButtons() {
         <ThemeToggle />
         <Link
           href="/dashboard"
-          className="hidden sm:flex h-10 items-center justify-center px-4 sm:px-5 lg:px-4 xl:px-5 rounded-xl border border-amber-400 bg-gold text-stone-950 font-black text-xs sm:text-sm uppercase tracking-wider shadow-xs hover:bg-golddark hover:-translate-y-0.5 hover:shadow-sm transition-all duration-200"
+          className="hidden sm:flex h-11 items-center justify-center px-4 sm:px-5 lg:px-4 xl:px-5 rounded-xl border border-amber-400 bg-gold text-stone-950 font-black text-xs sm:text-sm uppercase tracking-wider shadow-xs hover:bg-golddark hover:-translate-y-0.5 hover:shadow-sm transition-all duration-200"
         >
           Dashboard
         </Link>
@@ -49,7 +49,7 @@ export default function SiteAuthButtons() {
           <button
             onClick={handleLogout}
             aria-label="Log out"
-            className="h-10 flex items-center justify-center gap-1.5 px-2.5 sm:px-3 rounded-xl text-xs sm:text-sm font-extrabold text-stone-700 hover:text-red-700 hover:bg-red-50 uppercase tracking-wider transition-colors cursor-pointer"
+            className="h-11 flex items-center justify-center gap-1.5 px-2.5 sm:px-3 rounded-xl text-xs sm:text-sm font-extrabold text-stone-700 hover:text-red-700 hover:bg-red-50 uppercase tracking-wider transition-colors cursor-pointer"
           >
             {/* Icon on phones and on laptop widths (1024-1279px, where the search shares the row);
                 the word where there is room */}
@@ -66,13 +66,13 @@ export default function SiteAuthButtons() {
       <ThemeToggle />
       <Link
         href="/auth/login"
-        className="h-10 flex items-center justify-center px-3 sm:px-5 rounded-xl border border-stone-200 bg-white text-stone-950 font-extrabold text-xs sm:text-sm uppercase tracking-wider shadow-xs hover:bg-stone-50 hover:border-stone-300 hover:-translate-y-0.5 transition-all duration-200"
+        className="h-11 flex items-center justify-center px-3 sm:px-5 rounded-xl border border-stone-200 bg-white text-stone-950 font-extrabold text-xs sm:text-sm uppercase tracking-wider shadow-xs hover:bg-stone-50 hover:border-stone-300 hover:-translate-y-0.5 transition-all duration-200"
       >
         Log in
       </Link>
       <Link
         href="/auth/register"
-        className="h-10 flex items-center justify-center px-3 sm:px-5 rounded-xl border border-amber-400 bg-gold text-stone-950 font-black text-xs sm:text-sm uppercase tracking-wider shadow-xs hover:bg-golddark hover:-translate-y-0.5 hover:shadow-sm transition-all duration-200"
+        className="h-11 flex items-center justify-center px-3 sm:px-5 rounded-xl border border-amber-400 bg-gold text-stone-950 font-black text-xs sm:text-sm uppercase tracking-wider shadow-xs hover:bg-golddark hover:-translate-y-0.5 hover:shadow-sm transition-all duration-200"
       >
         Sign up
       </Link>

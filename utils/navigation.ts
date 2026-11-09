@@ -18,6 +18,8 @@ export interface NavItem {
   hint: string;
   // Also highlight this item on these paths (e.g. Dashboard while on /admin/...)
   alsoActive?: string[];
+  // Label in the phone bottom bar: one short word that always fits (no ellipsis there)
+  short?: string;
 }
 
 export interface NavGroup {
@@ -33,32 +35,32 @@ export interface RoleNav {
 
 const I = {
   home: { href: '/', label: 'Home', icon: 'home', hint: 'The DALTA Esports home page' },
-  dashboard: { href: '/dashboard', label: 'Dashboard', icon: 'dashboard', hint: 'Your shortcuts and what needs your attention' },
+  dashboard: { href: '/dashboard', label: 'Dashboard', short: 'Home', icon: 'dashboard', hint: 'Your shortcuts and what needs your attention' },
   events: { href: '/events', label: 'Events', icon: 'events', hint: 'Upcoming DALTA events' },
-  tournaments: { href: '/tournaments', label: 'Tournaments', icon: 'tournaments', hint: 'All tournaments, brackets and registration' },
-  live: { href: '/live', label: 'Watch Live', icon: 'live', hint: 'Live streams and replays of matches' },
+  tournaments: { href: '/tournaments', label: 'Tournaments', short: 'Tourneys', icon: 'tournaments', hint: 'All tournaments, brackets and registration' },
+  live: { href: '/live', label: 'Watch Live', short: 'Live', icon: 'live', hint: 'Live streams and replays of matches' },
   teams: { href: '/teams?tab=all', label: 'Teams', icon: 'teams', hint: 'Browse every team and its roster' },
-  feedback: { href: '/feedback', label: 'Give Feedback', icon: 'feedback', hint: 'Rate a tournament or match and tell us what to improve' },
+  feedback: { href: '/feedback', label: 'Give Feedback', short: 'Feedback', icon: 'feedback', hint: 'Rate a tournament or match and tell us what to improve' },
   profile: { href: '/profile', label: 'My Profile', icon: 'profile', hint: 'Your name, picture, game profiles and student details' },
-  myTeam: { href: '/teams?tab=mine', label: 'My Team', icon: 'myteam', hint: 'Your teams, invites and join requests' },
+  myTeam: { href: '/teams?tab=mine', label: 'My Team', short: 'Team', icon: 'myteam', hint: 'Your teams, invites and join requests' },
   schedule: { href: '/schedule', label: 'My Matches & Schedule', icon: 'schedule', hint: 'Upcoming matches and latest results' },
   recruiting: { href: '/teams?tab=all&recruiting=1', label: 'Recruiting', icon: 'recruiting', hint: 'Teams looking for players: ask to join one' },
   registrations: { href: '/registrations', label: 'My Registrations', icon: 'registrations', hint: 'Your tournament registrations and their status' },
-  matchControl: { href: '/matches', label: 'Match Control', icon: 'matches', hint: 'Schedule matches, check-ins, results and forfeits' },
+  matchControl: { href: '/matches', label: 'Match Control', short: 'Matches', icon: 'matches', hint: 'Schedule matches, check-ins, results and forfeits' },
   streams: { href: '/live', label: 'Streams', icon: 'live', hint: 'Watch streams; set them up from each tournament' },
   brackets: { href: '/tournaments', label: 'Brackets', icon: 'brackets', hint: 'Open a tournament to generate or follow its bracket' },
   manageTeams: { href: '/admin/teams', label: 'Teams', icon: 'teams', hint: 'Every team; remove teams that break the rules' },
   users: { href: '/admin/users', label: 'Users', icon: 'users', hint: 'Roles, names and accounts' },
-  announcements: { href: '/announcements', label: 'Announcements', icon: 'announcements', hint: 'News and updates for players and audience' },
+  announcements: { href: '/announcements', label: 'Announcements', short: 'News', icon: 'announcements', hint: 'Tournament news, match updates and results' },
   sentiment: { href: '/admin/feedback', label: 'Feedback & Sentiment', icon: 'sentiment', hint: 'What people say, analysed by AI' },
-  reports: { href: '/analytics', label: 'Reports', icon: 'reports', hint: 'Generate and save administrative reports' },
+  reports: { href: '/analytics', label: 'Reports', short: 'Reports', icon: 'reports', hint: 'Generate and save administrative reports' },
   stats: { href: '/analytics/engagement', label: 'Engagement Stats', icon: 'stats', hint: 'Viewers, watching now and audience activity' },
   verification: { href: '/admin/verification', label: 'Student Verification', icon: 'verification', hint: "Check players' student details" },
   website: { href: '/admin/website', label: 'Website', icon: 'website', hint: 'Edit the public pages, photos and teams' },
   gameProfiles: { href: '/admin/games', label: 'Game Profiles', icon: 'divisions', hint: 'Ranks, roles and heroes players pick from' },
   activity: { href: '/admin/activity', label: 'Activity Log', icon: 'activity', hint: 'Who did what, and when' },
-  moderation: { href: '/admin/moderation', label: 'Moderation', icon: 'moderation', hint: 'Hidden comments, warnings and bans' },
-  moderationQueue: { href: '/admin/moderation', label: 'Moderation Queue', icon: 'moderation', hint: 'Comments the AI hid: restore or remove them' },
+  moderation: { href: '/admin/moderation', label: 'Moderation', short: 'Moderate', icon: 'moderation', hint: 'Hidden comments, warnings and bans' },
+  moderationQueue: { href: '/admin/moderation', label: 'Moderation Queue', short: 'Moderate', icon: 'moderation', hint: 'Comments the AI hid: restore or remove them' },
   about: { href: '/about', label: 'About Us', icon: 'about', hint: 'Who we are' },
   campaigns: { href: '/campaigns', label: 'Campaigns', icon: 'campaigns', hint: 'Our campaigns and programs' },
   divisions: { href: '/divisions', label: 'Game Divisions', icon: 'divisions', hint: 'Our official teams per game' },
@@ -77,7 +79,7 @@ export function navFor(role: string | null | undefined, loggedIn: boolean): Role
         { label: 'Tools', items: [I.matchControl, I.streams, I.verification, I.website, I.gameProfiles, I.activity] },
         { label: 'Explore', items: [I.home, ...EXPLORE.items] },
       ],
-      bottom: [dashboard, I.tournaments, I.manageTeams, I.reports],
+      bottom: [dashboard, I.tournaments, I.moderation, I.reports],
     };
   }
   if (role === 'staff') {
@@ -87,10 +89,10 @@ export function navFor(role: string | null | undefined, loggedIn: boolean): Role
         { label: 'Tools', items: [I.verification, I.announcements, I.stats, I.schedule] },
         { label: 'Explore', items: [I.home, ...EXPLORE.items] },
       ],
-      bottom: [I.dashboard, I.matchControl, I.streams, I.manageTeams],
+      bottom: [I.dashboard, I.matchControl, { ...I.streams, short: 'Live' }, I.moderationQueue],
     };
   }
-  const spectator: NavItem[] = [I.home, ...(loggedIn ? [I.dashboard] : []), I.events, I.tournaments, I.live, I.teams, I.feedback];
+  const spectator: NavItem[] = [I.home, ...(loggedIn ? [I.dashboard] : []), I.announcements, I.events, I.tournaments, I.live, I.teams, I.feedback];
   if (role === 'player') {
     return {
       groups: [
@@ -98,12 +100,12 @@ export function navFor(role: string | null | undefined, loggedIn: boolean): Role
         { label: 'My stuff', items: [I.profile, I.myTeam, I.schedule, I.recruiting, I.registrations] },
         EXPLORE,
       ],
-      bottom: [I.dashboard, I.tournaments, I.myTeam, I.live],
+      bottom: [I.dashboard, I.events, I.myTeam, I.live],
     };
   }
   return {
     groups: [{ label: null, items: spectator }, EXPLORE],
-    bottom: loggedIn ? [I.dashboard, I.live, I.tournaments, I.feedback] : [],
+    bottom: loggedIn ? [I.dashboard, I.events, I.live, I.teams] : [],
   };
 }
 

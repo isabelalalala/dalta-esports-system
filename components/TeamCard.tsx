@@ -6,7 +6,7 @@ import type { TeamListEntry } from '@/utils/types';
 import { parseSchema } from '@/utils/game-profiles';
 import { joinAction, lookingForText, teamBadges, teamSlots } from '@/utils/team-cards';
 import TeamLogo from '@/components/TeamLogo';
-import GameLogo from '@/components/GameLogo';
+import GameIcon from '@/components/GameIcon';
 import Avatar from '@/components/Avatar';
 import AvatarStack from '@/components/AvatarStack';
 import StatusBadge from '@/components/StatusBadge';
@@ -57,12 +57,10 @@ export default function TeamCard({
               {t.name}
             </Link>
           </h3>
-          {/* Small game logo badge (the name is read out for screen readers) */}
-          <span className="inline-flex items-center gap-2">
-            <span className="relative block h-6 w-20 overflow-hidden rounded-md bg-ink" aria-hidden="true">
-              <GameLogo name={t.game_name} gameId={t.game_id} balanced className="absolute inset-0" fallbackClassName="text-[10px]" sizes="80px" />
-            </span>
-            <span className="sr-only">{t.game_name}</span>
+          {/* Compact square game icon (the wide wordmark is unreadable this small) + the name */}
+          <span className="flex min-w-0 items-center gap-2">
+            <GameIcon name={t.game_name} gameId={t.game_id} size="xs" />
+            <span className="min-w-0 truncate text-xs font-bold text-stone-600">{t.game_name}</span>
           </span>
         </div>
       </div>
@@ -87,7 +85,8 @@ export default function TeamCard({
       {/* Roster: avatars + slots */}
       <div className="space-y-2">
         <div className="flex items-center justify-between gap-3">
-          <AvatarStack people={members} total={t.member_count} />
+          {/* Solo teams: the one player is the captain, shown on the captain line below */}
+          {slots.solo ? <span /> : <AvatarStack people={members} total={t.member_count} />}
           <span className="inline-flex items-center gap-1 text-xs font-black uppercase tracking-wider text-stone-600">
             <Users className="size-3.5" aria-hidden="true" /> {slots.label}
           </span>

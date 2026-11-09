@@ -8,13 +8,14 @@ import { useRealtimeRefresh } from '@/utils/use-realtime-refresh';
 import Link from 'next/link';
 import { getErrorMessage } from '@/utils/errors';
 import { ACTIVE_REGISTRATION_STATUSES } from '@/utils/types';
-import type { Announcement, Match, Profile, Registration, RosterMember, Stream, Team, Tournament } from '@/utils/types';
+import type { Match, Profile, Registration, RosterMember, Stream, Team, Tournament } from '@/utils/types';
 import { formatDate, getTournamentStatus, statusLabels, statusStyles } from '@/utils/tournaments';
 import Bracket from './Bracket';
 import PickemLeaderboard from './PickemLeaderboard';
 import PredictionsProvider from '@/components/PredictionsProvider';
 import PredictionPicker from '@/components/PredictionPicker';
-import AnnouncementCard from '@/components/AnnouncementCard';
+import AnnouncementFeedCard from '@/components/announcements/AnnouncementFeedCard';
+import type { FeedAnnouncement } from '@/utils/announcements';
 import VerifiedBadge from '@/components/VerifiedBadge';
 import ShareButton from '@/components/ShareButton';
 import CalendarLinks from '@/components/CalendarLinks';
@@ -65,7 +66,7 @@ export default function TournamentDetailsPage() {
   const [deleting, setDeleting] = useState(false);
   const [matches, setMatches] = useState<Match[]>([]);
   const [teamNames, setTeamNames] = useState<Record<string, string>>({});
-  const [announcements, setAnnouncements] = useState<Announcement[]>([]);
+  const [announcements, setAnnouncements] = useState<FeedAnnouncement[]>([]);
   const [liveStreams, setLiveStreams] = useState<Stream[]>([]);
   const [generating, setGenerating] = useState(false);
   const [reloadCount, setReloadCount] = useState(0);
@@ -139,9 +140,10 @@ export default function TournamentDetailsPage() {
           supabase
             .from('announcements')
             .select('*')
-            .eq('tournament_id', id)
+            .or(`tournament_id.eq.${id},and(linked_type.eq.tournament,linked_id.eq.${id})`)
             .order('pinned', { ascending: false })
-            .order('created_at', { ascending: false }),
+            .order('publish_at', { ascending: false })
+            .limit(6),
           supabase
             .from('streams')
             .select('*')
@@ -620,9 +622,9 @@ export default function TournamentDetailsPage() {
             <span className="text-[11px] font-black tracking-widest text-maroon uppercase">Updates</span>
             <h2 className="text-xl sm:text-2xl font-black text-stone-950 uppercase tracking-wide">Announcements</h2>
           </div>
-          <div className="space-y-3">
+          <div className="grid gap-3 @5xl:grid-cols-2">
             {announcements.map((a) => (
-              <AnnouncementCard key={a.id} announcement={a} showTournament={false} />
+              <AnnouncementFeedCard key={a.id} a={a} readIds={null} variant="row" />
             ))}
           </div>
         </section>

@@ -306,6 +306,19 @@ export interface Announcement {
   created_by: string | null;
   created_at: string;
   updated_at: string;
+  // Scheduled announcements (202611091900): hidden from non-organizers until publish_at; the
+  // notification goes out at that time (notified_at set then)
+  publish_at?: string;
+  notified_at?: string | null;
+  // News feed fields (202611092000_announcements_feed); the feed uses FeedAnnouncement in
+  // utils/announcements.ts
+  category?: string;
+  cover_path?: string | null;
+  game_id?: string | null;
+  linked_type?: string | null;
+  linked_id?: string | null;
+  is_urgent?: boolean;
+  is_draft?: boolean;
   // Only present when selected with `tournaments(...)`
   tournaments?: { id: string; name: string } | null;
 }

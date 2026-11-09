@@ -12,6 +12,8 @@ import {
 import PageLoading from '@/components/PageLoading';
 import { usePageTitle } from '@/utils/page-title';
 import PageHeroBackground from '@/components/site/PageHeroBackground';
+import NotificationSettings from '@/components/NotificationSettings';
+import { useViewer } from '@/utils/use-viewer';
 import { formatDateTime } from '@/utils/tournaments';
 
 const PAGE_SIZE = 30;
@@ -20,6 +22,7 @@ export default function NotificationsPage() {
   const supabase = createClient();
   const router = useRouter();
   usePageTitle('Notifications');
+  const viewer = useViewer();
   const [unreadOnly, setUnreadOnly] = useState(false);
   const [items, setItems] = useState<AppNotification[]>([]);
   const [hasMore, setHasMore] = useState(false);
@@ -132,6 +135,9 @@ export default function NotificationsPage() {
           </p>
         </div>
       </section>
+
+      {/* Which kinds of notification to get (notification_preferences) */}
+      {viewer.userId && viewer.role && <NotificationSettings userId={viewer.userId} role={viewer.role} />}
 
       {/* 2. Controls & Actions Bar */}
       <div className="space-y-4">

@@ -1,6 +1,7 @@
 'use client';
 
 import { Suspense, useCallback, useEffect, useState } from 'react';
+import ReportedComments from './ReportedComments';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { RefreshCw } from 'lucide-react';
@@ -18,7 +19,7 @@ import { toast } from '@/components/Toaster';
 import Avatar from '@/components/Avatar';
 import SectionHint from '@/components/SectionHint';
 
-type Tab = 'queue' | 'bans' | 'users';
+type Tab = 'queue' | 'reported' | 'bans' | 'users';
 
 interface HiddenComment {
   id: string;
@@ -116,7 +117,8 @@ function Moderation() {
 
   const isAdmin = can(role, 'moderation.ban');
   const tabParam = searchParams.get('tab');
-  const tab: Tab = isAdmin && (tabParam === 'bans' || tabParam === 'users') ? tabParam : 'queue';
+  // Reported comments: admins and staff; pending bans and flagged users: admins only
+  const tab: Tab = tabParam === 'reported' ? 'reported' : isAdmin && (tabParam === 'bans' || tabParam === 'users') ? tabParam : 'queue';
   const reload = useCallback(() => setReloadCount((n) => n + 1), []);
 
   useEffect(() => {
@@ -309,19 +311,24 @@ function Moderation() {
       {message && <div role="status" className="rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm font-bold text-emerald-800">{message}</div>}
 
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        {isAdmin ? (
-          <div role="tablist" aria-label="Moderation" className="inline-flex flex-wrap gap-1 p-1 rounded-2xl border border-stone-200/90 bg-white shadow-2xs">
-            <button role="tab" aria-selected={tab === 'queue'} onClick={() => setTab('queue')} className={tabClass('queue')}>
-              Hidden content ({comments.length + feedback.length})
-            </button>
-            <button role="tab" aria-selected={tab === 'bans'} onClick={() => setTab('bans')} className={tabClass('bans')}>
-              Pending bans ({pendingBans.length})
-            </button>
-            <button role="tab" aria-selected={tab === 'users'} onClick={() => setTab('users')} className={tabClass('users')}>
-              Flagged users ({flagged.length})
-            </button>
-          </div>
-        ) : <span />}
+        <div role="tablist" aria-label="Moderation" className="inline-flex flex-wrap gap-1 p-1 rounded-2xl border border-stone-200/90 bg-white shadow-2xs">
+          <button role="tab" aria-selected={tab === 'queue'} onClick={() => setTab('queue')} className={tabClass('queue')}>
+            Hidden content ({comments.length + feedback.length})
+          </button>
+          <button role="tab" aria-selected={tab === 'reported'} onClick={() => setTab('reported')} className={tabClass('reported')}>
+            Reported
+          </button>
+          {isAdmin && (
+            <>
+              <button role="tab" aria-selected={tab === 'bans'} onClick={() => setTab('bans')} className={tabClass('bans')}>
+                Pending bans ({pendingBans.length})
+              </button>
+              <button role="tab" aria-selected={tab === 'users'} onClick={() => setTab('users')} className={tabClass('users')}>
+                Flagged users ({flagged.length})
+              </button>
+            </>
+          )}
+        </div>
         <div className="flex items-center gap-2">
           <span className="text-sm text-stone-600">{pendingCount} waiting for analysis</span>
           <button
@@ -335,6 +342,9 @@ function Moderation() {
           <SectionHint side="left" text="New posts retry waiting items automatically. Use this when the site is quiet or after Gemini was unavailable." />
         </div>
       </div>
+
+      {/* Comments people reported (the AI let them through) */}
+      {tab === 'reported' && <ReportedComments onChanged={reload} />}
 
       {tab === 'queue' && (
         <div className="space-y-6">

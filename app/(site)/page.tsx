@@ -12,9 +12,11 @@ import PostSectionCarousel from '@/components/site/PostSectionCarousel';
 import MatchTicker from '@/components/site/MatchTicker';
 import DarkBand from '@/components/site/DarkBand';
 import GameTiles from '@/components/site/GameTiles';
+import LatestNews from '@/components/site/LatestNews';
 
 // Home page of the public website:
 // - Hero Slideshow background
+// - Latest news: the newest announcements as cards (Phase 14)
 // - Campaigns with 4-item carousel and Left/Right navigation arrows
 // - Featured event (pinned or next upcoming) as a big card above the events carousel, plus a
 //   small ribbon about it above the hero
@@ -68,6 +70,9 @@ export default async function HomePage() {
         content={content}
       />
       </div>
+
+      {/* Latest announcements as news cards (Phase 14) */}
+      <LatestNews />
 
       {/* Campaigns Section with 4-item view and Prev/Next arrows */}
       <Reveal>

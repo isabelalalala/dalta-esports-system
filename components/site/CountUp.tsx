@@ -19,6 +19,12 @@ export default function CountUp({ value }: { value: number }) {
 
     el.textContent = '0';
     let frame = 0;
+    // Printing / "Export PDF" before the number scrolled into view: show the real value
+    const showFinal = () => {
+      cancelAnimationFrame(frame);
+      el.textContent = format(value);
+    };
+    window.addEventListener('beforeprint', showFinal);
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (!entry.isIntersecting) return;
@@ -37,6 +43,7 @@ export default function CountUp({ value }: { value: number }) {
     observer.observe(el);
     return () => {
       observer.disconnect();
+      window.removeEventListener('beforeprint', showFinal);
       cancelAnimationFrame(frame);
       el.textContent = format(value);
     };

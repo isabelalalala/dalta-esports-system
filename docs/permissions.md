@@ -25,6 +25,11 @@ direct API or database request is refused too. Keep this table and `PERMISSIONS`
 | `team.removeLogo` | ✓ | ✓ | | | "Remove logo" on `/teams/[id]` (with a reason) | `remove_team_logo()` role check; `protect_team_logo()` blocks other edits; storage delete policy (admin/staff) |
 | (captain) team logo, "Looking for" | | | (captain) | | Logo upload and "Looking for" on `/teams/[id]` | RLS "Captain can edit their team"; `teams_logo_url_check`; `check_team_looking_for()`; storage insert/update only in the team's folder (`is_team_logo_folder_owner()`) |
 | (organizer) rejection reason | ✓ | ✓ | | | Reject dialog on `/tournaments/[id]/registrations` | RLS update (admin/staff); `clean_registration_reason()` refuses a reason from anyone else |
+| (organizer) two-factor authentication | ✓ | ✓ | | | "Two-factor authentication" on `/profile`, code step `/auth/mfa` | Supabase MFA; `get_my_role()` = spectator for non-AAL2 sessions of enrolled organizers; `proxy.ts` redirect |
+| (anyone logged in) notification settings | ✓ | ✓ | ✓ | ✓ | "What to notify me about" on `/notifications` | RLS own row on `notification_preferences`; CHECK on mutable types; `notify_users()` |
+| (anyone logged in) report a comment | | | ✓ | ✓ | Flag button in stream chat | RLS insert own + `can_post()`; `check_comment_report()` (visible, not own, 10/hour) |
+| `moderation.review` reported comments | ✓ | ✓ | | | "Reported" tab on `/admin/moderation` | RLS select (admin/staff); `dismiss_comment_reports()` / `moderate_comment()` role checks |
+| (admin) schedule announcement | ✓ | | | | "Publish later" in the announcement form | RLS insert/update (admin); select hides future `publish_at` from non-organizers |
 | `team.restore` | ✓ | | | | "Restore team" on a removed team's page | `restore_team()` (admin only) |
 | `team.viewRemoved` | ✓ | ✓ | | | `/admin/teams` Removed tab, reason on the team page | RLS select on `team_removals` (admin/staff) |
 | `match.manage` | ✓ | ✓ | | | `/matches`, `/tournaments/[id]/matches`, staff tools on `/matches/[id]`, LoL bans & picks editor | RLS write on `matches` and `match_drafts` (admin/staff); `declare_forfeit()`, `review_match_result()` role checks; `check_match_draft()` (LoL only, limits) |
@@ -33,7 +38,10 @@ direct API or database request is refused too. Keep this table and `PERMISSIONS`
 | `prediction.pick` | | | ✓ | ✓ | Pick'em under bracket matches | `check_prediction()` (no organizers, not your own match, locks at start) |
 | `stream.watch` | ✓ | ✓ | ✓ | ✓ | `/live`, `/live/[id]` | `proxy.ts` (login) + RLS select on `streams` (logged-in) |
 | `stream.configure` | ✓ | ✓ | | | `/tournaments/[id]/streams` (link check, preview, checklist) | RLS write on `streams` (admin/staff); POST `/api/streams/resolve-url` `can()` check |
-| `announcement.post` | ✓ | | | | Post/edit on `/announcements` | RLS write on `announcements` (admin) |
+| `announcement.post` | ✓ | | | | "New announcement", Edit/Delete on `/announcements` (editor: cover, category, game, link card, pin, urgent, draft) | RLS write on `announcements` (admin); `check_announcement()` (max 3 pinned, linked row exists); site-images storage policies (admin) |
+| (anyone) read announcements | ✓ | ✓ | ✓ | ✓ | `/announcements`, `/announcements/[id]`, homepage "Latest news", urgent banner (also logged out) | RLS select: published only (not draft, publish_at passed); admin/staff see drafts and scheduled |
+| (anyone logged in) react to an announcement | ✓ | ✓ | ✓ | ✓ | Hype / GG / heart buttons | RLS own rows on `announcement_reactions`, insert only on published posts; totals via `get_announcement_reactions()` |
+| (anyone logged in) read state (NEW badge) | ✓ | ✓ | ✓ | ✓ | Opening a post; "Mark as read" | RLS own rows on `announcement_reads` |
 | `feedback.submit` | ✓ | ✓ | ✓ | ✓ | `/feedback` | POST `/api/feedback` (login) + RLS insert (own row) |
 | (own feedback edit/delete) | ✓ | ✓ | ✓ | ✓ | `/feedback` My History | RLS delete: own row, not hidden/removed (`202611091600_own_feedback_delete`); edit = delete + resend |
 | (own comment delete) | ✓ | ✓ | ✓ | ✓ | `StreamComments` (5 s Undo, then delete) | RLS delete on `stream_comments`: own row, approved/restored only |

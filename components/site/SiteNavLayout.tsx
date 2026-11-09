@@ -176,7 +176,7 @@ export default function SiteNavLayout({ children }: { children: ReactNode }) {
       <main
         id="main-content"
         className={`@container animate-page-enter flex-1 min-w-0 w-full px-4 sm:px-8 lg:px-12 xl:px-16 py-6 sm:py-10 ${
-          loggedIn ? 'pb-28 lg:pb-10' : ''
+          loggedIn ? 'pb-[calc(5.5rem+env(safe-area-inset-bottom))] lg:pb-10' : ''
         }`}
       >
         <Suspense fallback={null}>
@@ -353,7 +353,8 @@ function BottomBar({ items, groups }: { items: NavItem[]; groups: NavGroup[] }) 
   }, [moreOpen]);
 
   const tabClass = (on: boolean) =>
-    `flex-1 min-w-0 flex flex-col items-center justify-center gap-0.5 py-2 text-[11px] font-black uppercase tracking-wide ${
+    // min-h-11: 44px touch targets; short labels (NavItem.short) at 10px so they always fit, no ellipsis
+    `flex-1 min-w-0 min-h-11 flex flex-col items-center justify-center gap-0.5 py-2 text-[10px] font-black uppercase tracking-normal ${
       on ? 'text-maroon' : 'text-stone-600'
     }`;
 
@@ -381,7 +382,7 @@ function BottomBar({ items, groups }: { items: NavItem[]; groups: NavGroup[] }) 
             return (
               <Link key={item.href} href={item.href} aria-current={on ? 'page' : undefined} className={tabClass(on)}>
                 <Icon className="h-5 w-5" aria-hidden="true" />
-                <span className="truncate max-w-full px-1">{item.label}</span>
+                <span className="max-w-full px-0.5 leading-tight">{item.short ?? item.label}</span>
               </Link>
             );
           })}

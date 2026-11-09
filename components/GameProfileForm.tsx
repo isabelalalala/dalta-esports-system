@@ -4,7 +4,7 @@ import { useId, useMemo, useState } from 'react';
 import { X } from 'lucide-react';
 import { createClient } from '@/utils/supabase/client';
 import { getErrorMessage } from '@/utils/errors';
-import GameLogo from '@/components/GameLogo';
+import GameIcon from '@/components/GameIcon';
 import type { Game, PlayerGameProfile } from '@/utils/types';
 import {
   fieldFor, optionOf, parseDetails, parseSchema, subKey, validateGameProfile,
@@ -128,9 +128,7 @@ export default function GameProfileForm({ games, profiles, userId, initialGameId
                   selected ? 'border-gold bg-gold/15 text-stone-950' : 'border-stone-200 bg-white text-stone-700 hover:border-stone-300'
                 }`}
               >
-                <span className="grid h-7 w-7 place-items-center rounded-lg bg-ink p-1">
-                  <GameLogo name={g.name} gameId={g.id} className="h-5 w-5" fallbackClassName="text-[8px]" sizes="20px" />
-                </span>
+                <GameIcon name={g.name} gameId={g.id} size="xs" />
                 {g.name}
                 {profiles.some((p) => p.game_id === g.id) && <span className="sr-only">(profile saved)</span>}
               </button>

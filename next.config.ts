@@ -40,7 +40,7 @@ const securityHeaders = [
 // Logged-in pages (same list as proxy.ts) and the API: never in search results
 const privatePaths = [
   '/dashboard', '/teams', '/profile', '/tournaments/create', '/matches', '/admin', '/registrations',
-  '/announcements', '/schedule', '/live', '/feedback', '/analytics', '/notifications', '/privacy/consent',
+  '/schedule', '/live', '/feedback', '/analytics', '/notifications', '/privacy/consent',
   '/terms/accept', '/auth', '/banned', '/api',
 ];
 

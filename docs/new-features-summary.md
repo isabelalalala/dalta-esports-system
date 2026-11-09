@@ -694,6 +694,58 @@ and the roster, with Upcoming / Ongoing / Completed / All tabs.
   `clean_registration_reason()`; `list_teams()` and `notify_registration()` redefined; notification type
   `team_logo_removed`. No new table. The Privacy Notice is unchanged (logos and reasons aren't personal data).
 
+### Feature 28: Announcements news feed (Phase 14)
+**Module:** 3 Event Information and Announcements
+
+**What it does:** announcements become a public esports news feed: pinned posts as a featured hero, a card grid
+with category colors and icons, game badges, covers (or a game-themed placeholder), NEW and URGENT badges, filter
+chips (category, game) and search. Posts can link a tournament, match, stream or event, shown as a live mini card
+(scoreboard, countdown, Watch Live, View Bracket, Register Now for players, Add to calendar). Logged-in users react
+(hype, GG, heart; totals for everyone). Posts have their own page with rich text, related posts and a link preview.
+Urgent posts also show a dismissible banner across the site. New posts appear live ("1 new post · Show").
+
+**Actors / use cases**
+- Audience (also logged out): *Browse and filter announcements*, *Read an announcement*, *Share an announcement* (new).
+- Audience / Player (logged in): *React to an announcement* (new). Player: *Register from an announcement* (existing).
+- Admin: *Post an announcement* (extended: cover, category, game, link, pin, urgent, draft, schedule, preview).
+
+**Data flows**
+- Admin → 3.0: announcement with category/cover/link → D… (`announcements`), cover → site-images storage;
+  publishing → notifications (D7), log (D8).
+- Audience → 3.0: reaction → `announcement_reactions`; opening a post → `announcement_reads`.
+- 3.0 → Audience: published posts, reaction totals, linked tournament/match/stream/event details.
+
+**Database**
+- `202611092000_announcements_feed`: columns `category`, `cover_path`, `game_id`, `linked_type`, `linked_id`,
+  `is_urgent`, `is_draft` on `announcements` (public read for published rows); tables `announcement_reactions`,
+  `announcement_reads` (RLS + policies); functions `get_announcement_reactions()`, `get_announcement_links()`,
+  `check_announcement()`, `notify_announcement_published()`; announcements in Realtime. Privacy Notice `2026-11-09.3`.
+
+### Feature 27: Mobile polish, security and engagement (Phases 11–12)
+**Module:** all (cross-cutting); reports belong to 4 Live Streaming / Moderation, scheduling to 3 Event Information
+
+**What it does:** game logos fit every phone; small spaces use a compact game icon; the bottom navigation has short
+labels per role; the role badge pulses softly. Organizers can turn on two-factor authentication and are logged out
+after 30 minutes idle. People choose which notifications they get, report chat comments the AI missed, search
+everything from the header as they type, and can install the site as an app. Admins can schedule announcements.
+A LIVE pill and banner appear while a match streams; small celebrations mark an approved registration or a win.
+
+**Actors / use cases**
+- Audience / Player: *Report a comment*, *Choose notifications*, *Install the app* (new).
+- Staff / Admin: *Review reported comments*, *Turn on 2FA* (new). Admin: *Schedule an announcement* (new).
+
+**Data flows**
+- Audience → 4.0: comment report → D3 (`comment_reports`) → notification to moderators (D7).
+- Moderator → 4.0: keep/remove reported comment → D3, log (D8).
+- User → notifications settings → D7 (`notification_preferences`); `notify_users()` reads it.
+- Admin → 3.0: scheduled announcement → announcements (`publish_at`); pg_cron publishes and notifies (D7).
+
+**Database**
+- `202611091900_phase12_security_engagement`: tables `notification_preferences`, `comment_reports` (RLS +
+  policies); columns `announcements.publish_at`, `notified_at`; functions `send_announcement_notification()`,
+  `publish_scheduled_announcements()` (pg_cron), `dismiss_comment_reports()`; `get_my_role()` honors 2FA;
+  notification type `comment_reported`. Privacy Notice version `2026-11-09.2` (reports, settings, 2FA keys).
+
 ### Feature 13: Enhancements inside the original modules
 These additions stay inside existing modules but add flows you may want to draw.
 - **Module 4:** "Watching now" live viewer count (Supabase Realtime Presence, not stored). Staff see it on the

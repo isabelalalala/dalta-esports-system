@@ -10,7 +10,7 @@ export default function robots(): MetadataRoute.Robots {
       allow: '/',
       disallow: [
         '/dashboard', '/teams', '/profile', '/tournaments/create', '/matches', '/admin', '/registrations',
-        '/announcements', '/schedule', '/live', '/feedback', '/analytics', '/notifications', '/auth/',
+        '/schedule', '/live', '/feedback', '/analytics', '/notifications', '/auth/',
         '/privacy/consent', '/terms/accept', '/banned', '/api/',
       ],
     },

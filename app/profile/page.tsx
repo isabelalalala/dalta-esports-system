@@ -27,11 +27,13 @@ import {
   Calendar,
 } from 'lucide-react';
 
-import GameLogo from '@/components/GameLogo';
+import GameIcon from '@/components/GameIcon';
 import GameProfileForm from '@/components/GameProfileForm';
 import GameProfileSummary from '@/components/GameProfileSummary';
 import Avatar from '@/components/Avatar';
 import AvatarUploader from '@/components/AvatarUploader';
+import RoleBadge from '@/components/RoleBadge';
+import TwoFactorSection from '@/components/TwoFactorSection';
 import MyTeamsSummary from '@/app/dashboard/MyTeamsSummary';
 import MyWarnings from '@/components/MyWarnings';
 import { refreshViewer } from '@/utils/use-viewer';
@@ -216,9 +218,7 @@ export default function ProfilePage() {
             </Link>
 
             <div className="flex flex-wrap items-center gap-2">
-              <span className="px-3.5 py-1 rounded-md border border-white/20 bg-white/10 text-stone-200 text-[10px] sm:text-xs font-black tracking-widest uppercase backdrop-blur-xs shadow-2xs">
-                Role: {profile.role}
-              </span>
+              <RoleBadge role={profile.role} onDark />
               <VerifiedBadge verified={profile.is_verified} />
             </div>
           </div>
@@ -227,7 +227,7 @@ export default function ProfilePage() {
           <div className="relative z-10 max-w-4xl mx-auto space-y-3 pt-2 flex flex-col items-center">
             <Avatar url={profile.avatar_url} name={profile.full_name || profile.email} size="xl" className="border-2 border-gold/60 shadow-xl shadow-black/50" />
             <h1
-              className="animate-hero-title text-display font-black tracking-wider uppercase leading-tight text-white"
+              className="animate-hero-title text-[length:clamp(1.6rem,5.5cqi,3.5rem)] text-balance break-words font-black tracking-wider uppercase leading-tight text-white"
             >
               {profile.full_name || 'My Profile'}
             </h1>
@@ -373,6 +373,9 @@ export default function ProfilePage() {
               </div>
             )}
 
+            {/* Optional two-factor authentication: organizers only */}
+            {(profile.role === 'admin' || profile.role === 'staff') && <TwoFactorSection />}
+
             {/* 5. Change Password Container */}
             <div className="animate-stagger-3">
               <Suspense
@@ -456,9 +459,7 @@ export default function ProfilePage() {
                         className="bg-stone-50/70 border border-stone-200/90 rounded-2xl p-5 flex flex-wrap justify-between items-center gap-4 hover:border-stone-300 hover:bg-stone-50 transition-all shadow-2xs"
                       >
                         <div className="flex items-center gap-4">
-                          <div className="w-12 h-12 rounded-2xl bg-ink border border-stone-800 flex items-center justify-center p-2 shadow-xs shrink-0">
-                            <GameLogo name={game.name} gameId={game.id} className="w-9 h-9" fallbackClassName="text-xs" sizes="38px" />
-                          </div>
+                          <GameIcon name={game.name} gameId={game.id} size="md" />
                           <div>
                             <h3 className="font-black text-stone-950 text-sm tracking-wider uppercase">
                               {game.name}

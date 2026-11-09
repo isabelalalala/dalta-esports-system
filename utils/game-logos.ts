@@ -12,14 +12,20 @@ interface GameLogoInfo {
   // Background behind a team's initials when it has no logo (components/TeamLogo.tsx). Palette
   // classes that dark mode doesn't remap, with white text; not the meaning colors.
   color: string;
+  // Two versions per game: the wide wordmark (`src`, card stages) and a compact square icon for
+  // small spaces (team badges, registration cards, lists). `short` is the text of the built-in
+  // icon badge (components/GameIcon.tsx); `icon` is an optional square image file in
+  // /public/games (e.g. '/games/valorant-icon.png'): set it to use an official icon instead.
+  short: string;
+  icon?: string;
 }
 
 const LOGOS: Record<'mlbb' | 'valorant' | 'tekken8' | 'codm' | 'lol', GameLogoInfo> = {
-  mlbb: { src: '/games/mlbb.webp', fit: 'w-[60%] aspect-[913/275]', color: 'bg-orange-700' },
-  valorant: { src: '/games/valorant.webp', fit: 'w-[42%] aspect-[805/532]', color: 'bg-rose-700' },
-  tekken8: { src: '/games/tekken8.webp', fit: 'w-[78%] aspect-[921/138]', color: 'bg-violet-700' },
-  codm: { src: '/games/codm.webp', fit: 'w-[57%] aspect-[956/318]', color: 'bg-lime-800' },
-  lol: { src: '/games/lol.webp', fit: 'w-[54%] aspect-[1400/531]', color: 'bg-cyan-800' },
+  mlbb: { src: '/games/mlbb.webp', fit: 'w-[60%] aspect-[913/275]', color: 'bg-orange-700', short: 'ML' },
+  valorant: { src: '/games/valorant.webp', fit: 'w-[42%] aspect-[805/532]', color: 'bg-rose-700', short: 'VAL' },
+  tekken8: { src: '/games/tekken8.webp', fit: 'w-[78%] aspect-[921/138]', color: 'bg-violet-700', short: 'T8' },
+  codm: { src: '/games/codm.webp', fit: 'w-[57%] aspect-[956/318]', color: 'bg-lime-800', short: 'COD' },
+  lol: { src: '/games/lol.webp', fit: 'w-[54%] aspect-[1400/531]', color: 'bg-cyan-800', short: 'LoL' },
 };
 
 // Which game it is, matched by game id (e.g. `mlbb`) and/or name (e.g. "Mobile Legends: Bang Bang")
@@ -52,6 +58,12 @@ export function gameInitials(name?: string | null): string {
   if (words.length === 0) return '?';
   if (words.length === 1) return words[0].slice(0, 4).toUpperCase();
   return words.slice(0, 3).map((w) => w[0]).join('').toUpperCase();
+}
+
+// The compact icon of a game: an image file if one is set, and the badge text ("VAL") otherwise
+export function getGameIcon(name?: string | null, gameId?: string | null): { src: string | null; short: string } {
+  const info = findLogo(name, gameId);
+  return { src: info?.icon ?? null, short: info?.short ?? gameInitials(name || gameId).slice(0, 3) };
 }
 
 // The game's color for a team's initials badge (maroon for an unknown game)

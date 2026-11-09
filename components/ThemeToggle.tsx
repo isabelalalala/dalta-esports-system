@@ -1,14 +1,14 @@
 'use client';
 
 import { useEffect, useSyncExternalStore } from 'react';
-import { Monitor, Moon, Sun } from 'lucide-react';
+import { Moon, Sun, SunMoon } from 'lucide-react';
 import Tooltip from '@/components/Tooltip';
 import { applyThemeChoice, nextThemeChoice, readThemeChoice, type ThemeChoice } from '@/utils/theme';
 
 const labels: Record<ThemeChoice, string> = {
-  system: 'Theme: same as your device. Click for light.',
-  light: 'Theme: light. Click for dark.',
-  dark: 'Theme: dark. Click to follow your device.',
+  system: 'Theme: automatic (follows your device). Tap for light.',
+  light: 'Theme: light. Tap for dark.',
+  dark: 'Theme: dark. Tap for automatic.',
 };
 
 // The saved choice, read through useSyncExternalStore (the server renders "system")
@@ -37,7 +37,9 @@ export default function ThemeToggle() {
     return () => media.removeEventListener('change', onChange);
   }, [choice]);
 
-  const Icon = choice === 'dark' ? Moon : choice === 'light' ? Sun : Monitor;
+  // Sun = light, moon = dark, half sun / half moon = automatic (follows the device). The old
+  // monitor icon for "automatic" wasn't clear without its tooltip.
+  const Icon = choice === 'dark' ? Moon : choice === 'light' ? Sun : SunMoon;
 
   return (
     <Tooltip text={labels[choice]} side="bottom">
@@ -45,7 +47,7 @@ export default function ThemeToggle() {
         type="button"
         onClick={() => choose(nextThemeChoice(choice))}
         aria-label={labels[choice]}
-        className="w-10 h-10 flex items-center justify-center rounded-xl border border-stone-200 bg-white hover:bg-stone-50 hover:border-stone-300 text-stone-700 hover:text-stone-950 shadow-xs transition-colors cursor-pointer"
+        className="size-11 flex items-center justify-center rounded-xl border border-stone-200 bg-white hover:bg-stone-50 hover:border-stone-300 text-stone-700 hover:text-stone-950 shadow-xs transition-colors cursor-pointer"
       >
         <Icon className="h-5 w-5" />
       </button>

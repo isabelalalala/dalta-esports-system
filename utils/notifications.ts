@@ -30,7 +30,8 @@ export type NotificationType =
   | 'avatar_removed'
   | 'warning_issued' | 'warning_removed' | 'content_restored'
   | 'account_flagged' | 'ban_review' | 'ban_dismissed' | 'account_unbanned'
-  | 'team_logo_removed';
+  | 'team_logo_removed'
+  | 'comment_reported';
 
 export interface AppNotification {
   id: string;
@@ -82,6 +83,7 @@ export const notificationIcons: Record<NotificationType, LucideIcon> = {
   team_restored: Undo2,
   avatar_removed: UserX,
   team_logo_removed: ImageOff,
+  comment_reported: Flag,
   warning_issued: TriangleAlert,
   warning_removed: CircleCheck,
   content_restored: Undo2,
@@ -136,3 +138,26 @@ export function timeAgo(value: string) {
   if (seconds < 7 * 86400) return `${Math.floor(seconds / 86400)} d ago`;
   return new Date(value).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
 }
+
+// Notification preferences (/notifications → Settings; table notification_preferences,
+// 202611091900). Each group can be turned off; the database skips muted types in notify_users().
+// Moderation, account and removal notices are not listed: they can't be turned off (CHECK in the
+// migration). `roles`: who gets that kind of notification (the others don't see the switch).
+export interface NotificationGroup {
+  key: string;
+  label: string;
+  hint: string;
+  types: NotificationType[];
+  roles: string[];
+}
+
+export const NOTIFICATION_GROUPS: NotificationGroup[] = [
+  { key: 'announcements', label: 'Announcements', hint: 'New general and tournament announcements', types: ['announcement'], roles: ['player', 'spectator', 'staff', 'admin'] },
+  { key: 'matches', label: 'Match times and live', hint: 'A match is scheduled, moved or goes live; check-in opens; forfeits', types: ['match_scheduled', 'match_rescheduled', 'match_live', 'checkin_open', 'match_forfeit'], roles: ['player'] },
+  { key: 'results', label: 'Match results', hint: 'Results submitted, confirmed, disputed, approved or rejected', types: ['result_submitted', 'result_confirmed', 'result_disputed', 'result_approved', 'result_rejected'], roles: ['player', 'staff', 'admin'] },
+  { key: 'registrations', label: 'Registrations', hint: 'Your team is approved, rejected or removed; tournament cancelled', types: ['registration_approved', 'registration_rejected', 'registration_removed', 'tournament_cancelled'], roles: ['player'] },
+  { key: 'teams', label: 'Team invites and requests', hint: 'Invites, join requests, members leaving, captaincy', types: ['team_invite', 'invite_accepted', 'invite_declined', 'team_captain', 'member_left', 'member_removed', 'join_request', 'join_request_accepted', 'join_request_declined'], roles: ['player'] },
+  { key: 'verification', label: 'Student verification', hint: 'Your student details are verified, rejected or revoked', types: ['student_verified', 'student_rejected', 'student_revoked'], roles: ['player'] },
+  { key: 'predictions', label: "Pick'em results", hint: 'Whether your pick was right', types: ['prediction_result'], roles: ['player', 'spectator'] },
+  { key: 'organizer', label: 'Organizer queue', hint: 'New registrations, withdrawals, student details to review, reported comments', types: ['registration_submitted', 'registration_withdrawn', 'verification_submitted', 'comment_reported'], roles: ['staff', 'admin'] },
+];

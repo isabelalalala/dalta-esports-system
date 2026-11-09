@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { useUrlState } from '@/utils/url-state';
 import Link from 'next/link';
 import { createClient } from '@/utils/supabase/client';
 import { useRealtimeRefresh } from '@/utils/use-realtime-refresh';
@@ -23,8 +24,9 @@ export default function SchedulePage() {
   const supabase = createClient();
   usePageTitle('Schedule & Results');
   const [tournaments, setTournaments] = useState<Pick<Tournament, 'id' | 'name'>[]>([]);
-  const [filter, setFilter] = useState('all');
-  const [activeTab, setActiveTab] = useState<'all' | 'live' | 'upcoming' | 'results'>('all');
+  // Kept in the address (?tournament=...&view=live), so Back / refresh / a shared link keep the view
+  const [filter, setFilter] = useUrlState<string>('tournament', 'all');
+  const [activeTab, setActiveTab] = useUrlState('view', 'all', ['all', 'live', 'upcoming', 'results'] as const);
   const [live, setLive] = useState<ScheduleMatch[]>([]);
   const [upcoming, setUpcoming] = useState<ScheduleMatch[]>([]);
   const [results, setResults] = useState<ScheduleMatch[]>([]);

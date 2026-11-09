@@ -9,6 +9,7 @@ import { TEAM_SORTS, type TeamSort } from '@/utils/team-cards';
 import TeamCard, { type TeamCardViewer } from '@/components/TeamCard';
 import { SectionLoading } from '@/components/PageLoading';
 import { Plus, Search, Users } from 'lucide-react';
+import { readUrlParam, setUrlParams } from '@/utils/url-state';
 
 const PAGE_SIZE = 30;
 
@@ -41,10 +42,14 @@ export default function TeamDirectory({
   const [search, setSearch] = useState(initialSearch);
   // The search sent to the database, a moment after typing stops
   const [query, setQuery] = useState(initialSearch);
-  const [gameId, setGameId] = useState('');
-  const [role, setRole] = useState('');
-  const [rank, setRank] = useState('');
-  const [sort, setSort] = useState<TeamSort>(initialRecruitingOnly ? 'recruiting' : 'newest');
+  // All teams keeps its filters in the address (?game=&role=&rank=&sort=), so Back keeps them
+  const [gameId, setGameId] = useState(() => (mine ? '' : readUrlParam('game')));
+  const [role, setRole] = useState(() => (mine ? '' : readUrlParam('role')));
+  const [rank, setRank] = useState(() => (mine ? '' : readUrlParam('rank')));
+  const [sort, setSort] = useState<TeamSort>(() => {
+    const fromUrl = mine ? '' : readUrlParam('sort');
+    return TEAM_SORTS.some((s) => s.value === fromUrl) ? (fromUrl as TeamSort) : initialRecruitingOnly ? 'recruiting' : 'newest';
+  });
   const [recruitingOnly, setRecruitingOnly] = useState(initialRecruitingOnly);
   const [teams, setTeams] = useState<TeamListEntry[]>([]);
   const [total, setTotal] = useState(0);
@@ -79,6 +84,12 @@ export default function TeamDirectory({
     if (rpcError) throw rpcError;
     return (data || []) as unknown as TeamListEntry[];
   };
+
+  // Write the filters back to the address (All teams only; defaults are left out)
+  useEffect(() => {
+    if (mine) return;
+    setUrlParams({ q: query || null, game: gameId || null, role: role || null, rank: rank || null, sort: sort === 'newest' ? null : sort, recruiting: recruitingOnly ? '1' : null });
+  }, [mine, query, gameId, role, rank, sort, recruitingOnly]);
 
   useEffect(() => {
     const load = async () => {

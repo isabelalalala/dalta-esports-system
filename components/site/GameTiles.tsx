@@ -11,7 +11,7 @@ export default async function GameTiles() {
   if (divisions.length === 0) return null;
 
   return (
-    <ul className="grid grid-cols-2 @3xl:grid-cols-[repeat(auto-fit,minmax(9rem,1fr))] gap-3 sm:gap-4">
+    <ul className="grid grid-cols-1 min-[380px]:grid-cols-2 @3xl:grid-cols-[repeat(auto-fit,minmax(9rem,1fr))] gap-3 sm:gap-4">
       {divisions.map((d, i) => (
         <li key={d.game_id} className="min-w-0">
           <Reveal delay={(i % 4) as 0 | 1 | 2 | 3} className="h-full">

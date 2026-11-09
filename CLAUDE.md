@@ -104,7 +104,7 @@ Enforced by a CHECK constraint on `profiles.role` (migration `202610161200_role_
 - RLS policies check roles with `public.get_my_role()`.
 
 ## Current schema (public)
-All migrations are in `supabase/migrations/`, run in filename order (202610151100 … 202611091800). `202610151100_base_schema` creates the three pre-migration base tables (`profiles`, `tournaments`, `tournament_registrations`). It is `if not exists`, so it is a no-op on databases that already have them.
+All migrations are in `supabase/migrations/`, run in filename order (202610151100 … 202611092000). `202610151100_base_schema` creates the three pre-migration base tables (`profiles`, `tournaments`, `tournament_registrations`). It is `if not exists`, so it is a no-op on databases that already have them.
 `202610181000_feedback_protection` also needs its one-time Vault key setup (the `feedback_server_key` secret +
 `FEEDBACK_SERVER_KEY`); the steps are at the top of that file.
 Readers: "anyone" = also logged out; "logged-in" = any role; "admin/staff" = organizers only.
@@ -259,8 +259,26 @@ Readers: "anyone" = also logged out; "logged-in" = any role; "admin/staff" = org
   (top 3 on `/tournaments/[id]`, full on `/tournaments/[id]/predictions`). Types/rules in `utils/predictions.ts`.
 
 **Event information (Module 3)**
-- `announcements`: id, title, body, tournament_id (empty = general; deleted with the tournament), pinned,
-  created_by, created_at, updated_at. Logged-in read; only admins post, edit and delete.
+- `announcements`: id, title, body, tournament_id (empty = general = everyone is notified; else only that
+  tournament's teams; deleted with the tournament), pinned (max 3, trigger `check_announcement()`), created_by,
+  created_at, updated_at, publish_at/notified_at (202611091900), and since 202611092000: category (`tournament`/
+  `match_update`/`results`/`event`/`registration`/`stream`/`general`/`urgent`), cover_path (site-images
+  `announcements/<random>.<ext>`), game_id, linked_type (`tournament`/`match`/`stream`/`event`) + linked_id (must
+  exist; mini card), is_urgent (red style + site-wide banner), is_draft (never shown to non-organizers, never
+  notifies; publishing it notifies via `notify_announcement_published()`). Anyone (also logged out) reads published
+  rows (not draft, publish_at passed); admin/staff read all; only admins post, edit and delete. In Realtime.
+- `announcement_reactions` (announcement_id, user_id, reaction `hype`/`gg`/`heart`; PK of the three): own rows only
+  (insert on published posts, delete, select). Totals for everyone via `get_announcement_reactions(ids)`.
+- `announcement_reads` (user_id, announcement_id, read_at): own rows only; the NEW badge (unread within 14 days for
+  logged-in users, else last 48 hours). `get_announcement_links(ids)`: public details of the linked
+  tournament/match (team names + logos, score, winner)/stream (title, status; no URL)/event (published only).
+  UI (Phase 14): `components/announcements/` (AnnouncementFeed with filter chips/game/search in the URL, hero for
+  pinned, card grid, "N new posts" pill via Realtime; AnnouncementFeedCard `grid`/`row`; AnnouncementEditor with
+  toolbar, cover, link picker, live preview; AnnouncementBody = the safe rich-text renderer of
+  `parseRichText()` in `utils/announcements.ts`; AnnouncementLinkCard; AnnouncementReactions; UrgentBanner in the
+  root layout). Detail page `/announcements/[id]` (public, OG image, related posts, Back keeps filters through
+  sessionStorage). Homepage `components/site/LatestNews.tsx` (cached `getLatestAnnouncements()`; the editor calls
+  `refreshSite()`). Data helpers `utils/announcements-data.ts`.
   `/schedule` (Schedule & Results) lists live, upcoming and finished matches from `matches` (no own table).
 
 **Live streaming (Module 4)**, DFD store D3 "Streaming & Match Stat DB"
@@ -373,6 +391,32 @@ Readers: "anyone" = also logged out; "logged-in" = any role; "admin/staff" = org
   `combineSentiment()` in `utils/reports.ts`. Charts: `components/ReportChart.tsx` (axis titles, legend,
   tooltips, "Show data table", palette per theme from `chartPalettes`, light when printing).
 
+**Phase 11–12 additions** (`202611091900_phase12_security_engagement`)
+- 2FA for organizers: optional TOTP (Supabase MFA) on `/profile` (`components/TwoFactorSection.tsx`). Once set up,
+  `get_my_role()` returns `spectator` for an admin/staff session that isn't AAL2, and `proxy.ts` sends it to
+  `/auth/mfa` (code step) from every protected page. Organizers are logged out after 30 min idle
+  (`components/IdleLogout.tsx`, warning at 29 min, `/auth/login?idle=1`).
+- `notification_preferences` (user_id PK, muted_types text[] CHECK = the mutable types, updated_at): own row only
+  (RLS). `notify_users()` skips muted types; moderation/account/removal notices can't be muted. UI:
+  `components/NotificationSettings.tsx` on `/notifications`, groups in `NOTIFICATION_GROUPS` (`utils/notifications.ts`).
+- `announcements.publish_at` (default now) / `notified_at`: scheduled announcements are visible to admin/staff only
+  until publish_at (RLS); `send_announcement_notification()` sends at insert when due, else pg_cron
+  `dalta-publish-announcements` (every 5 min) via `publish_scheduled_announcements()`. Cards show "Scheduled".
+- `comment_reports` (comment_id, reporter_id, reason, note, created_at, resolved_at/by; UNIQUE comment+reporter):
+  insert own (`can_post()`, trigger `check_comment_report()`: visible comment, not your own, 10/hour); reporter and
+  admin/staff read; resolved only by `dismiss_comment_reports()` (logged `comment.reports_dismissed`) or when a
+  moderator hides/removes the comment. First report notifies admin/staff (`comment_reported`). UI: flag button in
+  `StreamComments`, "Reported" tab (`app/admin/moderation/ReportedComments.tsx`).
+- Gemini: instructions in `systemInstruction`, user texts as escaped JSON in `<untrusted_items>` (prompt injection).
+- UI: `components/GameIcon.tsx` (compact square game icon: text badge on the game color, or an `icon` file set in
+  `utils/game-logos.ts`) for small spaces; `GameLogo` centers with flex + padding (iOS Safari cropped the grid
+  version). `components/RoleBadge.tsx` (pulsing role badge, one per role). Bottom nav uses `NavItem.short` labels
+  (no ellipsis), 44px targets, padding = bar + safe area. `components/site/LiveNow.tsx` (header LIVE pill + sticky
+  banner, `utils/use-live-stream.ts`), `components/Celebrate.tsx` (one-time confetti: registration approved, your
+  team won), header search with grouped results as you type (`components/site/SiteSearchBox.tsx`, RLS-scoped
+  client queries), filters in the URL (`utils/url-state.ts`: schedule, teams, registrations), Google Calendar link
+  in `CalendarLinks`, PWA (`app/manifest.ts`, `public/icons/`, `public/sw.js` offline page only, `/offline`).
+
 **Activity log (audit)**
 - `activity_logs`: id, actor_id (→ profiles, set null when deleted; null = SQL Editor or self-deleted account),
   action (e.g. `registration.approved`), entity_type, entity_id, details (jsonb: names as they were, incl.
@@ -388,7 +432,7 @@ Readers: "anyone" = also logged out; "logged-in" = any role; "admin/staff" = org
 
 **Notifications**
 - `notifications`: id, user_id (→ profiles, deleted with the user), type (CHECK list; the latest full list is in
-  `202611081500_comments_moderation.sql`), title, message, link (app path only), is_read, created_at. Users read their own and may update
+  `202611091900_phase12_security_engagement.sql`), title, message, link (app path only), is_read, created_at. Users read their own and may update
   ONLY `is_read` (column grant); no insert/delete from the app. In the `supabase_realtime` publication.
 - Created only by AFTER triggers through `notify_users()` (not callable from the app; skips the person who caused
   it): registration approved/rejected → captain, registration removed (admin delete) → captain; tournament
@@ -542,7 +586,7 @@ triggers with readable error messages.
 - Theme: `utils/theme.ts` + `components/ThemeToggle.tsx` + the DARK THEME block in `app/globals.css`
   (see docs/brand.md "Dark mode"). Profile pictures: `components/Avatar.tsx`, `components/AvatarUploader.tsx`
   (square crop on a canvas, 512px WebP, no library), helpers in `utils/avatars.ts`; storage bucket `avatars`.
-- Everyone logged in: `/notifications`, `/privacy/consent`, `/announcements`, `/schedule`, `/live`, `/live/[id]`, `/feedback`.
+- Public: `/announcements` and `/announcements/[id]` (published posts). Everyone logged in: `/notifications`, `/privacy/consent`, `/schedule`, `/live`, `/live/[id]`, `/feedback`.
 - Exports: GET `/api/exports/[type]?format=xlsx|csv&tournament=&game=` (`utils/exports.ts`, server only).
   Types: registrations, rosters, matches (admin/staff), feedback (admin, anonymous), users (admin). Reads with the
   user's own session (RLS) after a role check, pages through 1000-row limits, logs via `log_export()` (action
@@ -704,11 +748,12 @@ The final feature list for the documents is docs/new-features-summary.md.
   change without it (`auth.uid() is null` = SQL Editor is always allowed). Flags in use: `giving_privacy_consent`,
   `reviewing_student`, `answering_invite`, `transferring_captain`, `declaring_forfeit`,
   `marking_predictions`, `removing_team`, `removing_avatar`, `removing_team_logo`, `moderating` (comments),
-  `moderating_user` (bans).
+  `moderating_user` (bans), `publishing_announcement` (scheduled announcements).
 - **Live updates** use `useRealtimeRefresh(key, sources, onChange)` (`utils/use-realtime-refresh.ts`): it
   subscribes to the listed tables, coalesces bursts into one reload and unsubscribes on unmount. A new table must
   be added to the `supabase_realtime` publication in a migration (current list: matches, match_checkins,
-  match_result_submissions, notifications, teams, team_members, team_invites, team_join_requests, match_drafts).
+  match_result_submissions, notifications, teams, team_members, team_invites, team_join_requests, match_drafts,
+  announcements).
   Supabase can't filter DELETE events, so filtered sources also get that table's deletes unfiltered.
 - **Redefining an existing function or trigger function**: always start from its LATEST version (create or
   replace keeps only what you write). Latest versions: `check_tournament_registration`, `check_registration_update`
@@ -717,7 +762,9 @@ The final feature list for the documents is docs/new-features-summary.md.
   `202611091800_team_cards_registrations`; `get_team_roster`,
   `search_players`, `get_team_join_requests` → `202611091400_game_profile_schemas` (avatar_url, rank, rank_position); `protect_team_fields` → `202610171300`; `protect_profile_role`,
   `handle_new_user` → `202610170900_privacy_consent`; `log_match` → `202610171400_match_checkin`;
-  `get_needs_attention` → `202610171500_match_results`; `notifications_type_check` → `202611091800_team_cards_registrations`;
+  `get_needs_attention` → `202610171500_match_results`; `notifications_type_check`, `get_my_role`, `notify_users`, `notify_announcement`, `touch_announcement`,
+  `log_announcement` → `202611091900_phase12_security_engagement`; `send_announcement_notification`,
+  `prepare_announcement`, `touch_announcement`, `publish_scheduled_announcements` → `202611092000_announcements_feed`;
   `report_engagement` → `202610181100_predictions` (adds predictions, predictors, prediction_accuracy,
   audience_accounts, prediction_participation and predictions_by_tournament; older saved reports lack them);
   `refuse_removed_team` → `202611081600_fix_refuse_removed_team`; `report_activity` → `202611081700_report_insights`; `protect_feedback` → `202610181000_feedback_protection`; feedback insert policy → `202611081500_comments_moderation`; `generate_bracket` → `202610181800_bracket_seed_pairing`.
@@ -725,14 +772,15 @@ The final feature list for the documents is docs/new-features-summary.md.
   `supabase/tests/` against the local stack (`supabase start` first: needs Docker; `supabase/config.toml`
   exists for the local stack only, production migrations stay manual). `npm run db:types` regenerates
   `utils/database.types.ts` from the local schema; CI diffs it to catch drift.
-- **Scheduled jobs (pg_cron, enabled)**: `dalta-checkin-open-notifications` every 5 minutes. Manual cleanups run in
+- **Scheduled jobs (pg_cron, enabled)**: `dalta-checkin-open-notifications` and `dalta-publish-announcements` every 5 minutes, `dalta-stream-presence-cleanup` every 5 minutes. Manual cleanups run in
   the SQL Editor: `purge_old_activity_logs()` (1 year), `purge_old_notifications()` (read, 90 days).
-- **Privacy Notice**: current version `2026-11-09` (`utils/privacy.ts`; profile pictures, comments, AI moderation,
+- **Privacy Notice**: current version `2026-11-09.3` (`utils/privacy.ts`; profile pictures, comments, AI moderation, comment reports, notification settings, 2FA keys, announcement reactions and reads,
   warnings and bans, then game account IDs in game profiles). Terms of Service: `2026-11-08` (Code of Conduct moderation rules). A new kind of personal data, or a new
   group who can see it, means updating `/privacy` and the version (everyone agrees again); small clarifications
   don't change the version.
 - **Logged-out data** comes only from published website rows and the `get_public_tournament()` /
-  `get_public_calendar()` / `get_live_now()` / `get_site_stats()` / `get_match_ticker()` functions (team names only). Don't open teams, registrations, streams or profiles to
+  `get_public_calendar()` / `get_live_now()` / `get_site_stats()` / `get_match_ticker()` /
+  `get_announcement_links()` / `get_announcement_reactions()` functions (team names only), plus published announcements. Don't open teams, registrations, streams or profiles to
   `anon`; add a security definer function that returns just what the public page needs.
 - **New protected pages** go in `proxy.ts`. Public pages (website, `/t`, `/calendar`, `/privacy`) must not.
 

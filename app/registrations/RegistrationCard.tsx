@@ -5,9 +5,10 @@ import { CalendarDays, Clock, Swords } from 'lucide-react';
 import type { RegistrationStatus } from '@/utils/types';
 import { formatDate, formatDateTime } from '@/utils/tournaments';
 import { REGISTRATION_STEPS } from '@/utils/registrations';
-import GameLogo from '@/components/GameLogo';
+import GameIcon from '@/components/GameIcon';
 import AvatarStack from '@/components/AvatarStack';
 import StatusBadge, { type BadgeKind } from '@/components/StatusBadge';
+import Celebrate from '@/components/Celebrate';
 
 export interface RegistrationCardData {
   id: string;
@@ -48,12 +49,13 @@ export default function RegistrationCard({
 }) {
   return (
     <article className="@container group card-interactive relative h-full rounded-3xl border border-stone-200/90 bg-white p-5 sm:p-6 shadow-xs has-[.card-link:focus-visible]:ring-4 has-[.card-link:focus-visible]:ring-gold/50">
+      {/* First time you see this registration approved: a small celebration (once per device) */}
+      {reg.status === 'approved' && (
+        <Celebrate storageKey={`reg-approved:${reg.id}`} message={`${reg.teamName} is approved for ${reg.tournamentName}!`} />
+      )}
       <div className="flex h-full flex-col gap-5 @md:flex-row">
-        {/* Game logo in a fixed-size box */}
-        <div className="relative size-20 @md:size-24 shrink-0 overflow-hidden rounded-2xl border border-stone-800/80 bg-ink">
-          <div className="absolute inset-0 bg-logo-stage" aria-hidden="true" />
-          <GameLogo name={reg.gameName} gameId={reg.gameId} balanced className="absolute inset-0" fallbackClassName="text-base" sizes="96px" />
-        </div>
+        {/* Compact square game icon in a fixed-size box (the wide wordmark doesn't fit here) */}
+        <GameIcon name={reg.gameName} gameId={reg.gameId} size="xl" />
 
         <div className="flex min-w-0 flex-1 flex-col gap-4">
           {/* Main info */}

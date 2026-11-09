@@ -9,7 +9,7 @@ import { usePageTitle } from '@/utils/page-title';
 import { parseSchema, type GameProfileSchema } from '@/utils/game-profiles';
 import PageLoading from '@/components/PageLoading';
 import PageError from '@/components/PageError';
-import GameLogo from '@/components/GameLogo';
+import GameIcon from '@/components/GameIcon';
 import PageHeroBackground from '@/components/site/PageHeroBackground';
 import GameSchemaEditor from './GameSchemaEditor';
 
@@ -89,9 +89,7 @@ export default function GameProfilesAdminPage() {
               g.id === selected ? 'border-gold bg-gold/15 text-stone-950' : 'border-stone-200 bg-white text-stone-700 hover:border-stone-300'
             }`}
           >
-            <span className="grid h-7 w-7 place-items-center rounded-lg bg-ink p-1">
-              <GameLogo name={g.name} gameId={g.id} className="h-5 w-5" fallbackClassName="text-[8px]" sizes="20px" />
-            </span>
+            <GameIcon name={g.name} gameId={g.id} size="xs" />
             {g.name}
           </button>
         ))}

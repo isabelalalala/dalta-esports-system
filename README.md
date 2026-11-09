@@ -51,7 +51,7 @@ npm install
 **2. Create a Supabase project** (any region).
 
 **3. Run the migrations.** In the Supabase SQL Editor, run every file in
-`supabase/migrations/` in filename order (`202610151100` … `202610181800`). The
+`supabase/migrations/` in filename order (`202610151100` … `202611092000`). The
 first file, `202610151100_base_schema.sql`, creates the three base tables the rest
 build on. Everything is automatic from here, including pg_cron (the check-in
 migration installs the extension itself). Migrations are run manually, not pushed
@@ -74,6 +74,12 @@ sentiment stays "pending analysis".
 - Custom SMTP (Brevo): the built-in sender allows only a few emails per hour for the
   whole project, so a handful of people registering at once fails with "email rate
   limit exceeded". See "Email (Brevo SMTP)" below.
+- Multi-Factor → TOTP: keep it enabled (it is by default). Organizers can then turn on
+  two-factor authentication on My Profile.
+- Password security → "Prevent use of leaked passwords": turn it on if your plan offers it
+  (it may need a paid plan; the app's own checks still block common passwords).
+- Hooks → Custom Access Token: switch on `custom_access_token_hook` so banned accounts can't
+  log in (see `202611081500_comments_moderation.sql`).
 
 **6. Create `.env` in the repository root** (the same folder as
 `package.json` / `next.config.ts`). Next.js only loads env files from the project
@@ -219,12 +225,19 @@ changes need a rebuild; `GEMINI_API_KEY`/`FEEDBACK_SERVER_KEY` are runtime env v
    e.g. `0 * * * *`). It needs `CRON_SECRET` set in Vercel and the migration
    `202611091300_cron_moderation`. Check it under Project → Settings → Cron Jobs.
 
+The full launch checklist (settings, migrations, cleanup, domain, smoke tests per role on laptop
+and phone) is in [`docs/deployment-checklist.md`](docs/deployment-checklist.md).
+
 ### How deploys work
 - **Push to `main` = production.** Every push to another branch (or a pull request) gets a
   Preview URL. Previews use the same environment variables you give the Preview environment,
   so they talk to the real Supabase project unless you point them at a test project.
-- **Roll back:** Vercel → Deployments → pick the last good deployment → ⋯ → **Instant Rollback**
+- **Roll back the app:** Vercel → Deployments → pick the last good deployment → ⋯ → **Instant Rollback**
   (or "Promote to Production"). This only rolls back the app; database migrations are not undone.
+- **Roll back the database:** migrations have no automatic "down" step. Restore the backup you
+  took before running it (Supabase → Database → Backups → Restore, or `psql` with your dump), then
+  roll the app back to the deployment that matches. Small mistakes can also be fixed forward with a
+  new migration. Every migration is wrapped in `begin; … commit;`, so a failed run changes nothing.
 - **Before running a migration in production:** take a backup (Supabase → Database → Backups;
   daily backups are included on paid plans; on the free plan export with
   `supabase db dump` or Project Settings → "Download backup").

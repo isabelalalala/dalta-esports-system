@@ -13,6 +13,7 @@ import NextMatchCard from './NextMatchCard';
 import MyTeamsSummary from './MyTeamsSummary';
 import LiveNowCard from './LiveNowCard';
 import QuickTour from '@/components/QuickTour';
+import RoleBadge from '@/components/RoleBadge';
 import Tooltip from '@/components/Tooltip';
 import type { User } from '@supabase/supabase-js';
 import type { Profile } from '@/utils/types';
@@ -24,7 +25,7 @@ import { usePageTitle } from '@/utils/page-title';
 import { can, isOrganizer } from '@/utils/permissions';
 import {
   Activity, Brain, CalendarDays, ChartColumn, ClipboardList,
-  Crown, Eye, Gamepad2, Globe, GraduationCap, Megaphone, MessageSquare, RadioTower,
+  Gamepad2, Globe, GraduationCap, Megaphone, MessageSquare, RadioTower,
   Shield, Target, Trophy, Tv, Users, type LucideIcon, LifeBuoy } from 'lucide-react';
 
 interface DashCard {
@@ -36,20 +37,6 @@ interface DashCard {
 
 // The first cards of each role's list are its most common tasks
 const TOP_CARDS = 4;
-
-const roleLabels: Record<string, string> = {
-  admin: 'Administrator',
-  staff: 'Tournament Staff',
-  player: 'Player',
-  spectator: 'Spectator',
-};
-
-const roleIcons: Record<string, LucideIcon> = {
-  admin: Crown,
-  staff: Gamepad2,
-  player: Target,
-  spectator: Eye,
-};
 
 // Shortcuts for each role, picked by permission (utils/permissions.ts). The pages check the
 // role themselves (and RLS protects the data); the cards are only a convenience.
@@ -163,7 +150,6 @@ export default function Dashboard() {
   if (loadError) return <PageError message={loadError} backHref="/" backLabel="Home" />;
 
   const role = profile?.role;
-  const RoleIcon = roleIcons[role ?? ''];
 
   const allCards = cardsFor(role);
   const topCards = allCards.slice(0, TOP_CARDS);
@@ -182,19 +168,20 @@ export default function Dashboard() {
 
         <div className="relative z-10 space-y-3 max-w-prose">
           <div className="flex flex-wrap items-center gap-2.5">
-            <span className="px-3.5 py-1 rounded-full bg-white/10 border border-white/20 text-white text-xs font-black tracking-widest uppercase inline-flex items-center gap-1.5 backdrop-blur-xs">
-              {RoleIcon && <RoleIcon className="h-3.5 w-3.5 text-gold" />}
-              <span>{roleLabels[role ?? ''] ?? 'User'}</span>
-            </span>
+            {/* Same role badge as the profile page (soft pulse, off with reduced motion) */}
+            <RoleBadge role={role} onDark />
             <span className="px-3 py-1 rounded-full bg-gold/20 border border-gold/30 text-gold text-xs font-black tracking-widest uppercase">
               Official Portal
             </span>
           </div>
 
-          <h1
-            className="text-display font-black tracking-wider uppercase leading-tight animate-hero-title text-white"
-          >
-            Welcome, <span className="text-gold">{profile?.full_name || user?.email}</span>
+          {/* The name gets its own line and a size that fits it on one line where possible (clamp on
+              the container width); when it can't, text-balance wraps it between first and last name */}
+          <h1 className="font-black tracking-wider uppercase leading-[1.05] animate-hero-title text-white">
+            <span className="block text-base sm:text-lg tracking-widest text-stone-200">Welcome,</span>
+            <span className="block text-gold text-balance break-words text-[length:clamp(1.6rem,5.5cqi,3.5rem)]">
+              {profile?.full_name || user?.email}
+            </span>
           </h1>
 
           <p

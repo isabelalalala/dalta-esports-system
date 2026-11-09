@@ -14,6 +14,7 @@ import { usePageTitle } from '@/utils/page-title';
 import PageHeroBackground from '@/components/site/PageHeroBackground';
 import { Trophy, AlertCircle } from 'lucide-react';
 import { useConfirm } from '@/components/useConfirm';
+import { useUrlState } from '@/utils/url-state';
 import { toast } from '@/components/Toaster';
 import RegistrationCard, { type RegistrationCardData } from './RegistrationCard';
 
@@ -52,7 +53,8 @@ export default function MyRegistrationsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [busyId, setBusyId] = useState<string | null>(null);
-  const [tab, setTab] = useState<RegistrationTab | 'all'>('all');
+  // Kept in the address (?tab=ongoing): Back and refresh keep it
+  const [tab, setTab] = useUrlState<RegistrationTab | 'all'>('tab', 'all', ['upcoming', 'ongoing', 'completed', 'all']);
 
   useEffect(() => {
     const fetchData = async () => {

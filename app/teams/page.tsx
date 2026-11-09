@@ -250,7 +250,7 @@ export default function TeamsPage() {
 
         {activeTab === 'all' ? (
           <TeamDirectory
-            key={`${recruitingParam ? 'recruiting' : 'all'}-${searchParam}`}
+            key={recruitingParam ? 'recruiting' : 'all'}
             initialRecruitingOnly={recruitingParam}
             initialSearch={searchParam}
             games={games}

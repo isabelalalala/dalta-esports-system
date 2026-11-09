@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { Star } from 'lucide-react';
 import type { ChartId } from '@/utils/report-insights';
+import CountUp from '@/components/site/CountUp';
 
 // Small building blocks shared by the report sections
 
@@ -9,7 +10,8 @@ export function StatTile({ label, value, note }: { label: string; value: ReactNo
   return (
     <div className="bg-white border border-stone-200/90 rounded-2xl p-4 sm:p-5 shadow-xs text-stone-950 transition-all hover:-translate-y-0.5 print:border-stone-300 print:shadow-none">
       <p className="text-[11px] uppercase font-black text-stone-500 tracking-wider mb-1">{label}</p>
-      <p className="text-2xl sm:text-3xl font-black text-stone-950 tracking-tight">{value}</p>
+      {/* Plain numbers count up when they scroll into view (final value when printing) */}
+      <p className="text-2xl sm:text-3xl font-black text-stone-950 tracking-tight">{typeof value === 'number' ? <CountUp value={value} /> : value}</p>
       {note && <p className="text-xs font-semibold text-stone-500 mt-1">{note}</p>}
     </div>
   );
