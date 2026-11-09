@@ -102,6 +102,7 @@ export const ACTION_GROUPS: { label: string; actions: { value: string; label: st
       { value: 'team.join_request.declined', label: 'Join request declined' },
       { value: 'team.removed', label: 'Team removed' },
       { value: 'team.restored', label: 'Team restored' },
+      { value: 'team.logo_removed', label: 'Team logo removed' },
     ],
   },
   {
@@ -304,6 +305,8 @@ export function describeActivity(log: ActivityLog): string {
     }
     case 'team.restored':
       return `${actor} restored ${d.team_name || 'a team'}${d.game ? ` (${d.game})` : ''}${d.skipped?.length ? ` (not added back: ${d.skipped.join(', ')})` : ''}`;
+    case 'team.logo_removed':
+      return `${actor} removed the logo of ${d.team_name || 'a team'}${d.note ? `: "${d.note}"` : ''}`;
     case 'comment.restored':
       return `${actor} restored ${d.user_name || 'a user'}'s comment${d.title ? ` on ${d.title}` : ''}${d.note ? `: "${d.note}"` : ''}`;
     case 'comment.removed':

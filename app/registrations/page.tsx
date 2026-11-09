@@ -1,70 +1,167 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { createClient } from '@/utils/supabase/client';
 import { getErrorMessage } from '@/utils/errors';
-import type { Registration, RegistrationStatus, Tournament } from '@/utils/types';
-import { formatDate, formatMomentDate } from '@/utils/tournaments';
+import type { RegistrationStatus, Tournament } from '@/utils/types';
+import { getTournamentStatus, registrationClosesAt, type TournamentDisplayStatus } from '@/utils/tournaments';
+import { getCheckinState } from '@/utils/checkin';
+import { manilaToday } from '@/utils/site';
+import { REGISTRATION_TABS, registrationStep, registrationTab, startsInText, type RegistrationTab } from '@/utils/registrations';
 import PageLoading from '@/components/PageLoading';
 import { usePageTitle } from '@/utils/page-title';
 import PageHeroBackground from '@/components/site/PageHeroBackground';
-import { Trophy, Calendar, AlertCircle, Clock, CheckCircle2, XCircle, Shield } from 'lucide-react';
+import { Trophy, AlertCircle } from 'lucide-react';
 import { useConfirm } from '@/components/useConfirm';
+import { toast } from '@/components/Toaster';
+import RegistrationCard, { type RegistrationCardData } from './RegistrationCard';
 
-type MyRegistration = Registration & {
-  tournaments: Pick<Tournament, 'id' | 'name' | 'game' | 'start_date'> | null;
-};
+// What the page loads for each registration (one query with the team and tournament embedded)
+interface RegistrationRow {
+  id: string;
+  tournament_id: string;
+  team_id: string | null;
+  team_name: string | null;
+  status: RegistrationStatus;
+  rejection_reason: string | null;
+  registered_at: string;
+  teams: { id: string; name: string; captain_id: string; game_id: string; games: { name: string } | null } | null;
+  tournaments: Pick<
+    Tournament,
+    'id' | 'name' | 'game' | 'game_id' | 'start_date' | 'end_date' | 'registration_deadline' | 'status' | 'checkin_window_minutes'
+  > | null;
+}
 
-const statusStyles: Record<RegistrationStatus, string> = {
-  pending: 'bg-amber-500/15 text-amber-800 border-amber-400',
-  approved: 'bg-emerald-500/15 text-emerald-800 border-emerald-400',
-  rejected: 'bg-rose-500/15 text-rose-800 border-rose-400',
-  cancelled: 'bg-stone-500/15 text-stone-600 border-stone-300',
-};
+interface MatchRow {
+  id: string;
+  tournament_id: string;
+  team_a_id: string | null;
+  team_b_id: string | null;
+  status: 'scheduled' | 'live' | 'completed';
+  scheduled_at: string | null;
+}
 
-const statusIcons: Record<RegistrationStatus, typeof Clock> = {
-  pending: Clock,
-  approved: CheckCircle2,
-  rejected: XCircle,
-  cancelled: XCircle,
-};
+type CardWithTab = RegistrationCardData & { tab: RegistrationTab; teamId: string | null };
 
 export default function MyRegistrationsPage() {
   const [confirmDialog, ask] = useConfirm();
   const supabase = createClient();
   usePageTitle('My Registrations');
-  const [registrations, setRegistrations] = useState<MyRegistration[]>([]);
-  const [userId, setUserId] = useState('');
+  const [cards, setCards] = useState<CardWithTab[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [tab, setTab] = useState<RegistrationTab | 'all'>('all');
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const {
-          data: { session },
-        } = await supabase.auth.getSession();
+        const { data: { session } } = await supabase.auth.getSession();
         if (!session) return;
-        setUserId(session.user.id);
+        const me = session.user.id;
 
+        // 1. My teams, and their registrations (team + tournament embedded)
         const { data: memberRows, error: membersError } = await supabase
-          .from('team_members')
-          .select('team_id')
-          .eq('user_id', session.user.id);
+          .from('team_members').select('team_id').eq('user_id', me);
         if (membersError) throw membersError;
-
         const teamIds = (memberRows || []).map((r) => r.team_id as string);
         if (teamIds.length === 0) return;
 
-        const { data, error: regsError } = await supabase
+        const { data: regData, error: regsError } = await supabase
           .from('tournament_registrations')
-          .select('*, teams(*), tournaments(id, name, game, start_date)')
+          .select('id, tournament_id, team_id, team_name, status, rejection_reason, registered_at, teams(id, name, captain_id, game_id, games(name)), tournaments(id, name, game, game_id, start_date, end_date, registration_deadline, status, checkin_window_minutes)')
           .in('team_id', teamIds)
           .order('registered_at', { ascending: false });
         if (regsError) throw regsError;
-        setRegistrations((data || []) as MyRegistration[]);
+        const regs = (regData || []) as unknown as RegistrationRow[];
+        if (regs.length === 0) return;
+
+        // 2. My teams' matches in those tournaments, rosters (avatars) and check-ins
+        const tournamentIds = [...new Set(regs.map((r) => r.tournament_id))];
+        const idList = teamIds.join(',');
+        const [matchesRes, ...rosterRes] = await Promise.all([
+          supabase
+            .from('matches')
+            .select('id, tournament_id, team_a_id, team_b_id, status, scheduled_at')
+            .in('tournament_id', tournamentIds)
+            .or(`team_a_id.in.(${idList}),team_b_id.in.(${idList})`),
+          ...teamIds.map((id) => supabase.rpc('get_team_roster', { p_team_id: id })),
+        ]);
+        if (matchesRes.error) throw matchesRes.error;
+        const matches = (matchesRes.data || []) as MatchRow[];
+        const rosters: Record<string, { name: string | null; avatar_url: string | null }[]> = {};
+        teamIds.forEach((id, i) => {
+          rosters[id] = (rosterRes[i].data || []).map((m) => ({ name: m.full_name, avatar_url: m.avatar_url }));
+        });
+
+        // The next match of each team in each tournament: live first, then the soonest scheduled
+        const now = Date.now();
+        const nextMatchFor = (tournamentId: string, teamId: string) =>
+          matches
+            .filter((m) => m.tournament_id === tournamentId && (m.team_a_id === teamId || m.team_b_id === teamId) && m.status !== 'completed')
+            .sort((a, b) => (a.status === 'live' ? -1 : b.status === 'live' ? 1 : (a.scheduled_at ?? '9999').localeCompare(b.scheduled_at ?? '9999')))[0];
+
+        const nextMatches = regs
+          .map((r) => (r.team_id ? nextMatchFor(r.tournament_id, r.team_id) : undefined))
+          .filter((m): m is MatchRow => Boolean(m));
+        const opponentIds = [...new Set(nextMatches.flatMap((m) => [m.team_a_id, m.team_b_id]).filter((id): id is string => Boolean(id)))];
+        const [opponentsRes, checkinsRes] = await Promise.all([
+          opponentIds.length
+            ? supabase.from('teams').select('id, name').in('id', opponentIds)
+            : Promise.resolve({ data: [], error: null }),
+          nextMatches.length
+            ? supabase.from('match_checkins').select('match_id, team_id').in('match_id', nextMatches.map((m) => m.id))
+            : Promise.resolve({ data: [], error: null }),
+        ]);
+        if (opponentsRes.error) throw opponentsRes.error;
+        if (checkinsRes.error) throw checkinsRes.error;
+        const teamNames = Object.fromEntries((opponentsRes.data || []).map((t) => [t.id, t.name]));
+        const checkins = new Set((checkinsRes.data || []).map((c) => `${c.match_id}:${c.team_id}`));
+
+        const today = manilaToday();
+        setCards(regs.map((r): CardWithTab => {
+          const t = r.tournaments;
+          const tStatus: TournamentDisplayStatus = t ? getTournamentStatus(t) : 'upcoming';
+          const teamId = r.team_id;
+          const myMatches = teamId ? matches.filter((m) => m.tournament_id === r.tournament_id && (m.team_a_id === teamId || m.team_b_id === teamId)) : [];
+          const next = teamId ? nextMatchFor(r.tournament_id, teamId) : undefined;
+          const opponentId = next ? (next.team_a_id === teamId ? next.team_b_id : next.team_a_id) : null;
+          const checkInActive = Boolean(
+            next && teamId && next.status === 'scheduled' && t &&
+            (checkins.has(`${next.id}:${teamId}`) || getCheckinState(next.scheduled_at, t.checkin_window_minutes, now) === 'open'),
+          );
+          const closesAt = t ? registrationClosesAt(t) : '';
+          return {
+            id: r.id,
+            teamId,
+            tab: registrationTab(tStatus),
+            tournamentId: r.tournament_id,
+            tournamentName: t?.name ?? 'Tournament',
+            gameName: r.teams?.games?.name ?? t?.game ?? null,
+            gameId: r.teams?.game_id ?? t?.game_id ?? null,
+            startDate: t?.start_date ?? null,
+            whenText: startsInText(tStatus, t?.start_date, today),
+            teamName: r.teams?.name ?? r.team_name ?? 'Your team',
+            isCaptain: r.teams?.captain_id === me,
+            status: r.status,
+            rejectionReason: r.rejection_reason,
+            roster: teamId ? rosters[teamId] ?? [] : [],
+            nextMatch: next
+              ? { id: next.id, opponent: opponentId ? teamNames[opponentId] ?? 'Unknown team' : 'TBD', scheduledAt: next.scheduled_at }
+              : null,
+            step: registrationStep({
+              status: r.status,
+              tournamentStatus: tStatus,
+              hasLiveMatch: myMatches.some((m) => m.status === 'live'),
+              hasPlayedMatch: myMatches.some((m) => m.status === 'completed' && m.team_a_id && m.team_b_id),
+              hasUpcomingMatch: myMatches.some((m) => m.status === 'scheduled'),
+              checkInActive,
+            }),
+            // Same rule as the database: captain, still pending, registration not closed yet
+            canWithdraw: r.teams?.captain_id === me && r.status === 'pending' && (!closesAt || Date.parse(closesAt) > now),
+          };
+        }));
       } catch (err) {
         setError(getErrorMessage(err, 'Failed to load your registrations'));
       } finally {
@@ -75,11 +172,17 @@ export default function MyRegistrationsPage() {
     fetchData();
   }, [supabase]);
 
-  const handleWithdraw = async (reg: MyRegistration) => {
-    if (!(await ask({ title: 'Withdraw registration?', message: `Withdraw ${reg.teams?.name} from ${reg.tournaments?.name}? You can register again while registration is open.`, confirmLabel: 'Withdraw', tone: 'danger' }))) return;
+  const counts = useMemo(() => {
+    const c: Record<RegistrationTab | 'all', number> = { upcoming: 0, ongoing: 0, completed: 0, all: cards.length };
+    for (const card of cards) c[card.tab] += 1;
+    return c;
+  }, [cards]);
+  const shown = tab === 'all' ? cards : cards.filter((c) => c.tab === tab);
+
+  const handleWithdraw = async (reg: CardWithTab) => {
+    if (!(await ask({ title: 'Withdraw registration?', message: `Withdraw ${reg.teamName} from ${reg.tournamentName}? You can register again while registration is open.`, confirmLabel: 'Withdraw', tone: 'danger' }))) return;
     setBusyId(reg.id);
     setError('');
-
     try {
       const { data, error: deleteError } = await supabase
         .from('tournament_registrations')
@@ -90,7 +193,8 @@ export default function MyRegistrationsPage() {
       if (!data || data.length === 0) {
         throw new Error('Only the captain can withdraw, and only while the registration is pending.');
       }
-      setRegistrations((current) => current.filter((r) => r.id !== reg.id));
+      setCards((current) => current.filter((r) => r.id !== reg.id));
+      toast.success('Registration withdrawn.');
     } catch (err) {
       setError(getErrorMessage(err, 'Failed to withdraw'));
     } finally {
@@ -105,158 +209,89 @@ export default function MyRegistrationsPage() {
   return (
     <>
     {confirmDialog}
-    {/* The layout (SiteNavLayout) renders the main element and the page padding */}
-    <div className="w-full text-stone-950">
-      <div className="w-full max-w-6xl mx-auto space-y-8">
-        {/* 1. Main Hero Container */}
-        <section className="animate-hero-entrance relative w-full rounded-3xl border border-stone-800/80 bg-stone-950 overflow-hidden shadow-md p-8 sm:p-12 @5xl:p-14 text-center text-white flex flex-col items-center justify-center space-y-4">
-          <PageHeroBackground specificKey="tournaments_hero_bg_path" alt="DALTA Esports Registrations Banner" />
+    {/* The layout (SiteNavLayout) renders the main element and the page padding. Full width like
+        the other sections: no narrow box. */}
+    <div className="w-full space-y-8 text-stone-950">
+      {/* 1. Main Hero Container */}
+      <section className="animate-hero-entrance relative w-full rounded-3xl border border-stone-800/80 bg-stone-950 overflow-hidden shadow-md p-8 sm:p-12 @5xl:p-14 text-center text-white flex flex-col items-center justify-center space-y-4">
+        <PageHeroBackground specificKey="tournaments_hero_bg_path" alt="DALTA Esports Registrations Banner" />
 
-          {/* Action Bar inside Hero: Back link & Registration count */}
-          <div className="relative z-10 w-full flex flex-wrap items-center justify-between gap-4">
-            <Link
-              href="/dashboard"
-              className="inline-flex items-center gap-1.5 text-xs font-black text-gold hover:text-goldlight uppercase tracking-wider transition-colors"
-            >
-              ← Back to Dashboard
-            </Link>
-
-            <div className="flex items-center gap-2">
-              <span className="text-[10px] sm:text-xs font-black px-3.5 py-1 rounded-md border border-white/20 bg-white/10 text-stone-200 uppercase tracking-widest backdrop-blur-xs shadow-2xs">
-                {registrations.length} {registrations.length === 1 ? 'Entry' : 'Entries'}
-              </span>
-              <Link
-                href="/tournaments"
-                className="bg-gold text-stone-950 px-4 py-1.5 rounded-xl font-black border border-amber-400 shadow-xs hover:bg-golddark hover:-translate-y-0.5 transition-all uppercase tracking-widest text-xs"
-              >
-                Browse Tournaments →
-              </Link>
-            </div>
-          </div>
-
-          <div className="relative z-10 max-w-4xl mx-auto space-y-3 pt-2">
-            <h1
-              className="animate-hero-title text-display font-black tracking-wider uppercase leading-tight text-white"
-            >
-              My Registrations
-            </h1>
-            <p
-              className="animate-hero-tagline text-xs sm:text-sm font-semibold leading-relaxed text-white"
-            >
-              Active tournament entries, team registration statuses, and schedule records.
-            </p>
-          </div>
-        </section>
-
-        {/* Global Notifications */}
-        {error && (
-          <div
-            role="alert"
-            className="rounded-2xl bg-red-500/10 border border-red-500/30 p-4 sm:p-5 text-red-700 text-xs sm:text-sm font-bold tracking-wider flex items-center gap-3 shadow-xs"
+        <div className="relative z-10 w-full flex flex-wrap items-center justify-between gap-4">
+          <Link
+            href="/dashboard"
+            className="inline-flex items-center gap-1.5 text-xs font-black text-gold hover:text-goldlight uppercase tracking-wider transition-colors"
           >
-            <AlertCircle className="w-5 h-5 shrink-0 text-red-600" />
-            <span>{error}</span>
-          </div>
-        )}
+            ← Back to Dashboard
+          </Link>
+          <Link href="/tournaments" className="btn btn-primary">Browse tournaments →</Link>
+        </div>
 
-        {/* Empty State */}
-        {!error && registrations.length === 0 && (
-          <div className="animate-stagger-1 w-full rounded-3xl border border-stone-200/80 bg-stone-50/70 p-8 sm:p-14 text-center flex flex-col items-center justify-center gap-3 shadow-xs">
-            <div className="w-12 h-12 rounded-2xl bg-stone-200/80 grid place-items-center text-stone-600 mb-1">
-              <Trophy className="w-6 h-6" />
-            </div>
-            <p className="font-black text-stone-900 text-base">
-              Your teams haven&apos;t registered for any tournament yet.
+        <div className="relative z-10 max-w-prose mx-auto space-y-3 pt-2">
+          <h1 className="animate-hero-title text-display font-black tracking-wider uppercase leading-tight text-white">
+            My Registrations
+          </h1>
+          <p className="animate-hero-tagline text-xs sm:text-sm font-semibold leading-relaxed text-white">
+            Your teams&apos; tournament entries: status, progress, next match and roster.
+          </p>
+        </div>
+      </section>
+
+      {error && (
+        <div
+          role="alert"
+          className="rounded-2xl bg-red-500/10 border border-red-500/30 p-4 sm:p-5 text-red-700 text-xs sm:text-sm font-bold tracking-wider flex items-center gap-3 shadow-xs"
+        >
+          <AlertCircle className="w-5 h-5 shrink-0 text-red-600" />
+          <span>{error}</span>
+        </div>
+      )}
+
+      {!error && cards.length === 0 ? (
+        <div className="w-full rounded-3xl border border-stone-200/80 bg-stone-50/70 p-8 sm:p-14 text-center flex flex-col items-center justify-center gap-3 shadow-xs">
+          <span className="grid size-12 place-items-center rounded-2xl bg-stone-200/80 text-stone-600">
+            <Trophy className="size-6" aria-hidden="true" />
+          </span>
+          <p className="font-black text-stone-900 text-base">You&apos;re not registered in any tournament yet</p>
+          <p className="max-w-prose text-sm text-stone-600 font-medium">
+            Find an upcoming tournament and register your team. Only the captain registers; everyone on the team sees it here.
+          </p>
+          <Link href="/tournaments" className="btn btn-primary mt-1">Browse tournaments</Link>
+        </div>
+      ) : cards.length > 0 && (
+        <>
+          {/* Tabs with counts */}
+          <div role="tablist" aria-label="Filter registrations" className="inline-flex flex-wrap gap-1 p-1 rounded-2xl border border-stone-200/90 bg-white shadow-2xs">
+            {REGISTRATION_TABS.map((t) => (
+              <button
+                key={t.value}
+                role="tab"
+                aria-selected={tab === t.value}
+                onClick={() => setTab(t.value)}
+                className={`px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-colors cursor-pointer ${
+                  tab === t.value ? 'bg-gold text-ink shadow-xs' : 'text-stone-700 hover:bg-stone-100'
+                }`}
+              >
+                {t.label} <span className="opacity-70">({counts[t.value]})</span>
+              </button>
+            ))}
+          </div>
+
+          {shown.length === 0 ? (
+            <p className="rounded-2xl border border-stone-200/80 bg-stone-50/70 p-6 text-center text-sm font-bold text-stone-600">
+              No {tab} registrations.
             </p>
-            <p className="text-xs text-stone-500 font-medium max-w-md">
-              Find an upcoming competition on the official tournaments portal and sign up your squad.
-            </p>
-            <Link
-              href="/tournaments"
-              className="uppercase mt-2 rounded-xl bg-gold hover:bg-golddark text-stone-950 font-black px-6 py-2.5 text-xs tracking-widest shadow-xs hover:-translate-y-0.5 transition-all"
-            >
-              View Tournaments
-            </Link>
-          </div>
-        )}
-
-        {/* Registrations List */}
-        {registrations.length > 0 && (
-          <div className="animate-stagger-1 space-y-4">
-            {registrations.map((reg) => {
-              const isCaptain = reg.teams?.captain_id === userId;
-              const StatusIcon = statusIcons[reg.status] || Clock;
-
-              return (
-                <div
-                  key={reg.id}
-                  className="rounded-3xl border border-stone-200/90 bg-white p-6 sm:p-8 shadow-xs hover:shadow-md hover:border-amber-400/50 transition-all flex flex-col @3xl:flex-row @3xl:items-center justify-between gap-6"
-                >
-                  <div className="space-y-3 min-w-0 flex-1">
-                    <div className="flex flex-wrap items-center gap-2.5">
-                      <Link
-                        href={`/tournaments/${reg.tournament_id}`}
-                        className="text-lg sm:text-xl font-black text-stone-950 hover:text-maroon tracking-wide transition-colors truncate"
-                      >
-                        {reg.tournaments?.name}
-                      </Link>
-                      <span
-                        className={`inline-flex items-center gap-1 px-3 py-1 rounded-full border text-[10px] font-black uppercase tracking-wider ${statusStyles[reg.status]}`}
-                      >
-                        <StatusIcon className="w-3.5 h-3.5" />
-                        {reg.status}
-                      </span>
-                    </div>
-
-                    <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs font-semibold text-stone-600">
-                      <div className="flex items-center gap-1.5">
-                        <Shield className="w-3.5 h-3.5 text-maroon" />
-                        <span className="font-black text-stone-900">{reg.teams?.name}</span>
-                        {isCaptain && (
-                          <span className="text-[10px] font-black px-2 py-0.5 rounded-md bg-amber-500/15 text-amber-800 border border-amber-300">
-                            Captain
-                          </span>
-                        )}
-                      </div>
-                      <span>•</span>
-                      <span className="text-maroon font-black">{reg.tournaments?.game}</span>
-                      <span>•</span>
-                      <div className="flex items-center gap-1">
-                        <Calendar className="w-3.5 h-3.5 text-stone-500" />
-                        <span>Starts {formatDate(reg.tournaments?.start_date)}</span>
-                      </div>
-                    </div>
-
-                    <p className="text-[11px] text-stone-500 font-medium tracking-wide">
-                      Registered on {formatMomentDate(reg.registered_at)}
-                    </p>
-                  </div>
-
-                  {/* Actions */}
-                  <div className="flex items-center gap-3 shrink-0 pt-2 @3xl:pt-0 border-t @3xl:border-t-0 border-stone-100">
-                    <Link
-                      href={`/tournaments/${reg.tournament_id}`}
-                      className="rounded-xl border border-stone-300 hover:border-amber-400 bg-white text-stone-800 font-bold px-4 py-2.5 text-xs uppercase tracking-wider shadow-2xs hover:-translate-y-0.5 transition-all text-center"
-                    >
-                      Tournament Details
-                    </Link>
-
-                    {isCaptain && reg.status === 'pending' && (
-                      <button
-                        onClick={() => handleWithdraw(reg)}
-                        disabled={busyId === reg.id}
-                        className="rounded-xl border border-red-300 text-red-700 hover:bg-red-50 hover:border-red-400 px-4 py-2.5 font-black text-xs uppercase tracking-wider transition-all disabled:opacity-50 cursor-pointer shadow-2xs"
-                      >
-                        {busyId === reg.id ? 'Withdrawing...' : 'Withdraw'}
-                      </button>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </div>
+          ) : (
+            // Two columns on wide screens; each card stacks its own content when it's narrow
+            <ul className="grid grid-cols-1 @5xl:grid-cols-2 gap-4 sm:gap-6">
+              {shown.map((reg) => (
+                <li key={reg.id} className="min-w-0">
+                  <RegistrationCard reg={reg} busy={busyId === reg.id} onWithdraw={() => handleWithdraw(reg)} />
+                </li>
+              ))}
+            </ul>
+          )}
+        </>
+      )}
     </div>
     </>
   );

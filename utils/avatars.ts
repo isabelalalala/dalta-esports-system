@@ -3,6 +3,8 @@
 // uploading (components/AvatarUploader.tsx); profiles.avatar_url holds the public address.
 
 export const AVATARS_BUCKET = 'avatars';
+// Team logos (202611091800_team_cards_registrations): same crop and size, one folder per team
+export const TEAM_LOGOS_BUCKET = 'team-logos';
 // Accepted picture types (the bucket allows the same, plus the resized WebP we upload)
 export const AVATAR_INPUT_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 // Size limit of the file we store (also set on the bucket)
@@ -45,9 +47,9 @@ export function avatarPath(userId: string, ext: 'webp' | 'png' | 'jpg' = 'webp')
 }
 
 // The storage path inside the bucket, from a public address (to delete the old file)
-export function avatarPathFromUrl(url: string | null | undefined): string | null {
+export function avatarPathFromUrl(url: string | null | undefined, bucket: string = AVATARS_BUCKET): string | null {
   if (!url) return null;
-  const marker = `/storage/v1/object/public/${AVATARS_BUCKET}/`;
+  const marker = `/storage/v1/object/public/${bucket}/`;
   const i = url.indexOf(marker);
   return i === -1 ? null : decodeURIComponent(url.slice(i + marker.length).split('?')[0]);
 }

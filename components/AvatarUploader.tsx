@@ -1,25 +1,48 @@
 'use client';
 
-import { useEffect, useRef, useState, type KeyboardEvent, type PointerEvent } from 'react';
+import { useEffect, useRef, useState, type KeyboardEvent, type PointerEvent, type ReactNode } from 'react';
 import { Camera, Trash2 } from 'lucide-react';
 import { createClient } from '@/utils/supabase/client';
 import { getErrorMessage } from '@/utils/errors';
 import { refreshViewer } from '@/utils/use-viewer';
 import {
-  AVATAR_INPUT_TYPES, AVATAR_MAX_BYTES, AVATAR_OUTPUT_PX, AVATARS_BUCKET, avatarPath, avatarPathFromUrl, cropSquare,
-  validateAvatarFile,
+  AVATAR_INPUT_TYPES, AVATAR_MAX_BYTES, AVATAR_OUTPUT_PX, AVATARS_BUCKET, TEAM_LOGOS_BUCKET, avatarPath, avatarPathFromUrl,
+  cropSquare, validateAvatarFile,
 } from '@/utils/avatars';
 import Avatar from '@/components/Avatar';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import { toast } from '@/components/Toaster';
 
 interface Props {
+  // The user (profile picture) or the team (team logo): row id and storage folder
   userId: string;
   name: string | null;
   url: string | null;
   // Called with the new address (or null after removing)
   onChange: (url: string | null) => void;
+  // 'team-logo': saves teams.logo_url in the team-logos bucket (captain only: RLS + storage policies)
+  kind?: 'avatar' | 'team-logo';
+  // Shown instead of the round avatar (the team logo box)
+  preview?: ReactNode;
 }
+
+// What differs between a profile picture and a team logo
+const KINDS = {
+  avatar: {
+    bucket: AVATARS_BUCKET, noun: 'picture',
+    savedText: 'Profile picture saved.', removedText: 'Profile picture removed.',
+    help: 'JPG, PNG or WebP. Shown on rosters, comments and feedback.',
+    removeText: 'Your initials are shown instead. You can add a new picture any time.',
+    guide: 'rounded-full', guideText: 'The circle shows what others will see.',
+  },
+  'team-logo': {
+    bucket: TEAM_LOGOS_BUCKET, noun: 'logo',
+    savedText: 'Team logo saved.', removedText: 'Team logo removed.',
+    help: 'JPG, PNG or WebP, square. Shown on team cards and the team page.',
+    removeText: 'The team initials are shown instead. You can add a new logo any time.',
+    guide: 'rounded-2xl', guideText: 'The square shows what others will see.',
+  },
+} as const;
 
 const VIEW = 256; // size of the crop window in CSS pixels
 
@@ -28,8 +51,10 @@ const VIEW = 256; // size of the crop window in CSS pixels
 
 // "Change picture" on /profile: pick a JPG/PNG/WebP, crop it to a square (drag to move, slider or
 // +/- to zoom, arrow keys to move), and it is saved as a 512x512 picture in the avatars bucket.
-export default function AvatarUploader({ userId, name, url, onChange }: Props) {
+// Also used for team logos on the team page (kind="team-logo").
+export default function AvatarUploader({ userId, name, url, onChange, kind = 'avatar', preview }: Props) {
   const supabase = createClient();
+  const cfg = KINDS[kind];
   const inputRef = useRef<HTMLInputElement>(null);
   const [image, setImage] = useState<HTMLImageElement | null>(null);
   const [objectUrl, setObjectUrl] = useState<string | null>(null);
@@ -114,6 +139,12 @@ export default function AvatarUploader({ userId, name, url, onChange }: Props) {
     }
   };
 
+  // Writes the address on the user's profile or the team (RLS: own profile / captain of the team)
+  const saveUrl = (value: string | null) =>
+    kind === 'avatar'
+      ? supabase.from('profiles').update({ avatar_url: value }).eq('id', userId).select('id')
+      : supabase.from('teams').update({ logo_url: value }).eq('id', userId).select('id');
+
   const save = async () => {
     if (!image || !crop) return;
     setBusy(true);
@@ -133,29 +164,28 @@ export default function AvatarUploader({ userId, name, url, onChange }: Props) {
       const path = avatarPath(userId, ext);
 
       const { error: uploadError } = await supabase.storage
-        .from(AVATARS_BUCKET)
+        .from(cfg.bucket)
         .upload(path, blob, { contentType: blob.type, cacheControl: '31536000', upsert: false });
       if (uploadError) throw uploadError;
 
-      const publicUrl = supabase.storage.from(AVATARS_BUCKET).getPublicUrl(path).data.publicUrl;
-      const { data, error: saveError } = await supabase
-        .from('profiles').update({ avatar_url: publicUrl }).eq('id', userId).select('id');
+      const publicUrl = supabase.storage.from(cfg.bucket).getPublicUrl(path).data.publicUrl;
+      const { data, error: saveError } = await saveUrl(publicUrl);
       if (saveError || !data?.length) {
         // Don't leave an unused file behind
-        await supabase.storage.from(AVATARS_BUCKET).remove([path]);
-        throw saveError ?? new Error('Your picture could not be saved.');
+        await supabase.storage.from(cfg.bucket).remove([path]);
+        throw saveError ?? new Error(`The ${cfg.noun} could not be saved.`);
       }
 
       // The old file isn't needed any more (a failure here only leaves an unused file)
-      const oldPath = avatarPathFromUrl(url);
-      if (oldPath) await supabase.storage.from(AVATARS_BUCKET).remove([oldPath]);
+      const oldPath = avatarPathFromUrl(url, cfg.bucket);
+      if (oldPath) await supabase.storage.from(cfg.bucket).remove([oldPath]);
 
       onChange(publicUrl);
-      await refreshViewer();
+      if (kind === 'avatar') await refreshViewer();
       closeCropper();
-      toast.success('Profile picture saved.');
+      toast.success(cfg.savedText);
     } catch (err) {
-      setError(getErrorMessage(err, 'Your picture could not be saved.'));
+      setError(getErrorMessage(err, `The ${cfg.noun} could not be saved.`));
     } finally {
       setBusy(false);
     }
@@ -165,17 +195,16 @@ export default function AvatarUploader({ userId, name, url, onChange }: Props) {
     setBusy(true);
     setError('');
     try {
-      const { data, error: saveError } = await supabase
-        .from('profiles').update({ avatar_url: null }).eq('id', userId).select('id');
-      if (saveError || !data?.length) throw saveError ?? new Error('Your picture could not be removed.');
-      const oldPath = avatarPathFromUrl(url);
-      if (oldPath) await supabase.storage.from(AVATARS_BUCKET).remove([oldPath]);
+      const { data, error: saveError } = await saveUrl(null);
+      if (saveError || !data?.length) throw saveError ?? new Error(`The ${cfg.noun} could not be removed.`);
+      const oldPath = avatarPathFromUrl(url, cfg.bucket);
+      if (oldPath) await supabase.storage.from(cfg.bucket).remove([oldPath]);
       onChange(null);
-      await refreshViewer();
+      if (kind === 'avatar') await refreshViewer();
       setConfirmRemove(false);
-      toast.success('Profile picture removed.');
+      toast.success(cfg.removedText);
     } catch (err) {
-      setError(getErrorMessage(err, 'Your picture could not be removed.'));
+      setError(getErrorMessage(err, `The ${cfg.noun} could not be removed.`));
     } finally {
       setBusy(false);
     }
@@ -183,7 +212,7 @@ export default function AvatarUploader({ userId, name, url, onChange }: Props) {
 
   return (
     <div className="flex flex-col sm:flex-row items-center gap-4">
-      <Avatar url={url} name={name} size="xl" />
+      {preview ?? <Avatar url={url} name={name} size="xl" />}
       <div className="space-y-2 text-center sm:text-left">
         <div className="flex flex-wrap justify-center sm:justify-start gap-2">
           <button
@@ -191,7 +220,7 @@ export default function AvatarUploader({ userId, name, url, onChange }: Props) {
             onClick={() => inputRef.current?.click()}
             className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gold hover:bg-golddark text-stone-950 text-xs font-black uppercase tracking-wider cursor-pointer"
           >
-            <Camera className="h-4 w-4" /> {url ? 'Change picture' : 'Add picture'}
+            <Camera className="h-4 w-4" /> {url ? `Change ${cfg.noun}` : `Add ${cfg.noun}`}
           </button>
           {url && (
             <button
@@ -203,7 +232,7 @@ export default function AvatarUploader({ userId, name, url, onChange }: Props) {
             </button>
           )}
         </div>
-        <p className="text-sm text-stone-600">JPG, PNG or WebP. Shown on rosters, comments and feedback.</p>
+        <p className="text-sm text-stone-600">{cfg.help}</p>
         {error && !image && <p role="alert" className="text-sm font-bold text-red-700">{error}</p>}
         <input
           ref={inputRef}
@@ -218,15 +247,15 @@ export default function AvatarUploader({ userId, name, url, onChange }: Props) {
 
       {image && objectUrl && crop && (
         <ConfirmDialog
-          title="Crop your picture"
-          confirmLabel="Save picture"
+          title={`Crop your ${cfg.noun}`}
+          confirmLabel={`Save ${cfg.noun}`}
           busy={busy}
           busyLabel="Uploading..."
           error={error}
           onConfirm={save}
           onClose={closeCropper}
         >
-          <p>Drag to move the picture and use the slider to zoom. The circle shows what others will see.</p>
+          <p>Drag to move the picture and use the slider to zoom. {cfg.guideText}</p>
           <div
             role="application"
             aria-label="Crop area. Arrow keys move the picture, plus and minus zoom."
@@ -252,8 +281,8 @@ export default function AvatarUploader({ userId, name, url, onChange }: Props) {
                 top: -crop.sy * scale,
               }}
             />
-            {/* Circle guide: everything outside it is dimmed */}
-            <div className="pointer-events-none absolute inset-0 rounded-full shadow-[0_0_0_999px_rgba(0,0,0,0.45)] ring-2 ring-white/80" />
+            {/* Circle (or square) guide: everything outside it is dimmed */}
+            <div className={`pointer-events-none absolute inset-0 ${cfg.guide} shadow-[0_0_0_999px_rgba(0,0,0,0.45)] ring-2 ring-white/80`} />
           </div>
           <label className="block">
             <span className="text-xs font-black uppercase tracking-wider text-stone-700">Zoom</span>
@@ -272,8 +301,8 @@ export default function AvatarUploader({ userId, name, url, onChange }: Props) {
 
       {confirmRemove && (
         <ConfirmDialog
-          title="Remove your picture?"
-          confirmLabel="Remove picture"
+          title={`Remove the ${cfg.noun}?`}
+          confirmLabel={`Remove ${cfg.noun}`}
           tone="danger"
           busy={busy}
           busyLabel="Removing..."
@@ -281,7 +310,7 @@ export default function AvatarUploader({ userId, name, url, onChange }: Props) {
           onConfirm={remove}
           onClose={() => setConfirmRemove(false)}
         >
-          <p>Your initials are shown instead. You can add a new picture any time.</p>
+          <p>{cfg.removeText}</p>
         </ConfirmDialog>
       )}
     </div>

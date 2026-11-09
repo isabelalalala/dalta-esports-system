@@ -23,6 +23,7 @@ export type Action =
   | 'team.join'                // ask to join, accept invites, "My teams"
   | 'team.toggleRecruiting'    // organizer override (the captain may always toggle their own team)
   | 'team.remove'
+  | 'team.removeLogo'          // take down a team logo with a reason (remove_team_logo)
   | 'team.restore'
   | 'team.viewRemoved'
   // Matches
@@ -61,6 +62,7 @@ const ORGANIZER: Action[] = [
   'bracket.generate',
   'team.toggleRecruiting',
   'team.remove',
+  'team.removeLogo',
   'team.viewRemoved',
   'match.manage',
   'stream.watch',

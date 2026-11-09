@@ -79,6 +79,9 @@ export interface Team {
   is_removed: boolean;
   removed_by: string | null;
   removed_at: string | null;
+  // Team logo in the team-logos bucket, and what a recruiting team needs (202611091800)
+  logo_url?: string | null;
+  looking_for?: unknown;
   // Only present when selected with `games(...)`
   games?: Game;
   // Only present when selected with `team_members(count)`
@@ -170,6 +173,17 @@ export interface TeamListEntry {
   max_players: number;
   recruiting: boolean;
   created_at: string;
+  // 202611091800_team_cards_registrations
+  logo_url: string | null;
+  looking_for: unknown;
+  captain_avatar: string | null;
+  // First 5 members (captain first): first name + avatar
+  member_avatars: { name: string; avatar_url: string | null }[] | null;
+  is_member: boolean;
+  // 'pending' when I asked to join, else null
+  my_request: string | null;
+  // How many teams match the filters (same on every row)
+  total_count: number;
 }
 
 // One row returned by get_team_join_requests(): an open request the captain can answer
@@ -200,6 +214,8 @@ export interface Registration {
   team_name: string | null;
   status: RegistrationStatus;
   registered_at: string;
+  // Given by an organizer when rejecting (202611091800); null otherwise
+  rejection_reason?: string | null;
   // Only present when selected with `teams(...)`
   teams?: Team | null;
 }

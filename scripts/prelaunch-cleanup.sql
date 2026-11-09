@@ -53,6 +53,13 @@ from public.teams t join public.games g on g.id = t.game_id
 where t.name ~* 'test|asd|qwe|sample|dummy|bla|(.)\1{3,}' or length(t.name) <= 3
 order by t.created_at;
 
+-- A6b. Test team descriptions (keyboard mash on team cards: "fddfdfd", "dbfhhhhshsjd", "Letsgo")
+select t.id, t.name, t.description
+from public.teams t
+where t.description ~* '^\s*(fddfdfd|dbfhhhhshsjd|letsgo)\s*$'
+   or t.description ~* '(.){3,}|^[^aeiou\s]{6,}$|test|asd|qwe|lorem'
+order by t.created_at;
+
 -- A7. Test feedback and comments
 select 'feedback' as kind, id, comment as text, created_at from public.feedback
 where comment ~* 'test|asd|qwe|lorem|(.)\1{3,}'
@@ -98,6 +105,11 @@ delete from public.tournaments where id in (
   '8468e34f-aea8-4cb5-bf3d-4648d2232aca'  -- Tekken elim
 );
 
+-- B3b. Clear test team descriptions (the card then hides the description). Only the three
+--      found by the Phase 10 review; add others from A6b if you checked them.
+update public.teams set description = null
+where description ~* '^\s*(fddfdfd|dbfhhhhshsjd|letsgo)\s*$';
+
 -- B4. Test accounts, teams, feedback and comments: no automatic deletes. After checking A5–A7,
 --     delete accounts on /admin/users (it also removes their auth login), remove teams on
 --     /admin/teams, and delete feedback/comments on /admin/feedback and /admin/moderation.
@@ -105,6 +117,7 @@ delete from public.tournaments where id in (
 -- Check the result before deciding:
 select (select count(*) from public.tournaments) as tournaments_left,
        (select count(*) from public.events where is_published) as published_events,
-       (select count(*) from public.campaigns where is_published) as published_campaigns;
+       (select count(*) from public.campaigns where is_published) as published_campaigns,
+       (select count(*) from public.teams where description ~* '^\s*(fddfdfd|dbfhhhhshsjd|letsgo)\s*$') as test_team_descriptions_left;
 
 rollback;  -- change to: commit;

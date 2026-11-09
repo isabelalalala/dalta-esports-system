@@ -9,14 +9,17 @@
 interface GameLogoInfo {
   src: string;
   fit: string;
+  // Background behind a team's initials when it has no logo (components/TeamLogo.tsx). Palette
+  // classes that dark mode doesn't remap, with white text; not the meaning colors.
+  color: string;
 }
 
 const LOGOS: Record<'mlbb' | 'valorant' | 'tekken8' | 'codm' | 'lol', GameLogoInfo> = {
-  mlbb: { src: '/games/mlbb.webp', fit: 'w-[60%] aspect-[913/275]' },
-  valorant: { src: '/games/valorant.webp', fit: 'w-[42%] aspect-[805/532]' },
-  tekken8: { src: '/games/tekken8.webp', fit: 'w-[78%] aspect-[921/138]' },
-  codm: { src: '/games/codm.webp', fit: 'w-[57%] aspect-[956/318]' },
-  lol: { src: '/games/lol.webp', fit: 'w-[54%] aspect-[1400/531]' },
+  mlbb: { src: '/games/mlbb.webp', fit: 'w-[60%] aspect-[913/275]', color: 'bg-orange-700' },
+  valorant: { src: '/games/valorant.webp', fit: 'w-[42%] aspect-[805/532]', color: 'bg-rose-700' },
+  tekken8: { src: '/games/tekken8.webp', fit: 'w-[78%] aspect-[921/138]', color: 'bg-violet-700' },
+  codm: { src: '/games/codm.webp', fit: 'w-[57%] aspect-[956/318]', color: 'bg-lime-800' },
+  lol: { src: '/games/lol.webp', fit: 'w-[54%] aspect-[1400/531]', color: 'bg-cyan-800' },
 };
 
 // Which game it is, matched by game id (e.g. `mlbb`) and/or name (e.g. "Mobile Legends: Bang Bang")
@@ -49,4 +52,9 @@ export function gameInitials(name?: string | null): string {
   if (words.length === 0) return '?';
   if (words.length === 1) return words[0].slice(0, 4).toUpperCase();
   return words.slice(0, 3).map((w) => w[0]).join('').toUpperCase();
+}
+
+// The game's color for a team's initials badge (maroon for an unknown game)
+export function gameColorClass(name?: string | null, gameId?: string | null): string {
+  return findLogo(name, gameId)?.color ?? 'bg-maroon';
 }

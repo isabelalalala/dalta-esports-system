@@ -668,8 +668,8 @@ export default function TournamentDetailsPage() {
         )}
       </section>
 
-      {/* 9. Bracket Section */}
-      <section className="rounded-3xl border border-stone-200/90 bg-white p-6 sm:p-8 @5xl:p-10 shadow-xs space-y-5">
+      {/* 9. Bracket Section (id: "View bracket" links from My Registrations) */}
+      <section id="bracket" className="scroll-mt-24 rounded-3xl border border-stone-200/90 bg-white p-6 sm:p-8 @5xl:p-10 shadow-xs space-y-5">
         <div className="border-b border-stone-100 pb-3 flex flex-wrap items-center justify-between gap-3">
           <div>
             <span className="text-[11px] font-black tracking-widest text-maroon uppercase">Playoffs</span>

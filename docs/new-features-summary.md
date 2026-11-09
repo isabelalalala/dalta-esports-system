@@ -665,6 +665,35 @@ official players are flip cards, and page changes slide.
 - `202611091700_match_ticker`: `get_match_ticker()` (security definer, anon + authenticated), returns names and
   scores only. No new table; the Privacy Notice is unchanged (results and team names were already public).
 
+### Feature 26: Team cards, registration cards and full-width pages (Phase 10)
+**Module:** 2 Registration and Tournament Management (and the shared layout)
+
+**What it does:** Dashboard, Teams, My Profile and My Registrations use the full width like the other pages, with
+more cards per row on wide screens, a two-column dashboard (matches and announcements; next match countdown, my
+teams and live now) and a two-column profile. Team cards show the team logo (or initials), the game logo, member
+avatars with a slots bar ("Solo player" for Tekken), Recruiting / Full / Your team badges, the captain, what a
+recruiting team is looking for (roles, minimum rank) and a role-aware join button; All teams can be sorted and
+filtered by role and rank. Registration cards show the game, team and your role, a countdown, a status badge
+(with the rejection reason), progress steps (Registered → Approved → Check-in → Playing → Finished), the next match
+and the roster, with Upcoming / Ongoing / Completed / All tabs.
+
+**Actors / use cases**
+- Player (captain): *Upload team logo*, *Set what the team is looking for* (new).
+- Tournament Staff / Admin: *Remove a team logo* (with a reason), *Give a rejection reason* (new).
+- Player / Spectator: *Browse teams with sorting and role/rank filters* (extends *View teams*).
+
+**Data flows**
+- Captain → 2.0: team logo / looking for → D2 (`teams.logo_url`, `teams.looking_for`; file in the `team-logos` bucket).
+- Organizer → 2.0: remove logo + reason → D2, notification to the captain → D7, log entry → D8.
+- Organizer → 2.0: rejection reason → D2 (`tournament_registrations.rejection_reason`) → captain's notification (D7).
+
+**Database**
+- `202611091800_team_cards_registrations`: columns `teams.logo_url`, `teams.looking_for`,
+  `tournament_registrations.rejection_reason`; storage bucket `team-logos` with policies; functions
+  `remove_team_logo()`, `is_team_logo_folder_owner()`; triggers `protect_team_logo()`, `check_team_looking_for()`,
+  `clean_registration_reason()`; `list_teams()` and `notify_registration()` redefined; notification type
+  `team_logo_removed`. No new table. The Privacy Notice is unchanged (logos and reasons aren't personal data).
+
 ### Feature 13: Enhancements inside the original modules
 These additions stay inside existing modules but add flows you may want to draw.
 - **Module 4:** "Watching now" live viewer count (Supabase Realtime Presence, not stored). Staff see it on the

@@ -813,14 +813,14 @@ isOneToOne: false
                   ]
                 },"teams": {
                   Row: {
-                    "captain_id": string,"created_at": string,"description": string | null,"game_id": string,"id": string,"is_removed": boolean,"name": string,"recruiting": boolean,"removed_at": string | null,"removed_by": string | null
+                    "captain_id": string,"created_at": string,"description": string | null,"game_id": string,"id": string,"is_removed": boolean,"logo_url": string | null,"looking_for": Json,"name": string,"recruiting": boolean,"removed_at": string | null,"removed_by": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "captain_id": string,"created_at"?: string,"description"?: string | null,"game_id": string,"id"?: string,"is_removed"?: boolean,"name": string,"recruiting"?: boolean,"removed_at"?: string | null,"removed_by"?: string | null
+                    "captain_id": string,"created_at"?: string,"description"?: string | null,"game_id": string,"id"?: string,"is_removed"?: boolean,"logo_url"?: string | null,"looking_for"?: Json,"name": string,"recruiting"?: boolean,"removed_at"?: string | null,"removed_by"?: string | null
                   }
                   Update: {
-                    "captain_id"?: string,"created_at"?: string,"description"?: string | null,"game_id"?: string,"id"?: string,"is_removed"?: boolean,"name"?: string,"recruiting"?: boolean,"removed_at"?: string | null,"removed_by"?: string | null
+                    "captain_id"?: string,"created_at"?: string,"description"?: string | null,"game_id"?: string,"id"?: string,"is_removed"?: boolean,"logo_url"?: string | null,"looking_for"?: Json,"name"?: string,"recruiting"?: boolean,"removed_at"?: string | null,"removed_by"?: string | null
                   }
                   Relationships: [
                     {
@@ -845,14 +845,14 @@ isOneToOne: false
                   ]
                 },"tournament_registrations": {
                   Row: {
-                    "id": string,"registered_at": string,"status": string,"team_id": string | null,"team_name": string | null,"tournament_id": string,"user_id": string
+                    "id": string,"registered_at": string,"rejection_reason": string | null,"status": string,"team_id": string | null,"team_name": string | null,"tournament_id": string,"user_id": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "id"?: string,"registered_at"?: string,"status"?: string,"team_id"?: string | null,"team_name"?: string | null,"tournament_id": string,"user_id": string
+                    "id"?: string,"registered_at"?: string,"rejection_reason"?: string | null,"status"?: string,"team_id"?: string | null,"team_name"?: string | null,"tournament_id": string,"user_id": string
                   }
                   Update: {
-                    "id"?: string,"registered_at"?: string,"status"?: string,"team_id"?: string | null,"team_name"?: string | null,"tournament_id"?: string,"user_id"?: string
+                    "id"?: string,"registered_at"?: string,"rejection_reason"?: string | null,"status"?: string,"team_id"?: string | null,"team_name"?: string | null,"tournament_id"?: string,"user_id"?: string
                   }
                   Relationships: [
                     {
@@ -1114,9 +1114,12 @@ isOneToOne: false
 "is_match_captain":
 { Args: { "p_match_id": string }; Returns: boolean
                            },
+"is_team_logo_folder_owner":
+{ Args: { "p_folder": string }; Returns: boolean
+                           },
 "list_teams":
-{ Args: { "p_game_id"?: string,"p_limit"?: number,"p_offset"?: number,"p_recruiting_only"?: boolean,"p_search"?: string }; Returns: {
-              "captain_id": string,"captain_name": string,"created_at": string,"description": string,"game_id": string,"game_name": string,"id": string,"max_players": number,"member_count": number,"name": string,"recruiting": boolean
+{ Args: { "p_game_id"?: string,"p_limit"?: number,"p_mine"?: boolean,"p_offset"?: number,"p_rank"?: string,"p_recruiting_only"?: boolean,"p_role"?: string,"p_search"?: string,"p_sort"?: string }; Returns: {
+              "captain_avatar": string,"captain_id": string,"captain_name": string,"created_at": string,"description": string,"game_id": string,"game_name": string,"id": string,"is_member": boolean,"logo_url": string,"looking_for": Json,"max_players": number,"member_avatars": Json,"member_count": number,"my_request": string,"name": string,"recruiting": boolean,"total_count": number
             }[]
                            },
 "log_activity":
@@ -1160,6 +1163,9 @@ isOneToOne: false
                            },
 "remove_team":
 { Args: { "p_reason": string,"p_team_id": string }; Returns: Json
+                           },
+"remove_team_logo":
+{ Args: { "p_reason": string,"p_team_id": string }; Returns: undefined
                            },
 "remove_warning":
 { Args: { "p_reason": string,"p_warning_id": string }; Returns: undefined

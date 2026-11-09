@@ -32,6 +32,7 @@ import GameProfileForm from '@/components/GameProfileForm';
 import GameProfileSummary from '@/components/GameProfileSummary';
 import Avatar from '@/components/Avatar';
 import AvatarUploader from '@/components/AvatarUploader';
+import MyTeamsSummary from '@/app/dashboard/MyTeamsSummary';
 import MyWarnings from '@/components/MyWarnings';
 import { refreshViewer } from '@/utils/use-viewer';
 import { can } from '@/utils/permissions';
@@ -199,7 +200,8 @@ export default function ProfilePage() {
     {confirmDialog}
     {/* The layout (SiteNavLayout) renders the main element and the page padding */}
     <div className="w-full text-stone-950">
-      <div className="w-full max-w-6xl mx-auto space-y-8">
+      {/* Full width like the other sections (the layout's padding is the only side space) */}
+      <div className="w-full space-y-8">
         {/* 1. Main Hero Container (Matching Dashboard & Tournaments Layout) */}
         <section className="animate-hero-entrance relative w-full rounded-3xl border border-stone-800/80 bg-stone-950 overflow-hidden shadow-md p-8 sm:p-12 @5xl:p-14 text-center text-white flex flex-col items-center justify-center space-y-5">
           <PageHeroBackground specificKey="dashboard_hero_bg_path" alt="DALTA Esports Profile Banner" />
@@ -257,237 +259,248 @@ export default function ProfilePage() {
           </div>
         )}
 
-        {/* Profile picture (all roles) */}
-        <section className="animate-stagger-1 bg-white border border-stone-200/90 rounded-3xl p-6 sm:p-8 shadow-xs space-y-4" aria-labelledby="picture-title">
-          <h2 id="picture-title" className="text-lg sm:text-xl font-black text-stone-950 tracking-wider">Profile picture</h2>
-          <AvatarUploader
-            userId={profile.id}
-            name={profile.full_name || profile.email}
-            url={profile.avatar_url ?? null}
-            onChange={(url) => setProfile((p) => (p ? { ...p, avatar_url: url } : p))}
-          />
-        </section>
+        {/* Two columns on wide screens: picture and account settings on the left; warnings,
+            game profiles and teams on the right. One column on smaller screens. */}
+        <div className="grid grid-cols-1 @5xl:grid-cols-[minmax(0,1fr)_minmax(0,1.25fr)] gap-6 sm:gap-8 items-start">
+          <div className="min-w-0 space-y-6 sm:space-y-8">
+            {/* Profile picture (all roles) */}
+            <section className="animate-stagger-1 bg-white border border-stone-200/90 rounded-3xl p-6 sm:p-8 shadow-xs space-y-4" aria-labelledby="picture-title">
+              <h2 id="picture-title" className="text-lg sm:text-xl font-black text-stone-950 tracking-wider">Profile picture</h2>
+              <AvatarUploader
+                userId={profile.id}
+                name={profile.full_name || profile.email}
+                url={profile.avatar_url ?? null}
+                onChange={(url) => setProfile((p) => (p ? { ...p, avatar_url: url } : p))}
+              />
+            </section>
 
-        {/* Moderation warnings (own count and history) */}
-        <MyWarnings userId={profile.id} />
-
-        {/* 2. Account Information Card */}
-        <form
-          onSubmit={handleSaveName}
-          className="animate-stagger-1 bg-white border border-stone-200/90 rounded-3xl p-6 sm:p-8 shadow-xs space-y-6"
-        >
-          <div className="flex items-center gap-3 pb-4 border-b border-stone-100">
-            <div className="w-10 h-10 rounded-xl bg-maroon/10 border border-maroon/20 text-maroon grid place-items-center shadow-2xs">
-              <User className="w-5 h-5" />
-            </div>
-            <div>
-              <h2 className="text-lg sm:text-xl font-black text-stone-950 tracking-wider">
-                Account Information
-              </h2>
-              <p className="text-xs text-stone-500 font-medium tracking-wide mt-0.5">
-                Manage your personal credentials and official student profile records.
-              </p>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 @3xl:grid-cols-2 gap-4 sm:gap-6 text-xs sm:text-sm">
-            <div className="p-4 sm:p-5 rounded-2xl bg-stone-50/70 border border-stone-200/80 space-y-1">
-              <span className="uppercase block text-stone-500 font-black tracking-wider text-xs flex items-center gap-1.5">
-                <Mail className="w-3.5 h-3.5 text-maroon" />
-                Email Address
-              </span>
-              <span className="font-extrabold text-stone-900 break-all normal-case tracking-wide">
-                {profile.email}
-              </span>
-            </div>
-
-            <div className="p-4 sm:p-5 rounded-2xl bg-stone-50/70 border border-stone-200/80 space-y-1">
-              <span className="uppercase block text-stone-500 font-black tracking-wider text-xs flex items-center gap-1.5">
-                <Shield className="w-3.5 h-3.5 text-maroon" />
-                System Role
-              </span>
-              <span className="font-extrabold text-stone-900 tracking-wider capitalize">
-                {profile.role}
-              </span>
-            </div>
-
-            <div className="@3xl:col-span-2 p-4 sm:p-5 rounded-2xl bg-stone-50/70 border border-stone-200/80 space-y-1.5">
-              <span className="uppercase block text-stone-500 font-black tracking-wider text-xs flex items-center gap-1.5">
-                <Calendar className="w-3.5 h-3.5 text-maroon" />
-                Privacy & RA 10173 Compliance
-              </span>
-              <span className="text-stone-700 font-medium tracking-wide normal-case block">
-                {profile.privacy_consent_at ? (
-                  <>
-                    You agreed to the Perpetualite Privacy Notice on{' '}
-                    <strong className="text-stone-900">
-                      {formatMomentDate(profile.privacy_consent_at)}
-                    </strong>
-                    .{' '}
-                  </>
-                ) : (
-                  "You haven't agreed to the Privacy Notice yet. "
-                )}
-                <Link
-                  href="/privacy"
-                  className="text-maroon font-bold uppercase underline hover:text-gold ml-1 transition-colors"
-                >
-                  Read Privacy Notice →
-                </Link>
-              </span>
-            </div>
-          </div>
-
-          <div className="space-y-1.5 pt-2">
-            <label htmlFor="full-name" className="block text-xs font-black text-stone-700 tracking-wider">
-              Full Name
-            </label>
-            <input
-              id="full-name"
-              type="text"
-              value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
-              placeholder="Your full name"
-              className={inputClass}
-            />
-          </div>
-
-          <div className="pt-2">
-            <button
-              type="submit"
-              disabled={saving}
-              className="rounded-xl bg-gold hover:bg-golddark text-stone-950 font-black px-6 py-3 text-xs tracking-widest shadow-xs hover:-translate-y-0.5 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+            {/* 2. Account Information Card */}
+            <form
+              onSubmit={handleSaveName}
+              className="animate-stagger-1 bg-white border border-stone-200/90 rounded-3xl p-6 sm:p-8 shadow-xs space-y-6"
             >
-              {saving ? 'Saving...' : 'Save Name'}
-            </button>
-          </div>
-        </form>
-
-        {/* 3. Student Verification (Players only) */}
-        {can(profile.role, 'verification.submit') && (
-          <div className="animate-stagger-1">
-            <StudentDetails profile={profile} onSaved={() => setReloadCount((n) => n + 1)} />
-          </div>
-        )}
-
-        {/* 4. Game Profiles (Players only) */}
-        {can(profile.role, 'team.join') && (
-          <div className="animate-stagger-2 bg-white border border-stone-200/90 rounded-3xl p-6 sm:p-8 shadow-xs space-y-6">
-            <div className="flex items-center gap-3 pb-4 border-b border-stone-100">
-              <div className="w-10 h-10 rounded-xl bg-maroon/10 border border-maroon/20 text-maroon grid place-items-center shadow-2xs">
-                <Gamepad2 className="w-5 h-5" />
+              <div className="flex items-center gap-3 pb-4 border-b border-stone-100">
+                <div className="w-10 h-10 rounded-xl bg-maroon/10 border border-maroon/20 text-maroon grid place-items-center shadow-2xs">
+                  <User className="w-5 h-5" />
+                </div>
+                <div>
+                  <h2 className="text-lg sm:text-xl font-black text-stone-950 tracking-wider">
+                    Account Information
+                  </h2>
+                  <p className="text-xs text-stone-500 font-medium tracking-wide mt-0.5">
+                    Manage your personal credentials and official student profile records.
+                  </p>
+                </div>
               </div>
+
+              <div className="grid grid-cols-1 @3xl:grid-cols-2 gap-4 sm:gap-6 text-xs sm:text-sm">
+                <div className="p-4 sm:p-5 rounded-2xl bg-stone-50/70 border border-stone-200/80 space-y-1">
+                  <span className="uppercase block text-stone-500 font-black tracking-wider text-xs flex items-center gap-1.5">
+                    <Mail className="w-3.5 h-3.5 text-maroon" />
+                    Email Address
+                  </span>
+                  <span className="font-extrabold text-stone-900 break-all normal-case tracking-wide">
+                    {profile.email}
+                  </span>
+                </div>
+
+                <div className="p-4 sm:p-5 rounded-2xl bg-stone-50/70 border border-stone-200/80 space-y-1">
+                  <span className="uppercase block text-stone-500 font-black tracking-wider text-xs flex items-center gap-1.5">
+                    <Shield className="w-3.5 h-3.5 text-maroon" />
+                    System Role
+                  </span>
+                  <span className="font-extrabold text-stone-900 tracking-wider capitalize">
+                    {profile.role}
+                  </span>
+                </div>
+
+                <div className="@3xl:col-span-2 p-4 sm:p-5 rounded-2xl bg-stone-50/70 border border-stone-200/80 space-y-1.5">
+                  <span className="uppercase block text-stone-500 font-black tracking-wider text-xs flex items-center gap-1.5">
+                    <Calendar className="w-3.5 h-3.5 text-maroon" />
+                    Privacy & RA 10173 Compliance
+                  </span>
+                  <span className="text-stone-700 font-medium tracking-wide normal-case block">
+                    {profile.privacy_consent_at ? (
+                      <>
+                        You agreed to the Perpetualite Privacy Notice on{' '}
+                        <strong className="text-stone-900">
+                          {formatMomentDate(profile.privacy_consent_at)}
+                        </strong>
+                        .{' '}
+                      </>
+                    ) : (
+                      "You haven't agreed to the Privacy Notice yet. "
+                    )}
+                    <Link
+                      href="/privacy"
+                      className="text-maroon font-bold uppercase underline hover:text-gold ml-1 transition-colors"
+                    >
+                      Read Privacy Notice →
+                    </Link>
+                  </span>
+                </div>
+              </div>
+
+              <div className="space-y-1.5 pt-2">
+                <label htmlFor="full-name" className="block text-xs font-black text-stone-700 tracking-wider">
+                  Full Name
+                </label>
+                <input
+                  id="full-name"
+                  type="text"
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  placeholder="Your full name"
+                  className={inputClass}
+                />
+              </div>
+
+              <div className="pt-2">
+                <button
+                  type="submit"
+                  disabled={saving}
+                  className="rounded-xl bg-gold hover:bg-golddark text-stone-950 font-black px-6 py-3 text-xs tracking-widest shadow-xs hover:-translate-y-0.5 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                >
+                  {saving ? 'Saving...' : 'Save Name'}
+                </button>
+              </div>
+            </form>
+
+            {/* 3. Student Verification (Players only) */}
+            {can(profile.role, 'verification.submit') && (
+              <div className="animate-stagger-1">
+                <StudentDetails profile={profile} onSaved={() => setReloadCount((n) => n + 1)} />
+              </div>
+            )}
+
+            {/* 5. Change Password Container */}
+            <div className="animate-stagger-3">
+              <Suspense
+                fallback={<div className="bg-white border border-stone-200/90 rounded-3xl p-6 sm:p-8 shadow-xs" />}
+              >
+                {/* Both names: a new password must also pass the check login does (sign-up name),
+                    or the next login would flag it as weak again */}
+                <ChangePassword email={profile.email} fullName={`${profile.full_name ?? ''} ${signupName}`.trim()} />
+              </Suspense>
+            </div>
+
+            {/* Help: replay the first-login tour (it shows on the dashboard until dismissed again) */}
+            <div className="animate-stagger-3 bg-white border border-stone-200/90 rounded-3xl p-6 sm:p-8 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
-                <h2 className="text-lg sm:text-xl font-black text-stone-950 tracking-wider">
-                  Game Profiles
-                </h2>
-                <p className="text-xs text-stone-500 font-medium tracking-wide mt-0.5">
-                  Your in-game name, competitive role, and rank for organization tournaments.
+                <h2 className="text-lg sm:text-xl font-black text-stone-950 tracking-wider uppercase">Help</h2>
+                <p className="text-sm text-stone-600 font-medium normal-case mt-1">
+                  See the quick tour again, or read the <Link href="/help" className="font-bold text-maroon underline">Help &amp; FAQ</Link>.
                 </p>
               </div>
+              <button
+                type="button"
+                onClick={async () => {
+                  const { error: tourError } = await supabase.from('profiles').update({ tour_dismissed_at: null }).eq('id', profile.id);
+                  if (tourError) {
+                    setError(getErrorMessage(tourError, 'The tour could not be restarted.'));
+                    return;
+                  }
+                  await refreshViewer().catch(() => undefined);
+                  router.push('/dashboard');
+                }}
+                className="btn btn-secondary shrink-0"
+              >
+                Restart quick tour
+              </button>
             </div>
 
-            <div className="space-y-4">
-              {editingGameId && (
-                <GameProfileForm
-                  key={editingGameId}
-                  games={games}
-                  profiles={gameProfiles}
-                  userId={profile.id}
-                  initialGameId={editingGameId}
-                  onCancel={() => setEditingGameId(null)}
-                  onSaved={(gameName) => {
-                    setEditingGameId(null);
-                    setReloadCount((n) => n + 1);
-                    toast.success(`${gameName} profile saved.`);
-                  }}
-                />
-              )}
-              {games.map((game) => {
-                const gp = gameProfiles.find((p) => p.game_id === game.id);
+          </div>
+          <div className="min-w-0 space-y-6 sm:space-y-8">
+            {/* Moderation warnings (own count and history) */}
+            <MyWarnings userId={profile.id} />
 
-                return (
-                  <div
-                    key={game.id}
-                    className="bg-stone-50/70 border border-stone-200/90 rounded-2xl p-5 flex flex-wrap justify-between items-center gap-4 hover:border-stone-300 hover:bg-stone-50 transition-all shadow-2xs"
-                  >
-                    <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 rounded-2xl bg-ink border border-stone-800 flex items-center justify-center p-2 shadow-xs shrink-0">
-                        <GameLogo name={game.name} gameId={game.id} className="w-9 h-9" fallbackClassName="text-xs" sizes="38px" />
-                      </div>
-                      <div>
-                        <h3 className="font-black text-stone-950 text-sm tracking-wider uppercase">
-                          {game.name}
-                        </h3>
-                        {gp ? (
-                          <GameProfileSummary game={game} profile={gp} />
-                        ) : (
-                          <p className="text-xs text-stone-500 font-medium tracking-wide mt-0.5">
-                            Not set up yet
-                          </p>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-3 text-xs font-black tracking-wider">
-                      <button
-                        onClick={() => startEditing(game.id)}
-                        disabled={saving}
-                        className="rounded-xl border border-stone-300 hover:border-gold bg-white text-maroon hover:text-gold px-4 py-2 transition-all cursor-pointer disabled:opacity-50 shadow-2xs"
-                      >
-                        {gp ? 'Edit Profile' : '+ Add Profile'}
-                      </button>
-                      {gp && (
-                        <button
-                          onClick={() => handleRemoveGameProfile(gp, game.name)}
-                          disabled={saving}
-                          className="rounded-xl border border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700 px-3.5 py-2 transition-all cursor-pointer disabled:opacity-50"
-                        >
-                          Remove
-                        </button>
-                      )}
-                    </div>
+            {/* 4. Game Profiles (Players only) */}
+            {can(profile.role, 'team.join') && (
+              <div className="animate-stagger-2 bg-white border border-stone-200/90 rounded-3xl p-6 sm:p-8 shadow-xs space-y-6">
+                <div className="flex items-center gap-3 pb-4 border-b border-stone-100">
+                  <div className="w-10 h-10 rounded-xl bg-maroon/10 border border-maroon/20 text-maroon grid place-items-center shadow-2xs">
+                    <Gamepad2 className="w-5 h-5" />
                   </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
+                  <div>
+                    <h2 className="text-lg sm:text-xl font-black text-stone-950 tracking-wider">
+                      Game Profiles
+                    </h2>
+                    <p className="text-xs text-stone-500 font-medium tracking-wide mt-0.5">
+                      Your in-game name, competitive role, and rank for organization tournaments.
+                    </p>
+                  </div>
+                </div>
 
-        {/* 5. Change Password Container */}
-        <div className="animate-stagger-3">
-          <Suspense
-            fallback={<div className="bg-white border border-stone-200/90 rounded-3xl p-6 sm:p-8 shadow-xs" />}
-          >
-            {/* Both names: a new password must also pass the check login does (sign-up name),
-                or the next login would flag it as weak again */}
-            <ChangePassword email={profile.email} fullName={`${profile.full_name ?? ''} ${signupName}`.trim()} />
-          </Suspense>
-        </div>
+                <div className="space-y-4">
+                  {editingGameId && (
+                    <GameProfileForm
+                      key={editingGameId}
+                      games={games}
+                      profiles={gameProfiles}
+                      userId={profile.id}
+                      initialGameId={editingGameId}
+                      onCancel={() => setEditingGameId(null)}
+                      onSaved={(gameName) => {
+                        setEditingGameId(null);
+                        setReloadCount((n) => n + 1);
+                        toast.success(`${gameName} profile saved.`);
+                      }}
+                    />
+                  )}
+                  {games.map((game) => {
+                    const gp = gameProfiles.find((p) => p.game_id === game.id);
 
-        {/* Help: replay the first-login tour (it shows on the dashboard until dismissed again) */}
-        <div className="animate-stagger-3 bg-white border border-stone-200/90 rounded-3xl p-6 sm:p-8 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <h2 className="text-lg sm:text-xl font-black text-stone-950 tracking-wider uppercase">Help</h2>
-            <p className="text-sm text-stone-600 font-medium normal-case mt-1">
-              See the quick tour again, or read the <Link href="/help" className="font-bold text-maroon underline">Help &amp; FAQ</Link>.
-            </p>
+                    return (
+                      <div
+                        key={game.id}
+                        className="bg-stone-50/70 border border-stone-200/90 rounded-2xl p-5 flex flex-wrap justify-between items-center gap-4 hover:border-stone-300 hover:bg-stone-50 transition-all shadow-2xs"
+                      >
+                        <div className="flex items-center gap-4">
+                          <div className="w-12 h-12 rounded-2xl bg-ink border border-stone-800 flex items-center justify-center p-2 shadow-xs shrink-0">
+                            <GameLogo name={game.name} gameId={game.id} className="w-9 h-9" fallbackClassName="text-xs" sizes="38px" />
+                          </div>
+                          <div>
+                            <h3 className="font-black text-stone-950 text-sm tracking-wider uppercase">
+                              {game.name}
+                            </h3>
+                            {gp ? (
+                              <GameProfileSummary game={game} profile={gp} />
+                            ) : (
+                              <p className="text-xs text-stone-500 font-medium tracking-wide mt-0.5">
+                                Not set up yet
+                              </p>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-3 text-xs font-black tracking-wider">
+                          <button
+                            onClick={() => startEditing(game.id)}
+                            disabled={saving}
+                            className="rounded-xl border border-stone-300 hover:border-gold bg-white text-maroon hover:text-gold px-4 py-2 transition-all cursor-pointer disabled:opacity-50 shadow-2xs"
+                          >
+                            {gp ? 'Edit Profile' : '+ Add Profile'}
+                          </button>
+                          {gp && (
+                            <button
+                              onClick={() => handleRemoveGameProfile(gp, game.name)}
+                              disabled={saving}
+                              className="rounded-xl border border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700 px-3.5 py-2 transition-all cursor-pointer disabled:opacity-50"
+                            >
+                              Remove
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Teams the player is on (same summary as the dashboard) */}
+            {can(profile.role, 'team.join') && <MyTeamsSummary />}
           </div>
-          <button
-            type="button"
-            onClick={async () => {
-              const { error: tourError } = await supabase.from('profiles').update({ tour_dismissed_at: null }).eq('id', profile.id);
-              if (tourError) {
-                setError(getErrorMessage(tourError, 'The tour could not be restarted.'));
-                return;
-              }
-              await refreshViewer().catch(() => undefined);
-              router.push('/dashboard');
-            }}
-            className="btn btn-secondary shrink-0"
-          >
-            Restart quick tour
-          </button>
         </div>
 
         {/* 6. Danger Zone: Delete Account */}

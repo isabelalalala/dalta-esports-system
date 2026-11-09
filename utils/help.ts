@@ -106,10 +106,18 @@ export const HELP_SECTIONS: HelpSection[] = [
         link: { href: '/teams?tab=mine', label: 'My Team' },
       },
       {
+        q: 'How do I add a team logo or say what my team is looking for?',
+        a: [
+          'On your team page, the captain can add a square logo (JPG, PNG or WebP). Without one, the team’s initials are shown.',
+          'Under "Looking for", tick up to 3 roles and a minimum rank. While your team is recruiting this shows on its card, and players can find it with the role and rank filters in All teams.',
+        ],
+        link: { href: '/teams?tab=mine', label: 'My Team' },
+      },
+      {
         q: 'How do I register my team for a tournament?',
         a: [
           'The captain opens the tournament and presses Register Team before the registration deadline. The team needs enough players for the game and, if the tournament requires it, every member verified.',
-          'The registration is Pending until an organizer approves it; you get a notification either way.',
+          'The registration is Pending until an organizer approves it; you get a notification either way. If it is rejected, the reason (when given) is shown on My Registrations.',
           'While registered, the roster is locked. You can withdraw from My Registrations while it is still pending.',
         ],
         link: { href: '/registrations', label: 'My Registrations' },

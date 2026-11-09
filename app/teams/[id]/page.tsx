@@ -1,6 +1,8 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import TeamLogoSection from '@/components/TeamLogoSection';
+import LookingForEditor from '@/components/LookingForEditor';
 import { useRouter, useParams } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
 import { useBreadcrumbName } from '@/utils/breadcrumb-names';
@@ -536,12 +538,32 @@ export default function ManageTeamPage() {
               </div>
             </form>
           ) : (
-            <div className="space-y-3">
-              <p className="text-stone-700 text-xs sm:text-sm font-medium leading-relaxed normal-case">
+            <div className="space-y-5">
+              {/* Logo: the captain uploads it; organizers can only remove one (with a reason) */}
+              <TeamLogoSection
+                key={team.logo_url ?? 'none'}
+                team={{ id: team.id, name: team.name, game_id: team.game_id, logo_url: team.logo_url, gameName: team.games?.name }}
+                isCaptain={isCaptain}
+                canRemove={can(role, 'team.removeLogo')}
+                onChanged={() => setReloadCount((n) => n + 1)}
+              />
+              <p className="max-w-prose text-stone-700 text-xs sm:text-sm font-medium leading-relaxed normal-case">
                 {team.description || (
                   <span className="text-stone-500 italic">No description provided for this team.</span>
                 )}
               </p>
+              {/* What the team needs (captain edits; shown to others while recruiting) */}
+              {!isSolo && (
+                <LookingForEditor
+                  key={JSON.stringify(team.looking_for ?? {})}
+                  teamId={team.id}
+                  profileSchema={team.games?.profile_schema}
+                  value={team.looking_for}
+                  recruiting={team.recruiting}
+                  canEdit={isCaptain}
+                  onSaved={() => setReloadCount((n) => n + 1)}
+                />
+              )}
             </div>
           )}
         </div>

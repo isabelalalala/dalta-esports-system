@@ -104,7 +104,7 @@ Enforced by a CHECK constraint on `profiles.role` (migration `202610161200_role_
 - RLS policies check roles with `public.get_my_role()`.
 
 ## Current schema (public)
-All migrations are in `supabase/migrations/`, run in filename order (202610151100 … 202611091700). `202610151100_base_schema` creates the three pre-migration base tables (`profiles`, `tournaments`, `tournament_registrations`). It is `if not exists`, so it is a no-op on databases that already have them.
+All migrations are in `supabase/migrations/`, run in filename order (202610151100 … 202611091800). `202610151100_base_schema` creates the three pre-migration base tables (`profiles`, `tournaments`, `tournament_registrations`). It is `if not exists`, so it is a no-op on databases that already have them.
 `202610181000_feedback_protection` also needs its one-time Vault key setup (the `feedback_server_key` secret +
 `FEEDBACK_SERVER_KEY`); the steps are at the top of that file.
 Readers: "anyone" = also logged out; "logged-in" = any role; "admin/staff" = organizers only.
@@ -157,6 +157,12 @@ Readers: "anyone" = also logged out; "logged-in" = any role; "admin/staff" = org
 - `teams`: id, name, description, game_id (→ games), captain_id (→ profiles), recruiting (open to join requests,
   202611011300; changed by the captain or through `set_team_recruiting()`, which admin/staff may also call),
   created_at, is_removed / removed_by / removed_at (soft delete, 202611081000). UNIQUE (name, game_id).
+  logo_url (202611091800: public address in the `team-logos` bucket; CHECK = that team's folder; only the captain
+  changes it, admin/staff only remove it via `remove_team_logo(team, reason)` (logged `team.logo_removed`, notifies
+  `team_logo_removed`); trigger `protect_team_logo()`, flag `removing_team_logo`). looking_for (jsonb
+  `{roles: [≤3 role option ids], rank_min: rank option id}` from the game's profile form, checked by
+  `check_team_looking_for()`; captain edits it on `/teams/[id]` (`components/LookingForEditor.tsx`); shown on cards
+  only while recruiting).
   Removal: `remove_team(team, reason)` (admin/staff) withdraws pending/approved registrations for tournaments that
   haven't ended, cancels open invites/join requests, gives every unfinished match to the opponent as a walkover
   (`apply_removed_team_walkover()`; an unknown opponent gets it as soon as they arrive, trigger
@@ -194,7 +200,9 @@ Readers: "anyone" = also logged out; "logged-in" = any role; "admin/staff" = org
   `get_team_join_requests(team)`. The "All teams" directory reads `list_teams(search, game, recruiting_only,
   limit, offset)` (captain name + roster count, logged-in only).
 - `tournament_registrations`: id, tournament_id, user_id (who registered), team_id (→ teams),
-  team_name (only on old rows), status (`pending`/`approved`/`rejected`/`cancelled`, default pending), registered_at.
+  team_name (only on old rows), status (`pending`/`approved`/`rejected`/`cancelled`, default pending), registered_at,
+  rejection_reason (202611091800, ≤ 300; only admin/staff set it, cleared when the status changes by trigger
+  `clean_registration_reason()`; added to the captain's "rejected" notification).
   UNIQUE (tournament_id, team_id). Only pending + approved count towards max_participants.
   Logged-in read. Admin/staff approve or reject; the captain can cancel or delete only while pending;
   only admin deletes others.
@@ -459,6 +467,9 @@ Readers: "anyone" = also logged out; "logged-in" = any role; "admin/staff" = org
   match upload; the two teams and staff read through signed URLs. No update/delete from the app.
 - `site-images` (public): website images (logo, carousel, campaigns, events, divisions, officers, teams,
   players), `<folder>/<random>.<ext>`, PNG/JPEG/WebP/GIF, 5 MB. Anyone views; only admins write.
+- `team-logos` (public, 202611091800): team logos, `<team id>/<random>.webp`, JPG/PNG/WebP, 2 MB. The captain writes
+  in their team's folder (`is_team_logo_folder_owner()`); admin/staff may delete any file (after `remove_team_logo()`).
+  Uploaded with `components/AvatarUploader.tsx` (`kind="team-logo"`), shown by `components/TeamLogo.tsx`.
 - `avatars` (public, 202611081400): profile pictures, `<user id>/<random>.webp`, JPG/PNG/WebP, 2 MB. Users write
   only in their own folder; admins may delete any file (after `admin_remove_avatar()`).
 - Bucket settings and policies are created in the migrations (storage.buckets / storage.objects).
@@ -590,6 +601,16 @@ triggers with readable error messages.
   player questions in `utils/help.ts`; staff/admin questions in `utils/help-organizer.ts` (`server-only`), rendered
   by `OrganizerHelp.tsx` only after a server-side `get_my_role()` check (staff: staff section, admin: both). Never
   put organizer-only questions in the public file. Update them when a feature changes how something works.
+- **Full-width pages** (Phase 10): pages inside `SiteNavLayout` start with `<div className="w-full space-y-8">` and no
+  `max-w-*` box (the layout's padding is the only side space; Dashboard, Teams, Profile, Registrations follow this).
+  Long text gets `max-w-prose`; card grids use `grid-cols-[repeat(auto-fill,minmax(min(100%,20rem),1fr))]`.
+- **Cards** (Phase 10): team cards `components/TeamCard.tsx` (rows from `list_teams()`; logic in `utils/team-cards.ts`:
+  `teamSlots()`, `teamBadges()`, `joinAction()`, `lookingForText()`), registration cards
+  `app/registrations/RegistrationCard.tsx` (logic in `utils/registrations.ts`: tabs, "Starts in", progress steps).
+  Shared: `StatusBadge.tsx` (one badge style for team and registration statuses), `AvatarStack.tsx`, `TeamLogo.tsx`
+  (initials on the game color from `gameColorClass()`). Whole-card links: the title link has `card-link` and an
+  `after:absolute after:inset-0` overlay, buttons sit in a `relative z-10` row, the card shows a ring with
+  `has-[.card-link:focus-visible]`. Dashboard side column: `NextMatchCard`, `MyTeamsSummary`, `LiveNowCard`.
 - **Breakpoints inside pages are container breakpoints** (Phase 6): `<main>` in `SiteNavLayout` is an `@container`,
   so page content uses `@3xl:` / `@5xl:` / `@7xl:` (48/64/80rem of CONTENT width) instead of `md:` / `lg:` / `xl:`.
   `sm:` stays a screen breakpoint (phone padding/text). Only the header, footer, sidebar/bottom bar, the standalone
@@ -682,7 +703,8 @@ The final feature list for the documents is docs/new-features-summary.md.
   function sets a transaction flag with `set_config('app.<flag>', 'on', true)` and a BEFORE trigger refuses the
   change without it (`auth.uid() is null` = SQL Editor is always allowed). Flags in use: `giving_privacy_consent`,
   `reviewing_student`, `answering_invite`, `transferring_captain`, `declaring_forfeit`,
-  `marking_predictions`, `removing_team`, `removing_avatar`, `moderating` (comments), `moderating_user` (bans).
+  `marking_predictions`, `removing_team`, `removing_avatar`, `removing_team_logo`, `moderating` (comments),
+  `moderating_user` (bans).
 - **Live updates** use `useRealtimeRefresh(key, sources, onChange)` (`utils/use-realtime-refresh.ts`): it
   subscribes to the listed tables, coalesces bursts into one reload and unsubscribes on unmount. A new table must
   be added to the `supabase_realtime` publication in a migration (current list: matches, match_checkins,
@@ -690,10 +712,12 @@ The final feature list for the documents is docs/new-features-summary.md.
   Supabase can't filter DELETE events, so filtered sources also get that table's deletes unfiltered.
 - **Redefining an existing function or trigger function**: always start from its LATEST version (create or
   replace keeps only what you write). Latest versions: `check_tournament_registration`, `check_registration_update`
-  → `202610171000_student_verification`; `check_team_member` → `202610171000`; `check_team_member_leave`, `notify_team_member_left`, `list_teams` → `202611081000_team_removal`; `get_team_roster`,
+  → `202610171000_student_verification`; `check_team_member` → `202610171000`; `check_team_member_leave`, `notify_team_member_left` → `202611081000_team_removal`; `list_teams` (+ sort, role/rank
+  filters, p_mine, logo, avatars, is_member, my_request, total_count), `notify_registration` →
+  `202611091800_team_cards_registrations`; `get_team_roster`,
   `search_players`, `get_team_join_requests` → `202611091400_game_profile_schemas` (avatar_url, rank, rank_position); `protect_team_fields` → `202610171300`; `protect_profile_role`,
   `handle_new_user` → `202610170900_privacy_consent`; `log_match` → `202610171400_match_checkin`;
-  `get_needs_attention` → `202610171500_match_results`; `notifications_type_check` → `202611081500_comments_moderation`;
+  `get_needs_attention` → `202610171500_match_results`; `notifications_type_check` → `202611091800_team_cards_registrations`;
   `report_engagement` → `202610181100_predictions` (adds predictions, predictors, prediction_accuracy,
   audience_accounts, prediction_participation and predictions_by_tournament; older saved reports lack them);
   `refuse_removed_team` → `202611081600_fix_refuse_removed_team`; `report_activity` → `202611081700_report_insights`; `protect_feedback` → `202610181000_feedback_protection`; feedback insert policy → `202611081500_comments_moderation`; `generate_bracket` → `202610181800_bracket_seed_pairing`.

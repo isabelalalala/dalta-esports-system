@@ -14,9 +14,7 @@ import { usePageTitle } from '@/utils/page-title';
 import { can } from '@/utils/permissions';
 import { useRealtimeRefresh } from '@/utils/use-realtime-refresh';
 import PageHeroBackground from '@/components/site/PageHeroBackground';
-import { Users, Plus, Shield, AlertCircle } from 'lucide-react';
-
-import GameLogo from '@/components/GameLogo';
+import { Plus, Shield, AlertCircle } from 'lucide-react';
 
 const inputClass =
   'w-full p-3.5 rounded-xl bg-white text-stone-950 border border-stone-300 placeholder:text-stone-400 focus:border-gold focus:ring-2 focus:ring-gold/25 shadow-xs outline-none transition-all font-medium text-xs sm:text-sm';
@@ -154,6 +152,17 @@ export default function TeamsPage() {
   // Only players have teams of their own; everyone else just browses the directory
   const isPlayer = can(role, 'team.create');
   const activeTab = isPlayer ? (tab ?? 'mine') : 'all';
+  // Who is looking at the cards (decides the join button)
+  const viewer = {
+    isPlayer,
+    profileGameIds,
+    myGameIds: teams.map((t) => t.game_id),
+    myRequests: Object.fromEntries(myRequests.map((r) => [r.team_id, r.id])),
+  };
+  const openCreate = () => {
+    setTab('mine');
+    setShowCreate(true);
+  };
   const tabClass = (t: 'mine' | 'all') =>
     `px-4 sm:px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all cursor-pointer ${
       activeTab === t ? 'bg-gold text-stone-950 shadow-xs' : 'text-stone-700 hover:bg-stone-100'
@@ -162,7 +171,8 @@ export default function TeamsPage() {
   return (
     // The layout (SiteNavLayout) renders the main element and the page padding
     <div className="w-full text-stone-950">
-      <div className="w-full max-w-6xl mx-auto space-y-8">
+      {/* Full width like the other sections: the layout's padding is the only side space */}
+      <div className="w-full space-y-8">
         {/* 1. Main Hero Container */}
         <section className="animate-hero-entrance relative w-full rounded-3xl border border-stone-800/80 bg-stone-950 overflow-hidden shadow-md p-8 sm:p-12 @5xl:p-14 text-center text-white flex flex-col items-center justify-center space-y-4">
           <PageHeroBackground specificKey="divisions_hero_bg_path" alt="DALTA Esports Teams Banner" />
@@ -191,7 +201,7 @@ export default function TeamsPage() {
             )}
           </div>
 
-          <div className="relative z-10 max-w-4xl mx-auto space-y-3 pt-2">
+          <div className="relative z-10 max-w-prose mx-auto space-y-3 pt-2">
             <h1
               className="animate-hero-title text-display font-black tracking-wider uppercase leading-tight text-white"
             >
@@ -244,11 +254,9 @@ export default function TeamsPage() {
             initialRecruitingOnly={recruitingParam}
             initialSearch={searchParam}
             games={games}
-            isPlayer={isPlayer}
-            myTeamIds={teams.map((t) => t.id)}
-            myGameIds={teams.map((t) => t.game_id)}
-            profileGameIds={profileGameIds}
-            myRequests={Object.fromEntries(myRequests.map((r) => [r.team_id, r.id]))}
+            viewer={viewer}
+            reloadKey={reloadCount}
+            onCreateTeam={isPlayer ? openCreate : undefined}
             onChanged={() => setReloadCount((n) => n + 1)}
           />
         ) : (
@@ -405,94 +413,16 @@ export default function TeamsPage() {
           </form>
         )}
 
-        {/* Empty State */}
-        {!error && teams.length === 0 && (
-          <div className="animate-stagger-1 w-full rounded-3xl border border-stone-200/80 bg-stone-50/70 p-8 sm:p-14 text-center flex flex-col items-center justify-center gap-3 shadow-xs">
-            <div className="w-12 h-12 rounded-2xl bg-stone-200/80 grid place-items-center text-stone-600 mb-1">
-              <Users className="w-6 h-6" />
-            </div>
-            <p className="font-black text-stone-900 text-base">
-              You are not on any team yet.
-            </p>
-            <p className="text-xs text-stone-500 font-medium max-w-md">
-              {isPlayer
-                ? 'Create a team above, wait for a captain to invite you, or open All teams and ask to join a team that is recruiting.'
-                : "Organizers aren't on teams. Open All teams to see every team."}
-            </p>
-          </div>
-        )}
-
-        {/* 2. Teams Grid */}
-        {teams.length > 0 && (
-          <div className="animate-stagger-1 grid grid-cols-1 @3xl:grid-cols-2 @5xl:grid-cols-3 gap-6 sm:gap-8 w-full">
-            {teams.map((team) => {
-              const membersCount = team.team_members?.[0]?.count || 0;
-              const maxPlayers = team.games?.max_players || 5;
-
-              return (
-                <div
-                  key={team.id}
-                  className="group card-interactive rounded-3xl border border-stone-200/90 bg-white shadow-xs overflow-hidden flex flex-col"
-                >
-                  {/* Game Showcase Header */}
-                  <div className="relative aspect-video bg-ink border-b border-stone-100 overflow-hidden flex items-center justify-center">
-                    <div
-                      className="absolute inset-0 pointer-events-none bg-logo-stage"
-                    />
-                    <GameLogo
-                      name={team.games?.name}
-                      gameId={team.game_id}
-                      balanced
-                      className="absolute inset-0 z-10"
-                      imageClassName="drop-shadow-[0_4px_16px_rgba(0,0,0,0.6)] group-hover:scale-105 transition-transform duration-300"
-                      sizes="(max-width: 768px) 80vw, 280px"
-                    />
-                  </div>
-
-                  {/* Team Card Details */}
-                  <div className="p-6 flex-1 flex flex-col justify-between space-y-4">
-                    <div>
-                      <div className="flex items-center justify-between gap-2 mb-1.5">
-                        <span className="text-[10px] font-black text-maroon tracking-widest uppercase bg-maroon/10 px-2.5 py-0.5 rounded-md">
-                          {team.games?.name}
-                        </span>
-                        <span className="flex items-center gap-2">
-                          {team.recruiting && (
-                            <span className="text-[10px] font-black uppercase tracking-wider text-emerald-800 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-md">
-                              Recruiting
-                            </span>
-                          )}
-                          <span className="text-[11px] font-bold text-stone-500 uppercase tracking-wider">
-                            {membersCount} / {maxPlayers} Players
-                          </span>
-                        </span>
-                      </div>
-                      <h2 className="text-lg sm:text-xl font-black text-stone-950 uppercase tracking-wide group-hover:text-maroon transition-colors break-words">
-                        {team.name}
-                      </h2>
-                      {team.description && (
-                        <p className="text-xs text-stone-600 font-medium tracking-wide mt-2 line-clamp-2 normal-case">
-                          {team.description}
-                        </p>
-                      )}
-                    </div>
-
-                    <div className="pt-4 border-t border-stone-100 flex items-center justify-between">
-                      <span className="text-xs text-stone-500 font-semibold tracking-wider">
-                        Roster Status
-                      </span>
-                      <Link
-                        href={`/teams/${team.id}`}
-                        className="inline-flex items-center gap-1 text-xs font-black text-maroon group-hover:text-gold uppercase tracking-wider transition-colors"
-                      >
-                        Manage Team →
-                      </Link>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+        {/* My teams: the same cards as All teams (list_teams with p_mine) */}
+        {!error && (
+          <TeamDirectory
+            mine
+            games={games}
+            viewer={viewer}
+            reloadKey={reloadCount}
+            onCreateTeam={isPlayer && !showCreate ? openCreate : undefined}
+            onChanged={() => setReloadCount((n) => n + 1)}
+          />
         )}
         </>
         )}

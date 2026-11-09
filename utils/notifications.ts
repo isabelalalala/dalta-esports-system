@@ -6,7 +6,7 @@ import {
   AlarmClock, Ban, CalendarClock, CalendarDays, CircleCheck, CircleMinus, CircleX, ClipboardList, Crown,
   DoorOpen, FileText, Flag, GraduationCap, Handshake, IdCard, Mail, Megaphone, Radio, Scale, Target,
   ShieldAlert, ShieldCheck, ThumbsUp, Trash, Trophy, TriangleAlert, Undo2, UserCheck, UserCog, UserMinus, UserPlus,
-  UserX, Users,
+  UserX, Users, ImageOff,
 } from 'lucide-react';
 import type { createClient } from '@/utils/supabase/client';
 
@@ -29,7 +29,8 @@ export type NotificationType =
   | 'team_removed' | 'team_restored'
   | 'avatar_removed'
   | 'warning_issued' | 'warning_removed' | 'content_restored'
-  | 'account_flagged' | 'ban_review' | 'ban_dismissed' | 'account_unbanned';
+  | 'account_flagged' | 'ban_review' | 'ban_dismissed' | 'account_unbanned'
+  | 'team_logo_removed';
 
 export interface AppNotification {
   id: string;
@@ -80,6 +81,7 @@ export const notificationIcons: Record<NotificationType, LucideIcon> = {
   team_removed: Ban,
   team_restored: Undo2,
   avatar_removed: UserX,
+  team_logo_removed: ImageOff,
   warning_issued: TriangleAlert,
   warning_removed: CircleCheck,
   content_restored: Undo2,

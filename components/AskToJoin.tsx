@@ -12,12 +12,17 @@ interface Props {
   onChanged: () => void;
   // Directory card: just the button, no message box
   compact?: boolean;
+  // Button texts (team cards say "Request to join" / "Requested")
+  label?: string;
+  sentLabel?: string;
 }
 
 // "Ask to join" for a recruiting team. The database checks the rules (recruiting, game profile,
 // not on another team for the game, roster not full) and returns a readable error otherwise.
 // "Cancel request" deletes my own open request.
-export default function AskToJoin({ teamId, requestId, onChanged, compact = false }: Props) {
+export default function AskToJoin({
+  teamId, requestId, onChanged, compact = false, label = 'Ask to join', sentLabel = 'Request sent',
+}: Props) {
   const supabase = createClient();
   const [message, setMessage] = useState('');
   const [busy, setBusy] = useState(false);
@@ -73,7 +78,7 @@ export default function AskToJoin({ teamId, requestId, onChanged, compact = fals
       <div className="space-y-2">
         <div className="flex flex-wrap items-center gap-2">
           <span className="text-[10px] font-black uppercase tracking-wider text-amber-800 bg-amber-50 border border-amber-200 px-2.5 py-1 rounded-lg">
-            Request sent
+            {sentLabel}
           </span>
           <button
             type="button"
@@ -97,7 +102,7 @@ export default function AskToJoin({ teamId, requestId, onChanged, compact = fals
           disabled={busy}
           className="inline-flex items-center gap-1.5 rounded-xl bg-gold hover:bg-golddark text-stone-950 font-black px-3.5 py-2 text-xs uppercase tracking-wider shadow-xs transition-all disabled:opacity-50 cursor-pointer"
         >
-          <UserPlus className="w-3.5 h-3.5" /> {busy ? 'Sending...' : 'Ask to join'}
+          <UserPlus className="w-3.5 h-3.5" /> {busy ? 'Sending...' : label}
         </button>
         {errorBox}
       </form>
@@ -122,7 +127,7 @@ export default function AskToJoin({ teamId, requestId, onChanged, compact = fals
         disabled={busy}
         className="inline-flex items-center gap-1.5 rounded-xl bg-gold hover:bg-golddark text-stone-950 font-black px-5 py-2.5 text-xs uppercase tracking-wider shadow-xs hover:-translate-y-0.5 transition-all disabled:opacity-50 cursor-pointer"
       >
-        <UserPlus className="w-4 h-4" /> {busy ? 'Sending...' : 'Ask to join'}
+        <UserPlus className="w-4 h-4" /> {busy ? 'Sending...' : label}
       </button>
       {errorBox}
     </form>

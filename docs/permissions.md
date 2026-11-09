@@ -22,6 +22,9 @@ direct API or database request is refused too. Keep this table and `PERMISSIONS`
 | `team.toggleRecruiting` | ✓ | ✓ | (captain) | | Recruiting switch on `/teams/[id]` | `set_team_recruiting()` (captain or admin/staff) |
 | (captain) answer join requests | | | (captain) | | Accept / Decline, Accept all / Decline all on `/teams/[id]` | `respond_to_join_request()` (captain only; bulk = one call per request) |
 | `team.remove` | ✓ | ✓ | | | "Remove team" on `/teams/[id]` and `/admin/teams` | `remove_team()` role check; `protect_team_removal()` blocks hand edits |
+| `team.removeLogo` | ✓ | ✓ | | | "Remove logo" on `/teams/[id]` (with a reason) | `remove_team_logo()` role check; `protect_team_logo()` blocks other edits; storage delete policy (admin/staff) |
+| (captain) team logo, "Looking for" | | | (captain) | | Logo upload and "Looking for" on `/teams/[id]` | RLS "Captain can edit their team"; `teams_logo_url_check`; `check_team_looking_for()`; storage insert/update only in the team's folder (`is_team_logo_folder_owner()`) |
+| (organizer) rejection reason | ✓ | ✓ | | | Reject dialog on `/tournaments/[id]/registrations` | RLS update (admin/staff); `clean_registration_reason()` refuses a reason from anyone else |
 | `team.restore` | ✓ | | | | "Restore team" on a removed team's page | `restore_team()` (admin only) |
 | `team.viewRemoved` | ✓ | ✓ | | | `/admin/teams` Removed tab, reason on the team page | RLS select on `team_removals` (admin/staff) |
 | `match.manage` | ✓ | ✓ | | | `/matches`, `/tournaments/[id]/matches`, staff tools on `/matches/[id]`, LoL bans & picks editor | RLS write on `matches` and `match_drafts` (admin/staff); `declare_forfeit()`, `review_match_result()` role checks; `check_match_draft()` (LoL only, limits) |

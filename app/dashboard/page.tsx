@@ -9,6 +9,9 @@ import MyMatches from './MyMatches';
 import LatestAnnouncements from './LatestAnnouncements';
 import TeamInvites from '@/components/TeamInvites';
 import NeedsAttention from './NeedsAttention';
+import NextMatchCard from './NextMatchCard';
+import MyTeamsSummary from './MyTeamsSummary';
+import LiveNowCard from './LiveNowCard';
 import QuickTour from '@/components/QuickTour';
 import Tooltip from '@/components/Tooltip';
 import type { User } from '@supabase/supabase-js';
@@ -167,7 +170,8 @@ export default function Dashboard() {
   const moreCards = allCards.slice(TOP_CARDS);
 
   return (
-    <div className="w-full max-w-7xl mx-auto space-y-8 sm:space-y-10">
+    // Full width like the other sections (the layout's padding is the only side space)
+    <div className="w-full space-y-8 sm:space-y-10">
       {/* 1. Main Welcome Hero Container with Official Banner */}
       <section className="relative w-full rounded-3xl border border-stone-800/80 bg-stone-950 overflow-hidden shadow-md p-8 sm:p-12 @5xl:p-14 text-white flex flex-col @3xl:flex-row @3xl:items-center justify-between gap-6 animate-hero-entrance">
         <PageHeroBackground
@@ -176,7 +180,7 @@ export default function Dashboard() {
           overlayClassName="absolute inset-0 bg-stone-950/80"
         />
 
-        <div className="relative z-10 space-y-3 max-w-3xl">
+        <div className="relative z-10 space-y-3 max-w-prose">
           <div className="flex flex-wrap items-center gap-2.5">
             <span className="px-3.5 py-1 rounded-full bg-white/10 border border-white/20 text-white text-xs font-black tracking-widest uppercase inline-flex items-center gap-1.5 backdrop-blur-xs">
               {RoleIcon && <RoleIcon className="h-3.5 w-3.5 text-gold" />}
@@ -265,24 +269,31 @@ export default function Dashboard() {
         )}
       </section>
 
-        {/* 4. Player Upcoming Matches */}
-        {can(role, 'team.join') && user && (
-          <div className="animate-stagger-2">
-            <MyMatches userId={user.id} />
+      {/* 4. Two columns on wide screens: matches, attention list and announcements on the left
+          (wider); next match, my teams and live now in a side column on the right */}
+      <div className="grid grid-cols-1 @5xl:grid-cols-[minmax(0,2fr)_minmax(20rem,1fr)] gap-6 sm:gap-8 items-start">
+        <div className="min-w-0 space-y-6 sm:space-y-8">
+          {can(role, 'team.join') && user && (
+            <div className="animate-stagger-2">
+              <MyMatches userId={user.id} />
+            </div>
+          )}
+          {can(role, 'match.manage') && (
+            <div className="animate-stagger-2">
+              <NeedsAttention />
+            </div>
+          )}
+          <div className="animate-stagger-3">
+            <LatestAnnouncements />
           </div>
-        )}
-
-        {/* 5. Organizer Needs Attention */}
-        {can(role, 'match.manage') && (
-          <div className="animate-stagger-2">
-            <NeedsAttention />
-          </div>
-        )}
-
-        {/* 6. Organization Latest Announcements */}
-        <div className="animate-stagger-3">
-          <LatestAnnouncements />
         </div>
+
+        <aside className="min-w-0 space-y-6 animate-stagger-2" aria-label="At a glance">
+          {can(role, 'team.join') && user && <NextMatchCard userId={user.id} />}
+          {can(role, 'team.join') && <MyTeamsSummary />}
+          <LiveNowCard />
+        </aside>
+      </div>
     </div>
   );
 }

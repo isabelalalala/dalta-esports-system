@@ -16,6 +16,7 @@ import { AlertCircle, Users } from 'lucide-react';
 import { can } from '@/utils/permissions';
 import { useConfirm } from '@/components/useConfirm';
 import { toast } from '@/components/Toaster';
+import ConfirmDialog from '@/components/ConfirmDialog';
 import { formatMomentDate } from '@/utils/tournaments';
 
 const statusStyles: Record<RegistrationStatus, string> = {
@@ -36,6 +37,9 @@ export default function RegistrationsPage() {
   // Only admin/staff review registrations (RLS enforces it too)
   const [role, setRole] = useState('');
   const [busyId, setBusyId] = useState<string | null>(null);
+  // Reject dialog: which registration, and the optional reason the captain will see
+  const [rejecting, setRejecting] = useState<{ id: string; team: string } | null>(null);
+  const [rejectReason, setRejectReason] = useState('');
 
   const params = useParams();
   const id = params?.id as string;
@@ -75,14 +79,15 @@ export default function RegistrationsPage() {
     if (id) fetchData();
   }, [id, supabase]);
 
-  const handleSetStatus = async (registrationId: string, status: RegistrationStatus) => {
+  // reason: only for a rejection (optional; clean_registration_reason() clears it on other statuses)
+  const handleSetStatus = async (registrationId: string, status: RegistrationStatus, reason?: string) => {
     setBusyId(registrationId);
     setError('');
 
     try {
       const { data, error: updateError } = await supabase
         .from('tournament_registrations')
-        .update({ status })
+        .update(status === 'rejected' ? { status, rejection_reason: reason?.trim() || null } : { status })
         .eq('id', registrationId)
         .select('id');
 
@@ -90,7 +95,9 @@ export default function RegistrationsPage() {
       if (!data || data.length === 0) throw new Error('You don\'t have permission to change this registration.');
 
       setRegistrations((current) =>
-        current.map((r) => (r.id === registrationId ? { ...r, status } : r))
+        current.map((r) => (r.id === registrationId
+          ? { ...r, status, rejection_reason: status === 'rejected' ? reason?.trim() || null : null }
+          : r))
       );
       toast.success(status === 'approved' ? 'Registration approved. The captain is notified.' : 'Registration rejected. The captain is notified.');
     } catch (err) {
@@ -173,6 +180,33 @@ export default function RegistrationsPage() {
   return (
     <>
     {confirmDialog}
+    {rejecting && (
+      <ConfirmDialog
+        title={`Reject ${rejecting.team}?`}
+        confirmLabel="Reject"
+        tone="danger"
+        busy={busyId === rejecting.id}
+        busyLabel="Rejecting..."
+        onConfirm={async () => {
+          await handleSetStatus(rejecting.id, 'rejected', rejectReason);
+          setRejecting(null);
+        }}
+        onClose={() => setRejecting(null)}
+      >
+        <p>The captain is notified. A reason helps them fix the problem and register again.</p>
+        <label className="block text-sm font-bold text-stone-800">
+          Reason (optional, the captain will see it)
+          <textarea
+            value={rejectReason}
+            onChange={(e) => setRejectReason(e.target.value)}
+            maxLength={300}
+            rows={2}
+            placeholder="e.g. Two players aren't verified yet."
+            className="mt-1.5 w-full rounded-xl border border-stone-300 bg-white p-3 text-sm font-medium text-stone-950 shadow-xs outline-none focus:border-gold focus:bg-surface focus:ring-2 focus:ring-gold/25"
+          />
+        </label>
+      </ConfirmDialog>
+    )}
     <div className="w-full space-y-8 text-stone-950">
       {/* 1. Main Hero Container */}
       <section className="animate-hero-entrance relative w-full rounded-3xl border border-stone-800/80 bg-stone-950 overflow-hidden shadow-md p-8 sm:p-12 @5xl:p-14 text-center text-white flex flex-col items-center justify-center space-y-4">
@@ -269,6 +303,9 @@ export default function RegistrationsPage() {
                     <span className={`inline-block px-3 py-1 rounded-md border text-[10px] font-black uppercase shadow-2xs ${statusStyles[reg.status]}`}>
                       {reg.status}
                     </span>
+                    {reg.status === 'rejected' && reg.rejection_reason && (
+                      <span className="mt-1 block text-[11px] font-medium text-stone-600 break-words">Reason: {reg.rejection_reason}</span>
+                    )}
                   </div>
                   <div className="@3xl:col-span-2 text-stone-500 text-xs font-semibold">
                     {formatMomentDate(reg.registered_at)}
@@ -285,7 +322,10 @@ export default function RegistrationsPage() {
                     )}
                     {reg.status !== 'rejected' && (
                       <button
-                        onClick={() => handleSetStatus(reg.id, 'rejected')}
+                        onClick={() => {
+                          setRejectReason('');
+                          setRejecting({ id: reg.id, team: reg.teams?.name || reg.team_name || 'this team' });
+                        }}
                         disabled={busy}
                         className="px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-600 text-stone-950 text-[11px] font-black uppercase tracking-wider transition-colors disabled:opacity-50"
                       >
