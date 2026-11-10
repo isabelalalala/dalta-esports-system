@@ -46,7 +46,59 @@ One navigation for everyone, by role (`utils/navigation.ts`, rendered by `compon
 
 - `bg-logo-stage` / `bg-logo-stage-strong`: the dark radial spotlight behind game logos and team photos.
 - `text-glow-gold`: the soft gold glow on the home page title.
-- Animations: `animate-hero-entrance`, `animate-hero-title`, `animate-hero-tagline`, `animate-stagger-1…3`, `animate-marquee`.
+- Animations: `animate-hero-entrance`, `animate-hero-title`, `animate-hero-tagline`, `animate-stagger-1…3`, `animate-marquee`. The full motion system is in "Motion" below.
+
+## Motion
+
+One motion system for the whole site, public and logged in. **Don't add new effects; use these.**
+Every value comes from the motion tokens at the top of `app/globals.css` (`@theme static`):
+
+| Token | Value | Used for |
+|---|---|---|
+| `--ease-out-brand` | `cubic-bezier(0.16, 1, 0.3, 1)` | Every entrance, lift, slide and fade (decelerates) |
+| `--ease-pop` | `cubic-bezier(0.2, 0.9, 0.3, 1.3)` | Small "pop" moments only: score flip, trophy, correct pick, gauge needle |
+| `--ease-sweep` | `cubic-bezier(0.45, 0, 0.2, 1)` | The one-time hero light sweep |
+| `--duration-fast` / `--duration-base` / `--duration-slow` | 150 ms / 250 ms / 600 ms | Hover and press / card lift and border / entrances (`Reveal`) |
+| `--duration-sweep` | 1.8 s | `hero-sweep` |
+| `--stagger-step` | 80 ms | Delay between cards in a row (`Reveal delay={1..3}`) |
+| `--duration-ambient-a` / `-b` / `--duration-zigzag` | 34 s / 40 s / 30 s | `AmbientBackground` glows and the zigzag drift |
+| `--ambient-glow-opacity` | 0.13 | Strength of the ambient glows (they tint the pattern, never hide it) |
+| `--zigzag-tile-w` / `-h` / `--zigzag-opacity` | 56 px / 32 px / 0.07 | The one zigzag tile, the same everywhere |
+| `--glow-gold` | gold at 45 % | `text-glow-gold` and the slanted gold accent lines |
+
+### The effects and where they're allowed
+
+| Effect | What it does | Where |
+|---|---|---|
+| `Reveal` (`components/Reveal.tsx`) | Fades and slides a section or card in once when it scrolls into view; `delay` 0–3 steps of `--stagger-step` | Every section and card grid. The **only** scroll fade-in |
+| `card-interactive` (utility) | Lift 4 px, gold border and soft gold glow on hover / keyboard focus | **Every clickable card**: team, registration, tournament, announcement, event, campaign, stream, Hall of Fame, dashboard shortcuts. Not on cards that aren't links |
+| `TiltCard` + `border-trace` | Leans toward the mouse (mouse only) + a gold light runs around the border | **Game cards only**: `/divisions` cards and the homepage game tiles (the same card) |
+| `PageHeroBackground` | Photo with `hero-kenburns` (slow zoom), `AmbientBackground` and one `hero-sweep` | Every page hero. The announcement detail hero uses its cover with the same three layers. Working pages that open on a video or scoreboard (`/live/[id]`, `/matches/[id]`, `/t/[id]/match/[matchId]`), the auth pages and the legal pages have no photo hero by design |
+| `AmbientBackground` | Two drifting glows over the `.zigzag-pattern` layer; pauses off-screen and in hidden tabs | Page heroes, the footer, the homepage dark band |
+| `.zigzag-pattern` | The triangle pattern, one tile, oversized layer so every edge stays covered while it drifts | Only inside `AmbientBackground`; never faded on one side |
+| `hero-sweep` | One light band across, once | Inside `PageHeroBackground`; in the homepage band it waits for its `Reveal` |
+| `CountUp` | Number counts up once when seen | Every stat number (`SiteStats`, About, homepage) |
+| `FlipScore` | A changed score digit flips down | Every live score (`MatchVersus`, brackets, ticker) |
+| `AnimatedProgress` | A bar fills once when seen | Slot bars, pick'em split |
+| `RoleBadge` pulse | Soft ring around the role icon | `RoleBadge` only |
+| LIVE pulse (`components/LivePulse.tsx`) | Solid dot with a pulsing ring (`tone` red or white) | **Every** live indicator: header pill, banner, `LiveTag`, match cards, ticker, stream pages, schedule, live list, game tiles |
+| `ConfettiBurst` / `Celebrate` | One short burst | A won final (`ChampionBanner`), registration approved, Hall of Fame (once per visit), correct pick |
+| `page-enter` / `page-exit` | Page fade between routes (`<ViewTransition>` in `SiteNavLayout`) | Automatic |
+| Partner marquee | Logos scroll at 35 px/s, pause on hover/focus | `PartnershipSection` only |
+| `MatchTicker` | Results ticker loop, pauses on hover/focus/off-screen | Homepage only |
+
+Status and progress that aren't effects: `AutoUpdateBadge` (green pulse = "updates automatically", not live),
+`PageLoading` / `SectionLoading` / skeletons for loading, `Toaster` for results, `ConfirmDialog` / `useConfirm`
+for confirmations, `StatusBadge` / `RoleBadge` / `GameBadge` / `VerifiedBadge` for badges. Buttons are
+`btn btn-primary|btn-secondary|btn-danger`; gold buttons get the hover shine automatically.
+
+### Rules
+- Only `transform` and `opacity` animate (the hero sweep and button shine move a gradient on a small area); no
+  animation may change layout.
+- `prefers-reduced-motion`: every loop and entrance is off (content simply shows), confetti and sweeps are hidden.
+- Loops pause when off-screen or in a hidden tab (`data-paused` from `AmbientBackground`, the ticker, the marquee).
+- `will-change` only on elements that animate continuously (the ambient layer, the Ken Burns photo).
+- New UI picks an effect from this table. If something seems to need a new one, change this section first.
 
 ## Typography
 

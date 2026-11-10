@@ -24,7 +24,8 @@ interface Props {
   title: string;
   labels: string[];
   series: ChartSeries[];
-  // Bars on top of each other (e.g. positive/neutral/negative per tournament)
+  // Bars on top of each other (e.g. positive/neutral/negative per tournament); with type 'line',
+  // a stacked area chart (e.g. sentiment per minute)
   stacked?: boolean;
   // Horizontal bars, for long labels such as topics or stream titles
   horizontal?: boolean;
@@ -89,6 +90,15 @@ function buildConfig(
           return { label: s.label, data: s.data, backgroundColor: colors, borderColor: p.surface, borderWidth: 2 };
         }
         if (type === 'line') {
+          // stacked line = stacked area: each series fills down to the one below it (the first to
+          // the axis) in its own color at 40% (palette colors are #rrggbb), small points
+          if (stacked) {
+            return {
+              label: s.label, data: s.data, borderColor: color(s, i), backgroundColor: `${color(s, i)}66`,
+              fill: i === 0 ? 'origin' : '-1',
+              borderWidth: 2, pointRadius: 2, pointHoverRadius: 5, pointBorderColor: p.surface, pointBorderWidth: 1, tension: 0.25,
+            };
+          }
           return {
             label: s.label, data: s.data, borderColor: color(s, i), backgroundColor: color(s, i),
             borderWidth: 2, pointRadius: 4, pointHoverRadius: 6, pointBorderColor: p.surface, pointBorderWidth: 2, tension: 0.2,

@@ -16,7 +16,7 @@ import {
   registrationsOverTime, sentimentForSource, sentimentShareByWeek, sourceNoun,
   type DataSource, type FullReport, type SentimentReport,
 } from '@/utils/reports';
-import { getTournamentStatus, statusLabels } from '@/utils/tournaments';
+import { formatTime, getTournamentStatus, statusLabels } from '@/utils/tournaments';
 
 // Every chart that gets an interpretation, with the title shown on the report
 export const CHART_TITLES = {
@@ -33,6 +33,7 @@ export const CHART_TITLES = {
   sentiment_per_tournament: 'Sentiment per tournament',
   views_per_stream: 'Engagement per stream',
   views_per_day: 'Views per day',
+  comment_timeline: 'Comment sentiment over time',
   moderation_outcomes: 'Moderation outcomes',
   warnings_over_time: 'Warnings over time',
   offense_types: 'Offense types',
@@ -321,6 +322,35 @@ function streamFacts(data: FullReport) {
   return facts;
 }
 
+// The busiest stream's chat, minute by minute (report_comments().timeline since 202611101000):
+// when it peaked and how it felt then. Times are Philippine time ("7:42 PM").
+export function commentTimelineFacts(data: FullReport) {
+  const stream = data.comments?.timeline?.[0];
+  if (!stream || stream.minutes.length === 0) return [];
+  const facts: string[] = [];
+  const peak = maxBy(stream.minutes, (m) => n(m.total))!;
+  const analysed = (m: { positive: number; neutral: number; negative: number }) => n(m.positive) + n(m.neutral) + n(m.negative);
+  const peakAnalysed = analysed(peak);
+  facts.push(
+    `"${stream.title}" (${stream.tournament_name}) had the busiest chat: it peaked at ${formatTime(peak.minute)} ` +
+    `with ${plural(n(peak.total), 'comment')} in one minute` +
+    (peakAnalysed > 0 ? `, ${pct(n(peak.positive), peakAnalysed)}% of the analysed ones positive.` : '.'),
+  );
+  // The most positive minute with enough comments to mean something (at least 3 analysed)
+  const counted = stream.minutes.filter((m) => analysed(m) >= 3);
+  if (counted.length > 1) {
+    const best = maxBy(counted, (m) => n(m.positive) / analysed(m))!;
+    if (best.minute !== peak.minute && n(best.positive) > 0) {
+      facts.push(`The most positive minute was ${formatTime(best.minute)} (${pct(n(best.positive), analysed(best))}% positive).`);
+    }
+    const worst = maxBy(counted, (m) => n(m.negative) / analysed(m))!;
+    if (n(worst.negative) * 2 > analysed(worst)) {
+      facts.push(`Most comments at ${formatTime(worst.minute)} were negative (${pct(n(worst.negative), analysed(worst))}%): check what happened in the match then.`);
+    }
+  }
+  return facts;
+}
+
 function viewsPerDayFacts(data: FullReport) {
   const days = data.engagement.views_by_day.filter((d) => n(d.views) > 0);
   if (days.length === 0) return [];
@@ -486,6 +516,7 @@ export function buildInsightRequest(data: FullReport, source: DataSource | undef
     sentiment_per_tournament: perTournamentFacts(s, noun),
     views_per_stream: streamFacts(data),
     views_per_day: viewsPerDayFacts(data),
+    comment_timeline: commentTimelineFacts(data),
     moderation_outcomes: moderationFacts(data),
     warnings_over_time: warningFacts(data),
     offense_types: offenseFacts(data),

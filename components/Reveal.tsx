@@ -4,10 +4,8 @@ import { useEffect, useRef, type ReactNode } from 'react';
 
 interface Props {
   children: ReactNode;
-  // Stagger for cards in a row: 0-3 (80 ms steps)
+  // Stagger for cards in a row: 0-3 steps of --stagger-step (80 ms, globals.css motion tokens)
   delay?: 0 | 1 | 2 | 3;
-  // 'card': also grows from 96% (homepage cards, a lighter version of the game cards' entrance)
-  variant?: 'up' | 'card';
   className?: string;
 }
 
@@ -17,7 +15,7 @@ const DELAY_CLASS = ['', 'reveal-delay-1', 'reveal-delay-2', 'reveal-delay-3'] a
 // app/globals.css). Content already on screen when the page opens shows right away. Nothing is
 // hidden with reduced motion or without JavaScript. Sets data-revealed on the DOM element
 // directly, so revealing doesn't re-render the children.
-export default function Reveal({ children, delay = 0, variant = 'up', className = '' }: Props) {
+export default function Reveal({ children, delay = 0, className = '' }: Props) {
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -42,7 +40,7 @@ export default function Reveal({ children, delay = 0, variant = 'up', className 
   }, []);
 
   return (
-    <div ref={ref} className={`reveal ${variant === 'card' ? 'reveal-card' : ''} ${DELAY_CLASS[delay]} ${className}`}>
+    <div ref={ref} className={`reveal ${DELAY_CLASS[delay]} ${className}`}>
       {children}
     </div>
   );

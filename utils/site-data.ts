@@ -7,6 +7,7 @@
 import { cacheLife, cacheTag } from 'next/cache';
 import { createPublicClient } from '@/utils/supabase/public';
 import type { FeedAnnouncement } from '@/utils/announcements';
+import type { HallOfFameEntry } from '@/utils/hall-of-fame';
 import {
   DEFAULT_SITE_CONTENT, manilaToday, stripDraftMarker, pickFeaturedEvent, type GameDivision, type HeroImage, type Officer, type OfficialTeam,
   type SiteContent, type SitePost,
@@ -94,6 +95,20 @@ export async function getPost(table: 'campaigns' | 'events', id: string): Promis
   cacheSite();
   const { data } = await createPublicClient().from(table).select('*').eq('id', id).maybeSingle();
   return data;
+}
+
+// Hall of Fame (get_hall_of_fame(), 202611101100): published champions, newest first, as a logged-out
+// visitor sees them (no roster or MVP: the cached code can't read cookies, and privacy choice (b)
+// shows those to logged-in users only; the page loads them in the browser for them).
+// A new champion appears within a few minutes (cacheLife 'minutes'): the database trigger that
+// records it can't call refreshSite(). Admin MVP/publish changes call refreshSite() and show at once.
+export async function getHallOfFame(): Promise<HallOfFameEntry[]> {
+  'use cache';
+  cacheSite();
+  const { data, error } = await createPublicClient().rpc('get_hall_of_fame');
+  // Before the migration has run: an empty Hall of Fame rather than an error page
+  if (error) return [];
+  return (data as unknown as HallOfFameEntry[] | null) ?? [];
 }
 
 export async function getDivisions(): Promise<GameDivision[]> {

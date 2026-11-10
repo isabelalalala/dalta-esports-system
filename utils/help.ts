@@ -83,6 +83,14 @@ export const HELP_SECTIONS: HelpSection[] = [
         ],
       },
       {
+        q: 'What is the Hall of Fame?',
+        a: [
+          'Every tournament champion is kept there, season after season: the team, the final score against the runner-up and the tournament. Filter by game and season.',
+          'It updates by itself a few minutes after a final is decided. Logged in, you also see the winning roster (in-game names) and the MVP. Teams show a trophy badge with their number of titles, and your own titles appear as "Champion" chips on My Profile.',
+        ],
+        link: { href: '/hall-of-fame', label: 'Hall of Fame' },
+      },
+      {
         q: 'Can I choose which notifications I get?',
         a: [
           'Yes. Open Notifications and use "What to notify me about" to turn kinds of notifications on or off. Warnings, bans and changes to your account always arrive.',

@@ -15,6 +15,7 @@ import PageHeroBackground from '@/components/site/PageHeroBackground';
 import { Calendar, ChevronRight, Filter, Tv } from 'lucide-react';
 import AutoUpdateBadge from '@/components/AutoUpdateBadge';
 import { LiveTag, ScoreBoard, VersusBadge, VersusRow } from '@/components/MatchVersus';
+import LivePulse from '@/components/LivePulse';
 
 type ScheduleMatch = Match & { tournaments: { name: string } | null };
 
@@ -178,7 +179,7 @@ export default function SchedulePage() {
                 }`}
               >
                 {tab.id === 'live' && live.length > 0 && (
-                  <span className="h-2 w-2 rounded-full bg-red-600 animate-pulse" />
+                  <LivePulse />
                 )}
                 <span>{tab.label}</span>
               </button>
@@ -194,7 +195,7 @@ export default function SchedulePage() {
           <section className="space-y-4">
             <div className="flex items-center justify-between gap-4">
               <h2 className="text-base sm:text-lg font-black text-stone-950 tracking-wider flex items-center gap-2">
-                <span className="h-2.5 w-2.5 rounded-full bg-red-600 animate-pulse" />
+                <LivePulse size="md" />
                 <span className="text-red-700">Live Now</span>
                 <span className="text-xs text-stone-500 font-bold">({live.length})</span>
               </h2>

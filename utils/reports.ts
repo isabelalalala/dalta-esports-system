@@ -160,10 +160,22 @@ export interface EngagementReport {
   }[];
 }
 
+export interface CommentTimelineMinute { minute: string; total: number; positive: number; neutral: number; negative: number }
+export interface CommentTimelineStream {
+  stream_id: string;
+  title: string;
+  tournament_name: string;
+  total: number;
+  minutes: CommentTimelineMinute[];
+}
+
 // Stream comment sentiment: the same shape as SentimentReport (avg_rating is always null) plus
 // comments per stream. report_comments(), since 202611081700.
 export interface CommentReport extends SentimentReport {
   by_stream: { stream_id: string; title: string; tournament_name: string; total: number }[];
+  // Sentiment per minute of the 5 busiest streams, visible comments only (202611101000_live_sentiment;
+  // reports saved before it don't have this)
+  timeline?: CommentTimelineStream[];
 }
 
 // report_moderation(), since 202611081700

@@ -30,7 +30,7 @@ describe('can', () => {
   });
 
   it('keeps organizer actions away from players and spectators', () => {
-    for (const action of ['team.remove', 'match.manage', 'stream.configure', 'bracket.generate'] as const) {
+    for (const action of ['team.remove', 'match.manage', 'stream.configure', 'stream.viewSentiment', 'bracket.generate'] as const) {
       expect(can('admin', action)).toBe(true);
       expect(can('staff', action)).toBe(true);
       expect(can('player', action)).toBe(false);

@@ -42,7 +42,7 @@ export default function AmbientBackground({ className = '', onDark = false }: { 
           "zigzag pattern"), always edge to edge */}
       <div className="zigzag-pattern" />
       {/* Maroon (left) and gold (right) glows on top at low opacity: they tint the pattern, never hide it */}
-      <div className="absolute inset-0 opacity-[0.13]">
+      <div className="absolute inset-0 opacity-(--ambient-glow-opacity)">
         <div className="ambient-orb ambient-orb-a" />
         <div className="ambient-orb ambient-orb-b" />
       </div>

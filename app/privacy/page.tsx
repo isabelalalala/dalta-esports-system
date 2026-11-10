@@ -301,6 +301,9 @@ export default function PrivacyNoticePage() {
               <li>
                 <strong className="text-stone-950 font-black">Kept as event records:</strong> tournaments, brackets, match results, and the screenshots submitted as match proof — these stay part of the event&apos;s records even after an account is deleted, and may still show in-game names. Organizers can remove the image files manually from storage when they are no longer needed. Answered team invitations are also kept as history.
               </li>
+              <li>
+                <strong className="text-stone-950 font-black">Hall of Fame:</strong> when your team wins a tournament, the champion record keeps the team name, logo, final score and the winning roster&apos;s in-game names (and the MVP, if one is chosen). Visitors only see the team; the roster and MVP are shown to logged-in users. Deleting your account removes you from every roster and as MVP; the team&apos;s title stays.
+              </li>
             </ul>
             <p className="pt-2">
               <strong className="text-stone-950 font-black">Activity log:</strong> entries are kept for one year, even after an account is deleted, so organizers stay accountable for their actions. They contain names only. After one year they are deleted.

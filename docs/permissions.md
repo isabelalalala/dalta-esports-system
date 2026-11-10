@@ -48,6 +48,8 @@ direct API or database request is refused too. Keep this table and `PERMISSIONS`
 | `feedback.viewAll` | ✓ | | | | `/admin/feedback` | RLS select on `feedback` (admin); POST `/api/feedback/classify` role check |
 | `report.generate` | ✓ | | | | `/analytics` | POST `/api/reports/generate` role check; `report_activity()`, `report_sentiment()`, `report_comments()`, `report_moderation()` role checks; RLS on `analytics_reports` (admin); generate/delete logged by trigger |
 | `report.viewEngagement` | ✓ | ✓ | | | `/analytics/engagement` | `report_engagement()`, `get_live_viewer_counts()` role checks |
+| `champion.manage` | ✓ | | | | Hall of Fame box in the tournament Admin Panel (MVP, publish/hide) | `set_tournament_mvp()`, `set_champion_published()` admin checks (logged); `tournament_champions` has no write policies, BEFORE trigger `protect_champion()` |
+| `stream.viewSentiment` | ✓ | ✓ | | | Live sentiment panel on `/live/[id]`, live stream cards on `/analytics/engagement` | `get_stream_sentiment_timeline()` role check (admin/staff; counts only, no text or user ids) |
 | `export.operations` | ✓ | ✓ | | | Export buttons (registrations, rosters, matches) | GET `/api/exports/[type]` `can()` check + `log_export()` role check + RLS reads |
 | `export.sensitive` | ✓ | | | | Export buttons (feedback, users) | same as above |
 | `user.manage` | ✓ | | | | `/admin/users` | RLS update on `profiles` (admin), `protect_profile_role()`, `admin_delete_user()` |

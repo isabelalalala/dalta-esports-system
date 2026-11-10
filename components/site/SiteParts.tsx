@@ -88,7 +88,8 @@ export function PersonCard({
     .join('');
 
   return (
-    <div className="group flex flex-col rounded-2xl sm:rounded-3xl border border-stone-200/90 bg-white shadow-xs hover:shadow-lg hover:-translate-y-1 hover:border-amber-500/50 transition-all duration-300 overflow-hidden">
+    <div className="group flex flex-col rounded-2xl sm:rounded-3xl border border-stone-200/90 bg-white shadow-xs overflow-hidden">
+      {/* Not a link, so it doesn't lift on hover (only clickable cards do: card-interactive) */}
       {/* Large photoholder with portrait aspect ratio */}
       <div className="relative aspect-[3/4] w-full bg-stone-100 overflow-hidden border-b border-stone-100">
         {url ? (

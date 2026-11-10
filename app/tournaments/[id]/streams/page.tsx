@@ -26,6 +26,7 @@ import {
 import { can } from '@/utils/permissions';
 import { useConfirm } from '@/components/useConfirm';
 import SectionHint from '@/components/SectionHint';
+import LivePulse from '@/components/LivePulse';
 
 const inputClass =
   'w-full border border-stone-300 bg-stone-50 px-4 py-3.5 text-stone-950 font-bold text-xs rounded-xl outline-none focus:border-amber-600 focus:bg-surface focus:ring-2 focus:ring-amber-500/20 transition-all placeholder:text-stone-400 shadow-xs';
@@ -282,8 +283,8 @@ export default function ManageStreamsPage() {
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <span className={`px-2.5 py-1 rounded-md border text-[10px] font-black uppercase shadow-2xs ${streamStatusStyles[stream.status]}`}>
                       {stream.status === 'live' ? (
-                        <span className="flex items-center gap-1.5 text-red-700">
-                          <span className="relative inline-flex h-2 w-2" aria-hidden="true"><span className="absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75 animate-ping" /><span className="relative inline-flex h-2 w-2 rounded-full bg-red-600" /></span>
+                        <span className="flex items-center gap-1.5">
+                          <LivePulse tone="white" />
                           LIVE ON AIR
                         </span>
                       ) : (

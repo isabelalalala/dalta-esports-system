@@ -1,5 +1,5 @@
 import {
-  Activity, Brain, CalendarClock, CalendarDays, ChartColumn, ChartLine, ClipboardList, Flame, Gamepad2, Globe,
+  Activity, Award, Brain, CalendarClock, CalendarDays, ChartColumn, ChartLine, ClipboardList, Flame, Gamepad2, Globe,
   GraduationCap, HeartHandshake, Home, Info, LayoutDashboard, LifeBuoy, Megaphone, MessageSquare, Network,
   Shield, ShieldAlert, Swords, Trophy, Tv, UserCircle, UserCog, UserPlus, Users, type LucideIcon,
 } from 'lucide-react';
@@ -15,5 +15,5 @@ export const NAV_ICONS: Record<NavIcon, LucideIcon> = {
   matches: Swords, brackets: Network, users: UserCog, announcements: Megaphone, sentiment: Brain,
   reports: ChartColumn, verification: GraduationCap, website: Globe, activity: Activity, about: Info,
   campaigns: Flame, divisions: Gamepad2, community: HeartHandshake, stats: ChartLine, registrations: ClipboardList,
-  moderation: ShieldAlert, help: LifeBuoy,
+  moderation: ShieldAlert, help: LifeBuoy, halloffame: Award,
 };

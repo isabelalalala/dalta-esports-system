@@ -129,7 +129,8 @@ export function facebookWatchUrl(url: string) {
 
 // Badge colors for stream status
 export const streamStatusStyles: Record<StreamStatus, string> = {
-  live: 'bg-red-500/15 text-red-300 border-red-500/50',
-  scheduled: 'bg-gold/15 text-gold border-gold/50',
-  ended: 'bg-gray-500/15 text-gray-400 border-gray-500/50',
+  // Readable on the white cards (the old light-red/gold/gray text was made for a dark page)
+  live: 'bg-red-600 text-white border-red-700',
+  scheduled: 'bg-gold/15 text-amber-800 border-gold/60',
+  ended: 'bg-stone-100 text-stone-700 border-stone-300',
 };

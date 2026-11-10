@@ -10,6 +10,7 @@ import {
 import { loadLinks, loadReactions } from '@/utils/announcements-data';
 import { formatDateTime } from '@/utils/tournaments';
 import AnnouncementCover from '@/components/announcements/AnnouncementCover';
+import AmbientBackground from '@/components/site/AmbientBackground';
 import CategoryBadge from '@/components/announcements/CategoryBadge';
 import AnnouncementBody from '@/components/announcements/AnnouncementBody';
 import AnnouncementLinkCard from '@/components/announcements/AnnouncementLinkCard';
@@ -77,12 +78,19 @@ async function AnnouncementContent({ params }: { params: PageProps<'/announcemen
       <ReadTracker id={a.id} title={a.title} />
 
       {/* Large cover with the title on it */}
-      <header className={`group relative isolate overflow-hidden rounded-3xl border bg-ink text-white shadow-md ${urgent ? 'border-red-500/70' : 'border-stone-800/80'}`}>
+      <header className={`hero-pausable group relative isolate overflow-hidden rounded-3xl border bg-ink text-white shadow-md ${urgent ? 'border-red-500/70' : 'border-stone-800/80'}`}>
+        {/* The same hero layers as PageHeroBackground (docs/brand.md "Motion"): slow Ken Burns zoom
+            on the cover, the ambient glows + zigzag pattern, one light sweep. The cover itself stays
+            (it also draws the category gradient + game logo when a post has no picture). */}
         <AnnouncementCover
           coverPath={a.cover_path} category={a.category} gameId={a.game_id} priority
-          sizes="100vw" className="absolute inset-0 -z-10"
+          sizes="100vw" className="absolute inset-0 -z-10 hero-kenburns"
         />
         <div aria-hidden="true" className="absolute inset-0 -z-10 bg-linear-to-t from-ink via-ink/80 to-ink/20" />
+        <AmbientBackground onDark className="-z-10" />
+        <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden" aria-hidden="true">
+          <div className="hero-sweep" />
+        </div>
         {urgent && <span className="absolute inset-x-0 top-0 h-1.5 bg-red-600" aria-hidden="true" />}
         <div className="flex min-h-[20rem] @3xl:min-h-[26rem] flex-col justify-between gap-8 p-5 sm:p-8 @5xl:p-12">
           <div className="flex flex-wrap items-center justify-between gap-3">

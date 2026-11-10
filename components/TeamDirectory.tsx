@@ -10,6 +10,7 @@ import TeamCard, { type TeamCardViewer } from '@/components/TeamCard';
 import { SectionLoading } from '@/components/PageLoading';
 import { Plus, Search, Users } from 'lucide-react';
 import { readUrlParam, setUrlParams } from '@/utils/url-state';
+import { useTeamTitles } from '@/utils/use-team-titles';
 
 const PAGE_SIZE = 30;
 
@@ -52,6 +53,8 @@ export default function TeamDirectory({
   });
   const [recruitingOnly, setRecruitingOnly] = useState(initialRecruitingOnly);
   const [teams, setTeams] = useState<TeamListEntry[]>([]);
+  // Hall of Fame titles of the teams on this page (one request)
+  const titles = useTeamTitles(teams.map((t) => t.id));
   const [total, setTotal] = useState(0);
   const [hasMore, setHasMore] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -238,7 +241,7 @@ export default function TeamDirectory({
         <ul className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,20rem),1fr))] gap-4 sm:gap-6">
           {teams.map((t) => (
             <li key={t.id} className="min-w-0">
-              <TeamCard team={t} profileSchema={schemas[t.game_id]} viewer={viewer} onChanged={onChanged} />
+              <TeamCard team={t} profileSchema={schemas[t.game_id]} viewer={viewer} onChanged={onChanged} titles={titles[t.id]} />
             </li>
           ))}
         </ul>

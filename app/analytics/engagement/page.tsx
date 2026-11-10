@@ -17,6 +17,7 @@ import PageHeroBackground from '@/components/site/PageHeroBackground';
 import { Download, Printer, RotateCw } from 'lucide-react';
 import { can } from '@/utils/permissions';
 import { formatDateTime } from '@/utils/tournaments';
+import LiveSentimentMeter from '@/components/LiveSentimentMeter';
 
 // "View engagement stats" (use case, Tournament Staff). Admins can open it too.
 export default function EngagementPage() {
@@ -184,6 +185,20 @@ export default function EngagementPage() {
       {/* 3. Engagement Metrics & Charts */}
       {report && (
         <div className="space-y-8">
+          {/* Live sentiment of every stream that is live right now (stream.viewSentiment = admin/staff,
+              the same people as this page; get_stream_sentiment_timeline() checks the role too) */}
+          {can(role, 'stream.viewSentiment') && report.streams.some((s) => s.status === 'live') && (
+            <section className="space-y-4 print:hidden" aria-labelledby="live-sentiment-title">
+              <h2 id="live-sentiment-title" className="text-xl sm:text-2xl font-black uppercase tracking-wider text-stone-950">Live sentiment</h2>
+              <div className="grid grid-cols-1 @7xl:grid-cols-2 gap-6">
+                {report.streams.filter((s) => s.status === 'live').map((s) => (
+                  <div key={s.id} className="@container min-w-0 rounded-2xl border border-stone-200/90 bg-white p-4 sm:p-6 shadow-xs">
+                    <LiveSentimentMeter streamId={s.id} title={s.title} />
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
           <EngagementSection report={report} liveCounts={liveCounts} />
         </div>
       )}

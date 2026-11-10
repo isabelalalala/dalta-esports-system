@@ -77,7 +77,7 @@ updated to match the final system.
 | Store | Tables / storage |
 |-------|------------------|
 | D1 User Account DB (existing) | + consent and student-verification columns on `profiles` |
-| D2 Tournament & Schedule DB (existing) | + `team_invites`, `match_checkins`, `match_result_submissions`, bucket `match-proofs` |
+| D2 Tournament & Schedule DB (existing) | + `team_invites`, `match_checkins`, `match_result_submissions`, `tournament_champions` (Hall of Fame), bucket `match-proofs` |
 | D4 Feedback DB (existing) | + new `feedback` columns, `gemini_calls` (AI rate-limit counter) |
 | D5 Analytics & Engagement DB (existing) | `analytics_reports`; the engagement report now also compiles predictions |
 | **D6 Website Content DB** | `site_content`, `hero_images`, `campaigns`, `events`, `game_divisions`, `officers`, `official_teams`, `official_team_players`, bucket `site-images` |
@@ -745,6 +745,55 @@ A LIVE pill and banner appear while a match streams; small celebrations mark an 
   policies); columns `announcements.publish_at`, `notified_at`; functions `send_announcement_notification()`,
   `publish_scheduled_announcements()` (pg_cron), `dismiss_comment_reports()`; `get_my_role()` honors 2FA;
   notification type `comment_reported`. Privacy Notice version `2026-11-09.2` (reports, settings, 2FA keys).
+
+### Feature 29: Live sentiment "hype meter"
+**Module:** 4 Live Streaming + 5 Feedback and Sentiment Analysis (+ 6 Reports)
+
+**What it does:** while a stream is live, organizers see how the chat feels in real time: a 0-100 hype score
+(comments per minute x share positive minus negative; labels Cold / Warming up / Hyped / On fire), a stacked area
+chart of positive / neutral / negative comments per minute, comments per minute, % positive, flagged comments,
+"Analyzing N" (comments the AI hasn't classified yet) and the top topics of the last 10 minutes. It updates live
+(at most every 5 seconds). Shown on the stream page (a folding panel, organizers only) and on Engagement Stats (one
+card per live stream). Saved reports keep the sentiment per minute of the 5 busiest streams with a chart and a
+written interpretation. Counts only: never comment text or who wrote it.
+
+**Actors / use cases**
+- Staff, Admin: *View live sentiment*. Admin: view the comment sentiment timeline in a saved report.
+
+**Data flows**
+- D3 (stream comments, with the sentiment and topics written by 5.0) → 4.0 → Staff/Admin: Live sentiment
+  (per minute, hype score, topics).
+- D3 → 6.0 → D5: Comment sentiment timeline (saved with the report).
+
+**Database**
+- No new table. Function `get_stream_sentiment_timeline()` (admin/staff); `report_comments()` gains `timeline`
+  (`202611101000_live_sentiment`).
+
+### Feature 30: Hall of Fame (past champions archive)
+**Module:** 2 Registration and Tournament Management (+ 7 Public Website)
+
+**What it does:** a public page `/hall-of-fame` keeps every tournament's champion over time: the reigning champion
+per game, every champion (filter by game and season), the final score against the runner-up, "most titles" per
+team and titles per game. The record is made by the database the moment a final gets a winner (approve, override,
+forfeit, walkover or a correction) as a snapshot (team name, logo, roster), so later renames, roster changes or a
+removed team don't rewrite history. Visitors see team names and logos; logged-in users also see the winning roster
+(in-game names) and the MVP. Team cards and team pages show a trophy badge with the title count; players see their
+titles as "Champion" chips on their profile. Admins pick the MVP and can hide a record (both logged). The champion
+team's members get a "Your team is in the Hall of Fame" notification.
+
+**Actors / use cases**
+- Visitor, Audience, Player, Staff, Admin: *View Hall of Fame*. Player: *View own titles*.
+- Admin: *Set MVP*, *Publish/hide a Hall of Fame record*.
+- System: *Record champion* when a final is decided.
+
+**Data flows**
+- 2.0 (final result) → D2: Champion record (snapshot) → 7.0 → Visitor/all: Hall of Fame page.
+- Admin → 2.0: MVP / publish choice → D2; → D8: activity log entry. 2.0 → D7: notification to the champion team.
+
+**Database**
+- New table **`tournament_champions`** (part of D2). Functions `get_hall_of_fame()`, `get_team_titles()`,
+  `get_my_titles()`, `set_tournament_mvp()`, `set_champion_published()`; trigger `record_champion()` on matches
+  (`202611101100_hall_of_fame`). New notification type `hall_of_fame`.
 
 ### Feature 13: Enhancements inside the original modules
 These additions stay inside existing modules but add flows you may want to draw.

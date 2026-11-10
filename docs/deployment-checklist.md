@@ -12,7 +12,7 @@ Do these in order. Tick each box. Nothing here runs automatically.
 ## 1. Supabase: database
 - [ ] Run the migrations you haven't run yet, **in filename order**, in the SQL Editor
       (`supabase/migrations/`, oldest first). Each file is one transaction: if it fails, nothing
-      changed; fix the cause and run it again. Current last file: `202611092000_announcements_feed.sql`.
+      changed; fix the cause and run it again. Current last file: `202611101100_hall_of_fame.sql`.
 - [ ] One-time Vault setup for the feedback/moderation key, if not done: steps at the top of
       `202610181000_feedback_protection.sql` (the secret must equal `FEEDBACK_SERVER_KEY`).
 - [ ] Check the pg_cron jobs exist (SQL Editor: `select jobname, schedule from cron.job;`):

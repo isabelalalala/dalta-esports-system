@@ -13,8 +13,9 @@ export default function SiteAuthButtons() {
   const viewer = useViewer();
 
   if (viewer.status === 'loading') {
-    // Same width as the logged-out buttons, so the header doesn't jump
-    return <div className="h-10 w-40" aria-hidden="true" />;
+    // Exactly the size of the logged-out buttons (theme + Log in + Sign up: 217px on phones, 266px
+    // from sm), so the header doesn't wrap differently and push the page down when they appear
+    return <div className="h-11 w-[217px] sm:w-[266px]" aria-hidden="true" />;
   }
 
   if (viewer.userId) {

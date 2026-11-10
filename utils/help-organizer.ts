@@ -30,7 +30,17 @@ export const ORGANIZER_HELP_SECTIONS: HelpSection[] = [
           '4. If the form warns that Facebook can’t show the video here, the video isn’t Public, is on a personal profile, or has embedding turned off.',
           '5. Set the status to Live when it starts and Ended afterwards: viewers see the replay.',
         ],
-        link: { href: '/live', label: 'Streams' },
+        link: { href: '/live', label: 'Live Streams' },
+      },
+      {
+        q: 'What is the live sentiment ("hype meter") on a stream?',
+        a: [
+          'Open a live stream: under the video, the Live sentiment panel (organizers only) shows how the chat feels right now. It updates by itself, at most every 5 seconds.',
+          'Hype (0–100) = how busy the chat is (comments per minute over the last 5 minutes; 20 a minute counts as full) × how positive it is (share positive minus share negative). Cold, Warming up, Hyped, On fire.',
+          'The chart shows positive, neutral and negative comments per minute; "Analyzing" counts comments the AI hasn’t classified yet. At busy moments the AI can lag a minute or two (it checks up to 10 batches of 20 comments a minute).',
+          'Only visible comments count; hidden and removed ones are left out. It never shows who wrote what. Engagement Stats shows the same panel for every live stream, and saved reports keep the timeline of the busiest streams.',
+        ],
+        link: { href: '/analytics/engagement', label: 'Engagement Stats' },
       },
       {
         q: 'How do I review results and disputes?',
@@ -112,6 +122,14 @@ export const ORGANIZER_HELP_SECTIONS: HelpSection[] = [
           'Tick "Draft" to save it without publishing: drafts are never shown to players or spectators and send no notification until you untick it.',
         ],
         link: { href: '/announcements', label: 'Announcements' },
+      },
+      {
+        q: 'How do I set the MVP or hide a Hall of Fame record?',
+        a: [
+          'The Hall of Fame record is made by the system when a final gets a winner (and follows any correction to that result). Open the tournament: in the Admin Panel, the Hall of Fame box lets you pick the MVP from the winning roster or hide the record from the public page. Both are logged in the Activity Log.',
+          'The roster is a snapshot of the team when the final was decided, so later roster changes or a renamed team don’t change it.',
+        ],
+        link: { href: '/hall-of-fame', label: 'Hall of Fame' },
       },
       {
         q: 'How do I make a good announcement post?',

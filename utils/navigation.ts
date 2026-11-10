@@ -8,7 +8,7 @@ export type NavIcon =
   | 'home' | 'dashboard' | 'events' | 'tournaments' | 'live' | 'teams' | 'feedback' | 'profile' | 'myteam'
   | 'schedule' | 'recruiting' | 'matches' | 'brackets' | 'users' | 'announcements' | 'sentiment' | 'reports'
   | 'verification' | 'website' | 'activity' | 'about' | 'campaigns' | 'divisions' | 'community' | 'stats'
-  | 'registrations' | 'moderation' | 'help';
+  | 'registrations' | 'moderation' | 'help' | 'halloffame';
 
 export interface NavItem {
   href: string;
@@ -63,6 +63,7 @@ const I = {
   about: { href: '/about', label: 'About Us', icon: 'about', hint: 'Who we are' },
   campaigns: { href: '/campaigns', label: 'Campaigns', icon: 'campaigns', hint: 'Our campaigns and programs' },
   divisions: { href: '/divisions', label: 'Game Divisions', icon: 'divisions', hint: 'Our official teams per game' },
+  hallOfFame: { href: '/hall-of-fame', label: 'Hall of Fame', icon: 'halloffame', hint: 'Every tournament champion, season after season' },
   community: { href: '/community', label: 'Community', icon: 'community', hint: 'Join the DALTA community' },
   help: { href: '/help', label: 'Help & FAQ', icon: 'help', hint: 'How things work: teams, streams, feedback, warnings' },
 } satisfies Record<string, NavItem>;
@@ -71,7 +72,7 @@ const I = {
 // so a page is called the same everywhere (README "Glossary").
 export const NAV_ITEMS = I;
 
-const EXPLORE: NavGroup = { label: 'Explore', items: [I.about, I.campaigns, I.divisions, I.community, I.help] };
+const EXPLORE: NavGroup = { label: 'Explore', items: [I.hallOfFame, I.about, I.campaigns, I.divisions, I.community, I.help] };
 
 export function navFor(role: string | null | undefined, loggedIn: boolean): RoleNav {
   if (role === 'admin') {

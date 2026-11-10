@@ -15,9 +15,14 @@ import StreamComments from '@/components/StreamComments';
 import PageLoading from '@/components/PageLoading';
 import PageError from '@/components/PageError';
 import { usePageTitle } from '@/utils/page-title';
-import { MessageSquare } from 'lucide-react';
-import { isOrganizer } from '@/utils/permissions';
+import { Activity, ChevronDown, MessageSquare } from 'lucide-react';
+import { can, isOrganizer } from '@/utils/permissions';
+import { useViewer } from '@/utils/use-viewer';
+import LiveSentimentMeter from '@/components/LiveSentimentMeter';
 import GameBadge from '@/components/GameBadge';
+import LivePulse from '@/components/LivePulse';
+import { LiveTag } from '@/components/MatchVersus';
+import AutoUpdateBadge from '@/components/AutoUpdateBadge';
 
 // Watch page: Facebook player + a scoreboard that updates in real time
 export default function WatchStreamPage() {
@@ -30,6 +35,7 @@ export default function WatchStreamPage() {
   const [realtimeOn, setRealtimeOn] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const viewer = useViewer();
 
   const params = useParams();
   const id = params?.id as string;
@@ -165,7 +171,6 @@ export default function WatchStreamPage() {
   }
 
   const name = (teamId: string | null) => (teamId ? teamNames[teamId] ?? 'Unknown team' : 'TBD');
-  const pulse = 'inline-block h-1.5 w-1.5 rounded-full bg-current motion-safe:animate-pulse';
 
   return (
     <div className="w-full text-stone-950">
@@ -178,9 +183,12 @@ export default function WatchStreamPage() {
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
             <h1 className="text-2xl sm:text-3xl font-black text-stone-950 break-words min-w-0">{stream.title}</h1>
-            <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full border text-[11px] font-bold uppercase ${streamStatusStyles[stream.status]}`}>
-              {stream.status === 'live' ? <><span className={pulse} /> Live</> : stream.status === 'ended' ? 'Replay' : 'Scheduled'}
-            </span>
+            {/* The shared red LIVE tag (the old light-red text on a pale tint was hard to read) */}
+            {stream.status === 'live' ? <LiveTag /> : (
+              <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full border text-[11px] font-bold uppercase ${streamStatusStyles[stream.status]}`}>
+                {stream.status === 'ended' ? 'Replay' : 'Scheduled'}
+              </span>
+            )}
           </div>
           <p className="text-stone-600">
             <Link href={`/tournaments/${stream.tournament_id}`} className="underline hover:text-stone-950">
@@ -204,15 +212,30 @@ export default function WatchStreamPage() {
             <div className="rounded-2xl overflow-hidden bg-white border border-stone-200/90 shadow-xs p-2 sm:p-3">
               <FacebookPlayer url={stream.facebook_url} title={stream.title} />
             </div>
+
+            {/* Organizers only (stream.viewSentiment; get_stream_sentiment_timeline() checks the role
+                too): live comment sentiment. Open while live, folded on a replay. */}
+            {can(viewer.role, 'stream.viewSentiment') && (
+              <details open={stream.status === 'live'} className="group rounded-2xl border border-stone-200/90 bg-white shadow-xs">
+                <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 sm:px-5 [&::-webkit-details-marker]:hidden">
+                  <span className="inline-flex items-center gap-2 text-sm font-black uppercase tracking-wider text-stone-950">
+                    <Activity className="size-4 text-maroon" aria-hidden="true" /> Live sentiment
+                    <span className="rounded-full bg-stone-100 px-2 py-0.5 text-[10px] tracking-widest text-stone-600">Organizers</span>
+                  </span>
+                  <ChevronDown className="size-4 text-stone-600 transition-transform group-open:rotate-180" aria-hidden="true" />
+                </summary>
+                <div className="@container border-t border-stone-100 p-4 sm:p-5">
+                  <LiveSentimentMeter streamId={stream.id} />
+                </div>
+              </details>
+            )}
           </div>
 
           <aside className="min-w-0 space-y-4 @5xl:sticky @5xl:top-[calc(var(--site-header-h)+1rem)]" aria-label="Live score">
             <section className="bg-white border border-stone-200/90 rounded-2xl shadow-xs p-4">
               <div className="flex flex-wrap justify-between items-center gap-2 mb-3">
                 <h2 className="text-base font-black">{matchId ? 'Match score' : 'Live matches'}</h2>
-                <span className={`inline-flex items-center gap-1 text-xs font-semibold ${realtimeOn ? 'text-emerald-700' : 'text-stone-600'}`}>
-                  {realtimeOn ? <><span className={pulse} /> Updates live</> : 'Connecting...'}
-                </span>
+                {realtimeOn ? <AutoUpdateBadge label="Updates live" /> : <span className="text-xs font-semibold text-stone-600">Connecting...</span>}
               </div>
 
               {matches.length === 0 ? (
@@ -232,7 +255,7 @@ export default function WatchStreamPage() {
                       <li key={m.id} className="rounded-xl border border-stone-200 bg-stone-50 p-3">
                         <p className="text-xs font-bold uppercase tracking-wide text-stone-600 mb-2 flex flex-wrap items-center gap-2">
                           <span>{roundLabel(m.round, roundCount || m.round)} · Match {m.match_number}</span>
-                          {m.status === 'live' && <span className="inline-flex items-center gap-1 text-red-700"><span className={pulse} /> Live</span>}
+                          {m.status === 'live' && <span className="inline-flex items-center gap-1.5 text-red-700"><LivePulse size="xs" /> Live</span>}
                           {m.status === 'completed' && <span className="text-stone-600">Final</span>}
                         </p>
                         {/* Two rows (team + score) fit the narrow sidebar better than one wide row */}

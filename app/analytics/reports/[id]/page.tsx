@@ -160,7 +160,7 @@ export default function SavedReportPage() {
           sourceText={sourceLabel(data.comments ? filters.source : 'feedback')}
           insights={insights.charts}
         />
-        <EngagementSection report={data.engagement} comments={data.comments?.by_stream} insights={insights.charts} />
+        <EngagementSection report={data.engagement} comments={data.comments?.by_stream} timeline={data.comments?.timeline} insights={insights.charts} />
         {data.moderation && <ModerationSection report={data.moderation} insights={insights.charts} />}
       </div>
     </div>

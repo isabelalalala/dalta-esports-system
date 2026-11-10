@@ -170,16 +170,20 @@ Details per feature: `docs/new-features-summary.md`.
   transfer captaincy, roster lock); team directory and join requests (captain opens recruiting, player asks to
   join, captain accepts/declines); "verified students only" tournaments; match check-in with reminders (pg_cron);
   forfeits; captain result submission with a screenshot, confirm/dispute by the other captain, and staff review
-  (approve / override / reject).
+  (approve / override / reject); Hall of Fame: when a final gets a winner the champion is recorded with a roster
+  snapshot (D2 `tournament_champions`) and shown on the public Hall of Fame page.
 - **3.0 Distribute Event Announcement:** in-app notifications (bell, live updates) for announcements, match times,
   results, invites and verification; public tournament and match pages for visitors; "Add to calendar" files; share
   links with previews.
-- **4.0 Stream Live Match:** "watching now" live viewer count (not stored).
+- **4.0 Stream Live Match:** "watching now" live viewer count (not stored); live comment sentiment ("hype meter")
+  for organizers while a stream is live (D3 stream comments, with the sentiment written by 5.0, → Staff/Admin:
+  sentiment per minute, hype score, top topics; counts only).
 - **5.0 Analyze Audience Feedback:** one feedback per user per tournament, per match and one general; sentiment and
   topics are classified when feedback is sent; a server-side rate limit protects the Gemini quota; failed analyses
   are saved as "pending analysis" and retried by an admin.
 - **6.0 Generate Administrative Report:** saved reports (print/PDF, CSV); activity (audit) log; Excel/CSV exports;
-  the engagement report includes pick'em predictions and participation.
+  the engagement report includes pick'em predictions and participation; saved reports keep the comment sentiment
+  per minute of the busiest streams, with a written interpretation ("peaked at 7:42 PM").
 
 ### New processes
 - **7.0 Manage Public Website**
@@ -200,15 +204,17 @@ Details per feature: `docs/new-features-summary.md`.
   comment on streams, view own warnings.
 - **Player:** submit student details. **Team Captain:** invite player, remove member, transfer captaincy, check in
   for a match, submit result with a screenshot, confirm/dispute a result, open/close recruiting, accept/decline join
-  request, accept/decline all join requests. **Player:** accept/decline invite, leave team, browse teams, request to join a team.
+  request, accept/decline all join requests. **Player:** accept/decline invite, leave team, browse teams, request to join a team,
+  view own titles ("Champion" chips).
 - **Audience/Player:** submit feedback about a match, pick match winner, view leaderboard, view LoL ban/pick summary.
 - **Staff:** review student verification, monitor check-ins ("Needs attention"), declare forfeit, review match
   result, export data, remove a team (with a reason; its bracket matches become walkovers), enter LoL bans and
-  picks, resolve and preview a Facebook stream link, review hidden comments (restore / remove).
+  picks, resolve and preview a Facebook stream link, review hidden comments (restore / remove), view live sentiment.
 - **Admin:** all staff use cases, plus manage the website, view the activity log, retry pending sentiment analysis,
   export feedback and the user list, restore a removed team, remove a user's profile picture, review hidden
-  feedback, remove warnings, confirm/dismiss bans, ban/unban users, view comment sentiment.
+  feedback, remove warnings, confirm/dismiss bans, ban/unban users, view comment sentiment, set the tournament MVP,
+  publish/hide a Hall of Fame record.
 - **System (AI moderation, time/event actor):** analyse comments and feedback, issue warnings, flag accounts at 5 warnings.
 - **Visitor (new):** view website pages, search, view public tournament/match pages, view community split, add to
-  calendar, share.
+  calendar, share, view Hall of Fame (all actors; logged-in users also see rosters and MVPs).
 

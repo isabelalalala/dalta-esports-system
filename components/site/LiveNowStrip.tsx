@@ -7,6 +7,7 @@ import { createClient } from '@/utils/supabase/client';
 import Countdown from './Countdown';
 import { ScoreBoard, VersusBadge, VersusRow } from '@/components/MatchVersus';
 import GameBadge from '@/components/GameBadge';
+import LivePulse from '@/components/LivePulse';
 
 // One match as returned by get_live_now() (202611091100_live_now): team and tournament NAMES only
 interface LiveNowMatch {
@@ -76,10 +77,7 @@ function LiveMatches({ matches }: { matches: LiveNowMatch[] }) {
   return (
     <section aria-label="Live now" className="animate-section-reveal rounded-2xl border border-red-200 bg-white shadow-xs overflow-hidden">
       <div className="flex items-center gap-2 border-b border-red-100 bg-red-50 px-4 py-2">
-        <span className="relative flex h-2.5 w-2.5" aria-hidden="true">
-          <span className="absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75 animate-ping" />
-          <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-red-600" />
-        </span>
+        <LivePulse size="md" />
         <h2 className="text-xs font-black uppercase tracking-widest text-red-700">
           Live now · {matches.length} {matches.length === 1 ? 'match' : 'matches'}
         </h2>

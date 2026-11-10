@@ -136,7 +136,7 @@ function StreamLink({ link, loggedIn }: { link: Extract<AnnouncementLink, { type
     <div className={`${box} ${live ? 'border-red-200 bg-red-50/60' : ''}`}>
       <div className="flex items-start gap-3">
         <span className={`grid size-11 shrink-0 place-items-center rounded-xl ${live ? 'bg-red-600 text-white' : 'bg-ink text-gold'}`}>
-          <Tv className={`size-5 ${live ? 'animate-pulse motion-reduce:animate-none' : ''}`} aria-hidden="true" />
+          <Tv className="size-5" aria-hidden="true" />
         </span>
         <div className="min-w-0 flex-1 space-y-1">
           <div className="flex flex-wrap items-center gap-2">

@@ -40,6 +40,8 @@ import { useRealtimeRefresh } from '@/utils/use-realtime-refresh';
 import { useConfirm } from '@/components/useConfirm';
 import { toast } from '@/components/Toaster';
 import GameBadge from '@/components/GameBadge';
+import TitleBadge from '@/components/TitleBadge';
+import { useTeamTitles } from '@/utils/use-team-titles';
 
 const inputClass =
   'w-full p-3.5 rounded-xl bg-white text-stone-950 border border-stone-300 placeholder:text-stone-400 focus:border-gold focus:ring-2 focus:ring-gold/25 shadow-xs outline-none transition-all font-medium text-xs sm:text-sm';
@@ -49,6 +51,8 @@ export default function ManageTeamPage() {
   usePageTitle('Team');
   const supabase = createClient();
   const [team, setTeam] = useState<Team | null>(null);
+  // Hall of Fame titles for the trophy badge in the hero
+  const titles = useTeamTitles(team ? [team.id] : []);
   const [roster, setRoster] = useState<RosterMember[]>([]);
   const [userId, setUserId] = useState('');
   const [role, setRole] = useState('');
@@ -439,6 +443,8 @@ export default function ManageTeamPage() {
               <span>
                 {roster.length} of {maxPlayers} Roster Slots Filled
               </span>
+              {/* Hall of Fame titles (links the team's history to the public archive) */}
+              {titles[team.id] ? <TitleBadge titles={titles[team.id]} onDark /> : null}
             </p>
           </div>
         </section>

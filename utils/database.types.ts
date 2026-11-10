@@ -953,6 +953,50 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"tournament_champions": {
+                  Row: {
+                    "champion_logo_url": string | null,"champion_score": number | null,"champion_team_id": string | null,"champion_team_name": string,"decided_at": string,"final_match_id": string,"game_id": string | null,"is_published": boolean,"mvp_name": string | null,"mvp_user_id": string | null,"roster": NonNullable<Json>,"runner_up_score": number | null,"runner_up_team_id": string | null,"runner_up_team_name": string | null,"tournament_id": string,"updated_at": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "champion_logo_url"?: string | null,"champion_score"?: number | null,"champion_team_id"?: string | null,"champion_team_name": string,"decided_at"?: string,"final_match_id": string,"game_id"?: string | null,"is_published"?: boolean,"mvp_name"?: string | null,"mvp_user_id"?: string | null,"roster"?: NonNullable<Json>,"runner_up_score"?: number | null,"runner_up_team_id"?: string | null,"runner_up_team_name"?: string | null,"tournament_id": string,"updated_at"?: string
+                  }
+                  Update: {
+                    "champion_logo_url"?: string | null,"champion_score"?: number | null,"champion_team_id"?: string | null,"champion_team_name"?: string,"decided_at"?: string,"final_match_id"?: string,"game_id"?: string | null,"is_published"?: boolean,"mvp_name"?: string | null,"mvp_user_id"?: string | null,"roster"?: NonNullable<Json>,"runner_up_score"?: number | null,"runner_up_team_id"?: string | null,"runner_up_team_name"?: string | null,"tournament_id"?: string,"updated_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "tournament_champions_champion_team_id_fkey"
+      columns: ["champion_team_id"]
+isOneToOne: false
+      referencedRelation: "teams"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "tournament_champions_game_id_fkey"
+      columns: ["game_id"]
+isOneToOne: false
+      referencedRelation: "games"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "tournament_champions_mvp_user_id_fkey"
+      columns: ["mvp_user_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "tournament_champions_runner_up_team_id_fkey"
+      columns: ["runner_up_team_id"]
+isOneToOne: false
+      referencedRelation: "teams"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "tournament_champions_tournament_id_fkey"
+      columns: ["tournament_id"]
+isOneToOne: true
+      referencedRelation: "tournaments"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"tournament_registrations": {
                   Row: {
                     "id": string,"registered_at": string,"rejection_reason": string | null,"status": string,"team_id": string | null,"team_name": string | null,"tournament_id": string,"user_id": string
@@ -1180,6 +1224,11 @@ isOneToOne: false
 "get_my_role":
 { Args: Record<PropertyKey, never>; Returns: string
                            },
+"get_my_titles":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "decided_at": string,"game_id": string,"team_name": string,"tournament_id": string,"tournament_name": string
+            }[]
+                           },
 "get_my_team_invites":
 { Args: Record<PropertyKey, never>; Returns: {
               "captain_name": string,"created_at": string,"game_name": string,"invite_id": string,"max_players": number,"member_count": number,"team_id": string,"team_name": string
@@ -1205,6 +1254,9 @@ isOneToOne: false
               "calendar_name": string,"game": string,"match_id": string,"match_number": number,"round": number,"round_count": number,"scheduled_at": string,"score_a": number,"score_b": number,"status": string,"team_a": string,"team_b": string,"tournament_id": string,"tournament_name": string,"updated_at": string
             }[]
                            },
+"get_hall_of_fame":
+{ Args: { "p_game"?: string,"p_year"?: number }; Returns: Json
+                           },
 "get_public_tournament":
 { Args: { "p_tournament_id": string }; Returns: Json
                            },
@@ -1214,6 +1266,14 @@ isOneToOne: false
 "get_stream_comments":
 { Args: { "p_before"?: string,"p_limit"?: number,"p_stream_id": string }; Returns: {
               "author_avatar": string,"author_name": string,"content": string,"created_at": string,"id": string,"is_mine": boolean,"is_profane": boolean,"moderation_status": string
+            }[]
+                           },
+"get_stream_sentiment_timeline":
+{ Args: { "p_bucket_seconds"?: number,"p_since"?: string,"p_stream_id": string }; Returns: Json
+                           },
+"get_team_titles":
+{ Args: { "p_team_ids": (string)[] }; Returns: {
+              "team_id": string,"titles": number
             }[]
                            },
 "get_team_invites":
@@ -1349,8 +1409,14 @@ isOneToOne: false
 "send_checkin_open_notifications":
 { Args: Record<PropertyKey, never>; Returns: number
                            },
+"set_champion_published":
+{ Args: { "p_published": boolean,"p_tournament_id": string }; Returns: undefined
+                           },
 "set_team_recruiting":
 { Args: { "p_recruiting": boolean,"p_team_id": string }; Returns: undefined
+                           },
+"set_tournament_mvp":
+{ Args: { "p_tournament_id": string,"p_user_id": string | null }; Returns: undefined
                            },
 "short_name":
 { Args: { "p_full_name": string }; Returns: string

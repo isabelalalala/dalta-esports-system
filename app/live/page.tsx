@@ -10,6 +10,7 @@ import PageLoading from '@/components/PageLoading';
 import { usePageTitle } from '@/utils/page-title';
 import PageHeroBackground from '@/components/site/PageHeroBackground';
 import GameBadge from '@/components/GameBadge';
+import LivePulse from '@/components/LivePulse';
 
 export default function LiveStreamsPage() {
   const supabase = createClient();
@@ -50,14 +51,14 @@ export default function LiveStreamsPage() {
             <Link
               key={s.id}
               href={`/live/${s.id}`}
-              className={`block bg-white border rounded-2xl p-6 shadow-xs hover:shadow-md hover:-translate-y-0.5 transition-all text-stone-950 ${
-                s.status === 'live' ? 'border-red-500/80 ring-2 ring-red-500/10' : 'border-stone-200/90 hover:border-stone-300'
+              className={`block card-interactive bg-white border rounded-2xl p-6 shadow-xs text-stone-950 ${
+                s.status === 'live' ? 'border-red-500/80 ring-2 ring-red-500/10' : 'border-stone-200/90'
               }`}
             >
               <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full border text-[11px] font-black uppercase mb-3 ${streamStatusStyles[s.status]}`}>
                 {s.status === 'live' ? (
                   <>
-                    <span className="inline-block h-2 w-2 rounded-full bg-red-600 animate-pulse" />
+                    <LivePulse tone="white" />
                     <span>Live Now</span>
                   </>
                 ) : s.status === 'ended' ? (

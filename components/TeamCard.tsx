@@ -9,6 +9,7 @@ import TeamLogo from '@/components/TeamLogo';
 import Avatar from '@/components/Avatar';
 import AvatarStack from '@/components/AvatarStack';
 import StatusBadge from '@/components/StatusBadge';
+import TitleBadge from '@/components/TitleBadge';
 import AnimatedProgress from '@/components/AnimatedProgress';
 import AskToJoin from '@/components/AskToJoin';
 import GameBadge from '@/components/GameBadge';
@@ -28,9 +29,11 @@ export interface TeamCardViewer {
 // (z-10) so they still work. Hover lifts the card (card-interactive) and keyboard focus on the
 // link draws a ring around the whole card. Cards in a grid row stretch to the same height.
 export default function TeamCard({
-  team: t, profileSchema, viewer, onChanged,
+  team: t, profileSchema, viewer, onChanged, titles,
 }: {
   team: TeamListEntry;
+  // Tournament titles (Hall of Fame), from useTeamTitles() in the directory
+  titles?: number;
   // The game's profile form (games.profile_schema), for the "Looking for" labels
   profileSchema: unknown;
   viewer: TeamCardViewer;
@@ -60,6 +63,7 @@ export default function TeamCard({
           {/* Compact square game icon (the wide wordmark is unreadable this small) + the name */}
           <span className="flex min-w-0 items-center gap-2">
             <GameBadge name={t.game_name} game={t.game_id} size="xs" withName nameClassName="font-bold text-stone-600" />
+            <TitleBadge titles={titles} />
           </span>
         </div>
       </div>

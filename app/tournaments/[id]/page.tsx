@@ -48,6 +48,8 @@ import { useConfirm } from '@/components/useConfirm';
 import { toast } from '@/components/Toaster';
 import AutoUpdateBadge from '@/components/AutoUpdateBadge';
 import GameBadge from '@/components/GameBadge';
+import HallOfFameAdmin from './HallOfFameAdmin';
+import LivePulse from '@/components/LivePulse';
 
 export default function TournamentDetailsPage() {
   const [confirmDialog, ask] = useConfirm();
@@ -417,11 +419,11 @@ export default function TournamentDetailsPage() {
         >
           <div className="flex items-center gap-3 min-w-0">
             <span className="p-2.5 rounded-xl bg-red-600 text-white shadow-xs">
-              <Tv className="h-5 w-5 animate-pulse" />
+              <Tv className="h-5 w-5" aria-hidden="true" />
             </span>
             <div className="min-w-0">
               <div className="uppercase text-[10px] font-black text-red-700 tracking-widest flex items-center gap-1.5">
-                <span className="relative inline-flex h-2 w-2" aria-hidden="true"><span className="absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75 animate-ping" /><span className="relative inline-flex h-2 w-2 rounded-full bg-red-600" /></span> Live Match Stream
+                <LivePulse /> Live Match Stream
               </div>
               <p className="font-black text-sm sm:text-base text-stone-950 truncate tracking-wide">{s.title}</p>
             </div>
@@ -771,6 +773,14 @@ export default function TournamentDetailsPage() {
               ? `Active Bracket: ${matches.length} matches across ${roundCount} rounds.`
               : `No bracket generated yet. Ready to build from ${approvedTeams.length} approved teams.`}
           </p>
+
+          {/* Hall of Fame (admins): MVP and publish/hide, once the final has a winner */}
+          {can(role, 'champion.manage') && matches.length > 0 && (
+            <HallOfFameAdmin
+              tournamentId={id}
+              finalWinner={matches.find((m) => !m.next_match_id && m.round === roundCount)?.winner_team_id ?? null}
+            />
+          )}
 
           <div className="flex flex-wrap gap-3">
             <Link

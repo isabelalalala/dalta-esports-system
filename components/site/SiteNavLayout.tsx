@@ -107,7 +107,9 @@ export default function SiteNavLayout({ children }: { children: ReactNode }) {
   return (
     <div className="flex-1 w-full bg-white text-stone-950 flex flex-col lg:flex-row min-h-[calc(100vh-var(--site-header-h))]">
       {/* Phones, logged out: Menu bar with the full list */}
-      {ready && !loggedIn && <MobileMenuBar groups={nav.groups} />}
+      {/* Also while the login state loads (visitors are most of the public traffic): otherwise the
+          bar appears a moment later and pushes the whole page down */}
+      {!loggedIn && <MobileMenuBar groups={nav.groups} />}
 
       {/* Large screens: sidebar. The outer width is pure CSS (rail below 1280px unless the saved
           choice is "open") so the first paint already has the right width. */}

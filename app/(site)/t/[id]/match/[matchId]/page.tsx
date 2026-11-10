@@ -17,6 +17,7 @@ import PredictionPicker from '@/components/PredictionPicker';
 import MatchDraftSection from '@/components/MatchDraftSection';
 import { Target } from 'lucide-react';
 import GameBadge from '@/components/GameBadge';
+import LivePulse from '@/components/LivePulse';
 
 const TZ = 'Asia/Manila';
 
@@ -93,7 +94,7 @@ async function MatchContent({ params }: { params: PageProps<'/t/[id]/match/[matc
           <p className={`text-base sm:text-xl font-black leading-relaxed ${teamClass(match.team_b_id)}`}>{teamB}</p>
         </div>
         <p className="text-xs sm:text-sm text-stone-600 font-medium">
-          {match.status === 'live' && <span className="text-red-600 font-black mr-2"><span className="inline-block h-1.5 w-1.5 rounded-full bg-current animate-pulse" /> LIVE</span>}
+          {match.status === 'live' && <span className="text-red-600 font-black mr-2 inline-flex items-center gap-1.5"><LivePulse size="xs" /> LIVE</span>}
           {done
             ? `${match.winner_team_id === match.team_a_id ? teamA : teamB} won${match.is_forfeit ? ' by forfeit' : ''}`
             : `${info.when} (Philippine time)`}
@@ -123,7 +124,7 @@ async function MatchContent({ params }: { params: PageProps<'/t/[id]/match/[matc
 
       {stream && (
         <section className="space-y-3">
-          <SectionTitle><span className="inline-block h-3 w-3 rounded-full bg-red-500 motion-safe:animate-pulse mr-2" />Live now</SectionTitle>
+          <SectionTitle><LivePulse size="lg" className="mr-2" />Live now</SectionTitle>
           <div className="rounded-2xl border border-stone-200 overflow-hidden bg-white p-2 sm:p-3">
             <FacebookPlayer url={stream.facebook_url} title={stream.title} />
           </div>

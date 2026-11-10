@@ -104,7 +104,7 @@ Enforced by a CHECK constraint on `profiles.role` (migration `202610161200_role_
 - RLS policies check roles with `public.get_my_role()`.
 
 ## Current schema (public)
-All migrations are in `supabase/migrations/`, run in filename order (202610151100 … 202611092000). `202610151100_base_schema` creates the three pre-migration base tables (`profiles`, `tournaments`, `tournament_registrations`). It is `if not exists`, so it is a no-op on databases that already have them.
+All migrations are in `supabase/migrations/`, run in filename order (202610151100 … 202611101100). `202610151100_base_schema` creates the three pre-migration base tables (`profiles`, `tournaments`, `tournament_registrations`). It is `if not exists`, so it is a no-op on databases that already have them.
 `202610181000_feedback_protection` also needs its one-time Vault key setup (the `feedback_server_key` secret +
 `FEEDBACK_SERVER_KEY`); the steps are at the top of that file.
 Readers: "anyone" = also logged out; "logged-in" = any role; "admin/staff" = organizers only.
@@ -241,6 +241,26 @@ Readers: "anyone" = also logged out; "logged-in" = any role; "admin/staff" = org
   match upload; the two teams and staff read (signed URLs); no update/delete from the app. Deleting a match or
   tournament does NOT delete its files (remove them in Supabase Storage if needed).
 
+**Hall of Fame** (`202611101100_hall_of_fame`)
+- `tournament_champions` (PK tournament_id, cascade): final_match_id, game_id, champion_team_id/name/logo_url,
+  runner_up_team_id/name, champion_score / runner_up_score (from the champion's side), roster (jsonb snapshot
+  `[{user_id, ign, role}]` at the moment of winning), mvp_user_id + mvp_name (IGN), decided_at, is_published,
+  updated_at. RLS on; admins select; no write policies, anon has no grant. Written only by the database:
+  `record_champion()` AFTER insert/delete/update OF winner_team_id, score_a, score_b, status on matches (NOT
+  next_match_id: deleting a bracket nulls it) upserts via `upsert_champion()` when the final (last round, no next
+  match) has a winner, deletes on winner removed / final deleted; notifies the roster (`hall_of_fame`, mutable)
+  only when the champion team is new. BEFORE trigger `protect_champion()` + flag `app.recording_champion`
+  (FK cascades at trigger depth > 1 pass). Admin (`champion.manage`): `set_tournament_mvp()` (roster only),
+  `set_champion_published()`, logged `champion.mvp_set` / `champion.published` / `champion.unpublished`.
+  Reading: `get_hall_of_fame(game, year)` (anon + logged-in; published, admins all; roster IGNs + MVP only when
+  logged in = privacy choice (b), never user ids), `get_team_titles(ids)`, `get_my_titles()`. Account deletion
+  scrubs the person from rosters (`scrub_champion_rosters()`). Backfilled for finals decided before the migration.
+- UI: `/hall-of-fame` (`app/(site)/hall-of-fame`, cached `getHallOfFame()`, a new champion shows within minutes;
+  MVP/publish call `refreshSite()`), `components/site/HallOfFameBoard.tsx` (filters `?game=&year=`, reigning per
+  game, wall of fame, cards; loads rosters/MVP in the browser for logged-in viewers), `HallOfFameConfetti.tsx`,
+  `opengraph-image.tsx`; helpers `utils/hall-of-fame.ts`. `TitleBadge` + `useTeamTitles()` on team cards and
+  `/teams/[id]`; `MyTitles` on `/profile`; `app/tournaments/[id]/HallOfFameAdmin.tsx` in the Admin Panel.
+
 **Pick'em predictions** (audience engagement, `202610181100_predictions`)
 - `predictions`: id, user_id (→ profiles, cascade), match_id (→ matches, cascade: regenerating a bracket deletes
   its picks), predicted_winner_team_id (→ teams), is_correct (null until the match has a winner), created_at,
@@ -363,6 +383,15 @@ Readers: "anyone" = also logged out; "logged-in" = any role; "admin/staff" = org
   drops the AI's warning), `moderate_feedback()` (admin), `remove_warning(id, reason)`, `ban_user(user, reason)`
   (not admins, not self), `dismiss_ban(user, note)` and `unban_user(user, note)` (both reset active warnings).
   `/admin/moderation` (admin/staff; tabs for admins: hidden content, pending bans, flagged users).
+- Live sentiment "hype meter" (`202611101000_live_sentiment`): `get_stream_sentiment_timeline(stream, bucket_seconds,
+  since)` (admin/staff, `stream.viewSentiment`; visible comments only, counts per bucket, totals, `recent` 5-minute
+  counts, top topics of the last 10 min, analyzing / gave_up; never text or user ids). The hype score is computed in
+  the app (`hypeScore()` in `utils/live-sentiment.ts`: min(1, comments per min / 20) x (share positive - share negative
+  + 1) / 2 x 100). `components/LiveSentimentMeter.tsx` (gauge, stacked area `ReportChart`, stats, topics): folding
+  panel on `/live/[id]` and cards on `/analytics/engagement`. Live updates: `useRealtimeRefresh` on
+  `stream_comment_activity` wrapped in `throttleTrailing()` (5 s; the hook alone debounces) + 30 s poll.
+  `report_comments()` adds `timeline` (5 busiest streams, per minute); chart "Comment sentiment over time" in
+  `EngagementSection`, facts `commentTimelineFacts()`. `ReportChart` `type="line" stacked` = stacked area.
 - `report_comment_sentiment(tournament, from, to)` (admin): totals, flagged, per stream/tournament/day, top
   topics; shown on `/admin/feedback` (`app/admin/feedback/CommentSentiment.tsx`).
 - UI: `components/StreamComments.tsx` on `/live/[id]` (sidebar), `/t/[id]` and `/t/[id]/match/[matchId]`
@@ -434,7 +463,7 @@ Readers: "anyone" = also logged out; "logged-in" = any role; "admin/staff" = org
 
 **Notifications**
 - `notifications`: id, user_id (→ profiles, deleted with the user), type (CHECK list; the latest full list is in
-  `202611091900_phase12_security_engagement.sql`), title, message, link (app path only), is_read, created_at. Users read their own and may update
+  `202611101100_hall_of_fame.sql`), title, message, link (app path only), is_read, created_at. Users read their own and may update
   ONLY `is_read` (column grant); no insert/delete from the app. In the `supabase_realtime` publication.
 - Created only by AFTER triggers through `notify_users()` (not callable from the app; skips the person who caused
   it): registration approved/rejected → captain, registration removed (admin delete) → captain; tournament
@@ -496,14 +525,13 @@ Readers: "anyone" = also logged out; "logged-in" = any role; "admin/staff" = org
   every `PageHeroBackground` hero slowly zooms (`hero-kenburns`, paused off-screen with the ambient layer) and gets
   `AmbientBackground` + one light sweep (`hero-sweep`). Homepage: `components/site/MatchTicker.tsx` (results ticker
   from `get_match_ticker()`, falls back to `get_live_now()`; marquee loop, pauses on hover/focus/off-screen) and
-  `components/site/DarkBand.tsx` (full-width dark band, straight edges with slanted gold accents inside (9.4: no clip-path, so no corner gaps; 9.5: the accents sit below the zigzag layer and there is no corner spotlight, so the pattern is even edge to edge). Phase 9.6
-  (CSS block "Phase 9.6" at the end of `globals.css`): `components/site/InView.tsx` sets `data-inview` once (one-time
-  staged entrance of `.fx-in` children via `--fx-delay`) and `data-offscreen` (pauses every loop); third glow, a light
-  sweep along the gold edges, 16 CSS sparks (desktop with a mouse only); game cards (`.game-card`, per-game `--game`
-  RGB in `GameTiles.tsx`; no default in CSS, the fallback is inside each `var()`) lift, tilt, glow in the game's
-  color, shine and press; idle `.game-breathe`; LIVE badge per game (`GameLiveDot.tsx` + `utils/use-live-games.ts`,
-  from `get_live_now()`); stats bar line + icon bounce when `CountUp` (`delayMs`) finishes (`data-counted`);
-  "Join" shimmer, "All divisions" fill. Other homepage cards use `<Reveal variant="card">`: "Choose your game" `GameTiles.tsx` +
+  `components/site/DarkBand.tsx` (full-width dark band, straight edges with slanted gold accents inside (9.4: no clip-path, so no corner gaps; 9.5: the accents sit below the zigzag layer and there is no corner spotlight, so the pattern is even edge to edge). Motion pass
+  (one system, `docs/brand.md` "Motion", tokens `@theme static` at the top of `globals.css`): the band uses the same
+  `AmbientBackground onDark` + one `hero-sweep` (in a `Reveal`, plays when seen) as the heroes, thin slanted gold
+  accent lines (`--glow-gold`), `Reveal` entrance with `--stagger-step`, game tiles = the `/divisions` card (TiltCard +
+  card-interactive + border-trace, centred `bg-logo-stage-strong`, `GameLogo balanced`), the About `SiteStats` card,
+  `btn` buttons, and a LIVE badge per game (`GameLiveDot`, `utils/use-live-games.ts`). Every live indicator is
+  `components/LivePulse.tsx`: "Choose your game" `GameTiles.tsx` +
   `SiteStats plain`). Match cards use `components/MatchVersus.tsx` (`VersusRow`, `VersusBadge`, `ScoreBoard`,
   `LiveTag`; digits flip with `FlipScore.tsx`) on `/schedule`, My Matches, `/t/[id]`, the live strip and bracket
   boxes. Brackets: hovering a team highlights its route (`BracketPath.tsx`, rows carry `data-team-id`), the champion
@@ -664,6 +692,9 @@ triggers with readable error messages.
   player questions in `utils/help.ts`; staff/admin questions in `utils/help-organizer.ts` (`server-only`), rendered
   by `OrganizerHelp.tsx` only after a server-side `get_my_role()` check (staff: staff section, admin: both). Never
   put organizer-only questions in the public file. Update them when a feature changes how something works.
+- **Motion** (motion pass): pick effects only from `docs/brand.md` "Motion" and use the motion tokens
+  (`--ease-out-brand`, `--duration-*`, `--stagger-step`, `--zigzag-*`, `--glow-gold`) instead of raw values. One fade-in
+  (`Reveal`), one card hover (`card-interactive`), one LIVE dot (`LivePulse`).
 - **Full-width pages** (Phase 10): pages inside `SiteNavLayout` start with `<div className="w-full space-y-8">` and no
   `max-w-*` box (the layout's padding is the only side space; Dashboard, Teams, Profile, Registrations follow this).
   Long text gets `max-w-prose`; card grids use `grid-cols-[repeat(auto-fill,minmax(min(100%,20rem),1fr))]`.
@@ -705,7 +736,7 @@ triggers with readable error messages.
   height / normal letter spacing and form fields 16px (no iOS zoom). Uppercase labels are left alone.
 - New UI uses Tailwind classes, not inline styles (exceptions: `utils/og-card.tsx`, because `next/og` can't
   use Tailwind, and the crop window in `components/AvatarUploader.tsx`, whose positions are computed while dragging; the
-  Tooltip bubble's position is also set from JS).
+  Tooltip bubble's position and the live sentiment gauge needle's angle are also set from JS).
 - One look for the whole app, public and logged in (the redesign): white page, Montserrat (uppercase only for titles, buttons and labels), rounded white
   cards (`bg-white border border-stone-200/90 rounded-2xl shadow-xs`), a dark photo hero at the top of each page
   (`PageHeroBackground`), and the logo's gold and maroon as accents. Full rules: `docs/brand.md`. Use the theme
@@ -772,7 +803,7 @@ The final feature list for the documents is docs/new-features-summary.md.
   that need logging go through a role-checked function like `log_export()`.
 - **"Only through a function" rules**: some columns may only change inside one security definer function. The
   function sets a transaction flag with `set_config('app.<flag>', 'on', true)` and a BEFORE trigger refuses the
-  change without it (`auth.uid() is null` = SQL Editor is always allowed). Flags in use: `giving_privacy_consent`,
+  change without it (`auth.uid() is null` = SQL Editor is always allowed). Flags in use: `recording_champion` (Hall of Fame), `giving_privacy_consent`,
   `reviewing_student`, `answering_invite`, `transferring_captain`, `declaring_forfeit`,
   `marking_predictions`, `removing_team`, `removing_avatar`, `removing_team_logo`, `moderating` (comments),
   `moderating_user` (bans), `publishing_announcement` (scheduled announcements).
@@ -789,12 +820,12 @@ The final feature list for the documents is docs/new-features-summary.md.
   `202611091800_team_cards_registrations`; `get_team_roster`,
   `search_players`, `get_team_join_requests` → `202611091400_game_profile_schemas` (avatar_url, rank, rank_position); `protect_team_fields` → `202610171300`; `protect_profile_role`,
   `handle_new_user` → `202610170900_privacy_consent`; `log_match` → `202610171400_match_checkin`;
-  `get_needs_attention` → `202610171500_match_results`; `notifications_type_check`, `get_my_role`, `notify_users`, `notify_announcement`, `touch_announcement`,
+  `get_needs_attention` → `202610171500_match_results`; `notifications_type_check`, `notification_preferences_muted_check` → `202611101100_hall_of_fame`; `get_my_role`, `notify_users`, `notify_announcement`, `touch_announcement`,
   `log_announcement` → `202611091900_phase12_security_engagement`; `send_announcement_notification`,
   `prepare_announcement`, `touch_announcement`, `publish_scheduled_announcements` → `202611092000_announcements_feed`;
   `report_engagement` → `202610181100_predictions` (adds predictions, predictors, prediction_accuracy,
   audience_accounts, prediction_participation and predictions_by_tournament; older saved reports lack them);
-  `refuse_removed_team` → `202611081600_fix_refuse_removed_team`; `report_activity` → `202611081700_report_insights`; `protect_feedback` → `202610181000_feedback_protection`; feedback insert policy → `202611081500_comments_moderation`; `generate_bracket` → `202610181800_bracket_seed_pairing`.
+  `refuse_removed_team` → `202611081600_fix_refuse_removed_team`; `report_activity` → `202611081700_report_insights`; `report_comments` → `202611101000_live_sentiment`; `protect_feedback` → `202610181000_feedback_protection`; feedback insert policy → `202611081500_comments_moderation`; `generate_bracket` → `202610181800_bracket_seed_pairing`.
 - **Testing**: `npm test` runs Vitest on `utils/*.test.ts`. `npm run db:test` runs the pgTAP files in
   `supabase/tests/` against the local stack (`supabase start` first: needs Docker; `supabase/config.toml`
   exists for the local stack only, production migrations stay manual). `npm run db:types` regenerates

@@ -34,6 +34,7 @@ import Avatar from '@/components/Avatar';
 import AvatarUploader from '@/components/AvatarUploader';
 import RoleBadge from '@/components/RoleBadge';
 import TwoFactorSection from '@/components/TwoFactorSection';
+import MyTitles from '@/components/MyTitles';
 import MyTeamsSummary from '@/app/dashboard/MyTeamsSummary';
 import MyWarnings from '@/components/MyWarnings';
 import { refreshViewer } from '@/utils/use-viewer';
@@ -416,6 +417,9 @@ export default function ProfilePage() {
           <div className="min-w-0 space-y-6 sm:space-y-8">
             {/* Moderation warnings (own count and history) */}
             <MyWarnings userId={profile.id} />
+
+            {/* Hall of Fame: "Champion" chips for every title you won (nothing when none) */}
+            {can(profile.role, 'team.join') && <MyTitles />}
 
             {/* 4. Game Profiles (Players only) */}
             {can(profile.role, 'team.join') && (

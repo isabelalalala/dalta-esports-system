@@ -33,7 +33,7 @@ async function AsyncFooter() {
 // Text labels stay next to the icons: an icon alone would make people guess
 // Same names and icons as the menu (utils/navigation.ts)
 const PAGES: { href: string; label: string; icon: LucideIcon }[] = [
-  NAV_ITEMS.about, NAV_ITEMS.divisions, NAV_ITEMS.community, NAV_ITEMS.tournaments, NAV_ITEMS.help,
+  NAV_ITEMS.about, NAV_ITEMS.divisions, NAV_ITEMS.hallOfFame, NAV_ITEMS.community, NAV_ITEMS.tournaments, NAV_ITEMS.help,
 ].map((item) => ({ href: item.href, label: item.label, icon: NAV_ICONS[item.icon] }));
 
 const POLICIES: { href: string; label: string; icon: LucideIcon }[] = [

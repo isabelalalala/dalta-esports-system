@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Activity } from 'lucide-react';
 import { createClient } from '@/utils/supabase/client';
 import { formatDateTime } from '@/utils/tournaments';
+import LivePulse from '@/components/LivePulse';
 
 // One match as returned by get_match_ticker() (202611091700_match_ticker): team NAMES only
 interface TickerMatch {
@@ -163,7 +164,7 @@ function TickerItem({ match: m, focusable }: { match: TickerMatch; focusable: bo
     >
       {m.status === 'live' ? (
         <span className="inline-flex items-center gap-1 rounded bg-red-600 px-1.5 py-0.5 text-[9px] tracking-widest text-white">
-          <span className="size-1.5 rounded-full bg-white animate-pulse" aria-hidden="true" /> Live
+          <LivePulse tone="white" size="xs" /> Live
         </span>
       ) : m.status === 'completed' ? (
         <span className="rounded bg-white/10 px-1.5 py-0.5 text-[9px] tracking-widest text-stone-300">Final</span>

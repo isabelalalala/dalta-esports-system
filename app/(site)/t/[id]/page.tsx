@@ -25,6 +25,7 @@ import GameLogo from '@/components/GameLogo';
 import AutoUpdateBadge from '@/components/AutoUpdateBadge';
 import { LiveTag, ScoreBoard, VersusBadge, VersusRow } from '@/components/MatchVersus';
 import GameBadge from '@/components/GameBadge';
+import LivePulse from '@/components/LivePulse';
 
 const TZ = 'Asia/Manila';
 
@@ -174,10 +175,7 @@ async function TournamentContent({ params }: { params: PageProps<'/t/[id]'>['par
             <span className="text-[11px] font-black tracking-widest text-maroon uppercase">Live Broadcast</span>
             <h2 className="text-xl sm:text-2xl font-black text-stone-950 uppercase tracking-wide flex items-center gap-2">
               {/* Solid dot with a pulsing halo (animate-ping on the dot itself made it a fading blob) */}
-              <span className="relative mr-1 inline-flex h-3 w-3" aria-hidden="true">
-                <span className="absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75 animate-ping" />
-                <span className="relative inline-flex h-3 w-3 rounded-full bg-red-600" />
-              </span>
+              <LivePulse size="lg" className="mr-1" />
               Live Stream Now
             </h2>
           </div>

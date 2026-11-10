@@ -34,6 +34,7 @@ export type Action =
   // Streams
   | 'stream.watch'
   | 'stream.configure'
+  | 'stream.viewSentiment'     // live comment sentiment ("hype meter") on /live/[id] and engagement
   // Event info
   | 'announcement.post'
   // Feedback
@@ -50,6 +51,7 @@ export type Action =
   | 'website.edit'
   | 'games.editProfiles'       // game profile fields and options (/admin/games)
   | 'activity.view'
+  | 'champion.manage'          // Hall of Fame: set the MVP, publish / hide a record
   // Moderation (Phase 4)
   | 'comment.post'             // logged-in users; flagged/banned accounts are refused by the database
   | 'moderation.review'        // hidden comments queue: restore / remove
@@ -67,6 +69,7 @@ const ORGANIZER: Action[] = [
   'match.manage',
   'stream.watch',
   'stream.configure',
+  'stream.viewSentiment',
   'feedback.submit',
   'report.viewEngagement',
   'export.operations',
@@ -88,6 +91,7 @@ export const PERMISSIONS: Record<Role, readonly Action[]> = {
     'website.edit',
     'games.editProfiles',
     'activity.view',
+    'champion.manage',
     'moderation.ban',
   ],
   staff: ORGANIZER,

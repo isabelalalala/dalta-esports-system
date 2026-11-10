@@ -2,7 +2,9 @@
 
 import ReportChart from '@/components/ReportChart';
 import { streamMatchLabel, type CommentReport, type EngagementReport } from '@/utils/reports';
+import { formatTime } from '@/utils/tournaments';
 import { NoData, ReportCard, ReportTable, StatTile, capitalize, formatDay, formatRating, type Insights } from './ReportParts';
+import LivePulse from '@/components/LivePulse';
 
 interface Props {
   report: EngagementReport;
@@ -11,6 +13,8 @@ interface Props {
   liveCounts?: Record<string, number>;
   // Comments per stream (admin report, since Phase 5): shown next to the views
   comments?: CommentReport['by_stream'];
+  // Sentiment per minute of the busiest streams (admin report since 202611101000)
+  timeline?: CommentReport['timeline'];
   insights?: Insights;
 }
 
@@ -20,7 +24,10 @@ function formatPercent(value: number | null | undefined) {
 }
 
 // "Viewership & Audience Engagement Stats" (Tournament Staff, also part of the admin's report)
-export default function EngagementSection({ report, liveCounts, comments, insights = {} }: Props) {
+export default function EngagementSection({ report, liveCounts, comments, timeline, insights = {} }: Props) {
+  // The busiest stream's chat, minute by minute (the report keeps the 5 busiest; the chart shows
+  // the first, the interpretation says when it peaked)
+  const busiest = timeline?.[0];
   const t = report.totals;
   const commentCounts = new Map((comments ?? []).map((c) => [c.stream_id, Number(c.total)]));
   const topStreams = report.streams
@@ -60,6 +67,23 @@ export default function EngagementSection({ report, liveCounts, comments, insigh
           )}
         </ReportCard>
 
+        {busiest && busiest.minutes.length > 0 && (
+          <ReportCard
+            title="Comment sentiment over time"
+            note={`"${busiest.title}" (${busiest.tournament_name}), the stream with the most comments: visible comments per minute, Philippine time.`}
+            insight={insights.comment_timeline}
+          >
+            <ReportChart type="line" stacked title={`Comment sentiment over time: ${busiest.title}`}
+              labels={busiest.minutes.map((m) => formatTime(m.minute))}
+              categoryTitle="Time (PH)" valueTitle="Comments (count)"
+              series={[
+                { label: 'Negative', tone: 'negative', data: busiest.minutes.map((m) => Number(m.negative)) },
+                { label: 'Neutral', tone: 'neutral', data: busiest.minutes.map((m) => Number(m.neutral)) },
+                { label: 'Positive', tone: 'positive', data: busiest.minutes.map((m) => Number(m.positive)) },
+              ]} />
+          </ReportCard>
+        )}
+
         <ReportCard title="Views per day" insight={insights.views_per_day}>
           {report.views_by_day.length === 0 ? <NoData /> : (
             <ReportChart type="line" title="Views per day"
@@ -80,7 +104,7 @@ export default function EngagementSection({ report, liveCounts, comments, insigh
             s.title,
             `${s.tournament_name} (${s.game})`,
             streamMatchLabel(s) || '–',
-            s.status === 'live' ? <><span className="inline-block h-1.5 w-1.5 rounded-full bg-red-500 animate-pulse" /> Live</> : capitalize(s.status),
+            s.status === 'live' ? <span className="inline-flex items-center gap-1.5"><LivePulse size="xs" /> Live</span> : capitalize(s.status),
             ...(liveCounts ? [s.status === 'live' ? liveCounts[s.id] ?? 0 : '–'] : []),
             s.views,
             s.unique_viewers,

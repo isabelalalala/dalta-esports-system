@@ -3,10 +3,10 @@ import { getSiteStats } from '@/utils/site-data';
 import Reveal from '@/components/Reveal';
 import CountUp from './CountUp';
 
-// "DALTA in numbers": four totals that count up when they scroll into view (homepage, About).
-// Renders nothing (not even an empty wrapper) until get_site_stats() exists (202611091200_site_stats).
-// plain = no card of its own (inside the homepage's dark band, which is already dark).
-export default async function SiteStats({ plain = false }: { plain?: boolean }) {
+// "DALTA in numbers": four totals that count up when they scroll into view (homepage dark band,
+// About), the same card everywhere. Renders nothing (not even an empty wrapper) until
+// get_site_stats() exists (202611091200_site_stats).
+export default async function SiteStats() {
   const stats = await getSiteStats();
   if (!stats) return null;
 
@@ -19,33 +19,26 @@ export default async function SiteStats({ plain = false }: { plain?: boolean }) 
   ].filter((t) => t.value > 0);
   if (tiles.length === 0) return null;
 
-  // Inside the homepage band (plain), the band's own entrance shows the bar last (fx-in, 1.1 s) and
-  // the numbers start counting after that; elsewhere the usual Reveal fade.
-  const section = (
-    <section
-      aria-label="DALTA Esports in numbers"
-      className={plain
-        ? 'fx-in relative rounded-3xl border border-white/10 bg-white/5 text-white backdrop-blur-xs [--fx-delay:1100ms]'
-        : 'rounded-3xl border border-stone-800/80 bg-ink text-white shadow-md overflow-hidden relative'}
-    >
-      {!plain && <div className="absolute inset-0 bg-logo-stage pointer-events-none" aria-hidden="true" />}
-      {/* A thin gold-to-maroon line running along the top edge (band only) */}
-      {plain && <div className="stats-line" aria-hidden="true" />}
-      <dl className="relative grid grid-cols-2 @3xl:grid-cols-none @3xl:grid-flow-col @3xl:auto-cols-fr divide-white/10 @3xl:divide-x">
-        {tiles.map(({ label, value, Icon }) => (
-          <div key={label} data-stat="" className="flex flex-col items-center justify-center gap-1.5 px-4 py-6 sm:py-8 text-center">
-            {/* stat-icon: bounces once when its number finishes counting (CountUp sets data-counted) */}
-            <Icon className="stat-icon order-1 h-5 w-5 text-gold" aria-hidden="true" />
-            {/* The label comes first for screen readers; order-* shows the number above it */}
-            <dt className="order-3 text-[11px] sm:text-xs font-black uppercase tracking-widest text-stone-300">{label}</dt>
-            <dd className="order-2 text-3xl sm:text-4xl font-black text-white">
-              <CountUp value={value} delayMs={plain ? 900 : 0} />
-            </dd>
-          </div>
-        ))}
-      </dl>
-    </section>
+  return (
+    <Reveal>
+      <section
+        aria-label="DALTA Esports in numbers"
+        className="rounded-3xl border border-stone-800/80 bg-ink text-white shadow-md overflow-hidden relative"
+      >
+        <div className="absolute inset-0 bg-logo-stage pointer-events-none" aria-hidden="true" />
+        <dl className="relative grid grid-cols-2 @3xl:grid-cols-none @3xl:grid-flow-col @3xl:auto-cols-fr divide-white/10 @3xl:divide-x">
+          {tiles.map(({ label, value, Icon }) => (
+            <div key={label} className="flex flex-col items-center justify-center gap-1.5 px-4 py-6 sm:py-8 text-center">
+              <Icon className="order-1 h-5 w-5 text-gold" aria-hidden="true" />
+              {/* The label comes first for screen readers; order-* shows the number above it */}
+              <dt className="order-3 text-[11px] sm:text-xs font-black uppercase tracking-widest text-stone-300">{label}</dt>
+              <dd className="order-2 text-3xl sm:text-4xl font-black text-white">
+                <CountUp value={value} />
+              </dd>
+            </div>
+          ))}
+        </dl>
+      </section>
+    </Reveal>
   );
-
-  return plain ? section : <Reveal>{section}</Reveal>;
 }

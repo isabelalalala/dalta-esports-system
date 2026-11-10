@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
-  acceptDraft, buildInsightRequest, fmtDay, numbersIn, onlyKnownNumbers, rulesInsights,
+  acceptDraft, buildInsightRequest, commentTimelineFacts, fmtDay, numbersIn, onlyKnownNumbers, rulesInsights,
 } from './report-insights';
 import {
   combineSentiment, registrationsOverTime, sentimentForSource, sentimentShareByWeek, weekStart,
@@ -169,5 +169,34 @@ describe('checking the AI wording', () => {
     const result = acceptDraft('not an object', request);
     expect(result.writer).toBe('rules');
     expect(result.charts).toEqual(rulesInsights(request).charts);
+  });
+});
+
+describe('commentTimelineFacts (live sentiment, 202611101000)', () => {
+  // 11:42 UTC = 7:42 PM in the Philippines
+  const minute = (hhmm: string, positive: number, neutral: number, negative: number) =>
+    ({ minute: `2026-11-07T${hhmm}:00Z`, total: positive + neutral + negative, positive, neutral, negative });
+  const withTimeline = (minutes: ReturnType<typeof minute>[]) => {
+    const r = report();
+    return { ...r, comments: { ...r.comments!, timeline: [{ stream_id: 's1', title: 'Finals', tournament_name: 'SLEC MLBB', total: 40, minutes }] } };
+  };
+
+  it('says when the busiest stream peaked, in Philippine time', () => {
+    const facts = commentTimelineFacts(withTimeline([minute('11:40', 2, 1, 1), minute('11:42', 15, 2, 1), minute('11:43', 1, 1, 6)]));
+    expect(facts[0]).toContain('"Finals" (SLEC MLBB)');
+    expect(facts[0]).toContain('7:42 PM');
+    expect(facts[0]).toContain('18 comments');
+    expect(facts[0]).toContain('83%');
+    // the mostly negative minute is called out
+    expect(facts.some((f) => f.includes('7:43 PM') && f.includes('75%'))).toBe(true);
+  });
+
+  it('says nothing without a timeline (reports saved before the feature)', () => {
+    expect(commentTimelineFacts(report())).toEqual([]);
+  });
+
+  it('feeds the report text request', () => {
+    const req = buildInsightRequest(withTimeline([minute('11:42', 5, 0, 0)]), 'all', 'All tournaments');
+    expect(req.charts.find((c) => c.id === 'comment_timeline')?.facts[0]).toContain('7:42 PM');
   });
 });

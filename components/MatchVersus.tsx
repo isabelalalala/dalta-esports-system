@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { Trophy } from 'lucide-react';
 import FlipScore from '@/components/FlipScore';
+import LivePulse from '@/components/LivePulse';
 
 // Shared "Team A vs Team B" pieces for match cards (schedule, My Matches, public tournament page,
 // homepage strip), so every match looks like a match: big team names, a gold VS badge or a dark
@@ -10,10 +11,7 @@ import FlipScore from '@/components/FlipScore';
 export function LiveTag({ label = 'Live', className = '' }: { label?: string; className?: string }) {
   return (
     <span className={`inline-flex shrink-0 items-center gap-1.5 rounded-md bg-red-600 px-2 py-0.5 text-[10px] font-black uppercase tracking-widest text-white shadow-xs ${className}`}>
-      <span className="relative flex size-1.5" aria-hidden="true">
-        <span className="absolute inline-flex size-full rounded-full bg-white opacity-75 animate-ping" />
-        <span className="relative inline-flex size-1.5 rounded-full bg-white" />
-      </span>
+      <LivePulse tone="white" size="xs" />
       {label}
     </span>
   );

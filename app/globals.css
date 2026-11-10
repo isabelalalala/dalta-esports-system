@@ -59,6 +59,36 @@
   --foreground: #120d0b;
 }
 
+/* ===================================================================================
+   MOTION TOKENS: the one source of timing for every animation (docs/brand.md "Motion").
+   Change a value here and every effect that uses it follows. `static`: always written to :root.
+   =================================================================================== */
+@theme static {
+  /* Easing: everything decelerates with ease-out-brand; small "pop" moments overshoot a little;
+     only the one-time light sweep accelerates and slows down again */
+  --ease-out-brand: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-pop: cubic-bezier(0.2, 0.9, 0.3, 1.3);
+  --ease-sweep: cubic-bezier(0.45, 0, 0.2, 1);
+  /* Durations: hover/press feedback, card lift and border, entrances; the hero light sweep */
+  --duration-fast: 150ms;
+  --duration-base: 250ms;
+  --duration-slow: 600ms;
+  --duration-sweep: 1.8s;
+  /* Stagger between cards in a row (Reveal delay 1-3) */
+  --stagger-step: 80ms;
+  /* Ambient background (AmbientBackground): glow drift, zigzag drift, glow strength */
+  --duration-ambient-a: 34s;
+  --duration-ambient-b: 40s;
+  --duration-zigzag: 30s;
+  --ambient-glow-opacity: 0.13;
+  /* Zigzag pattern: one 56x32 tile, the same faint opacity everywhere */
+  --zigzag-tile-w: 56px;
+  --zigzag-tile-h: 32px;
+  --zigzag-opacity: 0.07;
+  /* Gold glow strength (text-glow-gold, accent lines) */
+  --glow-gold: rgb(255 204 55 / 0.45);
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -72,14 +102,15 @@
   background: radial-gradient(circle at 85% 85%, rgb(164 148 140 / 0.35) 0%, rgb(35 30 27 / 0.7) 45%, var(--color-ink) 100%);
 }
 
-/* Slightly brighter version, used on the Game Divisions cards */
+/* Brighter, centred stage behind game logos: Game Divisions cards and the homepage game tiles
+   (the same card everywhere). Centred, so no card looks lit from one corner. */
 @utility bg-logo-stage-strong {
-  background: radial-gradient(circle at 88% 88%, rgb(164 148 140 / 0.45) 0%, rgb(35 30 27 / 0.8) 45%, var(--color-ink) 100%);
+  background: radial-gradient(ellipse at 50% 55%, rgb(164 148 140 / 0.4) 0%, rgb(35 30 27 / 0.8) 55%, var(--color-ink) 100%);
 }
 
 /* Soft gold glow for the home page title */
 @utility text-glow-gold {
-  text-shadow: 0 4px 28px rgb(255 204 55 / 0.45);
+  text-shadow: 0 4px 28px var(--glow-gold);
 }
 
 body {
@@ -243,52 +274,52 @@ input::placeholder, textarea::placeholder {
 }
 
 .animate-hero-entrance {
-  animation: heroEntrance 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: heroEntrance 0.7s var(--ease-out-brand) both;
   will-change: transform, opacity;
 }
 
 .animate-hero-title {
-  animation: heroContentReveal 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.12s both;
+  animation: heroContentReveal 0.7s var(--ease-out-brand) 0.12s both;
   will-change: transform, opacity;
 }
 
 .animate-hero-tagline {
-  animation: heroContentReveal 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.25s both;
+  animation: heroContentReveal 0.7s var(--ease-out-brand) 0.25s both;
   will-change: transform, opacity;
 }
 
 .animate-hero-cta {
-  animation: heroContentReveal 0.65s cubic-bezier(0.16, 1, 0.3, 1) 0.38s both;
+  animation: heroContentReveal 0.65s var(--ease-out-brand) 0.38s both;
   will-change: transform, opacity;
 }
 
 .animate-section-campaigns {
-  animation: sectionEntrance 0.75s cubic-bezier(0.16, 1, 0.3, 1) 0.45s both;
+  animation: sectionEntrance 0.75s var(--ease-out-brand) 0.45s both;
   will-change: transform, opacity;
 }
 
 .animate-section-events {
-  animation: sectionEntrance 0.75s cubic-bezier(0.16, 1, 0.3, 1) 0.6s both;
+  animation: sectionEntrance 0.75s var(--ease-out-brand) 0.6s both;
   will-change: transform, opacity;
 }
 
 .animate-section-partnerships {
-  animation: sectionEntrance 0.75s cubic-bezier(0.16, 1, 0.3, 1) 0.75s both;
+  animation: sectionEntrance 0.75s var(--ease-out-brand) 0.75s both;
   will-change: transform, opacity;
 }
 
 .animate-stagger-1 {
-  animation: sectionEntrance 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.2s both;
+  animation: sectionEntrance 0.7s var(--ease-out-brand) 0.2s both;
   will-change: transform, opacity;
 }
 
 .animate-stagger-2 {
-  animation: sectionEntrance 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.35s both;
+  animation: sectionEntrance 0.7s var(--ease-out-brand) 0.35s both;
   will-change: transform, opacity;
 }
 
 .animate-stagger-3 {
-  animation: sectionEntrance 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.5s both;
+  animation: sectionEntrance 0.7s var(--ease-out-brand) 0.5s both;
   will-change: transform, opacity;
 }
 
@@ -599,7 +630,7 @@ input::placeholder, textarea::placeholder {
   to { opacity: 1; transform: none; }
 }
 .animate-page-enter {
-  animation: pageEnter 0.28s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: pageEnter 0.28s var(--ease-out-brand) both;
 }
 
 /* Phase 8 motion. All of it is off with prefers-reduced-motion (block at the end of the file). */
@@ -610,7 +641,7 @@ input::placeholder, textarea::placeholder {
   100% { transform: scale(1); }
 }
 .animate-score-flash {
-  animation: scoreFlash 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+  animation: scoreFlash 0.9s var(--ease-out-brand);
 }
 
 /* Bracket (app/tournaments/[id]/BracketSlot.tsx): the winner of the previous round slides into
@@ -622,7 +653,7 @@ input::placeholder, textarea::placeholder {
 }
 .animate-team-advance {
   display: inline-block;
-  animation: teamAdvance 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+  animation: teamAdvance 0.7s var(--ease-out-brand);
 }
 @keyframes winnerSweep {
   0% { background-position: 120% 0; }
@@ -637,29 +668,28 @@ input::placeholder, textarea::placeholder {
 
 /* Something that appears after the page loaded (the Live now strip) fades in */
 .animate-section-reveal {
-  animation: pageEnter 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: pageEnter 0.4s var(--ease-out-brand) both;
 }
 
 /* Scroll reveal (components/Reveal.tsx): hidden until it scrolls into view. Only when scripts run
    (otherwise nothing would ever reveal it) and motion is allowed; reveal-delay-* staggers cards. */
 @media (scripting: enabled) and (prefers-reduced-motion: no-preference) {
   .reveal {
-    transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: opacity var(--duration-slow) var(--ease-out-brand), transform var(--duration-slow) var(--ease-out-brand);
   }
   .reveal:not([data-revealed]) {
     opacity: 0;
     transform: translateY(24px);
   }
-  .reveal-card:not([data-revealed]) { transform: translateY(20px) scale(0.96); }
-  .reveal-delay-1 { transition-delay: 80ms; }
-  .reveal-delay-2 { transition-delay: 160ms; }
-  .reveal-delay-3 { transition-delay: 240ms; }
+  .reveal-delay-1 { transition-delay: var(--stagger-step); }
+  .reveal-delay-2 { transition-delay: calc(var(--stagger-step) * 2); }
+  .reveal-delay-3 { transition-delay: calc(var(--stagger-step) * 3); }
 }
 
 /* Interactive cards (events, campaigns, divisions, tournaments, teams): lift, gold border and a
    soft gold glow on hover and on keyboard focus */
 @utility card-interactive {
-  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s ease, border-color 0.25s ease;
+  transition: transform var(--duration-base) var(--ease-out-brand), box-shadow var(--duration-base) ease, border-color var(--duration-base) ease;
   &:hover, &:focus-visible {
     transform: translateY(-4px);
     border-color: color-mix(in oklab, var(--color-gold) 70%, transparent);
@@ -677,7 +707,7 @@ input::placeholder, textarea::placeholder {
   to { opacity: 1; }
 }
 .animate-tooltip-in {
-  animation: tooltipIn 0.15s ease-out both;
+  animation: tooltipIn var(--duration-fast) ease-out both;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -742,7 +772,7 @@ input::placeholder, textarea::placeholder {
 /* One tile = 56x32 px, so moving the layer by exactly one tile loops seamlessly */
 @keyframes ambientGrid {
   from { transform: translate3d(0, 0, 0); }
-  to { transform: translate3d(56px, 32px, 0); }
+  to { transform: translate3d(var(--zigzag-tile-w), var(--zigzag-tile-h), 0); }
 }
 .ambient-orb {
   position: absolute;
@@ -755,13 +785,13 @@ input::placeholder, textarea::placeholder {
   left: -10%;
   top: -30%;
   background: radial-gradient(circle, color-mix(in oklab, var(--color-maroonlight) 70%, transparent) 0%, transparent 65%);
-  animation: ambientDriftA 34s ease-in-out infinite alternate;
+  animation: ambientDriftA var(--duration-ambient-a) ease-in-out infinite alternate;
 }
 .ambient-orb-b {
   right: -12%;
   bottom: -40%;
   background: radial-gradient(circle, color-mix(in oklab, var(--color-gold) 75%, transparent) 0%, transparent 65%);
-  animation: ambientDriftB 40s ease-in-out infinite alternate;
+  animation: ambientDriftB var(--duration-ambient-b) ease-in-out infinite alternate;
 }
 /* Zigzag pattern (9.4): a solid layer in the pattern color, cut by a repeating SVG tile (mask), so the
    color follows the theme. The layer starts one tile above and left of the box and moves down-right
@@ -769,21 +799,21 @@ input::placeholder, textarea::placeholder {
    tile, color and opacity everywhere it is used (footer, heroes, homepage band). */
 .zigzag-pattern {
   position: absolute;
-  top: -32px;
-  left: -56px;
+  top: calc(-1 * var(--zigzag-tile-h));
+  left: calc(-1 * var(--zigzag-tile-w));
   right: 0;
   bottom: 0;
-  opacity: 0.07;
+  opacity: var(--zigzag-opacity);
   color: var(--color-maroon);
   background-color: currentColor;
   -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='32'%3E%3Cpath d='M0 32 L14 8 L28 32 M28 0 L42 24 L56 0' fill='none' stroke='black' stroke-width='1'/%3E%3C/svg%3E");
   mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='32'%3E%3Cpath d='M0 32 L14 8 L28 32 M28 0 L42 24 L56 0' fill='none' stroke='black' stroke-width='1'/%3E%3C/svg%3E");
   -webkit-mask-repeat: repeat;
   mask-repeat: repeat;
-  -webkit-mask-size: 56px 32px;
-  mask-size: 56px 32px;
+  -webkit-mask-size: var(--zigzag-tile-w) var(--zigzag-tile-h);
+  mask-size: var(--zigzag-tile-w) var(--zigzag-tile-h);
   will-change: transform;
-  animation: ambientGrid 30s linear infinite;
+  animation: ambientGrid var(--duration-zigzag) linear infinite;
 }
 :root[data-theme="dark"] .zigzag-pattern, .ambient-on-dark .zigzag-pattern { color: var(--color-gold); }
 [data-paused] .ambient-orb,
@@ -800,7 +830,7 @@ input::placeholder, textarea::placeholder {
   to { opacity: 1; transform: none; }
 }
 .animate-toast-in {
-  animation: toastIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: toastIn 0.25s var(--ease-out-brand) both;
 }
 @media (prefers-reduced-motion: reduce) {
   .animate-toast-in { animation: none !important; }
@@ -863,7 +893,8 @@ input::placeholder, textarea::placeholder {
   animation: heroKenBurns 24s ease-in-out infinite alternate;
   will-change: transform;
 }
-[data-hero-bg]:has([data-paused]) .hero-kenburns { animation-play-state: paused; }
+[data-hero-bg]:has([data-paused]) .hero-kenburns,
+.hero-pausable:has([data-paused]) .hero-kenburns { animation-play-state: paused; }
 @keyframes heroSweep {
   from { transform: translate3d(-120%, 0, 0) skewX(-18deg); }
   to { transform: translate3d(260%, 0, 0) skewX(-18deg); }
@@ -875,13 +906,15 @@ input::placeholder, textarea::placeholder {
   width: 45%;
   background: linear-gradient(90deg, transparent, rgb(255 204 55 / 0.16), rgb(255 255 255 / 0.12), transparent);
   transform: translate3d(-120%, 0, 0);
-  animation: heroSweep 1.8s cubic-bezier(0.45, 0, 0.2, 1) 0.35s 1 both;
+  animation: heroSweep var(--duration-sweep) var(--ease-sweep) 0.35s 1 both;
 }
+/* Below the fold (the homepage band) the same sweep waits for its Reveal, so it plays when seen */
+.reveal:not([data-revealed]) .hero-sweep { animation-play-state: paused; }
 
 /* Dark homepage band (components/site/DarkBand.tsx): a straight full-bleed section (no clip-path,
-   so no page background shows at the corners) with slanted gold shapes inside its top and bottom
-   edges for the angled look. 9.5: they sit BELOW the zigzag layer (z-index -20 vs AmbientBackground's
-   -10), so the zigzags run through the angled bands too; above it, their gradient hid the thin lines. */
+   so no page background shows at the corners). The angled look comes from two thin slanted gold
+   accent lines along its top and bottom edges (gold at the --glow-gold strength), drawn below the
+   zigzag layer (z-index -20 vs AmbientBackground's -10) so the pattern runs over them (9.5). */
 .band-angled::before,
 .band-angled::after {
   content: '';
@@ -891,10 +924,11 @@ input::placeholder, textarea::placeholder {
   height: 2.5rem;
   z-index: -20;
   pointer-events: none;
-  background: linear-gradient(90deg, rgb(255 204 55 / 0.10), rgb(255 204 55 / 0.04), rgb(255 204 55 / 0.10));
+  background: var(--glow-gold);
 }
-.band-angled::before { top: 0; clip-path: polygon(0 0, 100% 0, 100% 15%, 0 100%); }
-.band-angled::after { bottom: 0; clip-path: polygon(0 100%, 100% 0, 100% 100%); }
+/* 3px lines following the slant: top edge falls from right to left, bottom edge rises */
+.band-angled::before { top: 0; clip-path: polygon(0 calc(100% - 3px), 100% calc(15% - 3px), 100% 15%, 0 100%); }
+.band-angled::after { bottom: 0; clip-path: polygon(0 calc(100% - 3px), 100% 0, 100% 3px, 0 100%); }
 @media (max-width: 639px) {
   .band-angled::before, .band-angled::after { height: 1.25rem; }
 }
@@ -918,7 +952,7 @@ input::placeholder, textarea::placeholder {
 .animate-score-flip {
   display: inline-block;
   transform-origin: 50% 0;
-  animation: scoreFlip 0.6s cubic-bezier(0.2, 0.9, 0.3, 1.2);
+  animation: scoreFlip 0.6s var(--ease-pop);
 }
 
 /* Results ticker (components/site/MatchTicker.tsx): the same seamless two-track loop as the
@@ -950,7 +984,7 @@ input::placeholder, textarea::placeholder {
   60% { transform: scale(1.25) rotate(8deg); opacity: 1; }
   100% { transform: scale(1) rotate(0); }
 }
-.animate-trophy-reveal { display: inline-block; animation: trophyReveal 0.9s cubic-bezier(0.2, 0.9, 0.3, 1.3) both; }
+.animate-trophy-reveal { display: inline-block; animation: trophyReveal 0.9s var(--ease-pop) both; }
 @keyframes championShine {
   from { background-position: 150% 0; }
   to { background-position: -50% 0; }
@@ -974,7 +1008,7 @@ input::placeholder, textarea::placeholder {
   height: 11px;
   border-radius: 2px;
   opacity: 0;
-  animation: confettiFly 1.3s cubic-bezier(0.15, 0.7, 0.4, 1) var(--cd, 0s) 1 both;
+  animation: confettiFly 1.3s var(--ease-out-brand) var(--cd, 0s) 1 both;
 }
 .confetti-sm .confetti-piece { width: 5px; height: 7px; }
 
@@ -984,13 +1018,13 @@ input::placeholder, textarea::placeholder {
   60% { transform: scale(1.2); }
   100% { transform: scale(1); }
 }
-.animate-pick-correct { display: inline-flex; animation: pickCorrect 0.5s cubic-bezier(0.2, 0.9, 0.3, 1.4) both; }
+.animate-pick-correct { display: inline-flex; animation: pickCorrect 0.5s var(--ease-pop) both; }
 
 /* Division cards: a slight 3D tilt toward the mouse (components/TiltCard.tsx sets --tilt-x/y,
    mouse only) and a gold light that runs around the border on hover / keyboard focus */
 .tilt-card {
   transform: perspective(900px) rotateX(var(--tilt-y, 0deg)) rotateY(var(--tilt-x, 0deg));
-  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: transform calc(var(--duration-base) + 100ms) var(--ease-out-brand);
 }
 .tilt-card[data-tilting] { transition-duration: 0.08s; }
 @property --trace-angle {
@@ -1048,7 +1082,7 @@ input::placeholder, textarea::placeholder {
   position: relative;
   height: 100%;
   transform-style: preserve-3d;
-  transition: transform 0.6s cubic-bezier(0.3, 0.9, 0.3, 1);
+  transition: transform 0.6s var(--ease-out-brand);
 }
 .flip-card:hover .flip-card-inner,
 .flip-card:focus .flip-card-inner {
@@ -1072,7 +1106,7 @@ input::placeholder, textarea::placeholder {
 @keyframes vtPageOut { to { opacity: 0; transform: translateY(-6px); } }
 @keyframes vtPageIn { from { opacity: 0; transform: translateY(10px); } }
 ::view-transition-old(.page-exit) { animation: vtPageOut 0.15s ease-in both; }
-::view-transition-new(.page-enter) { animation: vtPageIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) 0.05s both; }
+::view-transition-new(.page-enter) { animation: vtPageIn 0.3s var(--ease-out-brand) 0.05s both; }
 @supports (view-transition-class: a) {
   .animate-page-enter { animation: none; }
 }
@@ -1119,7 +1153,7 @@ input::placeholder, textarea::placeholder {
   inset: 0;
   border-radius: 9999px;
   background: inherit;
-  animation: roleRing 2s cubic-bezier(0.2, 0.6, 0.4, 1) infinite;
+  animation: roleRing 2s var(--ease-out-brand) infinite;
   z-index: -1;
 }
 @media (prefers-reduced-motion: reduce) {
@@ -1151,8 +1185,8 @@ input::placeholder, textarea::placeholder {
   to { opacity: 1; transform: none; }
 }
 @media (prefers-reduced-motion: no-preference) {
-  .reaction-pop { animation: reactionPop 0.35s cubic-bezier(0.16, 1, 0.3, 1); }
-  .new-post-pill, .urgent-banner { animation: slideDownIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) both; }
+  .reaction-pop { animation: reactionPop 0.35s var(--ease-out-brand); }
+  .new-post-pill, .urgent-banner { animation: slideDownIn 0.35s var(--ease-out-brand) both; }
 }
 
 /* 11.4: white game logos (Tekken 8, CODM) have a dark-letter file for light backgrounds
@@ -1171,203 +1205,9 @@ input::placeholder, textarea::placeholder {
   }
 }
 
-/* ===================================================================================
-   Phase 9.6: "Choose your game" band (components/site/DarkBand.tsx, GameTiles.tsx, SiteStats.tsx).
-   Same rules as Phase 8-10: only transform and opacity animate (the stats line and the button
-   shimmer move a background on a tiny area), every loop pauses while the band is off-screen or the
-   tab is hidden (InView sets data-offscreen), and prefers-reduced-motion turns it all off.
-   Phones and touch screens keep the entrance and the hover/press effects, but get no sparks, no
-   third glow and no tilt (TiltCard is mouse-only).
-   =================================================================================== */
-
-/* Entrance, once: InView sets data-inview on .fx-band; each .fx-in waits for its --fx-delay.
-   Nothing is hidden without JavaScript or with reduced motion. */
-@media (scripting: enabled) and (prefers-reduced-motion: no-preference) {
-  .fx-band .fx-in {
-    transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-    transition-delay: var(--fx-delay, 0ms);
-  }
-  .fx-band:not([data-inview]) .fx-in { opacity: 0; transform: translateY(16px); }
-  .fx-band:not([data-inview]) .fx-from-left { transform: translateX(-40px); }
-  .fx-band:not([data-inview]) .fx-pop { transform: scale(0.6); }
-  .fx-band:not([data-inview]) .fx-card { transform: translateY(20px) scale(0.95); }
-  /* "game" pulses its gold glow once after it pops in */
-  .fx-band[data-inview] .fx-game-glow { animation: fxGamePulse 1.4s ease-out 0.85s 1 both; }
-}
-@keyframes fxGamePulse {
-  0%, 100% { text-shadow: 0 4px 28px rgb(255 204 55 / 0.45); }
-  40% { text-shadow: 0 0 36px rgb(255 204 55 / 0.95), 0 0 70px rgb(255 204 55 / 0.5); }
-}
-
-/* Third glow (the two others are AmbientBackground's): gold, top middle, very faint */
-.band-orb-c {
-  position: absolute;
-  z-index: -10;
-  left: 30%;
-  top: -35%;
-  width: 45%;
-  aspect-ratio: 1;
-  border-radius: 9999px;
-  pointer-events: none;
-  opacity: 0.12;
-  background: radial-gradient(circle, color-mix(in oklab, var(--color-gold) 70%, transparent) 0%, transparent 65%);
-  animation: ambientDriftB 38s ease-in-out infinite alternate-reverse;
-}
-
-/* A soft light runs along the slanted gold edges every 7 s, like a shine on metal (same shapes as
-   .band-angled::before / ::after; the bottom one runs half a cycle later) */
-.band-edge-sweep {
-  position: absolute;
-  left: 0;
-  right: 0;
-  height: 2.5rem;
-  z-index: -5;
-  overflow: hidden;
-  pointer-events: none;
-}
-.band-edge-sweep-top { top: 0; clip-path: polygon(0 0, 100% 0, 100% 15%, 0 100%); }
-.band-edge-sweep-bottom { bottom: 0; clip-path: polygon(0 100%, 100% 0, 100% 100%); }
-.band-edge-sweep::before {
-  content: '';
-  position: absolute;
-  inset: 0 auto 0 0;
-  width: 30%;
-  background: linear-gradient(90deg, transparent, rgb(255 230 150 / 0.35), transparent);
-  transform: translate3d(-120%, 0, 0);
-  animation: bandEdgeSweep 7s ease-in-out infinite;
-}
-.band-edge-sweep-bottom::before { animation-delay: 3.5s; }
-@keyframes bandEdgeSweep {
-  0% { transform: translate3d(-120%, 0, 0); }
-  35%, 100% { transform: translate3d(450%, 0, 0); }
-}
-@media (max-width: 639px) {
-  .band-edge-sweep { height: 1.25rem; }
-}
-
-/* Sparks rising slowly (16, desktop with a mouse only). --x column, --dur speed, --delay start,
-   --drift sideways movement: set per spark in DarkBand.tsx. */
-.band-embers { position: absolute; inset: 0; z-index: -5; overflow: hidden; pointer-events: none; }
-.band-ember {
-  position: absolute;
-  left: var(--x);
-  bottom: -8px;
-  width: 3px;
-  height: 3px;
-  border-radius: 9999px;
-  background: rgb(255 204 55);
-  box-shadow: 0 0 6px 1px rgb(255 204 55 / 0.7);
-  opacity: 0;
-  animation: bandEmber var(--dur) linear var(--delay) infinite;
-}
-@keyframes bandEmber {
-  0% { transform: translate3d(0, 0, 0); opacity: 0; }
-  10% { opacity: 0.7; }
-  80% { opacity: 0.35; }
-  100% { transform: translate3d(var(--drift), -440px, 0); opacity: 0; }
-}
-@media (max-width: 1023px), (hover: none) {
-  .band-embers, .band-orb-c { display: none; }
-}
-
-/* Game cards: lift, game-colored border + glow, a diagonal shine on hover / keyboard focus, and a
-   quick press. --game (RGB) comes from GameTiles.tsx; gold when unknown. */
-.game-card {
-  /* No default --game here: unlayered CSS would beat GameTiles' Tailwind [--game:...] class. The
-     gold fallback is in each var() instead. */
-  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
-}
-.game-card:hover,
-.game-card:focus-visible {
-  transform: translate3d(0, -6px, 0);
-  border-color: rgb(var(--game, 255 204 55) / 0.75);
-  background-color: rgb(255 255 255 / 0.08);
-  box-shadow: 0 14px 34px -10px rgb(var(--game, 255 204 55) / 0.55), 0 0 0 1px rgb(var(--game, 255 204 55) / 0.35);
-}
-.game-card:focus-visible { outline: 2px solid rgb(var(--game, 255 204 55)); outline-offset: 2px; }
-.game-card:active { transform: translate3d(0, -2px, 0) scale(0.98); transition-duration: 0.08s; }
-.game-card::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  z-index: 5;
-  pointer-events: none;
-  background: linear-gradient(115deg, transparent 35%, rgb(255 255 255 / 0.2) 50%, transparent 65%);
-  transform: translate3d(-120%, 0, 0);
-}
-.game-card:hover::after,
-.game-card:focus-visible::after {
-  transform: translate3d(120%, 0, 0);
-  transition: transform 0.85s ease;
-}
-/* Idle: a slow breathing light in the game's color behind each logo (staggered start) */
-.game-breathe {
-  background: radial-gradient(circle at 50% 55%, rgb(var(--game, 255 204 55) / 0.6), transparent 62%);
-  opacity: 0.1;
-  animation: gameBreathe 5s ease-in-out var(--fx-delay, 0ms) infinite alternate;
-}
-@keyframes gameBreathe { to { opacity: 0.3; } }
-
-/* Stats bar: a thin gold-to-maroon line runs along its top edge (two identical halves, so moving
-   by half its width loops seamlessly), and each icon bounces once when its number has counted up */
-.stats-line {
-  position: absolute;
-  top: 0;
-  left: 1.5rem;
-  right: 1.5rem;
-  height: 2px;
-  overflow: hidden;
-  border-radius: 9999px;
-  pointer-events: none;
-}
-.stats-line::before {
-  content: '';
-  position: absolute;
-  inset: 0 auto 0 0;
-  width: 200%;
-  background: linear-gradient(90deg,
-    transparent 0%, rgb(255 204 55 / 0.9) 12%, rgb(164 52 58 / 0.85) 25%, transparent 37.5%, transparent 50%,
-    rgb(255 204 55 / 0.9) 62%, rgb(164 52 58 / 0.85) 75%, transparent 87.5%, transparent 100%);
-  animation: statsLine 6s linear infinite;
-}
-@keyframes statsLine { to { transform: translate3d(-50%, 0, 0); } }
-[data-counted] .stat-icon { animation: statBounce 0.6s cubic-bezier(0.2, 0.9, 0.3, 1.4) 1; }
-@keyframes statBounce {
-  0%, 100% { transform: scale(1); }
-  40% { transform: translate3d(0, -3px, 0) scale(1.35); }
-}
-
-/* Buttons: "Join" shimmers every few seconds and glows on hover; "All divisions" fills with gold
-   from the border inward on hover / focus (an inset shadow growing, no layout change) */
-.fx-shimmer { animation: fxShimmer 5s ease-in-out 2s infinite; }
-@keyframes fxShimmer {
-  0%, 72% { background-position: 160% 0; }
-  100% { background-position: -60% 0; }
-}
-.fx-shimmer:hover,
-.fx-shimmer:focus-visible { box-shadow: 0 0 0 1px rgb(255 204 55 / 0.6), 0 8px 28px -6px rgb(255 204 55 / 0.7); }
-.fx-fill { transition: box-shadow 0.35s ease, color 0.2s ease, border-color 0.2s ease; }
-.fx-fill:hover,
-.fx-fill:focus-visible {
-  box-shadow: inset 0 0 0 3rem var(--color-gold);
-  border-color: var(--color-gold);
-  color: var(--color-ink);
-}
-
-/* Off-screen or hidden tab: every loop stops */
-.fx-band[data-offscreen] .band-orb-c,
-.fx-band[data-offscreen] .band-edge-sweep::before,
-.fx-band[data-offscreen] .band-ember,
-.fx-band[data-offscreen] .game-breathe,
-.fx-band[data-offscreen] .stats-line::before,
-.fx-band[data-offscreen] .fx-shimmer {
-  animation-play-state: paused;
-}
-
+/* Live sentiment gauge (components/LiveSentimentMeter.tsx): the needle turns smoothly to the new
+   hype score (its angle is set from JS); it simply jumps with reduced motion */
+.hype-needle { transition: transform 0.9s var(--ease-pop); }
 @media (prefers-reduced-motion: reduce) {
-  .band-orb-c, .band-edge-sweep::before, .band-ember, .game-breathe, .stats-line::before, .fx-shimmer,
-  .fx-game-glow, [data-counted] .stat-icon { animation: none !important; }
-  .band-embers, .band-edge-sweep { display: none; }
-  .game-card, .game-card::after { transition: none; }
-  .game-card:hover, .game-card:focus-visible, .game-card:active { transform: none; }
+  .hype-needle { transition: none; }
 }

@@ -86,7 +86,7 @@ export default function PostSectionCarousel({
           {/* 4 Cards Grid */}
           <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,13rem),1fr))] gap-5 sm:gap-6 w-full min-h-[280px]">
             {visiblePosts.map((post, i) => (
-              <Reveal key={post.id} delay={(i % 4) as 0 | 1 | 2 | 3} variant="card" className="h-full">
+              <Reveal key={post.id} delay={(i % 4) as 0 | 1 | 2 | 3} className="h-full">
                 <PostCard post={post} href={`${baseHref}/${post.id}`} showDateTba={showDateTba} />
               </Reveal>
             ))}

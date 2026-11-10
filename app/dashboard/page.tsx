@@ -222,7 +222,7 @@ export default function Dashboard() {
             <Link
               key={card.href}
               href={card.href}
-              className="group rounded-2xl border border-stone-200/90 bg-white p-5 sm:p-6 shadow-xs hover:shadow-lg hover:-translate-y-1 hover:border-amber-500/50 transition-all duration-300 flex flex-col justify-between"
+              className="group card-interactive rounded-2xl border border-stone-200/90 bg-white p-5 sm:p-6 shadow-xs flex flex-col justify-between"
             >
               <div>
                 <div className="w-12 h-12 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-700 flex items-center justify-center mb-4 group-hover:bg-gold group-hover:text-stone-950 group-hover:border-gold transition-colors">

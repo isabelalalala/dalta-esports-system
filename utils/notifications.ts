@@ -6,7 +6,7 @@ import {
   AlarmClock, Ban, CalendarClock, CalendarDays, CircleCheck, CircleMinus, CircleX, ClipboardList, Crown,
   DoorOpen, FileText, Flag, GraduationCap, Handshake, IdCard, Mail, Megaphone, Radio, Scale, Target,
   ShieldAlert, ShieldCheck, ThumbsUp, Trash, Trophy, TriangleAlert, Undo2, UserCheck, UserCog, UserMinus, UserPlus,
-  UserX, Users, ImageOff,
+  UserX, Users, ImageOff, Award,
 } from 'lucide-react';
 import type { createClient } from '@/utils/supabase/client';
 import { formatMomentDate } from '@/utils/tournaments';
@@ -32,7 +32,8 @@ export type NotificationType =
   | 'warning_issued' | 'warning_removed' | 'content_restored'
   | 'account_flagged' | 'ban_review' | 'ban_dismissed' | 'account_unbanned'
   | 'team_logo_removed'
-  | 'comment_reported';
+  | 'comment_reported'
+  | 'hall_of_fame';
 
 export interface AppNotification {
   id: string;
@@ -85,6 +86,7 @@ export const notificationIcons: Record<NotificationType, LucideIcon> = {
   avatar_removed: UserX,
   team_logo_removed: ImageOff,
   comment_reported: Flag,
+  hall_of_fame: Award,
   warning_issued: TriangleAlert,
   warning_removed: CircleCheck,
   content_restored: Undo2,
@@ -160,6 +162,7 @@ export const NOTIFICATION_GROUPS: NotificationGroup[] = [
   { key: 'registrations', label: 'Registrations', hint: 'Your team is approved, rejected or removed; tournament cancelled', types: ['registration_approved', 'registration_rejected', 'registration_removed', 'tournament_cancelled'], roles: ['player'] },
   { key: 'teams', label: 'Team invites and requests', hint: 'Invites, join requests, members leaving, captaincy', types: ['team_invite', 'invite_accepted', 'invite_declined', 'team_captain', 'member_left', 'member_removed', 'join_request', 'join_request_accepted', 'join_request_declined'], roles: ['player'] },
   { key: 'verification', label: 'Student verification', hint: 'Your student details are verified, rejected or revoked', types: ['student_verified', 'student_rejected', 'student_revoked'], roles: ['player'] },
+  { key: 'halloffame', label: 'Hall of Fame', hint: 'Your team won a tournament and is in the Hall of Fame', types: ['hall_of_fame'], roles: ['player'] },
   { key: 'predictions', label: "Pick'em results", hint: 'Whether your pick was right', types: ['prediction_result'], roles: ['player', 'spectator'] },
   { key: 'organizer', label: 'Organizer queue', hint: 'New registrations, withdrawals, student details to review, reported comments', types: ['registration_submitted', 'registration_withdrawn', 'verification_submitted', 'comment_reported'], roles: ['staff', 'admin'] },
 ];

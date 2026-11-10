@@ -20,6 +20,8 @@ export interface ActivityLog {
     tournament_id?: string | null;
     game?: string;
     team_name?: string;
+    // champion.mvp_set: the MVP's IGN (null = cleared)
+    mvp_name?: string | null;
     // Team join requests: the player who asked
     player_name?: string | null;
     old_status?: string | null;
@@ -104,6 +106,14 @@ export const ACTION_GROUPS: { label: string; actions: { value: string; label: st
       { value: 'team.removed', label: 'Team removed' },
       { value: 'team.restored', label: 'Team restored' },
       { value: 'team.logo_removed', label: 'Team logo removed' },
+    ],
+  },
+  {
+    label: 'Hall of Fame',
+    actions: [
+      { value: 'champion.mvp_set', label: 'MVP set' },
+      { value: 'champion.unpublished', label: 'Champion hidden' },
+      { value: 'champion.published', label: 'Champion published' },
     ],
   },
   {
@@ -307,6 +317,14 @@ export function describeActivity(log: ActivityLog): string {
     }
     case 'team.restored':
       return `${actor} restored ${d.team_name || 'a team'}${d.game ? ` (${d.game})` : ''}${d.skipped?.length ? ` (not added back: ${d.skipped.join(', ')})` : ''}`;
+    case 'champion.mvp_set':
+      return d.mvp_name
+        ? `${actor} named ${d.mvp_name} MVP of ${d.tournament_name || 'a tournament'} (${d.team_name || 'the champion'})`
+        : `${actor} cleared the MVP of ${d.tournament_name || 'a tournament'}`;
+    case 'champion.unpublished':
+      return `${actor} hid ${d.team_name || 'the champion'} of ${d.tournament_name || 'a tournament'} from the Hall of Fame`;
+    case 'champion.published':
+      return `${actor} published ${d.team_name || 'the champion'} of ${d.tournament_name || 'a tournament'} in the Hall of Fame`;
     case 'team.logo_removed':
       return `${actor} removed the logo of ${d.team_name || 'a team'}${d.note ? `: "${d.note}"` : ''}`;
     case 'comment.reports_dismissed':

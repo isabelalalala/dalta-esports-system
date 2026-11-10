@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Tv, X } from 'lucide-react';
 import { useLiveStream, type LiveStreamInfo } from '@/utils/use-live-stream';
+import LivePulse from '@/components/LivePulse';
 
 // Which stream's banner was dismissed this visit (sessionStorage, kept in memory when storage is
 // blocked). Shared by the banner and the header pill: on phones only one of them shows at a time.
@@ -44,15 +45,8 @@ function useBannerVisible(live: LiveStreamInfo | null): boolean {
   return !!live && hidden !== live.href && pathname !== live.href;
 }
 
-// Pulsing red dot (the pulse is off with reduced motion)
-function LiveDot() {
-  return (
-    <span className="relative flex size-2" aria-hidden="true">
-      <span className="absolute inline-flex size-full rounded-full bg-white opacity-75 animate-ping" />
-      <span className="relative inline-flex size-2 rounded-full bg-white" />
-    </span>
-  );
-}
+// The shared LIVE dot (white on the red pill and banner)
+const LiveDot = () => <LivePulse tone="white" />;
 
 // Header: a small pulsing LIVE pill whenever a stream is live, linking straight to it. On phones
 // and tablets it waits until the banner below is dismissed, so there are never two LIVE buttons;
