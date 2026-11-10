@@ -1210,6 +1210,9 @@ isOneToOne: false
               "details": Json,"game_id": string
             }[]
                            },
+"get_hall_of_fame":
+{ Args: { "p_game"?: string,"p_year"?: number }; Returns: Json
+                           },
 "get_live_now":
 { Args: Record<PropertyKey, never>; Returns: Json
                            },
@@ -1224,14 +1227,14 @@ isOneToOne: false
 "get_my_role":
 { Args: Record<PropertyKey, never>; Returns: string
                            },
-"get_my_titles":
-{ Args: Record<PropertyKey, never>; Returns: {
-              "decided_at": string,"game_id": string,"team_name": string,"tournament_id": string,"tournament_name": string
-            }[]
-                           },
 "get_my_team_invites":
 { Args: Record<PropertyKey, never>; Returns: {
               "captain_name": string,"created_at": string,"game_name": string,"invite_id": string,"max_players": number,"member_count": number,"team_id": string,"team_name": string
+            }[]
+                           },
+"get_my_titles":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "decided_at": string,"game_id": string,"team_name": string,"tournament_id": string,"tournament_name": string
             }[]
                            },
 "get_needs_attention":
@@ -1254,9 +1257,6 @@ isOneToOne: false
               "calendar_name": string,"game": string,"match_id": string,"match_number": number,"round": number,"round_count": number,"scheduled_at": string,"score_a": number,"score_b": number,"status": string,"team_a": string,"team_b": string,"tournament_id": string,"tournament_name": string,"updated_at": string
             }[]
                            },
-"get_hall_of_fame":
-{ Args: { "p_game"?: string,"p_year"?: number }; Returns: Json
-                           },
 "get_public_tournament":
 { Args: { "p_tournament_id": string }; Returns: Json
                            },
@@ -1271,11 +1271,6 @@ isOneToOne: false
 "get_stream_sentiment_timeline":
 { Args: { "p_bucket_seconds"?: number,"p_since"?: string,"p_stream_id": string }; Returns: Json
                            },
-"get_team_titles":
-{ Args: { "p_team_ids": (string)[] }; Returns: {
-              "team_id": string,"titles": number
-            }[]
-                           },
 "get_team_invites":
 { Args: { "p_team_id": string }; Returns: {
               "created_at": string,"full_name": string,"ign": string,"invite_id": string,"user_id": string
@@ -1289,6 +1284,11 @@ isOneToOne: false
 "get_team_roster":
 { Args: { "p_team_id": string }; Returns: {
               "avatar_url": string,"full_name": string,"ign": string,"in_game_role": string,"is_verified": boolean,"joined_at": string,"rank": string,"rank_count": number,"rank_position": number,"role": string,"user_id": string
+            }[]
+                           },
+"get_team_titles":
+{ Args: { "p_team_ids": (string)[] }; Returns: {
+              "team_id": string,"titles": number
             }[]
                            },
 "give_privacy_consent":
@@ -1416,7 +1416,7 @@ isOneToOne: false
 { Args: { "p_recruiting": boolean,"p_team_id": string }; Returns: undefined
                            },
 "set_tournament_mvp":
-{ Args: { "p_tournament_id": string,"p_user_id": string | null }; Returns: undefined
+{ Args: { "p_tournament_id": string,"p_user_id": string }; Returns: undefined
                            },
 "short_name":
 { Args: { "p_full_name": string }; Returns: string
@@ -1441,6 +1441,9 @@ isOneToOne: false
                            },
 "update_game_profile_schema":
 { Args: { "p_game_id": string,"p_schema": Json }; Returns: undefined
+                           },
+"upsert_champion":
+{ Args: { "p_match_id": string,"p_notify": boolean }; Returns: undefined
                            }
           }
           Enums: {

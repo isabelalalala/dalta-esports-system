@@ -45,7 +45,12 @@ export default function HallOfFameAdmin({ tournamentId, finalWinner }: { tournam
 
   const setMvp = async (userId: string) => {
     setBusy(true);
-    const { error: rpcError } = await supabase.rpc('set_tournament_mvp', { p_tournament_id: tournamentId, p_user_id: userId || null });
+    // null clears the MVP. The generated types say string (Supabase types every function argument as
+    // non-null), but set_tournament_mvp() accepts null on purpose.
+    const { error: rpcError } = await supabase.rpc('set_tournament_mvp', {
+      p_tournament_id: tournamentId,
+      p_user_id: (userId || null) as string,
+    });
     setBusy(false);
     if (rpcError) return toast.error(getErrorMessage(rpcError, 'The MVP could not be saved.'));
     toast.success(userId ? 'MVP saved.' : 'MVP cleared.');
