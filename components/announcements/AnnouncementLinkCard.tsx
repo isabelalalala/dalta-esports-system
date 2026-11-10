@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { ArrowRight, CalendarDays, ClipboardPen, MapPin, PlayCircle, Radio, Trophy, Users } from 'lucide-react';
+import { ArrowRight, CalendarDays, ClipboardPen, MapPin, Trophy, Tv, Users } from 'lucide-react';
 import type { AnnouncementLink, LinkTeam } from '@/utils/announcements';
 import { useViewer } from '@/utils/use-viewer';
 import { can } from '@/utils/permissions';
@@ -23,7 +23,7 @@ const eyebrow = 'flex items-center gap-1.5 text-[10px] font-black uppercase trac
 
 // The mini card inside an announcement for the tournament / match / stream / event it is about
 // (data from get_announcement_links: public details only). Buttons depend on who is viewing:
-// "Register Now" only for players while registration is open, "Watch Live" opens the stream page
+// "Register Now" only for players while registration is open, "Watch" opens the stream page
 // for logged-in users and the public tournament page (which embeds the stream) otherwise.
 export default function AnnouncementLinkCard({ link }: { link: AnnouncementLink }) {
   const viewer = useViewer();
@@ -136,7 +136,7 @@ function StreamLink({ link, loggedIn }: { link: Extract<AnnouncementLink, { type
     <div className={`${box} ${live ? 'border-red-200 bg-red-50/60' : ''}`}>
       <div className="flex items-start gap-3">
         <span className={`grid size-11 shrink-0 place-items-center rounded-xl ${live ? 'bg-red-600 text-white' : 'bg-ink text-gold'}`}>
-          <Radio className={`size-5 ${live ? 'animate-pulse motion-reduce:animate-none' : ''}`} aria-hidden="true" />
+          <Tv className={`size-5 ${live ? 'animate-pulse motion-reduce:animate-none' : ''}`} aria-hidden="true" />
         </span>
         <div className="min-w-0 flex-1 space-y-1">
           <div className="flex flex-wrap items-center gap-2">
@@ -151,7 +151,7 @@ function StreamLink({ link, loggedIn }: { link: Extract<AnnouncementLink, { type
       </div>
       {link.status !== 'ended' && (
         <Link href={href} className={live ? 'btn btn-primary w-full sm:w-auto' : smallActionPrimaryClass}>
-          <PlayCircle className="size-4" aria-hidden="true" /> {live ? 'Watch Live' : 'Stream page'}
+          <Tv className="size-4" aria-hidden="true" /> {live ? 'Watch' : 'Stream page'}
         </Link>
       )}
     </div>

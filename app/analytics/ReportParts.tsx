@@ -87,13 +87,13 @@ export function formatRating(value: number | null) {
 // "Oct 2026" for a YYYY-MM-DD month start
 export function formatMonth(value: string) {
   const [year, month] = value.split('-').map(Number);
-  return new Date(year, month - 1, 1).toLocaleDateString(undefined, { month: 'short', year: 'numeric' });
+  return new Date(year, month - 1, 1).toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
 }
 
 // "Oct 19" for a YYYY-MM-DD day (built from the parts so the time zone can't shift it)
 export function formatDay(value: string) {
   const [year, month, day] = value.split('-').map(Number);
-  return new Date(year, month - 1, day).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+  return new Date(year, month - 1, day).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
 
 // "player" -> "Player"

@@ -21,6 +21,9 @@ Do these in order. Tick each box. Nothing here runs automatically.
       every row. Edit **Part B** (delete lines for anything you want to keep), run it (it ends with
       `rollback;`, so nothing is saved), check the counts, then change the last line to `commit;` and
       run it again. Delete test accounts on `/admin/users`, test teams on `/admin/teams`.
+      Part A now also lists test announcements (A8), officers/official players (A9), placeholder site
+      texts (A10), the "Connect With Us" links (A11) and keyboard mash (A12). Found live on 2026-11-10:
+      announcements "rewrreerew" and "rehgedh", and campaigns/events described "(DRAFT) FOR TESTING ONLY".
 - [ ] First admin (if this is a fresh project): register normally, confirm the email, then
       `update public.profiles set role = 'admin' where email = '...';`
 
@@ -83,6 +86,9 @@ link in a chat, so it opens in the in-app browser).
 
 **Logged out (any device)**
 - [ ] Home loads; logos in Game Divisions are whole and centered; the match ticker/live strip show (if any matches).
+- [ ] "Choose your game" band: the zigzag pattern covers it edge to edge, also inside the slanted gold edges.
+- [ ] Menu → Tournaments shows the list (no login page); a card opens the public tournament page.
+- [ ] No test text anywhere (announcements, events, campaigns, About).
 - [ ] A shared tournament link (`/t/...`) shows a preview card when pasted in Messenger.
 - [ ] Search: type 2+ letters in the header: grouped results appear.
 - [ ] Help & FAQ shows only spectator/player questions.
@@ -91,8 +97,12 @@ link in a chat, so it opens in the in-app browser).
 
 **Spectator account**
 - [ ] Register (consent + terms checkboxes) → confirmation email arrives → link opens and logs in.
-- [ ] Bottom nav (phone): Home, Events, Live, Teams, More, labels fully visible.
-- [ ] Watch Live: the Facebook video plays (or "Watch on Facebook" appears); post a comment; report another comment.
+- [ ] Bottom nav (phone): Dashboard, Events, Live, Teams, More, labels fully visible (no "…").
+- [ ] Breadcrumbs start at "Dashboard"; Home is in More and behind the logo.
+- [ ] While a stream is live: phone shows only the red banner; after closing it, the header LIVE button appears.
+- [ ] Live Streams: the Facebook video plays (or "Watch on Facebook" appears); post a comment, and one with
+      `<script>alert(1)</script>` (must show as plain text); report another comment.
+- [ ] Avatar menu: shows your name and role badge; Log out asks for confirmation on the phone.
 - [ ] Notifications → turn a kind off and on again.
 - [ ] Pick'em: make a pick on an upcoming match.
 

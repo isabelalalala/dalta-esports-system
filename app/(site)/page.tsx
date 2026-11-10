@@ -54,7 +54,7 @@ export default async function HomePage() {
         >
           <span className="truncate">
             {featured.title}
-            <span className="text-maroon"> · {featured.event_date ? formatDate(featured.event_date) : 'Coming soon'}</span>
+            <span className="text-maroon"> · {featured.event_date ? formatDate(featured.event_date) : 'Date TBA'}</span>
           </span>
           <span className="shrink-0 inline-flex items-center gap-1 text-maroon">
             View details <ArrowRight className="h-4 w-4 group-hover:translate-x-0.5 transition-transform" aria-hidden="true" />
@@ -87,28 +87,32 @@ export default async function HomePage() {
 
       {/* Dark band: DALTA in numbers (count up on scroll) + one tile per game division */}
       <DarkBand label="Compete with DALTA Esports">
-        <Reveal className="flex flex-col items-center gap-4 text-center @3xl:flex-row @3xl:items-end @3xl:justify-between @3xl:text-left">
+        {/* Entrance (once, when the band scrolls in; CSS "Phase 9.6"): eyebrow, "Choose your" from the
+            left, "game" pops with one gold glow pulse, then the buttons; the cards and stats follow */}
+        <div className="flex flex-col items-center gap-4 text-center @3xl:flex-row @3xl:items-end @3xl:justify-between @3xl:text-left">
           <div className="space-y-2">
-            <p className="text-[11px] sm:text-xs font-black uppercase tracking-[0.25em] text-gold">Collegiate esports · UPHSD Molino</p>
+            <p className="fx-in text-[11px] sm:text-xs font-black uppercase tracking-[0.25em] text-gold">Collegiate esports · UPHSD Molino</p>
             <h2 className="text-3xl sm:text-4xl @5xl:text-5xl font-black uppercase leading-none tracking-tight text-white">
-              Choose your <span className="text-gold text-glow-gold">game</span>
+              <span className="fx-in fx-from-left inline-block [--fx-delay:150ms]">Choose your</span>{' '}
+              <span className="fx-in fx-pop fx-game-glow inline-block text-gold text-glow-gold [--fx-delay:380ms]">game</span>
             </h2>
           </div>
-          <div className="flex flex-wrap justify-center gap-3">
+          <div className="fx-in flex flex-wrap justify-center gap-3 [--fx-delay:500ms]">
             <Link
               href="/auth/register"
-              className="px-6 py-3 rounded-xl bg-gold text-ink font-black text-xs uppercase tracking-widest border border-golddark shadow-md hover:bg-golddark transition-colors"
+              className="fx-shimmer px-6 py-3 rounded-xl bg-gold text-ink font-black text-xs uppercase tracking-widest border border-golddark shadow-md hover:bg-golddark"
             >
               Join DALTA Esports
             </Link>
             <Link
               href="/divisions"
-              className="px-6 py-3 rounded-xl border border-white/30 bg-white/10 text-white font-extrabold text-xs uppercase tracking-widest hover:bg-white/20 transition-colors"
+              className="fx-fill group inline-flex items-center gap-2 px-6 py-3 rounded-xl border border-white/30 bg-white/10 text-white font-extrabold text-xs uppercase tracking-widest"
             >
               All divisions
+              <ArrowRight className="size-4 transition-transform duration-300 group-hover:translate-x-1 group-focus-visible:translate-x-1" aria-hidden="true" />
             </Link>
           </div>
-        </Reveal>
+        </div>
         <GameTiles />
         <SiteStats plain />
       </DarkBand>

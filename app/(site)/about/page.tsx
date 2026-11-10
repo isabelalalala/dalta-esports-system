@@ -4,6 +4,14 @@ import Reveal from '@/components/Reveal';
 import SiteStats from '@/components/site/SiteStats';
 import PageHeroBackground from '@/components/site/PageHeroBackground';
 
+import type { Metadata } from 'next';
+
+// Tab title = the menu label (utils/navigation.ts)
+export const metadata: Metadata = {
+  title: 'About Us',
+  description: 'Who DALTA Esports is: the official esports organization of UPHSD Molino, our mission, officers and coaches.',
+};
+
 // About Us Page: Redesigned with custom container hierarchy
 // 1. Large main container with DALTA Maroon brand color matching the logo (#5B271E), white text, centered
 // 2. Full-width Our Story container (aligned with main container)

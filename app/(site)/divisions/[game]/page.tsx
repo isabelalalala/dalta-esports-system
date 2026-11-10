@@ -9,6 +9,18 @@ import PageLoading from '@/components/PageLoading';
 import PageHeroBackground from '@/components/site/PageHeroBackground';
 import { Users, Gamepad2 } from 'lucide-react';
 
+import type { Metadata } from 'next';
+
+// Tab title: the game's name, as in the page heading
+export async function generateMetadata({ params }: PageProps<'/divisions/[game]'>): Promise<Metadata> {
+  const { game } = await params;
+  const division = (await getDivisions().catch(() => [])).find((d) => d.game_id === game);
+  return {
+    title: division?.games?.name ?? 'Game Division',
+    description: (division?.tagline || division?.description)?.slice(0, 160) || undefined,
+  };
+}
+
 // One game division and its official teams.
 // The game comes from the URL (only known at request time), so the content is inside Suspense.
 export default function DivisionPage({ params }: PageProps<'/divisions/[game]'>) {

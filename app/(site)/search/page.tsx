@@ -9,6 +9,14 @@ import { EmptyNote, PageTitle, SectionTitle } from '@/components/site/SiteParts'
 import { SectionLoading } from '@/components/PageLoading';
 import GameBadge from '@/components/GameBadge';
 
+import type { Metadata } from 'next';
+
+// Tab title = the menu label (utils/navigation.ts)
+export const metadata: Metadata = {
+  title: 'Search',
+  description: 'Search DALTA Esports tournaments, events, campaigns and announcements.',
+};
+
 const LIMIT = 20;
 
 // Search: tournaments, events and campaigns (only what logged-out visitors may see), plus a link

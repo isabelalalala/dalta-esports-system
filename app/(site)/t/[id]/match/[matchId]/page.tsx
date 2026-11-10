@@ -35,7 +35,7 @@ export async function generateMetadata({ params }: PageProps<'/t/[id]/match/[mat
   const { id, matchId } = await params;
   const data = await getPublicTournament(id);
   const info = data && describeMatch(data, matchId);
-  if (!data || !info) return { title: 'Match not found · DALTA Esports' };
+  if (!data || !info) return { title: 'Match not found' };
 
   const title = `${info.teamA} vs ${info.teamB}`;
   const description = info.match.status === 'completed'
@@ -43,7 +43,7 @@ export async function generateMetadata({ params }: PageProps<'/t/[id]/match/[mat
     : `${info.round} · ${data.tournament.name} · ${info.when} (PH time)`;
   const url = publicMatchPath(id, matchId);
   return {
-    title: `${title} · DALTA Esports`,
+    title, // the root layout's template adds " – DALTA Esports"
     description,
     alternates: { canonical: url },
     openGraph: { title, description, url, type: 'website', siteName: 'DALTA Esports' },

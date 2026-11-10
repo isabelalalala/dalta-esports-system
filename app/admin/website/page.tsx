@@ -29,7 +29,7 @@ const postFields: FieldConfig[] = [
 
 export default function WebsiteAdminPage() {
   const supabase = createClient();
-  usePageTitle('Edit website');
+  usePageTitle('Website');
   const [role, setRole] = useState('');
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState('');
@@ -103,7 +103,7 @@ export default function WebsiteAdminPage() {
           <h1
             className="text-display font-black tracking-wider uppercase leading-tight text-white"
           >
-            Website Content
+            Website
           </h1>
           <p
             className="text-base sm:text-lg font-medium leading-relaxed text-white"

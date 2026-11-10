@@ -321,7 +321,7 @@ export default function AnnouncementEditor({
                   <option value="">Choose…</option>
                   {options.map((o) => <option key={o.id} value={o.id}>{o.label}</option>)}
                 </select>
-                <p className="mt-1 text-xs text-stone-600">Shown inside the post: live status, scores, countdown, and buttons like Watch Live or View Bracket.</p>
+                <p className="mt-1 text-xs text-stone-600">Shown inside the post: live status, scores, countdown, and buttons like Watch or View Bracket.</p>
               </div>
             )}
           </div>

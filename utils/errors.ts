@@ -48,5 +48,11 @@ export function getErrorMessage(err: unknown, fallback: string) {
     case '22001': return 'One of the texts is too long.';
     case '57014': return 'The server took too long. Please try again.';
   }
+  // Internal database errors (SQL syntax / unknown column or function: 42xxx, connection: 08xxx,
+  // resources: 53xxx, system: 58xxx/XXxxx, PostgREST schema cache: PGRST2xx) name tables, columns
+  // and functions. Never show those; our own trigger messages (P0001) and auth messages pass through.
+  if (/^(42|08|53|58|XX|PGRST2)/.test(code)) {
+    return 'Something went wrong on our side. Please try again, or tell an organizer if it keeps happening.';
+  }
   return message || fallback;
 }

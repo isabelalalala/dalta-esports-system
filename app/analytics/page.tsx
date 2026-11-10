@@ -26,7 +26,7 @@ type ReportListItem = Pick<SavedReport, 'id' | 'filters' | 'generated_at'> & {
 export default function AnalyticsPage() {
   const supabase = createClient();
   const router = useRouter();
-  usePageTitle('Analytics');
+  usePageTitle('Reports');
   const { options, error: optionsError } = useFilterOptions();
   const [role, setRole] = useState('');
   const [filters, setFilters] = useState<Filters>(emptyFilters);
@@ -150,7 +150,7 @@ export default function AnalyticsPage() {
           <h1
             className="text-display font-black tracking-wider uppercase leading-tight text-white"
           >
-            Analytics &amp; Reports
+            Reports
           </h1>
           <p
             className="text-base sm:text-lg font-medium leading-relaxed text-white"

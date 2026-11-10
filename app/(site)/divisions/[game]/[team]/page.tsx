@@ -11,6 +11,15 @@ import PlayerTradingCard from '@/components/site/PlayerTradingCard';
 import { BadgeCheck, Crown, Shield, Users } from 'lucide-react';
 import GameBadge from '@/components/GameBadge';
 
+import type { Metadata } from 'next';
+
+// Tab title: the official team's name, as in the page heading
+export async function generateMetadata({ params }: PageProps<'/divisions/[game]/[team]'>): Promise<Metadata> {
+  const { game, team } = await params;
+  const found = (await getOfficialTeams(game).catch(() => [])).find((t) => t.id === team);
+  return { title: found?.name ?? 'Team' };
+}
+
 // Official team page (wireframe: captain profile, player profiles with "IGN – role", team description).
 export default function OfficialTeamPage({ params }: PageProps<'/divisions/[game]/[team]'>) {
   return (

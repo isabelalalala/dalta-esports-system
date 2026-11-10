@@ -47,7 +47,7 @@ const inputClass =
 
 export default function ProfilePage() {
   const [confirmDialog, ask] = useConfirm();
-  usePageTitle('Profile');
+  usePageTitle('My Profile');
   const supabase = createClient();
   const router = useRouter();
 

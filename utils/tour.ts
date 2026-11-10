@@ -23,7 +23,7 @@ const ROLE_STEPS: Record<string, TourStep[]> = {
     MENU,
     {
       title: 'Join or create a team',
-      text: 'Add your IGN for a game on My Profile first. Then create a team under My Team, or open Recruiting to ask a team to let you join.',
+      text: 'Add your IGN for a game on My Profile first. Then create a team under My Teams, or open Recruiting to ask a team to let you join.',
     },
     EXTRAS,
   ],
@@ -32,7 +32,7 @@ const ROLE_STEPS: Record<string, TourStep[]> = {
     MENU,
     {
       title: 'Watch and predict',
-      text: "Open Watch Live for streams with live scores. On a tournament's bracket you can pick who will win each match (Pick'em).",
+      text: "Open Live Streams for streams with live scores. On a tournament's bracket you can pick who will win each match (Pick'em).",
     },
     EXTRAS,
   ],

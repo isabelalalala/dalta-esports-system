@@ -34,7 +34,7 @@ export default function FeedbackPage() {
 function FeedbackPageContent() {
   const supabase = createClient();
   const searchParams = useSearchParams();
-  usePageTitle('Feedback & Ratings');
+  usePageTitle('Feedback');
 
   const [tournaments, setTournaments] = useState<Pick<Tournament, 'id' | 'name'>[]>([]);
   const [myFeedback, setMyFeedback] = useState<Feedback[]>([]);
@@ -265,7 +265,7 @@ function FeedbackPageContent() {
           <h1
             className="text-page-hero font-black tracking-wider uppercase leading-tight text-white"
           >
-            Feedback &amp; Ratings
+            Feedback
           </h1>
           <p
             className="text-base sm:text-lg font-medium leading-relaxed text-white"

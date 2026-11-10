@@ -49,7 +49,7 @@ export default function AnnouncementCover({
           {gameId ? (
             <GameLogo gameId={gameId} balanced className="absolute inset-0 drop-shadow-lg" />
           ) : (
-            <Icon className="absolute left-1/2 top-1/2 size-14 -translate-x-1/2 -translate-y-1/2 text-white/25" strokeWidth={1.5} />
+            <Icon className="absolute left-1/2 top-1/2 size-14 -translate-x-1/2 -translate-y-1/2 text-white/25" />
           )}
         </div>
       )}

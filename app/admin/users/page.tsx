@@ -35,7 +35,7 @@ const inputClass =
 
 export default function ManageUsersPage() {
   const supabase = createClient();
-  usePageTitle('Manage users');
+  usePageTitle('Users');
   const [users, setUsers] = useState<Profile[]>([]);
   const [me, setMe] = useState<Profile | null>(null);
   const [search, setSearch] = useState('');
@@ -112,7 +112,7 @@ export default function ManageUsersPage() {
           <h1
             className="text-display font-black tracking-wider uppercase leading-tight text-white"
           >
-            Manage Users
+            Users
           </h1>
           <p
             className="text-base sm:text-lg font-medium leading-relaxed text-white"

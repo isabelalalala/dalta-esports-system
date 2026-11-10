@@ -9,6 +9,7 @@ import {
   UserX, Users, ImageOff,
 } from 'lucide-react';
 import type { createClient } from '@/utils/supabase/client';
+import { formatMomentDate } from '@/utils/tournaments';
 
 type SupabaseClient = ReturnType<typeof createClient>;
 
@@ -136,7 +137,8 @@ export function timeAgo(value: string) {
   if (seconds < 3600) return `${Math.floor(seconds / 60)} min ago`;
   if (seconds < 86400) return `${Math.floor(seconds / 3600)} h ago`;
   if (seconds < 7 * 86400) return `${Math.floor(seconds / 86400)} d ago`;
-  return new Date(value).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+  // Same "Nov 9, 2026" (Philippine date) as every other date in the app
+  return formatMomentDate(value);
 }
 
 // Notification preferences (/notifications → Settings; table notification_preferences,

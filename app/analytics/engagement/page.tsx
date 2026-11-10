@@ -21,7 +21,7 @@ import { formatDateTime } from '@/utils/tournaments';
 // "View engagement stats" (use case, Tournament Staff). Admins can open it too.
 export default function EngagementPage() {
   const supabase = createClient();
-  usePageTitle('Engagement analytics');
+  usePageTitle('Engagement Stats');
   const { options, error: optionsError } = useFilterOptions();
   const [role, setRole] = useState('');
   const [filters, setFilters] = useState<Filters>(emptyFilters);

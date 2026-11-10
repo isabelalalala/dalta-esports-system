@@ -11,6 +11,8 @@ describe('navFor', () => {
     expect(items).not.toContain('/admin/users');
     expect(items).not.toContain('/teams?tab=mine');
     expect(hrefs(null, false)).not.toContain('/dashboard');
+    // No links that would bounce a visitor to the login page
+    for (const href of ['/live', '/teams?tab=all', '/feedback']) expect(hrefs(null, false)).not.toContain(href);
     expect(navFor(null, false).bottom).toHaveLength(0);
   });
 
@@ -30,6 +32,30 @@ describe('navFor', () => {
       ['/dashboard', '/tournaments', '/admin/teams', '/admin/users', '/announcements', '/admin/feedback', '/analytics']));
   });
 
+  it('starts the bottom bar with Dashboard (grid icon) for every logged-in role', () => {
+    for (const role of ['admin', 'staff', 'player', 'spectator']) {
+      const first = navFor(role, true).bottom[0];
+      expect(first).toMatchObject({ href: '/dashboard', label: 'Dashboard', icon: 'dashboard' });
+      // The bar shows the page's own name, never another page's ("Home" for the dashboard)
+      expect(first.short).toBeUndefined();
+    }
+  });
+
+  it('keeps Home (house icon) reachable from every menu', () => {
+    for (const role of ['admin', 'staff', 'player', 'spectator', null]) {
+      const home = navFor(role, role !== null).groups.flatMap((g) => g.items).find((i) => i.href === '/');
+      expect(home).toMatchObject({ label: 'Home', icon: 'home' });
+    }
+  });
+
+  it('only shortens a label to a part of the same name', () => {
+    for (const role of ['admin', 'staff', 'player', 'spectator']) {
+      for (const item of navFor(role, true).groups.flatMap((g) => g.items)) {
+        if (item.short) expect(item.label.toLowerCase()).toContain(item.short.toLowerCase());
+      }
+    }
+  });
+
   it('keeps the phone bottom bar at 4 items', () => {
     for (const role of ['admin', 'staff', 'player', 'spectator']) {
       expect(navFor(role, true).bottom.length).toBeLessThanOrEqual(4);
@@ -47,8 +73,8 @@ describe('isNavActive / activeItem', () => {
     expect(activeItem('/events', q(''), items)?.label).toBe('Events');
   });
 
-  it('tells My Team, Teams and Recruiting apart by query', () => {
-    expect(activeItem('/teams', q(''), items)?.label).toBe('My Team');
+  it('tells My Teams, Teams and Recruiting apart by query', () => {
+    expect(activeItem('/teams', q(''), items)?.label).toBe('My Teams');
     expect(activeItem('/teams', q('tab=all'), items)?.label).toBe('Teams');
     expect(activeItem('/teams', q('tab=all&recruiting=1'), items)?.label).toBe('Recruiting');
   });
@@ -69,6 +95,19 @@ describe('breadcrumbsFor', () => {
       { href: '/tournaments/abc/edit', label: 'Edit' },
     ]);
     expect(breadcrumbsFor('/admin/users').map((c) => c.label)).toEqual(['Home', 'Users']);
+  });
+
+  it('starts at Dashboard for logged-in users and uses menu names for menu pages', () => {
+    expect(breadcrumbsFor('/teams/xyz', {}, true)).toEqual([
+      { href: '/dashboard', label: 'Dashboard' },
+      { href: '/teams', label: 'Teams' },
+      { href: '/teams/xyz', label: 'Team' },
+    ]);
+    expect(breadcrumbsFor('/admin/feedback', {}, true).map((c) => c.label)).toEqual(['Dashboard', 'Feedback & Sentiment']);
+    expect(breadcrumbsFor('/analytics/engagement', {}, true).map((c) => c.label)).toEqual(['Dashboard', 'Reports', 'Engagement Stats']);
+    // A tournament's own matches page is not Match Control
+    expect(breadcrumbsFor('/tournaments/a/matches', {}, true).at(-1)?.label).toBe('Matches');
+    expect(breadcrumbsFor('/matches/m1', {}, true)[1]).toEqual({ href: '/matches', label: 'Match Control' });
   });
 
   it('uses names a page supplies', () => {

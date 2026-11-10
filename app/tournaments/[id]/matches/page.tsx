@@ -124,7 +124,7 @@ export default function MatchManagementPage() {
             ← Back to Tournament
           </Link>
           <span className="text-xs font-black text-stone-300 uppercase tracking-wider flex items-center gap-1.5">
-            <Swords className="w-4 h-4 text-gold" /> Match Management
+            <Swords className="w-4 h-4 text-gold" /> Matches
           </span>
         </div>
 

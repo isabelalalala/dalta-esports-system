@@ -4,28 +4,18 @@ import { Suspense, ViewTransition, useEffect, useState, useSyncExternalStore, ty
 import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import {
-  LifeBuoy,
-  Activity, Brain, CalendarDays, ChartColumn, ChevronLeft, ChevronRight, ClipboardList, Flame, Gamepad2,
-  Globe, GraduationCap, Home, Info, LayoutDashboard, Megaphone, Menu, MessageSquare, MoreHorizontal,
-  PanelLeftClose, PanelLeftOpen, Shield, ShieldAlert, Swords, Trophy, Tv, UserCircle, UserPlus, Users, Network, X,
-  type LucideIcon,
+  ChevronLeft, ChevronRight, LogOut, Menu, MoreHorizontal, PanelLeftClose, PanelLeftOpen, X,
 } from 'lucide-react';
+import { NAV_ICONS as ICONS } from '@/components/nav-icons';
 import Tooltip from '@/components/Tooltip';
 import FlaggedAccountNotice from '@/components/FlaggedAccountNotice';
+import { useLogout } from '@/components/useLogout';
 import { useViewer } from '@/utils/use-viewer';
 import { useBreadcrumbNames } from '@/utils/breadcrumb-names';
 import {
-  activeItem, breadcrumbsFor, isInnerPage, navFor, type NavGroup, type NavIcon, type NavItem,
+  activeItem, breadcrumbsFor, isInnerPage, navFor, rootCrumb, type NavGroup, type NavItem,
 } from '@/utils/navigation';
 
-const ICONS: Record<NavIcon, LucideIcon> = {
-  home: Home, dashboard: LayoutDashboard, events: CalendarDays, tournaments: Trophy, live: Tv, teams: Users,
-  feedback: MessageSquare, profile: UserCircle, myteam: Shield, schedule: CalendarDays, recruiting: UserPlus,
-  matches: Swords, brackets: Network, users: Users, announcements: Megaphone, sentiment: Brain,
-  reports: ChartColumn, verification: GraduationCap, website: Globe, activity: Activity, about: Info,
-  campaigns: Flame, divisions: Gamepad2, community: Users, stats: ChartColumn, registrations: ClipboardList,
-  moderation: ShieldAlert, help: LifeBuoy,
-};
 
 // The "collapse menu" choice, saved in localStorage (kept in memory when storage is blocked,
 // e.g. private browsing). Read through useSyncExternalStore so the server and browser agree.
@@ -180,7 +170,7 @@ export default function SiteNavLayout({ children }: { children: ReactNode }) {
         }`}
       >
         <Suspense fallback={null}>
-          <Breadcrumbs />
+          <Breadcrumbs loggedIn={loggedIn} />
         </Suspense>
         {/* Accounts flagged at 5 warnings: a notice on the next page load */}
         <FlaggedAccountNotice />
@@ -342,6 +332,7 @@ function BottomBar({ items, groups }: { items: NavItem[]; groups: NavGroup[] }) 
     setMoreOpen(false);
   }
   const activeInBar = items.some((i) => i.href === active?.href);
+  const [logoutDialog, logout] = useLogout();
 
   useEffect(() => {
     if (!moreOpen) return;
@@ -352,9 +343,11 @@ function BottomBar({ items, groups }: { items: NavItem[]; groups: NavGroup[] }) 
     return () => document.removeEventListener('keydown', onKey);
   }, [moreOpen]);
 
-  const tabClass = (on: boolean) =>
-    // min-h-11: 44px touch targets; short labels (NavItem.short) at 10px so they always fit, no ellipsis
-    `flex-1 min-w-0 min-h-11 flex flex-col items-center justify-center gap-0.5 py-2 text-[10px] font-black uppercase tracking-normal ${
+  const tabClass = (on: boolean, more = false) =>
+    // min-h-11: 44px touch targets; sentence-case labels at 11px (the label is the page's name, or
+    // NavItem.short where it can't fit), up to two lines, never an ellipsis. "More" is a fixed 3.5rem
+    // so the four page tabs get the rest: at 360px each has ~72px, enough for "Tournaments".
+    `${more ? 'w-14 shrink-0' : 'flex-1 min-w-0'} min-h-11 flex flex-col items-center justify-center gap-0.5 py-1.5 text-[11px] font-bold tracking-tighter ${
       on ? 'text-maroon' : 'text-stone-600'
     }`;
 
@@ -369,6 +362,18 @@ function BottomBar({ items, groups }: { items: NavItem[]; groups: NavGroup[] }) 
           className="lg:hidden fixed inset-x-0 bottom-[calc(4rem+env(safe-area-inset-bottom))] z-50 max-h-[70vh] overflow-y-auto rounded-t-2xl border-t border-stone-200 bg-white p-4 shadow-xl"
         >
           <MenuList groups={groups} onSelect={() => setMoreOpen(false)} />
+          <div className="mt-3 border-t border-stone-200 pt-3">
+            <button
+              type="button"
+              onClick={() => {
+                setMoreOpen(false);
+                logout();
+              }}
+              className="flex w-full items-center gap-3 px-3 py-3 rounded-xl text-sm font-black uppercase tracking-wider text-red-700 hover:bg-red-50 cursor-pointer"
+            >
+              <LogOut className="h-5 w-5 shrink-0" aria-hidden="true" /> Log out
+            </button>
+          </div>
         </nav>
       )}
       <nav
@@ -382,7 +387,7 @@ function BottomBar({ items, groups }: { items: NavItem[]; groups: NavGroup[] }) 
             return (
               <Link key={item.href} href={item.href} aria-current={on ? 'page' : undefined} className={tabClass(on)}>
                 <Icon className="h-5 w-5" aria-hidden="true" />
-                <span className="max-w-full px-0.5 leading-tight">{item.short ?? item.label}</span>
+                <span className="max-w-full px-0.5 text-center leading-[1.15]">{item.short ?? item.label}</span>
               </Link>
             );
           })}
@@ -390,32 +395,33 @@ function BottomBar({ items, groups }: { items: NavItem[]; groups: NavGroup[] }) 
             type="button"
             onClick={() => setMoreOpen((o) => !o)}
             aria-expanded={moreOpen}
-            className={tabClass(moreOpen || (!!active && !activeInBar))}
+            className={tabClass(moreOpen || (!!active && !activeInBar), true)}
           >
             {moreOpen ? <X className="h-5 w-5" aria-hidden="true" /> : <MoreHorizontal className="h-5 w-5" aria-hidden="true" />}
             <span>More</span>
           </button>
         </div>
       </nav>
+      {logoutDialog}
     </>
   );
 }
 
-// Inner pages: "← Back" + Home > Section > Page
-function Breadcrumbs() {
+// Inner pages: "← Back" + Dashboard > Section > Page (Home > ... for visitors)
+function Breadcrumbs({ loggedIn }: { loggedIn: boolean }) {
   const pathname = usePathname() ?? '/';
   const router = useRouter();
   const names = useBreadcrumbNames();
   if (!isInnerPage(pathname)) return null;
 
-  const crumbs = breadcrumbsFor(pathname, names);
+  const crumbs = breadcrumbsFor(pathname, names, loggedIn);
   const parent = [...crumbs.slice(0, -1)].reverse().find((c) => c.href);
 
   const goBack = () => {
     // Back in history when the visitor came from inside the site; otherwise up one level
     const fromHere = typeof document !== 'undefined' && document.referrer.startsWith(window.location.origin);
     if (fromHere && window.history.length > 1) router.back();
-    else router.push(parent?.href ?? '/');
+    else router.push(parent?.href ?? rootCrumb(loggedIn).href ?? '/');
   };
 
   return (

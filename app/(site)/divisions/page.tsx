@@ -11,6 +11,14 @@ import Reveal from '@/components/Reveal';
 import TiltCard from '@/components/TiltCard';
 import GameBadge from '@/components/GameBadge';
 
+import type { Metadata } from 'next';
+
+// Tab title = the menu label (utils/navigation.ts)
+export const metadata: Metadata = {
+  title: 'Game Divisions',
+  description: 'DALTA Esports game divisions and official teams for MLBB, Valorant, Tekken 8, League of Legends and CODM.',
+};
+
 // Game Divisions Page
 export const instant = false;
 

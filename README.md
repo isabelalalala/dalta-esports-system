@@ -21,6 +21,37 @@ AI-Powered Feedback Sentiment Analytics"*.
 - **Public website**: cached public pages (teams, posts, results), OG images,
   calendar (.ics/webcal) downloads
 
+## Glossary (one name per thing)
+
+The app calls each thing by one name in the menu, page title, breadcrumb, browser tab and
+dashboard shortcut. The names and icons live in `NAV_ITEMS` (`utils/navigation.ts`) and
+`NAV_ICONS` (`components/nav-icons.ts`); the dashboard cards, footer and breadcrumbs read them from
+there. Use these words in new screens, help text and messages.
+
+| Term | Means | Icon |
+|------|-------|------|
+| **Home** | The public homepage (`/`). Visitors' first menu item; logged-in users reach it through the logo or More. | house |
+| **Dashboard** | Your logged-in start page (`/dashboard`). First bottom-bar tab and first breadcrumb for every logged-in role. | grid |
+| **Tournament** | A competition run in the app: teams register, get approved, play a bracket (`/tournaments`). | trophy |
+| **Event** | Something the org announces on the public site (`/events`): a game night, a LAN, a launch. It can link to a tournament but has no bracket or registration of its own. | calendar |
+| **Live Streams** | Facebook Live matches (`/live`). The bottom bar shortens it to "Live"; buttons on a live stream say "Watch". | TV |
+| **Schedule & Results** | Every upcoming, live and finished match (`/schedule`). "My Matches" is only the dashboard box with your own team's matches. | calendar + clock |
+| **Teams** / **My Teams** | All teams (`/teams?tab=all`) / the teams you are on, with invites and join requests (`/teams?tab=mine`). | users / shield |
+| **Team Management** | The organizers' list of teams with Remove (`/admin/teams`). | users |
+| **Match Control** | Organizers' match overview: check-ins, results, forfeits (`/matches`). A tournament's own match list is "Matches". | crossed swords |
+| **Feedback** | Ratings and comments anyone can send (`/feedback`). Organizers read them in **Feedback & Sentiment** (`/admin/feedback`). | message / brain |
+| **Reports** / **Engagement Stats** | Admin reports (`/analytics`) / viewer and audience numbers (`/analytics/engagement`). | column chart / line chart |
+| **Users** | Admins' account list (`/admin/users`). | user + gear |
+| **My Profile** | Your name, picture, game profiles and student details (`/profile`). | user circle |
+| **Log in / Log out / Sign up** | Account actions. Never "Sign in", "Sign out" or "Register" for accounts. | — |
+| **Register** | Only for signing a team up for a tournament ("Register Team", "My Registrations"). | clipboard |
+
+Casing: menu items, buttons, badges and titles are shown in capitals by CSS; write them in Title
+Case in code ("My Teams") and sentence case for body text. The one exception is the phone bottom
+bar: sentence case at 11px, so "Dashboard" fits at 360px without an ellipsis. Dates are "Nov 9, 2026 · 7:00 PM" in
+Philippine time (`formatDateTime()` / `formatMomentDate()` in `utils/tournaments.ts`); never the
+browser's locale.
+
 ## Stack
 
 - Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS v4
@@ -245,7 +276,7 @@ and phone) is in [`docs/deployment-checklist.md`](docs/deployment-checklist.md).
   A new outside service the BROWSER talks to (a new embed, CDN or API) must be added to the CSP there.
 - After a deploy, check Vercel → Logs for errors while clicking through the main pages.
 
-The API routes set `maxDuration` (feedback 30 s, exports 60 s) because Vercel can stop
+The API routes set `maxDuration` (feedback/comments/reports 40 s, exports 60 s) because Vercel can stop
 a function after 10 s on the free plan and Gemini can take up to 15 s.
 `output: 'standalone'` in `next.config.ts` is only used outside Vercel (Docker).
 

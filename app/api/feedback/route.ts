@@ -3,8 +3,9 @@ import { createClient } from '@/utils/supabase/server';
 import { runModerationBatch, wasAnalyzed } from '@/utils/moderation';
 import { getErrorMessage } from '@/utils/errors';
 
-// Vercel may stop a function after 10 s on the free plan; sending waits up to 15 s for Gemini
-export const maxDuration = 30;
+// sending waits up to 15 s for Gemini; an unparsable answer is asked once more (2 x 15 s), so 40 s like /api/comments. If the
+// function is still stopped, the item is already saved and stays "pending analysis" for the cron retry.
+export const maxDuration = 40;
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 

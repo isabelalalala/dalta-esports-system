@@ -30,7 +30,7 @@ interface RemovedRow {
 // and the removed teams with their reason (restore happens on the team page, admin only).
 export default function AdminTeamsPage() {
   const supabase = createClient();
-  usePageTitle('Team management');
+  usePageTitle('Team Management');
   const [role, setRole] = useState('');
   const [tab, setTab] = useState<'active' | 'removed'>('active');
   const [games, setGames] = useState<Game[]>([]);

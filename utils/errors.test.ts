@@ -9,6 +9,15 @@ describe('getErrorMessage', () => {
     expect(getErrorMessage('oops', FALLBACK)).toBe(FALLBACK);
     expect(getErrorMessage({}, FALLBACK)).toBe(FALLBACK);
   });
+  it('hides internal database errors but keeps our own trigger messages', () => {
+    const internal = getErrorMessage({ code: '42703', message: 'column teams.secret does not exist' }, 'x');
+    expect(internal).not.toContain('column');
+    expect(getErrorMessage({ code: 'PGRST202', message: 'Could not find the function public.foo' }, 'x')).not.toContain('foo');
+    // permission denied (42501) keeps its own friendly sentence
+    expect(getErrorMessage({ code: '42501', message: 'permission denied for table x' }, 'x')).toContain('permission');
+    expect(getErrorMessage({ code: 'P0001', message: 'The roster is full (6 players).' }, 'x')).toBe('The roster is full (6 players).');
+  });
+
   it('translates network failures', () => {
     expect(getErrorMessage({ message: 'Failed to fetch' }, FALLBACK)).toContain('internet');
     expect(getErrorMessage({ message: 'NetworkError when attempting to fetch resource.' }, FALLBACK)).toContain('internet');

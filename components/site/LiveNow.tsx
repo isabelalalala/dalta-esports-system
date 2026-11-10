@@ -1,10 +1,48 @@
 'use client';
 
-import { useState } from 'react';
+import { useSyncExternalStore } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Tv, X } from 'lucide-react';
-import { useLiveStream } from '@/utils/use-live-stream';
+import { useLiveStream, type LiveStreamInfo } from '@/utils/use-live-stream';
+
+// Which stream's banner was dismissed this visit (sessionStorage, kept in memory when storage is
+// blocked). Shared by the banner and the header pill: on phones only one of them shows at a time.
+const HIDDEN_KEY = 'dalta_live_banner_hidden';
+const hiddenListeners = new Set<() => void>();
+let hiddenInMemory: string | null = null;
+
+function readHidden(): string | null {
+  try {
+    return sessionStorage.getItem(HIDDEN_KEY) ?? hiddenInMemory;
+  } catch {
+    return hiddenInMemory;
+  }
+}
+
+function hideBanner(href: string) {
+  hiddenInMemory = href;
+  try {
+    sessionStorage.setItem(HIDDEN_KEY, href);
+  } catch {
+    // private mode: hidden until the next page load
+  }
+  hiddenListeners.forEach((notify) => notify());
+}
+
+function subscribeHidden(notify: () => void) {
+  hiddenListeners.add(notify);
+  return () => {
+    hiddenListeners.delete(notify);
+  };
+}
+
+// Is the sticky banner on screen? Not when it was dismissed, or on the stream page itself.
+function useBannerVisible(live: LiveStreamInfo | null): boolean {
+  const pathname = usePathname();
+  const hidden = useSyncExternalStore(subscribeHidden, readHidden, () => null);
+  return !!live && hidden !== live.href && pathname !== live.href;
+}
 
 // Pulsing red dot (the pulse is off with reduced motion)
 function LiveDot() {
@@ -16,16 +54,19 @@ function LiveDot() {
   );
 }
 
-// Header: a small pulsing LIVE pill whenever a stream is live, linking straight to it.
+// Header: a small pulsing LIVE pill whenever a stream is live, linking straight to it. On phones
+// and tablets it waits until the banner below is dismissed, so there are never two LIVE buttons;
+// from the lg breakpoint both show (the banner is a slim strip there, the pill is in the header).
 export function LivePill() {
   const live = useLiveStream();
+  const bannerVisible = useBannerVisible(live);
   if (!live) return null;
   return (
     <Link
       href={live.href}
       aria-label={`Live now: ${live.title}. Watch the stream`}
       title={`Live now: ${live.title}`}
-      className="inline-flex h-11 shrink-0 items-center gap-1.5 rounded-xl bg-red-600 px-3 text-xs font-black uppercase tracking-widest text-white shadow-xs hover:bg-red-700 transition-colors"
+      className={`${bannerVisible ? 'hidden lg:inline-flex' : 'inline-flex'} h-11 shrink-0 items-center gap-1.5 rounded-xl bg-red-600 px-3 text-xs font-black uppercase tracking-widest text-white shadow-xs hover:bg-red-700 transition-colors`}
     >
       <LiveDot /> Live
     </Link>
@@ -36,24 +77,10 @@ export function LivePill() {
 // rest of the visit (sessionStorage); hidden on the stream page itself.
 export function LiveBanner() {
   const live = useLiveStream();
-  const pathname = usePathname();
-  const [hidden, setHidden] = useState<string | null>(() => {
-    try {
-      return sessionStorage.getItem('dalta_live_banner_hidden');
-    } catch {
-      return null;
-    }
-  });
-  if (!live || hidden === live.href || pathname === live.href) return null;
+  const visible = useBannerVisible(live);
+  if (!live || !visible) return null;
 
-  const dismiss = () => {
-    try {
-      sessionStorage.setItem('dalta_live_banner_hidden', live.href);
-    } catch {
-      // private mode: hidden until the next page load
-    }
-    setHidden(live.href);
-  };
+  const dismiss = () => hideBanner(live.href);
 
   return (
     <div className="sticky top-[var(--site-header-h,0px)] z-30 bg-red-600 text-white shadow-sm print:hidden" role="region" aria-label="Live now">

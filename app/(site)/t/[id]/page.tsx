@@ -31,11 +31,11 @@ const TZ = 'Asia/Manila';
 export async function generateMetadata({ params }: PageProps<'/t/[id]'>): Promise<Metadata> {
   const { id } = await params;
   const data = await getPublicTournament(id);
-  if (!data) return { title: 'Tournament not found · DALTA Esports' };
+  if (!data) return { title: 'Tournament not found' };
   const t = data.tournament;
   const description = `${t.game} tournament · ${formatDate(t.start_date)} – ${formatDate(t.end_date)} · ${statusLabels[getTournamentStatus(t)]}`;
   return {
-    title: `${t.name} · DALTA Esports`,
+    title: t.name, // the root layout's template adds " – DALTA Esports"
     description,
     alternates: { canonical: publicTournamentPath(t.id) },
     openGraph: { title: t.name, description, url: publicTournamentPath(t.id), type: 'website', siteName: 'DALTA Esports' },

@@ -26,7 +26,7 @@ export default async function LatestNews() {
       </div>
       <div className="grid gap-5 sm:gap-6 grid-cols-[repeat(auto-fill,minmax(min(100%,17rem),1fr))]">
         {list.map((a, i) => (
-          <Reveal key={a.id} delay={(i % 4) as 0 | 1 | 2 | 3} className="h-full">
+          <Reveal key={a.id} delay={(i % 4) as 0 | 1 | 2 | 3} variant="card" className="h-full">
             <AnnouncementFeedCard a={a} readIds={null} gameName={a.game_id ? games[a.game_id] : null} />
           </Reveal>
         ))}

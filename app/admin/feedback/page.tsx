@@ -35,7 +35,7 @@ async function runClassification(): Promise<{ classified: number; remaining: num
 
 export default function FeedbackAnalysisPage() {
   const supabase = createClient();
-  usePageTitle('Feedback Analysis');
+  usePageTitle('Feedback & Sentiment');
   const [feedback, setFeedback] = useState<Feedback[]>([]);
   const [tournaments, setTournaments] = useState<Pick<Tournament, 'id' | 'name'>[]>([]);
   const [role, setRole] = useState('');
@@ -170,7 +170,7 @@ export default function FeedbackAnalysisPage() {
           <h1
             className="text-display font-black tracking-wider uppercase leading-tight text-white"
           >
-            Feedback Analysis
+            Feedback &amp; Sentiment
           </h1>
           <p
             className="text-base sm:text-lg font-medium leading-relaxed text-white"

@@ -21,13 +21,16 @@ interface Props {
   // Card stages: the logo is centered at a per-game width (about 60% of the box) so all five
   // logos look the same size despite their different shapes (utils/game-logos.ts getGameLogoFit)
   balanced?: boolean;
+  // The game's name is already written right next to the logo (e.g. under it on the same card):
+  // empty alt, so screen readers don't read the name twice
+  decorative?: boolean;
 }
 
 // A game's wordmark inside a box the caller sizes (used by components/GameBadge.tsx variant="wordmark"
 // and the card stages). Never blank or broken: without a logo, or when the image fails to load, it
 // shows a neutral gamepad icon (11.4: never colored text like "LOL").
 export default function GameLogo({
-  name, gameId, className = '', imageClassName = '', fallbackClassName = 'size-[40%]', sizes = '160px', priority,
+  name, gameId, className = '', imageClassName = '', fallbackClassName = 'size-[40%]', sizes = '160px', priority, decorative = false,
   balanced = false, src: srcOverride,
 }: Props) {
   const src = srcOverride ?? getGameLogo(name, gameId);
@@ -47,7 +50,7 @@ export default function GameLogo({
           <div className={`relative max-h-full max-w-full ${fit}`}>
             <Image
               src={src}
-              alt={name || 'Game logo'}
+              alt={decorative ? '' : name || 'Game logo'}
               fill
               sizes={sizes}
               priority={priority}
@@ -59,7 +62,7 @@ export default function GameLogo({
       ) : src && !failed ? (
         <Image
           src={src}
-          alt={name || 'Game logo'}
+          alt={decorative ? '' : name || 'Game logo'}
           fill
           sizes={sizes}
           priority={priority}

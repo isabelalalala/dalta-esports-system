@@ -15,7 +15,7 @@ const COOKIES = [
   {
     name: 'sb-*-auth-token',
     purpose: 'Keeps you securely signed in to your account (Supabase authentication session token).',
-    lifetime: 'Retained until you explicitly sign out or the session expires.',
+    lifetime: 'Retained until you explicitly log out or the session expires.',
   },
   {
     name: 'sb-*-auth-token-code-verifier',
@@ -129,7 +129,7 @@ export default function CookiesPage() {
               2. Cookies we set
             </h2>
             <p>
-              The following essential session and authentication cookies are stored locally when you sign in or interact with account-based features:
+              The following essential session and authentication cookies are stored locally when you log in or interact with account-based features:
             </p>
 
             {/* Structured Table */}

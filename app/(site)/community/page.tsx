@@ -5,6 +5,14 @@ import { heroBannerUrl, officerCategoryLabels, type Officer, type OfficerCategor
 import { EmptyNote, PersonCard } from '@/components/site/SiteParts';
 import PageHeroBackground from '@/components/site/PageHeroBackground';
 
+import type { Metadata } from 'next';
+
+// Tab title = the menu label (utils/navigation.ts)
+export const metadata: Metadata = {
+  title: 'Community',
+  description: 'Join the DALTA Esports community: follow us, meet the players and get involved.',
+};
+
 // Officer sections in order matching the hero jump navigation
 const officerSections: OfficerCategory[] = ['coach', 'core_officer', 'division_head', 'committee'];
 

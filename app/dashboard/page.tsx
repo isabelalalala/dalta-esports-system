@@ -23,10 +23,9 @@ import PageError from '@/components/PageError';
 import { getErrorMessage } from '@/utils/errors';
 import { usePageTitle } from '@/utils/page-title';
 import { can, isOrganizer } from '@/utils/permissions';
-import {
-  Activity, Brain, CalendarDays, ChartColumn, ClipboardList,
-  Gamepad2, Globe, GraduationCap, Megaphone, MessageSquare, RadioTower,
-  Shield, Target, Trophy, Tv, Users, type LucideIcon, LifeBuoy } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
+import { NAV_ITEMS, type NavItem } from '@/utils/navigation';
+import { NAV_ICONS } from '@/components/nav-icons';
 
 interface DashCard {
   href: string;
@@ -37,65 +36,67 @@ interface DashCard {
 
 // The first cards of each role's list are its most common tasks
 const TOP_CARDS = 4;
+const ProfileIcon = NAV_ICONS.profile;
+
+// A shortcut to a menu page: the page's name, link and icon come from the navigation
+// (utils/navigation.ts), so the card says exactly what the menu, page title and breadcrumb say.
+function card(item: NavItem, text: string): DashCard {
+  return { href: item.href, title: item.label, text, icon: NAV_ICONS[item.icon] };
+}
 
 // Shortcuts for each role, picked by permission (utils/permissions.ts). The pages check the
 // role themselves (and RLS protects the data); the cards are only a convenience.
 function cardsFor(role: string | undefined): DashCard[] {
-  return [...roleCards(role), HELP_CARD];
+  return [...roleCards(role), card(NAV_ITEMS.help, 'How teams, streams, feedback and warnings work')];
 }
 
-const HELP_CARD: DashCard = { href: '/help', title: 'Help & FAQ', text: 'How teams, streams, feedback and warnings work', icon: LifeBuoy };
-
 function roleCards(role: string | undefined): DashCard[] {
+  const I = NAV_ITEMS;
   if (can(role, 'team.join')) {
     return [
-      { href: '/tournaments', title: 'Available Tournaments', text: 'Browse and register for tournaments', icon: ClipboardList },
-      { href: '/teams', title: 'My Teams', text: 'Manage your teams and players', icon: Users },
-      { href: '/registrations', title: 'My Registrations', text: 'View your tournament registrations', icon: Trophy },
-      { href: '/schedule', title: 'Schedule & Results', text: 'Upcoming matches and latest results', icon: CalendarDays },
-      { href: '/live', title: 'Live Streams', text: 'Watch matches live', icon: Tv },
-      { href: '/feedback', title: 'Feedback', text: 'Rate the tournaments and tell us what to improve', icon: MessageSquare },
-      { href: '/announcements', title: 'Announcements', text: 'News and updates from the organizers', icon: Megaphone },
+      card(I.tournaments, 'Browse and register for tournaments'),
+      card(I.myTeam, 'Manage your teams and players'),
+      card(I.registrations, 'View your tournament registrations'),
+      card(I.schedule, 'Upcoming matches and latest results'),
+      card(I.live, 'Watch matches live'),
+      card(I.feedback, 'Rate the tournaments and tell us what to improve'),
+      card(I.announcements, 'News and updates from the organizers'),
     ];
   }
   if (!isOrganizer(role)) {
     return [
-      { href: '/live', title: 'Live Tournaments', text: 'Watch ongoing tournaments and matches', icon: Tv },
-      { href: '/schedule', title: 'Schedule & Results', text: 'Upcoming matches, results and brackets', icon: CalendarDays },
-      { href: '/announcements', title: 'Announcements', text: 'News and updates from the organizers', icon: Megaphone },
-      { href: '/feedback', title: 'Feedback', text: 'Share your feedback and ratings', icon: MessageSquare },
+      card(I.live, 'Watch ongoing tournaments and matches'),
+      card(I.schedule, 'Upcoming matches, results and brackets'),
+      card(I.announcements, 'News and updates from the organizers'),
+      card(I.feedback, 'Share your feedback and ratings'),
     ];
   }
   // Admin and staff share most tools; the first four (the cards) are each role's most common tasks
-  const tournaments = { href: '/tournaments', title: 'Manage Tournaments', text: 'Create and manage tournaments', icon: ClipboardList };
-  const teams = { href: '/admin/teams', title: 'Teams', text: 'Every team, roster and join request; remove teams', icon: Shield };
-  const matches = { href: '/matches', title: 'Match Control', text: 'Schedule matches, check-ins, results and forfeits', icon: Gamepad2 };
-  const streams = { href: '/live', title: 'Live Streams', text: 'Watch streams; configure them from each tournament', icon: RadioTower };
-  const verification = { href: '/admin/verification', title: 'Student Verification', text: "Verify players' student details", icon: GraduationCap };
-  const announcements = {
-    href: '/announcements',
-    title: 'Announcements',
-    text: can(role, 'announcement.post') ? 'Post and manage announcements' : 'Read the latest announcements',
-    icon: Megaphone,
-  };
-  const analytics = {
-    href: '/analytics',
-    title: can(role, 'report.generate') ? 'Reports' : 'Engagement Stats',
-    text: can(role, 'report.generate') ? 'Generate activity, sentiment and engagement reports' : 'Viewership and audience engagement stats',
-    icon: ChartColumn,
-  };
+  const tournaments = card(I.tournaments, 'Create and manage tournaments');
+  const teams = card(I.manageTeams, 'Every team, roster and join request; remove teams');
+  const matches = card(I.matchControl, 'Schedule matches, check-ins, results and forfeits');
+  const streams = card(I.live, 'Watch streams; configure them from each tournament');
+  const verification = card(I.verification, "Verify players' student details");
+  const announcements = card(
+    I.announcements,
+    can(role, 'announcement.post') ? 'Post and manage announcements' : 'Read the latest announcements',
+  );
+  // Staff open /analytics too; the page sends them on to the engagement stats
+  const analytics = can(role, 'report.generate')
+    ? card(I.reports, 'Generate activity, sentiment and engagement reports')
+    : card(I.stats, 'Viewership and audience engagement stats');
 
   if (!can(role, 'user.manage')) {
     return [matches, streams, tournaments, teams, verification, announcements, analytics];
   }
   return [
     tournaments, teams,
-    { href: '/admin/users', title: 'Manage Users', text: 'Change roles, edit names and delete accounts', icon: Users },
+    card(I.users, 'Change roles, edit names and delete accounts'),
     analytics, announcements,
-    { href: '/admin/feedback', title: 'Feedback & Sentiment', text: 'Sentiment of audience and player feedback', icon: Brain },
+    card(I.sentiment, 'Sentiment of audience and player feedback'),
     matches, streams, verification,
-    { href: '/admin/website', title: 'Website', text: 'Edit the public pages, photos, officers and teams', icon: Globe },
-    { href: '/admin/activity', title: 'Activity Log', text: 'Who did what, and when', icon: Activity },
+    card(I.website, 'Edit the public pages, photos, officers and teams'),
+    card(I.activity, 'Who did what, and when'),
   ];
 }
 
@@ -196,7 +197,7 @@ export default function Dashboard() {
             href="/profile"
             className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-gold text-stone-950 font-black text-xs uppercase tracking-wider border border-amber-400 shadow-xs hover:bg-golddark hover:-translate-y-0.5 transition-all"
           >
-            <Target className="h-4 w-4 text-stone-950" />
+            <ProfileIcon className="h-4 w-4 text-stone-950" aria-hidden="true" />
             <span>My Profile</span>
           </Link>
         </div>
@@ -215,7 +216,8 @@ export default function Dashboard() {
           Quick Actions
         </h2>
 
-        <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,13rem),1fr))] gap-4 sm:gap-6">
+        {/* 16rem minimum: two columns only when each title fits on one line (one column on phones) */}
+        <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,16rem),1fr))] gap-4 sm:gap-6">
           {topCards.map((card) => (
             <Link
               key={card.href}

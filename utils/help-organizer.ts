@@ -117,7 +117,7 @@ export const ORGANIZER_HELP_SECTIONS: HelpSection[] = [
         q: 'How do I make a good announcement post?',
         a: [
           'Pick a category (it sets the badge color), the game, and optionally a cover image (wide 16:9 works best; without one the card uses the game logo on the category colors). Use the toolbar for headings, lists, bold, links, images, and a Facebook video link on its own line.',
-          'Link card: link the tournament, match, stream or event the post is about. Readers then see live details: the score and winner for a match, a countdown, Watch Live, View Bracket, or Register Now for players.',
+          'Link card: link the tournament, match, stream or event the post is about. Readers then see live details: the score and winner for a match, a countdown, Watch, View Bracket, or Register Now for players.',
           'Pin up to 3 posts to feature them on top. Urgent posts get a red style and a banner across the whole site; use it only for schedule changes, cancellations and similar. The card preview on the right shows how it will look.',
         ],
         link: { href: '/announcements', label: 'Announcements' },

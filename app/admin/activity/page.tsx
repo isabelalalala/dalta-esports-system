@@ -56,7 +56,7 @@ async function fetchPage(supabase: ReturnType<typeof createClient>, filters: Fil
 
 export default function ActivityLogPage() {
   const supabase = createClient();
-  usePageTitle('Activity log');
+  usePageTitle('Activity Log');
   const [role, setRole] = useState('');
   const [logs, setLogs] = useState<ActivityLog[]>([]);
   const [actors, setActors] = useState<{ actor_id: string; actor_name: string | null }[]>([]);

@@ -2,7 +2,7 @@ import Link from 'next/link';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Page not found | DALTA Esports',
+  title: 'Page not found', // the root template adds " – DALTA Esports"
 };
 
 // 404 for every page: unknown addresses and notFound() (e.g. a deleted tournament on /t/[id]).

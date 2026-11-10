@@ -1,5 +1,5 @@
 import {
-  CalendarDays, ClipboardList, Medal, Megaphone, Radio, Swords, TriangleAlert, Trophy, type LucideIcon,
+  CalendarDays, ClipboardList, Medal, Megaphone, Swords, TriangleAlert, Trophy, Tv, type LucideIcon,
 } from 'lucide-react';
 import { CATEGORY_INFO, categoryOf, type AnnouncementCategory } from '@/utils/announcements';
 
@@ -9,7 +9,7 @@ export const CATEGORY_ICONS: Record<AnnouncementCategory, LucideIcon> = {
   results: Medal,
   event: CalendarDays,
   registration: ClipboardList,
-  stream: Radio,
+  stream: Tv,
   general: Megaphone,
   urgent: TriangleAlert,
 };

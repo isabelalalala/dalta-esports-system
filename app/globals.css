@@ -650,6 +650,7 @@ input::placeholder, textarea::placeholder {
     opacity: 0;
     transform: translateY(24px);
   }
+  .reveal-card:not([data-revealed]) { transform: translateY(20px) scale(0.96); }
   .reveal-delay-1 { transition-delay: 80ms; }
   .reveal-delay-2 { transition-delay: 160ms; }
   .reveal-delay-3 { transition-delay: 240ms; }
@@ -879,7 +880,8 @@ input::placeholder, textarea::placeholder {
 
 /* Dark homepage band (components/site/DarkBand.tsx): a straight full-bleed section (no clip-path,
    so no page background shows at the corners) with slanted gold shapes inside its top and bottom
-   edges for the angled look. They sit above the pattern and only tint it. */
+   edges for the angled look. 9.5: they sit BELOW the zigzag layer (z-index -20 vs AmbientBackground's
+   -10), so the zigzags run through the angled bands too; above it, their gradient hid the thin lines. */
 .band-angled::before,
 .band-angled::after {
   content: '';
@@ -887,7 +889,7 @@ input::placeholder, textarea::placeholder {
   left: 0;
   right: 0;
   height: 2.5rem;
-  z-index: -1;
+  z-index: -20;
   pointer-events: none;
   background: linear-gradient(90deg, rgb(255 204 55 / 0.10), rgb(255 204 55 / 0.04), rgb(255 204 55 / 0.10));
 }
@@ -1167,4 +1169,205 @@ input::placeholder, textarea::placeholder {
     -webkit-mask-image: linear-gradient(90deg, transparent, #000 14px, #000 calc(100% - 28px), transparent);
     mask-image: linear-gradient(90deg, transparent, #000 14px, #000 calc(100% - 28px), transparent);
   }
+}
+
+/* ===================================================================================
+   Phase 9.6: "Choose your game" band (components/site/DarkBand.tsx, GameTiles.tsx, SiteStats.tsx).
+   Same rules as Phase 8-10: only transform and opacity animate (the stats line and the button
+   shimmer move a background on a tiny area), every loop pauses while the band is off-screen or the
+   tab is hidden (InView sets data-offscreen), and prefers-reduced-motion turns it all off.
+   Phones and touch screens keep the entrance and the hover/press effects, but get no sparks, no
+   third glow and no tilt (TiltCard is mouse-only).
+   =================================================================================== */
+
+/* Entrance, once: InView sets data-inview on .fx-band; each .fx-in waits for its --fx-delay.
+   Nothing is hidden without JavaScript or with reduced motion. */
+@media (scripting: enabled) and (prefers-reduced-motion: no-preference) {
+  .fx-band .fx-in {
+    transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    transition-delay: var(--fx-delay, 0ms);
+  }
+  .fx-band:not([data-inview]) .fx-in { opacity: 0; transform: translateY(16px); }
+  .fx-band:not([data-inview]) .fx-from-left { transform: translateX(-40px); }
+  .fx-band:not([data-inview]) .fx-pop { transform: scale(0.6); }
+  .fx-band:not([data-inview]) .fx-card { transform: translateY(20px) scale(0.95); }
+  /* "game" pulses its gold glow once after it pops in */
+  .fx-band[data-inview] .fx-game-glow { animation: fxGamePulse 1.4s ease-out 0.85s 1 both; }
+}
+@keyframes fxGamePulse {
+  0%, 100% { text-shadow: 0 4px 28px rgb(255 204 55 / 0.45); }
+  40% { text-shadow: 0 0 36px rgb(255 204 55 / 0.95), 0 0 70px rgb(255 204 55 / 0.5); }
+}
+
+/* Third glow (the two others are AmbientBackground's): gold, top middle, very faint */
+.band-orb-c {
+  position: absolute;
+  z-index: -10;
+  left: 30%;
+  top: -35%;
+  width: 45%;
+  aspect-ratio: 1;
+  border-radius: 9999px;
+  pointer-events: none;
+  opacity: 0.12;
+  background: radial-gradient(circle, color-mix(in oklab, var(--color-gold) 70%, transparent) 0%, transparent 65%);
+  animation: ambientDriftB 38s ease-in-out infinite alternate-reverse;
+}
+
+/* A soft light runs along the slanted gold edges every 7 s, like a shine on metal (same shapes as
+   .band-angled::before / ::after; the bottom one runs half a cycle later) */
+.band-edge-sweep {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2.5rem;
+  z-index: -5;
+  overflow: hidden;
+  pointer-events: none;
+}
+.band-edge-sweep-top { top: 0; clip-path: polygon(0 0, 100% 0, 100% 15%, 0 100%); }
+.band-edge-sweep-bottom { bottom: 0; clip-path: polygon(0 100%, 100% 0, 100% 100%); }
+.band-edge-sweep::before {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 30%;
+  background: linear-gradient(90deg, transparent, rgb(255 230 150 / 0.35), transparent);
+  transform: translate3d(-120%, 0, 0);
+  animation: bandEdgeSweep 7s ease-in-out infinite;
+}
+.band-edge-sweep-bottom::before { animation-delay: 3.5s; }
+@keyframes bandEdgeSweep {
+  0% { transform: translate3d(-120%, 0, 0); }
+  35%, 100% { transform: translate3d(450%, 0, 0); }
+}
+@media (max-width: 639px) {
+  .band-edge-sweep { height: 1.25rem; }
+}
+
+/* Sparks rising slowly (16, desktop with a mouse only). --x column, --dur speed, --delay start,
+   --drift sideways movement: set per spark in DarkBand.tsx. */
+.band-embers { position: absolute; inset: 0; z-index: -5; overflow: hidden; pointer-events: none; }
+.band-ember {
+  position: absolute;
+  left: var(--x);
+  bottom: -8px;
+  width: 3px;
+  height: 3px;
+  border-radius: 9999px;
+  background: rgb(255 204 55);
+  box-shadow: 0 0 6px 1px rgb(255 204 55 / 0.7);
+  opacity: 0;
+  animation: bandEmber var(--dur) linear var(--delay) infinite;
+}
+@keyframes bandEmber {
+  0% { transform: translate3d(0, 0, 0); opacity: 0; }
+  10% { opacity: 0.7; }
+  80% { opacity: 0.35; }
+  100% { transform: translate3d(var(--drift), -440px, 0); opacity: 0; }
+}
+@media (max-width: 1023px), (hover: none) {
+  .band-embers, .band-orb-c { display: none; }
+}
+
+/* Game cards: lift, game-colored border + glow, a diagonal shine on hover / keyboard focus, and a
+   quick press. --game (RGB) comes from GameTiles.tsx; gold when unknown. */
+.game-card {
+  /* No default --game here: unlayered CSS would beat GameTiles' Tailwind [--game:...] class. The
+     gold fallback is in each var() instead. */
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
+}
+.game-card:hover,
+.game-card:focus-visible {
+  transform: translate3d(0, -6px, 0);
+  border-color: rgb(var(--game, 255 204 55) / 0.75);
+  background-color: rgb(255 255 255 / 0.08);
+  box-shadow: 0 14px 34px -10px rgb(var(--game, 255 204 55) / 0.55), 0 0 0 1px rgb(var(--game, 255 204 55) / 0.35);
+}
+.game-card:focus-visible { outline: 2px solid rgb(var(--game, 255 204 55)); outline-offset: 2px; }
+.game-card:active { transform: translate3d(0, -2px, 0) scale(0.98); transition-duration: 0.08s; }
+.game-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  pointer-events: none;
+  background: linear-gradient(115deg, transparent 35%, rgb(255 255 255 / 0.2) 50%, transparent 65%);
+  transform: translate3d(-120%, 0, 0);
+}
+.game-card:hover::after,
+.game-card:focus-visible::after {
+  transform: translate3d(120%, 0, 0);
+  transition: transform 0.85s ease;
+}
+/* Idle: a slow breathing light in the game's color behind each logo (staggered start) */
+.game-breathe {
+  background: radial-gradient(circle at 50% 55%, rgb(var(--game, 255 204 55) / 0.6), transparent 62%);
+  opacity: 0.1;
+  animation: gameBreathe 5s ease-in-out var(--fx-delay, 0ms) infinite alternate;
+}
+@keyframes gameBreathe { to { opacity: 0.3; } }
+
+/* Stats bar: a thin gold-to-maroon line runs along its top edge (two identical halves, so moving
+   by half its width loops seamlessly), and each icon bounces once when its number has counted up */
+.stats-line {
+  position: absolute;
+  top: 0;
+  left: 1.5rem;
+  right: 1.5rem;
+  height: 2px;
+  overflow: hidden;
+  border-radius: 9999px;
+  pointer-events: none;
+}
+.stats-line::before {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 200%;
+  background: linear-gradient(90deg,
+    transparent 0%, rgb(255 204 55 / 0.9) 12%, rgb(164 52 58 / 0.85) 25%, transparent 37.5%, transparent 50%,
+    rgb(255 204 55 / 0.9) 62%, rgb(164 52 58 / 0.85) 75%, transparent 87.5%, transparent 100%);
+  animation: statsLine 6s linear infinite;
+}
+@keyframes statsLine { to { transform: translate3d(-50%, 0, 0); } }
+[data-counted] .stat-icon { animation: statBounce 0.6s cubic-bezier(0.2, 0.9, 0.3, 1.4) 1; }
+@keyframes statBounce {
+  0%, 100% { transform: scale(1); }
+  40% { transform: translate3d(0, -3px, 0) scale(1.35); }
+}
+
+/* Buttons: "Join" shimmers every few seconds and glows on hover; "All divisions" fills with gold
+   from the border inward on hover / focus (an inset shadow growing, no layout change) */
+.fx-shimmer { animation: fxShimmer 5s ease-in-out 2s infinite; }
+@keyframes fxShimmer {
+  0%, 72% { background-position: 160% 0; }
+  100% { background-position: -60% 0; }
+}
+.fx-shimmer:hover,
+.fx-shimmer:focus-visible { box-shadow: 0 0 0 1px rgb(255 204 55 / 0.6), 0 8px 28px -6px rgb(255 204 55 / 0.7); }
+.fx-fill { transition: box-shadow 0.35s ease, color 0.2s ease, border-color 0.2s ease; }
+.fx-fill:hover,
+.fx-fill:focus-visible {
+  box-shadow: inset 0 0 0 3rem var(--color-gold);
+  border-color: var(--color-gold);
+  color: var(--color-ink);
+}
+
+/* Off-screen or hidden tab: every loop stops */
+.fx-band[data-offscreen] .band-orb-c,
+.fx-band[data-offscreen] .band-edge-sweep::before,
+.fx-band[data-offscreen] .band-ember,
+.fx-band[data-offscreen] .game-breathe,
+.fx-band[data-offscreen] .stats-line::before,
+.fx-band[data-offscreen] .fx-shimmer {
+  animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .band-orb-c, .band-edge-sweep::before, .band-ember, .game-breathe, .stats-line::before, .fx-shimmer,
+  .fx-game-glow, [data-counted] .stat-icon { animation: none !important; }
+  .band-embers, .band-edge-sweep { display: none; }
+  .game-card, .game-card::after { transition: none; }
+  .game-card:hover, .game-card:focus-visible, .game-card:active { transform: none; }
 }

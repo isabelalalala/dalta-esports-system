@@ -18,7 +18,7 @@ type TournamentWithMatches = Tournament & { matches: { count: number }[] };
 
 export default function MatchesOverviewPage() {
   const supabase = createClient();
-  usePageTitle('Match Management');
+  usePageTitle('Match Control');
   const [tournaments, setTournaments] = useState<TournamentWithMatches[]>([]);
   const [profile, setProfile] = useState<Pick<Profile, 'id' | 'role'> | null>(null);
   const [loading, setLoading] = useState(true);
@@ -86,7 +86,7 @@ export default function MatchesOverviewPage() {
           <h1
             className="text-display font-black tracking-wider uppercase leading-tight text-white"
           >
-            Match Management
+            Match Control
           </h1>
           <p
             className="text-base sm:text-lg font-medium leading-relaxed text-white"

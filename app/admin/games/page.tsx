@@ -22,7 +22,7 @@ interface GameRow {
 // /admin/games (admin): the fields and options of each game's profile form (ranks, roles,
 // heroes/agents/champions, servers). Saved with update_game_profile_schema() (202611091400).
 export default function GameProfilesAdminPage() {
-  usePageTitle('Game profiles');
+  usePageTitle('Game Profiles');
   const supabase = useMemo(() => createClient(), []);
   const [role, setRole] = useState('');
   const [games, setGames] = useState<GameRow[]>([]);

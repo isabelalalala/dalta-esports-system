@@ -19,11 +19,9 @@ import {
   CircleCheck,
   Edit2,
   Plus,
-  Radio,
   Swords,
   Trash2,
   Tv,
-  Video,
 } from 'lucide-react';
 import { can } from '@/utils/permissions';
 import { useConfirm } from '@/components/useConfirm';
@@ -176,7 +174,7 @@ export default function ManageStreamsPage() {
             ← Back to Tournament
           </Link>
           <span className="text-xs font-black text-stone-300 uppercase tracking-wider flex items-center gap-1.5">
-            <Radio className="w-4 h-4 text-gold" /> Facebook Live Broadcast
+            <Tv className="w-4 h-4 text-gold" aria-hidden="true" /> Facebook Live Broadcast
           </span>
         </div>
 
@@ -481,7 +479,7 @@ function StreamForm({
       <div className="border-b border-stone-100 pb-3">
         <span className="text-[11px] font-black tracking-widest text-maroon uppercase">Broadcast Studio</span>
         <h2 className="text-xl sm:text-2xl font-black text-stone-950 uppercase tracking-wide flex items-center gap-2">
-          <Video className="w-5 h-5 text-maroon" /> {existing ? 'Edit Broadcast Stream' : 'Configure New Live Stream'}
+          <Tv className="w-5 h-5 text-maroon" aria-hidden="true" /> {existing ? 'Edit Broadcast Stream' : 'Configure New Live Stream'}
           <SectionHint text="Checklist: 1) the Facebook video is Public, 2) paste its link (videos, watch, reel or share links work), 3) set Live when it starts and Ended after. Full guide on Help & FAQ." />
         </h2>
       </div>

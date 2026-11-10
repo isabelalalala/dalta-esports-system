@@ -19,10 +19,10 @@ import TermsCheckbox from '@/components/TermsCheckbox';
 import { usePageTitle } from '@/utils/page-title';
 
 const inputClass =
-  'w-full p-3.5 rounded-xl bg-white/45 text-stone-950 border border-stone-300 placeholder:text-stone-400 focus:border-amber-600 focus:ring-2 focus:ring-amber-500/20 shadow-xs outline-none transition-all font-medium text-xs sm:text-sm';
+  'w-full p-3.5 rounded-xl bg-stone-50 focus:bg-surface text-stone-950 border border-stone-300 placeholder:text-stone-500 focus:border-amber-600 focus:ring-2 focus:ring-amber-500/20 shadow-xs outline-none transition-all font-medium text-xs sm:text-sm';
 
 export default function Register() {
-  usePageTitle('Register');
+  usePageTitle('Sign up');
   const supabase = createClient();
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
@@ -183,11 +183,12 @@ export default function Register() {
 
       {/* Centered White Container Card */}
       <div className="relative z-10 w-full max-w-2xl lg:max-w-3xl mx-auto my-auto px-4 sm:px-6 py-4 sm:py-6">
-        <div className="w-full bg-white/80 border border-stone-200/90 rounded-3xl p-6 sm:p-10 lg:p-12 shadow-2xl text-stone-950 space-y-6">
+        {/* Solid card: a see-through one let the dark photo turn it grey, and the muted text failed contrast */}
+        <div className="w-full bg-surface border border-stone-200/90 rounded-3xl p-6 sm:p-10 lg:p-12 shadow-2xl text-stone-950 space-y-6">
           {/* Header Title */}
           <div className="pb-4 border-b border-stone-100">
             <h1 className="text-stone-950 text-2xl sm:text-3xl lg:text-4xl font-black tracking-wider uppercase leading-tight">
-              {sentTo ? 'Check Your Email' : 'Create Account'}
+              {sentTo ? 'Check Your Email' : 'Sign Up'}
             </h1>
             <p className="text-stone-500 text-xs sm:text-sm font-bold mt-1">
               {sentTo ? 'Verify to activate your account' : 'Official Collegiate Esports Organization'}

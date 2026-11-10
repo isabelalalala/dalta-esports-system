@@ -142,17 +142,23 @@ export default function HeroSlideshow({ title, tagline, images = [], content }: 
 
         {/* Slide Indicator Dots */}
         {slides.length > 1 && (
-          <div className="flex justify-center items-center gap-2 pt-4" aria-label="Slideshow pagination">
+          <div className="flex justify-center items-center pt-3" aria-label="Slideshow pagination">
             {slides.map((_, i) => (
               <button
                 key={i}
                 onClick={() => setCurrent(i)}
                 aria-label={`Go to slide ${i + 1}`}
                 aria-current={i === current}
-                className={`h-2 rounded-full transition-all duration-300 ${
-                  i === current ? 'w-8 bg-gold' : 'w-2 bg-white/40 hover:bg-white/70'
-                }`}
-              />
+                // 24px tall tap area (WCAG target size) around the small visible dot
+                className="group/dot grid h-6 min-w-6 place-items-center px-1 cursor-pointer"
+              >
+                <span
+                  aria-hidden="true"
+                  className={`block h-2 rounded-full transition-all duration-300 ${
+                    i === current ? 'w-8 bg-gold' : 'w-2 bg-white/40 group-hover/dot:bg-white/70'
+                  }`}
+                />
+              </button>
             ))}
           </div>
         )}

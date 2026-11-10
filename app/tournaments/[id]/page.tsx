@@ -408,7 +408,7 @@ export default function TournamentDetailsPage() {
         </div>
       )}
 
-      {/* 3. Watch Live Banner (if streams active) */}
+      {/* 3. Live stream banner (if streams active) */}
       {liveStreams.map((s) => (
         <Link
           key={s.id}
@@ -649,7 +649,7 @@ export default function TournamentDetailsPage() {
           </div>
         </div>
         <span className="text-xs font-black text-maroon group-hover:text-gold uppercase tracking-widest shrink-0 self-end sm:self-center transition-colors">
-          Give Feedback →
+          Feedback →
         </span>
       </Link>
 

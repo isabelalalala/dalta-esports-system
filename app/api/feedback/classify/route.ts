@@ -4,8 +4,9 @@ import { runModerationBatch } from '@/utils/moderation';
 import { MAX_FEEDBACK_ANALYSIS_ATTEMPTS } from '@/utils/feedback';
 import { can } from '@/utils/permissions';
 
-// Vercel may stop a function after 10 s on the free plan; one batch waits up to 15 s for Gemini
-export const maxDuration = 30;
+// one batch waits up to 15 s for Gemini; an unparsable answer is asked once more (2 x 15 s), so 40 s like /api/comments. If the
+// function is still stopped, the item is already saved and stays "pending analysis" for the cron retry.
+export const maxDuration = 40;
 
 
 // "Retry pending analysis" on /admin/feedback (use case "Classify sentiment", Organizing Committee).

@@ -2,8 +2,10 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Suspense } from 'react';
 import {
-  Cookie, FileText, Gamepad2, Info, LifeBuoy, Lock, Mail, Scale, ShieldCheck, Trophy, Users, type LucideIcon,
+  Cookie, FileText, Lock, Mail, Scale, ShieldCheck, type LucideIcon,
 } from 'lucide-react';
+import { NAV_ITEMS } from '@/utils/navigation';
+import { NAV_ICONS } from '@/components/nav-icons';
 import { getSiteContent } from '@/utils/site-data';
 import { DEFAULT_LOGO, DEFAULT_SITE_CONTENT, logoUrl, type SiteContent } from '@/utils/site';
 import { SOCIAL_NAMES, SocialIcon, type SocialPlatform } from '@/components/BrandIcons';
@@ -29,13 +31,10 @@ async function AsyncFooter() {
 }
 
 // Text labels stay next to the icons: an icon alone would make people guess
+// Same names and icons as the menu (utils/navigation.ts)
 const PAGES: { href: string; label: string; icon: LucideIcon }[] = [
-  { href: '/about', label: 'About Us', icon: Info },
-  { href: '/divisions', label: 'Esports Division', icon: Gamepad2 },
-  { href: '/community', label: 'Community', icon: Users },
-  { href: '/tournaments', label: 'Tournaments', icon: Trophy },
-  { href: '/help', label: 'Help & FAQ', icon: LifeBuoy },
-];
+  NAV_ITEMS.about, NAV_ITEMS.divisions, NAV_ITEMS.community, NAV_ITEMS.tournaments, NAV_ITEMS.help,
+].map((item) => ({ href: item.href, label: item.label, icon: NAV_ICONS[item.icon] }));
 
 const POLICIES: { href: string; label: string; icon: LucideIcon }[] = [
   { href: '/privacy', label: 'Privacy Notice', icon: Lock },

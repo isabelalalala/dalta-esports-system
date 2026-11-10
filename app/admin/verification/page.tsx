@@ -20,7 +20,7 @@ const TABS: VerificationStatus[] = ['pending', 'rejected', 'verified'];
 
 export default function VerificationPage() {
   const supabase = createClient();
-  usePageTitle('Student verification');
+  usePageTitle('Student Verification');
   const [role, setRole] = useState('');
   const [tab, setTab] = useState<VerificationStatus>('pending');
   const [players, setPlayers] = useState<Profile[]>([]);

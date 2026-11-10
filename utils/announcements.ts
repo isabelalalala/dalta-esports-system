@@ -12,14 +12,15 @@ export type AnnouncementCategory = (typeof ANNOUNCEMENT_CATEGORIES)[number];
 
 // Badge text and colors. Solid palette colors that dark mode doesn't remap (white text stays
 // readable in both themes); urgent uses the red of the LIVE tag. The icons live in
-// components/announcements/CategoryBadge.tsx.
+// components/announcements/CategoryBadge.tsx. Badge colors keep white text at 4.5:1 or more (WCAG AA):
+// sky and pink are the 700 shades because white on sky-600 was 4.0:1.
 export const CATEGORY_INFO: Record<AnnouncementCategory, { label: string; badge: string; gradient: string }> = {
   tournament:   { label: 'Tournament',   badge: 'bg-indigo-600 text-white',  gradient: 'from-indigo-950 via-indigo-800 to-ink' },
-  match_update: { label: 'Match Update', badge: 'bg-sky-600 text-white',     gradient: 'from-sky-950 via-sky-800 to-ink' },
+  match_update: { label: 'Match Update', badge: 'bg-sky-700 text-white',     gradient: 'from-sky-950 via-sky-800 to-ink' },
   results:      { label: 'Results',      badge: 'bg-gold text-ink',          gradient: 'from-ink via-maroondark to-golddark' },
   event:        { label: 'Event',        badge: 'bg-fuchsia-700 text-white', gradient: 'from-fuchsia-950 via-fuchsia-800 to-ink' },
   registration: { label: 'Registration', badge: 'bg-teal-700 text-white',    gradient: 'from-teal-950 via-teal-800 to-ink' },
-  stream:       { label: 'Stream',       badge: 'bg-pink-600 text-white',    gradient: 'from-pink-950 via-pink-800 to-ink' },
+  stream:       { label: 'Stream',       badge: 'bg-pink-700 text-white',    gradient: 'from-pink-950 via-pink-800 to-ink' },
   general:      { label: 'General',      badge: 'bg-ink text-white ring-1 ring-white/15', gradient: 'from-ink via-stone-900 to-maroondark' },
   urgent:       { label: 'Urgent',       badge: 'bg-red-600 text-white',     gradient: 'from-red-950 via-red-900 to-ink' },
 };

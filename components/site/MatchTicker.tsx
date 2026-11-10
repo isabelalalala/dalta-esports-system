@@ -40,6 +40,9 @@ const MIN_ITEMS = 8;
 // match changes (Realtime) and every minute. Hidden when there is nothing to show.
 export default function MatchTicker() {
   const [data, setData] = useState<TickerData | null>(null);
+  // The first load has finished (with or without data): until then a same-height placeholder holds
+  // the ticker's place, so the page doesn't jump down when it appears (layout shift on Lighthouse)
+  const [loaded, setLoaded] = useState(false);
   const viewportRef = useRef<HTMLDivElement>(null);
   const trackRef = useRef<HTMLUListElement>(null);
 
@@ -53,11 +56,14 @@ export default function MatchTicker() {
       if (cancelled) return;
       if (!ticker.error && ticker.data) {
         setData(ticker.data as unknown as TickerData);
+        setLoaded(true);
         return;
       }
       // Before 202611091700 has run: live and next matches only (no results)
       const live = await supabase.rpc('get_live_now');
-      if (!cancelled && !live.error && live.data) setData(live.data as unknown as TickerData);
+      if (cancelled) return;
+      if (!live.error && live.data) setData(live.data as unknown as TickerData);
+      setLoaded(true);
     };
     const reloadSoon = () => {
       if (timer) clearTimeout(timer);
@@ -102,6 +108,8 @@ export default function MatchTicker() {
     };
   }, [items.length]);
 
+  // Same height as the real ticker (38px at every width); empty for screen readers
+  if (!loaded) return <div aria-hidden="true" className="h-[38px] rounded-2xl border border-stone-800/80 bg-ink shadow-md" />;
   if (items.length === 0) return null;
 
   const repeat = Math.max(1, Math.ceil(MIN_ITEMS / items.length));

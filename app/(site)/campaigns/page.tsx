@@ -4,6 +4,14 @@ import PostCard from '@/components/site/PostCard';
 import { EmptyNote } from '@/components/site/SiteParts';
 import PageHeroBackground from '@/components/site/PageHeroBackground';
 
+import type { Metadata } from 'next';
+
+// Tab title = the menu label (utils/navigation.ts)
+export const metadata: Metadata = {
+  title: 'Campaigns',
+  description: 'DALTA Esports campaigns and programs for students and the community.',
+};
+
 // Campaigns Page
 export const instant = false;
 

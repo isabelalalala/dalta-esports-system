@@ -37,7 +37,7 @@ export function formatDate(value: string | null | undefined) {
   const date = toDateInput(value);
   if (!date) return '—';
   const [year, month, day] = date.split('-').map(Number);
-  return new Date(year, month - 1, day).toLocaleDateString(undefined, {
+  return new Date(year, month - 1, day).toLocaleDateString('en-US', {
     month: 'short',
     day: 'numeric',
     year: 'numeric',

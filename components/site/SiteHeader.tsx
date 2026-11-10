@@ -33,8 +33,11 @@ export default function SiteHeader() {
 
         {/* Auth CTA Controls */}
         <div className="shrink-0 flex items-center gap-2">
-          {/* Pulsing LIVE pill while a stream is live (links straight to it) */}
-          <LivePill />
+          {/* Pulsing LIVE pill while a stream is live (links straight to it). Suspense: it reads the
+              path (to know whether the live banner is showing), which can't block the prerender. */}
+          <Suspense fallback={null}>
+            <LivePill />
+          </Suspense>
           <SiteAuthButtons />
         </div>
       </div>

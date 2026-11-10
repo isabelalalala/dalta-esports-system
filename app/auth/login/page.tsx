@@ -99,7 +99,7 @@ function LoginContent() {
       if (isEmailNotConfirmed(err)) {
         setNotConfirmed(true)
       } else {
-        setError(getErrorMessage(err, 'Login failed'))
+        setError(getErrorMessage(err, "Log in failed"))
       }
     } finally {
       setLoading(false)
@@ -191,7 +191,7 @@ function LoginContent() {
         <div className="w-full max-w-md mx-auto my-auto space-y-6 py-6">
           <div className="text-center space-y-2">
             <h1 className="text-amber-600 text-2xl sm:text-3xl lg:text-4xl font-black tracking-wider uppercase leading-tight">
-              Login to your account
+              Log in to your account
             </h1>
           </div>
 
@@ -286,7 +286,7 @@ function LoginContent() {
               href="/auth/register"
               className="text-amber-700 font-black hover:underline hover:text-amber-800 ml-1"
             >
-              Register
+              Sign up
             </Link>
           </p>
         </div>

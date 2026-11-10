@@ -46,7 +46,7 @@ Full title: "DALTA Esports: Tournament Management System with AI-Powered Feedbac
   data protection contact. The fallbacks in `utils/privacy.ts` are placeholders: set the real ones before launch.
 - All of them live in `.env` (git-ignored) and must also be set in Vercel (Project → Settings → Environment
   Variables) when deploying. `NEXT_PUBLIC_*` values are built into the app: redeploy after changing them.
-- Vercel time limits: the API routes set `maxDuration` (feedback 30 s, exports 60 s) because Gemini can take 15 s.
+- Vercel time limits: the API routes set `maxDuration` (feedback/comments/reports 40 s, exports 60 s) because Gemini can take 15 s.
 
 ## Auth pages and Supabase settings
 - `/auth/login`, `/auth/register`, `/auth/forgot-password`, `/auth/reset-password`.
@@ -410,9 +410,11 @@ Readers: "anyone" = also logged out; "logged-in" = any role; "admin/staff" = org
 - Gemini: instructions in `systemInstruction`, user texts as escaped JSON in `<untrusted_items>` (prompt injection).
 - UI: `components/GameIcon.tsx` (compact square game icon: text badge on the game color, or an `icon` file set in
   `utils/game-logos.ts`) for small spaces; `GameLogo` centers with flex + padding (iOS Safari cropped the grid
-  version). `components/RoleBadge.tsx` (pulsing role badge, one per role). Bottom nav uses `NavItem.short` labels
-  (no ellipsis), 44px targets, padding = bar + safe area. `components/site/LiveNow.tsx` (header LIVE pill + sticky
-  banner, `utils/use-live-stream.ts`), `components/Celebrate.tsx` (one-time confetti: registration approved, your
+  version). `components/RoleBadge.tsx` (pulsing role badge, one per role). Bottom nav: sentence-case 11px labels =
+  the page name (`NavItem.short` only as a part of the same name, e.g. "Live"), first tab Dashboard for every
+  logged-in role, "More" a fixed 3.5rem so "Tournaments" fits at 360px; 44px targets, padding = bar + safe area.
+  `components/site/LiveNow.tsx` (header LIVE pill + sticky banner, `utils/use-live-stream.ts`; below lg the pill
+  shows only after the banner is dismissed, shared dismissed state), `components/Celebrate.tsx` (one-time confetti: registration approved, your
   team won), header search with grouped results as you type (`components/site/SiteSearchBox.tsx`, RLS-scoped
   client queries), filters in the URL (`utils/url-state.ts`: schedule, teams, registrations), Google Calendar link
   in `CalendarLinks`, PWA (`app/manifest.ts`, `public/icons/`, `public/sw.js` offline page only, `/offline`).
@@ -494,7 +496,14 @@ Readers: "anyone" = also logged out; "logged-in" = any role; "admin/staff" = org
   every `PageHeroBackground` hero slowly zooms (`hero-kenburns`, paused off-screen with the ambient layer) and gets
   `AmbientBackground` + one light sweep (`hero-sweep`). Homepage: `components/site/MatchTicker.tsx` (results ticker
   from `get_match_ticker()`, falls back to `get_live_now()`; marquee loop, pauses on hover/focus/off-screen) and
-  `components/site/DarkBand.tsx` (full-width dark band, straight edges with slanted gold accents inside (9.4: no clip-path, so no corner gaps): "Choose your game" `GameTiles.tsx` +
+  `components/site/DarkBand.tsx` (full-width dark band, straight edges with slanted gold accents inside (9.4: no clip-path, so no corner gaps; 9.5: the accents sit below the zigzag layer and there is no corner spotlight, so the pattern is even edge to edge). Phase 9.6
+  (CSS block "Phase 9.6" at the end of `globals.css`): `components/site/InView.tsx` sets `data-inview` once (one-time
+  staged entrance of `.fx-in` children via `--fx-delay`) and `data-offscreen` (pauses every loop); third glow, a light
+  sweep along the gold edges, 16 CSS sparks (desktop with a mouse only); game cards (`.game-card`, per-game `--game`
+  RGB in `GameTiles.tsx`; no default in CSS, the fallback is inside each `var()`) lift, tilt, glow in the game's
+  color, shine and press; idle `.game-breathe`; LIVE badge per game (`GameLiveDot.tsx` + `utils/use-live-games.ts`,
+  from `get_live_now()`); stats bar line + icon bounce when `CountUp` (`delayMs`) finishes (`data-counted`);
+  "Join" shimmer, "All divisions" fill. Other homepage cards use `<Reveal variant="card">`: "Choose your game" `GameTiles.tsx` +
   `SiteStats plain`). Match cards use `components/MatchVersus.tsx` (`VersusRow`, `VersusBadge`, `ScoreBoard`,
   `LiveTag`; digits flip with `FlipScore.tsx`) on `/schedule`, My Matches, `/t/[id]`, the live strip and bracket
   boxes. Brackets: hovering a team highlights its route (`BracketPath.tsx`, rows carry `data-team-id`), the champion
@@ -536,7 +545,8 @@ triggers with readable error messages.
 - Auth: `/auth/*` (see above). Account: `/profile` (picture, name, game profiles, password, delete account).
 - Players: `/teams` (tabs My teams / All teams; organizers open on All teams), `/teams/[id]` (Recruiting + join
   requests for the captain and organizers, "Ask to join" for other players), `/registrations` (My Registrations), dashboard "My Matches", `/matches/[id]`.
-- Tournaments: `/tournaments`, `/tournaments/create`, `/tournaments/[id]` (details, bracket, announcements,
+- Tournaments: `/tournaments` (also public: logged-out visitors get the list without slot counts, cards open `/t/[id]`),
+  `/tournaments/create`, `/tournaments/[id]` (details, bracket, announcements,
   watch-live banner, Admin Panel), `/tournaments/[id]/edit`, `.../registrations`, `.../matches`, `.../streams`, `.../predictions` (pick'em leaderboard).
 - Organizers: `/matches` (Match Management overview), `/admin/teams` (admin/staff: active teams with Remove, removed
   teams with reason), `/admin/users` (admin only), `/admin/feedback` (admin only),
@@ -572,7 +582,13 @@ triggers with readable error messages.
   its layer has `m-0!` (11.5), otherwise that margin shrinks the absolute photo and leaves a strip at the bottom.
 - Every page (public and logged in) has the same header and footer, both in `app/layout.tsx`:
   `components/site/SiteHeader.tsx` (logo, search, and `SiteAuthButtons`: theme toggle + Log in / Sign up, or
-  theme toggle + Dashboard + `NotificationBell` + your avatar (→ /profile) + Log out) and `components/Footer.tsx`.
+  theme toggle + Dashboard + `NotificationBell` + `components/site/AccountMenu.tsx` (avatar menu: name, RoleBadge,
+  Dashboard, My Profile, Notifications, Log out)) and `components/Footer.tsx`. Log out (avatar menu and the
+  bottom bar's More sheet) goes through `useLogout()` (`components/useLogout.tsx`; asks first below lg).
+- One name and icon per page (final consistency pass): `NAV_ITEMS` in `utils/navigation.ts` + `NAV_ICONS` in
+  `components/nav-icons.ts`. Dashboard cards, footer links and breadcrumbs (`PATH_LABELS`) read them; page titles
+  (`usePageTitle` / `metadata`) and H1s use the same words. Glossary: README "Glossary". Breadcrumbs start at
+  Dashboard when logged in, Home for visitors (`rootCrumb()`). Visitors' menu leaves out login-only pages.
 - Navigation (Phase 3): `components/site/SiteNavLayout.tsx` wraps every section (public `(site)`, dashboard,
   tournaments, teams, matches, live, schedule, profile, registrations, admin, analytics, ...). The menu per role is
   `navFor(role, loggedIn)` in `utils/navigation.ts` (logged out = spectator menu; Moderation is added with Phase 4):
@@ -618,7 +634,7 @@ triggers with readable error messages.
 - States: `components/PageLoading.tsx` (`PageLoading` full page, `SectionLoading` inline), `components/PageError.tsx`
   (page couldn't load), `app/not-found.tsx`, `app/error.tsx`, `app/global-error.tsx` (Next 16: props `error, retry`).
   `getErrorMessage()` turns raw Postgres/PostgREST/network errors into plain sentences and keeps our own trigger
-  messages. Show the error instead of "No X yet" when a list failed to load.
+  messages; internal SQL errors (42xxx, 08/53/58/XX, PGRST2xx) become a generic sentence, never table or column names. Show the error instead of "No X yet" when a list failed to load.
 
 ## Conventions that apply to every module
 - **Role checks go through `can(role, action)`** (`utils/permissions.ts`; `isOrganizer()` for "admin or staff").

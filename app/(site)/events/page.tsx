@@ -4,6 +4,14 @@ import PostCard from '@/components/site/PostCard';
 import { EmptyNote } from '@/components/site/SiteParts';
 import PageHeroBackground from '@/components/site/PageHeroBackground';
 
+import type { Metadata } from 'next';
+
+// Tab title = the menu label (utils/navigation.ts)
+export const metadata: Metadata = {
+  title: 'Events',
+  description: 'Upcoming DALTA Esports events: game nights, tournaments and community activities.',
+};
+
 // Events Page
 export const instant = false;
 

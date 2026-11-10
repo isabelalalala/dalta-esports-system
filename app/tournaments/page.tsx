@@ -11,7 +11,9 @@ import AnimatedProgress from '@/components/AnimatedProgress';
 import Countdown from '@/components/site/Countdown';
 import { Clock } from 'lucide-react';
 import type { Profile, Tournament } from '@/utils/types';
-import PageLoading from '@/components/PageLoading';
+import { SectionLoading } from '@/components/PageLoading';
+import { useViewer } from '@/utils/use-viewer';
+import { rootCrumb } from '@/utils/navigation';
 import { usePageTitle } from '@/utils/page-title';
 import PageHeroBackground from '@/components/site/PageHeroBackground';
 
@@ -26,6 +28,9 @@ export default function TournamentsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [profile, setProfile] = useState<Pick<Profile, 'id' | 'role'> | null>(null);
+  // Logged-out visitors: this page is public (it's in their menu), but registrations are not, so
+  // they get the list without slot counts and the cards open the public /t/<id> page
+  const [visitor, setVisitor] = useState(false);
 
   const router = useRouter();
 
@@ -36,7 +41,13 @@ export default function TournamentsPage() {
           data: { session },
         } = await supabase.auth.getSession();
         if (!session) {
-          router.push('/auth/login');
+          const { data, error: tourError } = await supabase
+            .from('tournaments')
+            .select('*')
+            .order('created_at', { ascending: false });
+          if (tourError) throw tourError;
+          setVisitor(true);
+          setTournaments((data || []) as Tournament[]);
           return;
         }
 
@@ -71,10 +82,12 @@ export default function TournamentsPage() {
     fetchData();
   }, [router, supabase]);
 
-  if (loading) {
-    return <PageLoading label="Loading tournaments..." />;
-  }
+  // This page is public: visitors go back Home, logged-in users to their Dashboard
+  const viewer = useViewer();
+  const back = rootCrumb(!!viewer.userId);
 
+  // The hero shows straight away and only the list waits for the data (a full-page spinner that
+  // was swapped for the page moved everything: layout shift 0.88 on Lighthouse mobile)
   return (
     <div className="w-full space-y-8">
       {/* 1. Main Hero Container with dynamic background (Matching Events Layout) */}
@@ -83,12 +96,14 @@ export default function TournamentsPage() {
 
         {/* Action Bar inside Hero: Back link & optional Create Tournament button */}
         <div className="relative z-10 w-full flex flex-wrap items-center justify-between gap-4">
-          <Link
-            href="/dashboard"
-            className="inline-flex items-center gap-1.5 text-xs font-black text-amber-400 hover:text-amber-300 uppercase tracking-wider transition-colors"
-          >
-            ← Back to Dashboard
-          </Link>
+          {viewer.status === 'ready' ? (
+            <Link
+              href={back.href ?? '/'}
+              className="inline-flex items-center gap-1.5 text-xs font-black text-amber-400 hover:text-amber-300 uppercase tracking-wider transition-colors"
+            >
+              ← Back to {back.label}
+            </Link>
+          ) : <span />}
 
           {can(profile?.role, 'tournament.create') && (
             <Link
@@ -125,7 +140,10 @@ export default function TournamentsPage() {
       )}
 
       {/* 2. Tournaments Grid / Empty State (Matching Events Layout) */}
-      {tournaments.length === 0 && !error ? (
+      {loading ? (
+        // Room for the cards while they load, so the footer starts below the fold and isn't pushed down
+        <div className="min-h-[70vh]"><SectionLoading label="Loading tournaments..." /></div>
+      ) : tournaments.length === 0 && !error ? (
         <div className="animate-stagger-1 w-full rounded-2xl border border-stone-200/80 bg-stone-50/70 p-8 sm:p-14 text-center flex flex-col items-center justify-center gap-2 shadow-xs">
           <p className="font-black text-stone-900 text-base">
             No tournaments published yet.
@@ -149,7 +167,7 @@ export default function TournamentsPage() {
             return (
               <Link
                 key={tournament.id}
-                href={`/tournaments/${tournament.id}`}
+                href={visitor ? `/t/${tournament.id}` : `/tournaments/${tournament.id}`}
                 className="group card-interactive flex flex-col rounded-2xl border border-stone-200/90 bg-white shadow-xs overflow-hidden relative"
               >
                 {/* Visual Header Aspect-Video (Matching PostCard Layout in Events) */}
@@ -177,9 +195,9 @@ export default function TournamentsPage() {
                 <div className="p-5 sm:p-6 flex flex-col flex-1 justify-between space-y-4">
                   <div className="space-y-1.5">
                     <GameBadge name={tournament.game} game={tournament.game_id} size="xs" withName nameClassName="text-amber-700 font-black tracking-widest uppercase" />
-                    <h3 className="text-xl sm:text-2xl font-black text-stone-950 leading-tight uppercase tracking-wide group-hover:text-amber-700 transition-colors">
+                    <h2 className="text-xl sm:text-2xl font-black text-stone-950 leading-tight uppercase tracking-wide group-hover:text-amber-700 transition-colors">
                       {tournament.name}
-                    </h3>
+                    </h2>
                     {tournament.description && (
                       <p className="text-xs sm:text-sm text-stone-600 font-medium line-clamp-2">
                         {tournament.description}
@@ -189,7 +207,8 @@ export default function TournamentsPage() {
 
                   <div className="space-y-4 pt-2">
                     {/* Participants Progress Stats */}
-                    <div className="bg-stone-50/80 p-3.5 rounded-xl border border-stone-200/80">
+                    <div className="bg-stone-50/80 p-3.5 rounded-xl border border-stone-200/80 empty:hidden">
+                      {!visitor && (<>
                       <div className="flex justify-between items-end mb-1.5">
                         <span className="text-stone-600 text-[10px] font-black uppercase tracking-wider">
                           Participants
@@ -205,6 +224,7 @@ export default function TournamentsPage() {
                         label={`${registeredCount} of ${tournament.max_participants || 'unlimited'} slots filled`}
                         className="w-full h-2 block appearance-none rounded-full overflow-hidden bg-stone-200 [&::-webkit-progress-bar]:bg-stone-200 [&::-webkit-progress-value]:bg-amber-500 [&::-moz-progress-bar]:bg-amber-500"
                       />
+                      </>)}
                       {/* Live "closes in 2 days 4 hrs" while registration is open */}
                       {status === 'upcoming' && registrationClosesAt(tournament) && (
                         <p className="mt-2.5 inline-flex items-center gap-1.5 rounded-full border border-amber-500/30 bg-amber-500/10 px-2.5 py-1">

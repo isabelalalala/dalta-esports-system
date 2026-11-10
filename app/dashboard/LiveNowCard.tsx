@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Radio, Tv } from 'lucide-react';
+import { Tv } from 'lucide-react';
 import { createClient } from '@/utils/supabase/client';
 import { LiveTag, ScoreBoard, VersusBadge, VersusRow } from '@/components/MatchVersus';
 import Countdown from '@/components/site/Countdown';
@@ -57,7 +57,7 @@ export default function LiveNowCard() {
     <section aria-labelledby="live-now-title" className="rounded-3xl border border-stone-200/90 bg-white p-5 sm:p-6 shadow-xs space-y-4">
       <div className="flex items-center justify-between gap-2">
         <h2 id="live-now-title" className="inline-flex items-center gap-2 text-sm font-black uppercase tracking-widest text-stone-950">
-          <Radio className="size-4 text-red-600" aria-hidden="true" /> Live now
+          <Tv className="size-4 text-red-600" aria-hidden="true" /> Live now
         </h2>
         <Link href="/live" className="text-xs font-black uppercase tracking-wider text-maroon hover:underline">Watch →</Link>
       </div>

@@ -33,7 +33,7 @@ export default function WatchStreamPage() {
 
   const params = useParams();
   const id = params?.id as string;
-  // Breadcrumb: "Home > Watch Live > <title>"
+  // Breadcrumb: "Dashboard > Live Streams > <title>"
   useBreadcrumbName(stream?.title);
 
   // 1. The stream, and record this person's view (once per day; see stream_views)

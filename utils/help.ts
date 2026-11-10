@@ -42,11 +42,11 @@ export const HELP_SECTIONS: HelpSection[] = [
       {
         q: 'How do I watch a live match?',
         a: [
-          'Open Watch Live. Live streams are at the top; ended ones stay as replays.',
+          'Open Live Streams. Live streams are at the top; ended ones stay as replays.',
           'The video plays from Facebook. If it doesn\'t load, use the "Watch on Facebook" link under the player.',
           'Scores and the bracket update automatically while the page is open.',
         ],
-        link: { href: '/live', label: 'Watch Live' },
+        link: { href: '/live', label: 'Live Streams' },
       },
       {
         q: 'How does the live chat work, and what are warnings?',
@@ -70,11 +70,11 @@ export const HELP_SECTIONS: HelpSection[] = [
       {
         q: 'How do I give feedback?',
         a: [
-          'Go to Give Feedback, choose General, a tournament or one match, pick 1 to 5 stars and write a short comment.',
+          'Go to Feedback, choose General, a tournament or one match, pick 1 to 5 stars and write a short comment.',
           'You can send one feedback per tournament, per match and one general. It is analysed by AI ("Analyzing…") and summarized for the organizers.',
           'Changed your mind? Use Edit or Delete in My History (not while a moderator is reviewing it).',
         ],
-        link: { href: '/feedback', label: 'Give Feedback' },
+        link: { href: '/feedback', label: 'Feedback' },
       },
       {
         q: 'How do I add matches to my calendar or share a tournament?',
@@ -123,11 +123,11 @@ export const HELP_SECTIONS: HelpSection[] = [
       {
         q: 'How do I create a team and get players?',
         a: [
-          'Go to My Team → Create Team. You need a game profile for that game and you become the captain.',
+          'Go to My Teams → Create Team. You need a game profile for that game and you become the captain.',
           'Invite players from the team page (search by name or IGN, filter by role and rank), or turn on Recruiting so players can ask to join.',
-          'Players answer invites from My Team; captains accept or decline join requests (also all at once).',
+          'Players answer invites from My Teams; captains accept or decline join requests (also all at once).',
         ],
-        link: { href: '/teams?tab=mine', label: 'My Team' },
+        link: { href: '/teams?tab=mine', label: 'My Teams' },
       },
       {
         q: 'How do I add a team logo or say what my team is looking for?',
@@ -135,7 +135,7 @@ export const HELP_SECTIONS: HelpSection[] = [
           'On your team page, the captain can add a square logo (JPG, PNG or WebP). Without one, the team’s initials are shown.',
           'Under "Looking for", tick up to 3 roles and a minimum rank. While your team is recruiting this shows on its card, and players can find it with the role and rank filters in All teams.',
         ],
-        link: { href: '/teams?tab=mine', label: 'My Team' },
+        link: { href: '/teams?tab=mine', label: 'My Teams' },
       },
       {
         q: 'How do I register my team for a tournament?',

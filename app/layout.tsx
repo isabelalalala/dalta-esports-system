@@ -16,13 +16,15 @@ export const metadata: Metadata = {
   // Facebook needs full URLs for link previews (NEXT_PUBLIC_SITE_URL)
   metadataBase: new URL(SITE_URL),
   title: { default: "DALTA Esports", template: "%s – DALTA Esports" },
-  description: "DALTA Esports: Tournament Management System",
+  description: "Tournaments, live streams, schedules and results from DALTA Esports, the official esports organization of UPHSD Molino.",
   // Default preview for pages without their own (tournament and match pages generate one)
   openGraph: {
     siteName: "DALTA Esports",
     type: "website",
     images: [{ url: "/DALTA ESPORTS LOGO TRNPRNT.png", width: 1080, height: 1080, alt: "DALTA Esports logo" }],
   },
+  // Square logo, so the small card (pages with their own picture override this)
+  twitter: { card: "summary", images: ["/DALTA ESPORTS LOGO TRNPRNT.png"] },
   // Installed app on iPhone: full screen, DALTA name under the icon (app/manifest.ts for Android)
   appleWebApp: { capable: true, title: "DALTA", statusBarStyle: "default" },
 };
@@ -45,6 +47,11 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <head>
         {/* Runs before the page paints, so dark-mode users never see a white flash (utils/theme.ts) */}
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
+        {/* Open the connection to Supabase (data, images, Realtime) while the page loads: every page
+            talks to it, and Lighthouse measured ~300 ms saved on mobile */}
+        {process.env.NEXT_PUBLIC_SUPABASE_URL && (
+          <link rel="preconnect" href={process.env.NEXT_PUBLIC_SUPABASE_URL} crossOrigin="anonymous" />
+        )}
       </head>
       <body className="min-h-full w-full flex flex-col bg-white text-stone-950">
         <a
