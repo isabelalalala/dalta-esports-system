@@ -527,7 +527,7 @@ Readers: "anyone" = also logged out; "logged-in" = any role; "admin/staff" = org
   from `get_match_ticker()`, falls back to `get_live_now()`; marquee loop, pauses on hover/focus/off-screen) and
   `components/site/DarkBand.tsx` (full-width dark band, straight edges with slanted gold accents inside (9.4: no clip-path, so no corner gaps; 9.5: the accents sit below the zigzag layer and there is no corner spotlight, so the pattern is even edge to edge). Motion pass
   (one system, `docs/brand.md` "Motion", tokens `@theme static` at the top of `globals.css`): the band and the footer share
-  `AmbientBackground lively` (third glow + rising sparks, desktop only), the band adds thin slanted gold accent
+  `AmbientBackground lively` (third glow + rising sparks; 6 of 16 sparks on phones/touch), the band adds thin slanted gold accent
   lines (`--glow-gold`) with a light running along them (`.band-edge-sweep`), secondary button `btn-on-dark`, `Reveal` entrance with `--stagger-step`, game tiles = the `/divisions` card (TiltCard +
   card-interactive + border-trace, centred `bg-logo-stage-strong`, `GameLogo balanced`), the About `SiteStats` card,
   `btn` buttons, and a LIVE badge per game (`GameLiveDot`, `utils/use-live-games.ts`). Every live indicator is

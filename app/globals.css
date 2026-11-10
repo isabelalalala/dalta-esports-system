@@ -818,7 +818,7 @@ input::placeholder, textarea::placeholder {
 :root[data-theme="dark"] .zigzag-pattern, .ambient-on-dark .zigzag-pattern { color: var(--color-gold); }
 /* "lively" (AmbientBackground lively: the homepage band and the footer): a third, faint gold glow
    at the top and up to 16 small sparks rising slowly. Sparks are gold on dark (onDark) and maroon on
-   the light footer. Phones and touch screens: no sparks and no third glow (battery). */
+   the light footer. Phones and touch screens: a lighter version, 6 sparks instead of 16 (battery). */
 .ambient-orb-c {
   left: 30%;
   top: -35%;
@@ -847,7 +847,8 @@ input::placeholder, textarea::placeholder {
   100% { transform: translate3d(var(--drift), -440px, 0); opacity: 0; }
 }
 @media (max-width: 1023px), (hover: none) {
-  .ambient-sparks, .ambient-orb-c { display: none; }
+  /* Every third spark (1, 4, 7, 10, 13, 16): 6 left, still spread across the whole width */
+  .ambient-spark:not(:nth-child(3n + 1)) { display: none; }
 }
 [data-paused] .ambient-orb,
 [data-paused] .zigzag-pattern,

@@ -28,7 +28,7 @@ const SPARKS = [
   '[--x:98%] [--dur:13s] [--delay:7.2s] [--drift:-10px]',
 ];
 
-// lively: also a third glow and slowly rising sparks (desktop with a mouse only), for the big
+// lively: also a third glow and slowly rising sparks (16; 6 on phones and touch screens), for the big
 // background areas that should feel alive: the homepage "Choose your game" band and the footer.
 export default function AmbientBackground({
   className = '', onDark = false, lively = false,
