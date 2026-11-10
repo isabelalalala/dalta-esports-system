@@ -77,7 +77,8 @@ function FooterBody({ content, logo }: { content: SiteContent; logo: string }) {
 
   return (
     <footer className="relative isolate overflow-hidden w-full bg-white border-t border-stone-200/90 text-stone-700 text-sm print:hidden">
-      <AmbientBackground className="-z-10" />
+      {/* lively: the same living background as the homepage band (third glow + rising sparks) */}
+      <AmbientBackground lively className="-z-10" />
       <div className="mx-auto w-full max-w-7xl px-4 sm:px-8 pt-12 pb-6">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[1.3fr_1fr_1fr_1fr] gap-x-8 gap-y-10 items-start">
           <div className="flex items-start gap-4 sm:col-span-2 lg:col-span-1">

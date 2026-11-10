@@ -816,12 +816,47 @@ input::placeholder, textarea::placeholder {
   animation: ambientGrid var(--duration-zigzag) linear infinite;
 }
 :root[data-theme="dark"] .zigzag-pattern, .ambient-on-dark .zigzag-pattern { color: var(--color-gold); }
+/* "lively" (AmbientBackground lively: the homepage band and the footer): a third, faint gold glow
+   at the top and up to 16 small sparks rising slowly. Sparks are gold on dark (onDark) and maroon on
+   the light footer. Phones and touch screens: no sparks and no third glow (battery). */
+.ambient-orb-c {
+  left: 30%;
+  top: -35%;
+  width: 45%;
+  background: radial-gradient(circle, color-mix(in oklab, var(--color-gold) 70%, transparent) 0%, transparent 65%);
+  animation: ambientDriftB var(--duration-ambient-b) ease-in-out infinite alternate-reverse;
+}
+.ambient-sparks { position: absolute; inset: 0; overflow: hidden; pointer-events: none; color: var(--color-maroon); }
+.ambient-on-dark .ambient-sparks, :root[data-theme="dark"] .ambient-sparks { color: var(--color-gold); }
+.ambient-spark {
+  position: absolute;
+  left: var(--x);
+  bottom: -8px;
+  width: 3px;
+  height: 3px;
+  border-radius: 9999px;
+  background: currentColor;
+  box-shadow: 0 0 6px 1px currentColor;
+  opacity: 0;
+  animation: ambientSpark var(--dur) linear var(--delay) infinite;
+}
+@keyframes ambientSpark {
+  0% { transform: translate3d(0, 0, 0); opacity: 0; }
+  10% { opacity: 0.7; }
+  80% { opacity: 0.35; }
+  100% { transform: translate3d(var(--drift), -440px, 0); opacity: 0; }
+}
+@media (max-width: 1023px), (hover: none) {
+  .ambient-sparks, .ambient-orb-c { display: none; }
+}
 [data-paused] .ambient-orb,
-[data-paused] .zigzag-pattern {
+[data-paused] .zigzag-pattern,
+[data-paused] .ambient-spark {
   animation-play-state: paused;
 }
 @media (prefers-reduced-motion: reduce) {
   .ambient-orb, .zigzag-pattern { animation: none !important; }
+  .ambient-sparks { display: none; }
 }
 
 /* Phase 9: toasts (components/Toaster.tsx) slide up from the bottom corner */
@@ -874,6 +909,16 @@ input::placeholder, textarea::placeholder {
   border-color: oklch(44.4% 0.177 26.899);
   color: white;
   &:hover:not(:disabled) { background-color: oklch(44.4% 0.177 26.899); }
+}
+/* Secondary button on a dark photo or dark band (home hero, "Choose your game"): see-through white.
+   btn-secondary is for light surfaces (in dark mode its background turns dark, its text in a dark
+   band stays dark: unreadable). White stays white in both themes. */
+@utility btn-on-dark {
+  background-color: rgb(255 255 255 / 0.1);
+  border-color: rgb(255 255 255 / 0.3);
+  color: white;
+  backdrop-filter: blur(12px);
+  &:hover:not(:disabled) { background-color: rgb(255 255 255 / 0.2); border-color: rgb(255 255 255 / 0.5); }
 }
 
 /* ===================================================================================
@@ -931,6 +976,40 @@ input::placeholder, textarea::placeholder {
 .band-angled::after { bottom: 0; clip-path: polygon(0 calc(100% - 3px), 100% 0, 100% 3px, 0 100%); }
 @media (max-width: 639px) {
   .band-angled::before, .band-angled::after { height: 1.25rem; }
+}
+/* The shine on the gold lines: same shapes as the lines' wedges, clipped, a light streak moving
+   across (transform only). Paused off-screen together with the band's AmbientBackground. */
+.band-edge-sweep {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2.5rem;
+  z-index: -5;
+  overflow: hidden;
+  pointer-events: none;
+}
+.band-edge-sweep-top { top: 0; clip-path: polygon(0 calc(100% - 3px), 100% calc(15% - 3px), 100% 15%, 0 100%); }
+.band-edge-sweep-bottom { bottom: 0; clip-path: polygon(0 calc(100% - 3px), 100% 0, 100% 3px, 0 100%); }
+.band-edge-sweep::before {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 30%;
+  background: linear-gradient(90deg, transparent, rgb(255 243 196 / 0.95), transparent);
+  transform: translate3d(-120%, 0, 0);
+  animation: bandEdgeSweep 7s ease-in-out infinite;
+}
+.band-edge-sweep-bottom::before { animation-delay: 3.5s; }
+@keyframes bandEdgeSweep {
+  0% { transform: translate3d(-120%, 0, 0); }
+  35%, 100% { transform: translate3d(450%, 0, 0); }
+}
+.band-angled:has([data-paused]) .band-edge-sweep::before { animation-play-state: paused; }
+@media (max-width: 639px) {
+  .band-edge-sweep { height: 1.25rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .band-edge-sweep { display: none; }
 }
 /* In dark mode the page is near-black too: a deep maroon tint keeps the band visible */
 :root[data-theme="dark"] .band-angled {

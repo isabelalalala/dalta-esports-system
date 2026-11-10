@@ -102,7 +102,7 @@ export default async function HomePage() {
           </div>
           <Reveal delay={2} className="flex flex-wrap justify-center gap-3">
             <Link href="/auth/register" className="btn btn-primary px-6 py-3">Join DALTA Esports</Link>
-            <Link href="/divisions" className="btn btn-secondary px-6 py-3">All divisions</Link>
+            <Link href="/divisions" className="btn btn-on-dark px-6 py-3">All divisions</Link>
           </Reveal>
         </div>
         <GameTiles />

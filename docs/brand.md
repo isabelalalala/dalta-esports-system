@@ -75,8 +75,10 @@ Every value comes from the motion tokens at the top of `app/globals.css` (`@them
 | `TiltCard` + `border-trace` | Leans toward the mouse (mouse only) + a gold light runs around the border | **Game cards only**: `/divisions` cards and the homepage game tiles (the same card) |
 | `PageHeroBackground` | Photo with `hero-kenburns` (slow zoom), `AmbientBackground` and one `hero-sweep` | Every page hero. The announcement detail hero uses its cover with the same three layers. Working pages that open on a video or scoreboard (`/live/[id]`, `/matches/[id]`, `/t/[id]/match/[matchId]`), the auth pages and the legal pages have no photo hero by design |
 | `AmbientBackground` | Two drifting glows over the `.zigzag-pattern` layer; pauses off-screen and in hidden tabs | Page heroes, the footer, the homepage dark band |
+| `AmbientBackground lively` | Adds a third faint gold glow and up to 16 slowly rising sparks (gold on dark, maroon on the light footer; desktop with a mouse only) | The big living backgrounds: the homepage "Choose your game" band **and** the footer, always together |
+| Gold edge shine (`.band-edge-sweep`) | A light runs along the band's two slanted gold accent lines every 7 s | The homepage band only (the only place with the slanted gold lines) |
 | `.zigzag-pattern` | The triangle pattern, one tile, oversized layer so every edge stays covered while it drifts | Only inside `AmbientBackground`; never faded on one side |
-| `hero-sweep` | One light band across, once | Inside `PageHeroBackground`; in the homepage band it waits for its `Reveal` |
+| `hero-sweep` | One light band across, once | Inside `PageHeroBackground` (and the announcement hero) |
 | `CountUp` | Number counts up once when seen | Every stat number (`SiteStats`, About, homepage) |
 | `FlipScore` | A changed score digit flips down | Every live score (`MatchVersus`, brackets, ticker) |
 | `AnimatedProgress` | A bar fills once when seen | Slot bars, pick'em split |
@@ -90,7 +92,8 @@ Every value comes from the motion tokens at the top of `app/globals.css` (`@them
 Status and progress that aren't effects: `AutoUpdateBadge` (green pulse = "updates automatically", not live),
 `PageLoading` / `SectionLoading` / skeletons for loading, `Toaster` for results, `ConfirmDialog` / `useConfirm`
 for confirmations, `StatusBadge` / `RoleBadge` / `GameBadge` / `VerifiedBadge` for badges. Buttons are
-`btn btn-primary|btn-secondary|btn-danger`; gold buttons get the hover shine automatically.
+`btn btn-primary|btn-secondary|btn-danger`, plus `btn-on-dark` (see-through white) for a secondary button on a
+dark photo or band (`btn-secondary` is for light surfaces); gold buttons get the hover shine automatically.
 
 ### Rules
 - Only `transform` and `opacity` animate (the hero sweep and button shine move a gradient on a small area); no

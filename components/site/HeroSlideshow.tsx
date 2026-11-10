@@ -134,7 +134,7 @@ export default function HeroSlideshow({ title, tagline, images = [], content }: 
           </Link>
           <Link
             href="/divisions"
-            className="px-8 py-3.5 rounded-xl bg-white/10 text-white font-extrabold text-xs sm:text-sm uppercase tracking-widest border border-white/30 backdrop-blur-md hover:bg-white/20 hover:border-white/50 hover:-translate-y-0.5 transition-all duration-200"
+            className="btn btn-on-dark px-8 py-3.5 text-xs sm:text-sm"
           >
             Explore Our Team
           </Link>
